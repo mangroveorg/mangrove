@@ -1,8 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore import entity
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, get, get_entities
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from pytz import UTC
@@ -25,75 +24,75 @@ class TestDataStoreApi(unittest.TestCase):
         self.dbm.delete(e._doc)
 
     def test_get_entity(self):
-        e = entity.get(self.dbm, self.uuid)
+        e = get(self.dbm, self.uuid)
         self.assertTrue(e.id)
         self.assertTrue(e.type_string == "clinic")
 
     def test_should_add_location_hierarchy_on_create(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
         uuid = e.save()
-        saved = entity.get(self.dbm, uuid)
+        saved = get(self.dbm, uuid)
         self.assertEqual(saved.location_path,["India","MH","Pune"])
 
     def test_should_add_entity_type_on_create(self):
         e = Entity(self.dbm, entity_type=["healthfacility","clinic"])
         uuid = e.save()
-        saved = entity.get(self.dbm, uuid)
+        saved = get(self.dbm, uuid)
         self.assertEqual(saved.type_path,["healthfacility","clinic"])
 
     def test_should_add_entity_type_on_create_as_aggregation_tree(self):
         e = Entity(self.dbm, entity_type="health_facility.clinic")
         uuid = e.save()
-        saved = entity.get(self.dbm, uuid)
+        saved = get(self.dbm, uuid)
         self.assertEqual(saved.type_path,["health_facility","clinic"])
 
     def test_should_add_passed_in_hierarchy_path_on_create(self):
         e = Entity(self.dbm, entity_type=["HealthFacility","Clinic"],location=["India","MH","Pune"],aggregation_paths={"org": ["TW_Global","TW_India","TW_Pune"],
                                       "levels": ["Lead Consultant", "Sr. Consultant", "Consultant"]})
         uuid = e.save()
-        saved = entity.get(self.dbm, uuid)
+        saved = get(self.dbm, uuid)
         hpath = saved._doc.aggregation_paths
         self.assertEqual(hpath["org"],["TW_Global","TW_India","TW_Pune"])
         self.assertEqual(hpath["levels"],["Lead Consultant", "Sr. Consultant", "Consultant"])
 
     def test_hierarchy_addition(self):
-        e = entity.get(self.dbm, self.uuid)
+        e = get(self.dbm, self.uuid)
         org_hierarchy = ["TWGlobal", "TW-India", "TW-Pune"]
         e.set_aggregation_path("org", org_hierarchy)
         e.save()
-        saved = entity.get(self.dbm, self.uuid)
+        saved = get(self.dbm, self.uuid)
         self.assertTrue(saved.aggregation_paths["org"] == ["TWGlobal", "TW-India", "TW-Pune"])
 
     def test_hierarchy_addition_should_clone_tree(self):
-        e = entity.get(self.dbm, self.uuid)
+        e = get(self.dbm, self.uuid)
         org_hierarchy = ["TW", "PS", "IS"]
         e.set_aggregation_path("org", org_hierarchy)
         org_hierarchy[0] = ["NewValue"]
         e.save()
-        saved = entity.get(self.dbm, self.uuid)
+        saved = get(self.dbm, self.uuid)
         self.assertTrue(saved.aggregation_paths["org"] == ["TW","PS","IS"])
 
     def test_save_aggregation_path_only_via_api(self):
-        e = entity.get(self.dbm, self.uuid)
+        e = get(self.dbm, self.uuid)
         e.location_path[0]="US"
         e.save()
-        saved = entity.get(self.dbm, self.uuid)
+        saved = get(self.dbm, self.uuid)
         self.assertTrue(saved.location_path==["India","MH","Pune"])  # Hierarchy has not changed.
 
     def test_should_save_hierarchy_tree_only_through_api(self):
-        e = entity.get(self.dbm, self.uuid)
+        e = get(self.dbm, self.uuid)
         org_hierarchy = ["TW", "PS", "IS"]
         e.set_aggregation_path("org", org_hierarchy)
         e.save()
         e.aggregation_paths['org'][0] = "XYZ"
         e.save()
-        saved = entity.get(self.dbm, self.uuid)
+        saved = get(self.dbm, self.uuid)
         self.assertEqual(saved.aggregation_paths["org"], ["TW","PS","IS"])
 
     def test_get_entities(self):
         e2 = Entity(self.dbm, "hospital",["India","TN","Chennai"])
         id2 = e2.save()
-        entities = entity.get_entities(self.dbm, [self.uuid, id2])
+        entities = get_entities(self.dbm, [self.uuid, id2])
         self.assertEqual(len(entities),2)
         saved = dict([(e.id, e) for e in entities])
         self.assertEqual(saved[id2].type_string, "hospital")
@@ -130,7 +129,7 @@ class TestDataStoreApi(unittest.TestCase):
         self.dbm.delete(reporter._doc)
 
     def test_should_create_entity_from_document(self):
-        existing = entity.get(self.dbm, self.uuid)
+        existing = get(self.dbm, self.uuid)
         e = Entity(self.dbm, _document = existing._doc)
         self.assertTrue(e._doc is not None)
         self.assertEqual(e.id,existing.id)
@@ -138,7 +137,7 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_fail_create_for_invalid_arguments(self):
         with self.assertRaises(AssertionError):
-            e = Entity(self.dbm, _document = "xyz")
+            Entity(self.dbm, _document = "xyz")
 
     def test_invalidate_data(self):
         e = Entity(self.dbm, entity_type='store', location=['nyc'])

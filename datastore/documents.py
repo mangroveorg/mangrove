@@ -5,7 +5,7 @@ import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
+from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 class attributes(object):
     '''Constants for referencing standard attributes in docs.'''

@@ -4,7 +4,7 @@ __author__ = 'jwishnie'
 
 from unittest  import TestCase
 from datetime import datetime
-import mangrove.utils as utils
+from mangrove import utils
 import pytz
 
 try:

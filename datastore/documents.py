@@ -138,3 +138,12 @@ class EntityTypeDocument(DocumentBase):
 
 
         
+class QuestionnaireDocument(DocumentBase):
+    name=TextField()
+    description=TextField()
+    short_id=TextField()
+    entity_id=TextField()
+    questions = ListField(DictField())
+
+    def __init__(self, id=None):
+        DocumentBase.__init__(self, id = id, document_type = 'Questionnaire')

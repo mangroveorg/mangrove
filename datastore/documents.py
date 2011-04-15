@@ -1,10 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField
 import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
+from mangrove.utils.types import is_sequence
 from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 class attributes(object):
@@ -120,6 +121,20 @@ class SubmissionLogDocument(DocumentBase):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
+
+
+class EntityTypeDocument(DocumentBase):
+    """
+        This document defines the type of the entity.
+        """
+    name = ListField(TextField())
+
+    def __init__(self,name_=None):
+        assert is_sequence(name_)
+        DocumentBase.__init__(self, document_type = 'EntityType')
+        self.name = name_
+
+
 
 
         

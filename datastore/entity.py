@@ -3,9 +3,15 @@
 import copy
 from datetime import datetime
 from documents import EntityDocument, DataRecordDocument, attributes
+from mangrove.datastore.documents import EntityTypeDocument
 from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow
 from database import DatabaseManager
+
+def define_type(dbm,entity_type):
+    e = EntityTypeDocument(entity_type)
+    dbm.save(e)
+    return e
 
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
@@ -22,6 +28,7 @@ def get_entities_by_type(dbm, entity_type):
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
     entities = [get(dbm, row['value']['_id']) for row in rows]
     return entities
+
 
 def entities_for_attributes(attrs):
     '''

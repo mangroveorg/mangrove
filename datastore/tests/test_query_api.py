@@ -78,9 +78,9 @@ class TestQueryApi(unittest.TestCase):
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": "latest",
-                                        "beds": "latest",
-                                        "patients": "sum"})
+                            aggregates={"director": data.reduce_functions.LATEST,
+                                        "beds": data.reduce_functions.LATEST,
+                                        "patients": data.reduce_functions.SUM})
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
@@ -128,9 +128,9 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": "latest",
-                                        "beds": "latest",
-                                        "patients": "sum"},
+                            aggregates={"director": data.reduce_functions.LATEST,
+                                        "beds": data.reduce_functions.LATEST,
+                                        "patients": data.reduce_functions.SUM},
                             filter={'location': ['India', 'MH', 'Pune']}
         )
 
@@ -190,7 +190,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": "sum"},
+                            aggregates={"patients": data.reduce_functions.SUM},
                             aggregate_on={'type': 'location', "level": 2},
                             )
 
@@ -255,7 +255,7 @@ class TestQueryApi(unittest.TestCase):
         e.add_data(data=[("beds", 200), ("meds", 50), ("director", "Dr. C"), ("patients", 12)],
                    event_time=MARCH)
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": "sum"},
+                            aggregates={"patients": data.reduce_functions.SUM},
                             aggregate_on={'type': 'governance', "level": 2},
                             )
 
@@ -264,7 +264,7 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Supervisor")] ,{"patients": 140})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                                    aggregates={"patients": "sum"},
+                                    aggregates={"patients": data.reduce_functions.SUM},
                                     aggregate_on={'type': 'governance', "level": 3},
                                     )
 

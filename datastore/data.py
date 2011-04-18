@@ -1,5 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
+class reduce_functions(object):
+    SUM="sum"
+    LATEST="latest"
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):

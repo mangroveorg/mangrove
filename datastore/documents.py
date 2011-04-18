@@ -140,7 +140,8 @@ class EntityTypeDocument(DocumentBase):
         
 class QuestionnaireDocument(DocumentBase):
     name=TextField()
-    description=TextField()
+    question_type=TextField()
+    label=TextField()
     short_id=TextField()
     entity_id=TextField()
     questions = ListField(DictField())

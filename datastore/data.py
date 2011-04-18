@@ -2,19 +2,26 @@
 from documents import attributes
 
 def _get_result_key(aggregate_on, row):
-    if aggregate_on.get('type') == "location":
-        loc = row["location"]
-        key = tuple(loc[:aggregate_on['level']])
+    if aggregate_on.get('type'):
+        if aggregate_on.get('type') == 'location':
+              path = row['aggregation_paths']['_geo']
+        else:
+              path = row['aggregation_paths'][aggregate_on.get('type')]
+        key = tuple(path[:aggregate_on['level']])
     else:
         key = row["entity_id"]
     return key
 
 
 def _get_key_strategy(aggregate_on):
-    if aggregate_on.get('type') == "location":
+    if aggregate_on.get('type'):
         def _aggregate_by_path(row):
-            loc = row["location"]
-            key = tuple(loc[:aggregate_on['level']])
+            if aggregate_on.get('type') == 'location':
+                path = row['aggregation_paths']['_geo']
+
+            else:
+                path = row['aggregation_paths'][aggregate_on.get('type')]
+            key = tuple(path[:aggregate_on['level']])
             return key
         return _aggregate_by_path
     else:

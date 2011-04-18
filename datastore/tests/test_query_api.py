@@ -20,8 +20,6 @@ class TestQueryApi(unittest.TestCase):
         return r
 
     def test_can_create_views(self):
-        self.assertTrue(views.exists_view("by_location", self.manager))
-        self.assertTrue(views.exists_view("by_time", self.manager))
         self.assertTrue(views.exists_view("by_values", self.manager))
 
     def test_should_get_current_values_for_entity(self):
@@ -109,6 +107,19 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
         self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70})
         self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12})
+
+#        START_TIME = datetime.datetime(2011,01,01, tzinfo = UTC)
+#        END_TIME = datetime.datetime(2011,02,28, tzinfo = UTC)
+#        values = data.fetch(self.manager,entity_type=ENTITY_TYPE,
+#                            aggregates = {  "director" : "latest" ,
+#                                             "beds" : "latest" ,
+#                                             "patients" : "sum"  },
+#                            filter = { "time" : dict(start=START_TIME,end=END_TIME)}
+#                            )
+#        self.assertEqual(len(values),3)
+#        self.assertEqual(values[id1],{ "director" : "Dr. A", "beds" : 300, "patients" : 10})
+#        self.assertEqual(values[id2],{ "director" : "Dr. B1", "beds" : 100, "patients" : 50})
+#        self.assertEqual(values[id3],{ "director" : "Dr. C", "beds" : 200, "patients" : 12})
 
 
     def test_should_filter_aggregate_per_entity_for_a_location(self):

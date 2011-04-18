@@ -173,7 +173,12 @@ class TestDataStoreApi(unittest.TestCase):
         assert (e is not None)
         assert e.id
         self.assertEqual(e.name,["HealthFacility","Clinic"])
-
+#
+#    def test_should_load_entity_types(self):
+#        e = get_entity_types(self.dbm)
+#        assert (e is not None)
+#        assert e.id
+#        self.assertEqual(e.name,["HealthFacility","Clinic"])
 
 
 

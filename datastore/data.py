@@ -54,7 +54,6 @@ def _load_all_fields_aggregated(dbm, type_path):
                                      startkey=[type_path],
                                      endkey=[type_path, {}])
     values = []
-    print rows
     for row in rows:
         values.append(row['value'])
     return values
@@ -82,7 +81,7 @@ def _interested(filter, d):
     if filter is None: return True
     interested_location = filter.get("location")
     if interested_location:
-        return d.get('location') == interested_location
+        return interested_location == d.get('location')[:len(interested_location)]
 
 
 def _apply_filter(values, filter):

@@ -1,6 +1,5 @@
 function(doc) {
-    if (doc.void
-)
+    if (doc.void)
     {
         return null;
     }

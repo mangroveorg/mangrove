@@ -53,6 +53,29 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(data_fetched["meds"], 5)
         self.assertEqual(data_fetched["doctors"], 2)
 
+    def test_should_fetch_count_per_entity(self):
+       ENTITY_TYPE = ["Health_Facility", "Clinic"]
+       e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
+       id1 = e.save()
+       e.add_data(data=[("beds", 300), ("meds", 20), ("director", "Dr. A"), ("patients", 10)],
+                  event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+       e.add_data(data=[("meds", 20), ("patients", 20)],
+                  event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+       e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
+       id2 = e.save()
+       e.add_data(data=[("beds", 100), ("meds", 250), ("director", "Dr. B1"), ("patients", 50)],
+                  event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+       e.add_data(data=[("beds", 200), ("meds", 400), ("director", "Dr. B2"), ("patients", 20)],
+                  event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+       values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+                           aggregates={"director": data.reduce_functions.LATEST,
+                                       "beds": data.reduce_functions.COUNT,
+                                       "patients": data.reduce_functions.COUNT},
+                            aggregate_on={'type': 'location', "level": 2})
+       self.assertEqual(len(values), 2)
+       self.assertEqual(values[("India","MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
+
     def test_should_fetch_aggregate_per_entity(self):
         # Aggregate across all data records for each entity
 

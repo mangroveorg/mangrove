@@ -1,8 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
 class reduce_functions(object):
+    '''Constants for referencing reduce functions. '''
     SUM="sum"
     LATEST="latest"
+    COUNT ="count" #Returns number of records containing the field
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):

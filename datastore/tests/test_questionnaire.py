@@ -1,7 +1,10 @@
+# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 import unittest
 import uuid
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import Entity
+from mangrove.datastore.question import Question
 from mangrove.datastore.questionnaire import get, submit
 from mangrove.datastore.questionnaire import Questionnaire
 
@@ -11,7 +14,8 @@ class TestQuestionnaire(unittest.TestCase):
         self.entity_id = uuid.uuid4().get_hex()
         e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
         self.entity_uuid = e.save()
-        question1 = {"name": "question1_Name", "type": "text", "sms_code":"Q1","label": "What is your name","defaultValue": "some default value"}
+        question1 = Question(name="question1_Name", type="text", sms_code="Q1", label="What is your name",
+                            defaultValue="some default value",language="eng").to_json()
         question2 = {"name": "Father's age", "type": "integer", "sms_code":"Q2","label": "What is your Father's Age","range": {"min": 15,"max": 120}}
         question3 = {"name": "Color", "type": "select1", "sms_code":"Q3","label": "What is your favourite color","options": [{"text": {"eng": "RED"},"val": 1},{"text": {"eng": "YELLOW"},"val": 2}]}
 #        TODO : for the timebeing storing the entity uuid till we figure out how to generate and store the short ids.

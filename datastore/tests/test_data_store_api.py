@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, get, get_entities, define_type
+from mangrove.datastore.entity import Entity, get, get_entities, define_type, load_all_entity_types
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from pytz import UTC
@@ -179,12 +179,7 @@ class TestDataStoreApi(unittest.TestCase):
         e = define_type(self.dbm,["HealthFacility","Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
             define_type(self.dbm,["HealthFacility","Clinic"])
-#
-#    def test_should_load_entity_types(self):
-#        e = get_entity_types(self.dbm)
-#        assert (e is not None)
-#        assert e.id
-#        self.assertEqual(e.name,["HealthFacility","Clinic"])
+
 
 
 

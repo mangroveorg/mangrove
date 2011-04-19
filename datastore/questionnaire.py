@@ -38,7 +38,7 @@ def _get_questionnaire_by_short_id(dbm, short_id):
 
 class Questionnaire(object):
 
-    def __init__(self, dbm, name = None, label = None,short_id = None,questions = None, entity_id = None, question_type=None,_document = None):
+    def __init__(self, dbm, name = None, label = None,short_id = None,questions = None, entity_id = None, question_type=None,language="eng",_document = None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -67,6 +67,7 @@ class Questionnaire(object):
         self._doc.short_id=short_id
         self._doc.entity_id=entity_id
         self._doc.question_type=question_type
+        self._doc.active_languages=language
 
     def validate(self):
         return True
@@ -101,3 +102,8 @@ class Questionnaire(object):
     @property
     def label(self):
         return self._doc.label
+
+    @property
+    def activeLanguages(self):
+        return self._doc.active_languages
+

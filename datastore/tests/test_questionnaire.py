@@ -16,9 +16,9 @@ class TestQuestionnaire(unittest.TestCase):
         question3 = {"name": "Color", "type": "select1", "sms_code":"Q3","label": "What is your favourite color","options": [{"text": {"eng": "RED"},"val": 1},{"text": {"eng": "YELLOW"},"val": 2}]}
 #        TODO : for the timebeing storing the entity uuid till we figure out how to generate and store the short ids.
 #TODO store langauge
-        self.e = Questionnaire(self.dbm, entity_id =self.entity_uuid,name="aids", label="Aids Questionnaire",short_id="1",question_type='survey',questions=[
+        self.questionare = Questionnaire(self.dbm, entity_id =self.entity_uuid,name="aids", label="Aids Questionnaire",short_id="1",question_type='survey',questions=[
                 question1,question2,question3])
-        self.questionnaire__id = self.e.save()
+        self.questionnaire__id = self.questionare.save()
 
     def tearDown(self):
         del self.dbm.database[self.questionnaire__id]
@@ -68,7 +68,11 @@ class TestQuestionnaire(unittest.TestCase):
         self.assertTrue(len(option_constraint)==2)
         self.assertTrue(option_constraint[0].get("val") == 1)
 
+    def test_should_add_english_as_default_langauge(self):
+        activeLangauges = self.questionare.activeLanguages
+        self.assertTrue("eng" in activeLangauges)
+
 
     def test_should_submission(self):
-        data_record_id=submit(self.dbm,self.e.short_id ,self.e.entity_id,{"Q1":"Ans1","Q2":"Ans2"},"SMS")
+        data_record_id=submit(self.dbm,self.questionare.short_id ,self.questionare.entity_id,{"Q1":"Ans1","Q2":"Ans2"},"SMS")
         self.assertTrue(data_record_id)

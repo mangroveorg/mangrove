@@ -131,7 +131,7 @@ class EntityTypeDocument(DocumentBase):
 
     def __init__(self,name_=None):
         assert is_sequence(name_)
-        DocumentBase.__init__(self, document_type = 'EntityType')
+        DocumentBase.__init__(self, document_type = 'EntityType', id = ".".join([v for v in name_]))
         self.name = name_
 
 

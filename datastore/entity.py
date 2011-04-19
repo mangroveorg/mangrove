@@ -2,15 +2,20 @@
 
 import copy
 from datetime import datetime
+from couchdb.http import ResourceConflict
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.documents import EntityTypeDocument
+from mangrove.datastore.exceptions import EntityTypeAlreadyDefined
 from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow
 from database import DatabaseManager
 
 def define_type(dbm,entity_type):
     e = EntityTypeDocument(entity_type)
-    dbm.save(e)
+    try:
+       dbm.save(e)
+    except ResourceConflict :
+        raise EntityTypeAlreadyDefined(message="This type is already defined")
     return e
 
 def get(dbm, uuid):

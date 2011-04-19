@@ -14,9 +14,9 @@ def get(dbm, uuid):
 
 #TODO : replace entity uuid with short id when we figure out to create the short ids for the entity
 #TODO : refactoring to do things python way.
-def submit(dbm,questionnaire_short_id,entity_uuid,answers,channel):
+def submit(dbm,questionnaire_code,entity_uuid,answers,channel):
     assert isinstance(dbm, DatabaseManager)
-    questionnaire_document = _get_questionnaire_by_short_id(dbm, short_id= questionnaire_short_id)
+    questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code= questionnaire_code)
     questionnaire = Questionnaire(dbm, _document= questionnaire_document)
     for answer in answers:
         question = filter(lambda x:x.get('sms_code')==answer,questionnaire.questions)
@@ -29,16 +29,16 @@ def submit(dbm,questionnaire_short_id,entity_uuid,answers,channel):
             return data_record_id
     return None
 
-def _get_questionnaire_by_short_id(dbm, short_id):
+def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
-    assert is_string(short_id)
-    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=short_id)
+    assert is_string(questionnaire_code)
+    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
     questionnaire_id = rows[0]['value']['_id']
     return dbm.load(questionnaire_id, QuestionnaireDocument)
 
 class Questionnaire(object):
 
-    def __init__(self, dbm, name = None, label = None,short_id = None,questions = None, entity_id = None, question_type=None,language="eng",_document = None):
+    def __init__(self, dbm, name = None, label = None,questionnaire_code = None,questions = None, entity_id = None, type=None,language="eng",_document = None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -49,7 +49,7 @@ class Questionnaire(object):
         entity_type may be a string (flat type) or sequence (hierarchical type)
         '''
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or (name and is_sequence(questions) and is_string(short_id) and short_id and is_string(entity_id) and entity_id and question_type)
+        assert _document is not None or (name and is_sequence(questions) and is_string(questionnaire_code) and questionnaire_code and is_string(entity_id) and entity_id and type)
         assert _document is None or isinstance(_document,QuestionnaireDocument)
 
         self._dbm = dbm
@@ -64,9 +64,9 @@ class Questionnaire(object):
         self._doc.name=name
         self._doc.label=label
         self._doc.questions=questions
-        self._doc.short_id=short_id
+        self._doc.questionnaire_code=questionnaire_code
         self._doc.entity_id=entity_id
-        self._doc.question_type=question_type
+        self._doc.type=type
         self._doc.active_languages=language
 
     def validate(self):
@@ -84,8 +84,8 @@ class Questionnaire(object):
         return self._doc.name
 
     @property
-    def short_id(self):
-        return self._doc.short_id
+    def questionnaire_code(self):
+        return self._doc.questionnaire_code
 
     @property
     def questions(self):
@@ -96,8 +96,8 @@ class Questionnaire(object):
         return self._doc.entity_id
 
     @property
-    def question_type(self):
-        return self._doc.question_type
+    def type(self):
+        return self._doc.type
 
     @property
     def label(self):

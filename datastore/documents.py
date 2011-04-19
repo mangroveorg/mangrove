@@ -142,9 +142,9 @@ class EntityTypeDocument(DocumentBase):
 class QuestionnaireDocument(DocumentBase):
     metadata=DictField()
     name=TextField()
-    question_type=TextField()
+    type=TextField()
     label=TextField()
-    short_id=TextField()
+    questionnaire_code=TextField()
     entity_id=TextField()
     questions = ListField(DictField())
 

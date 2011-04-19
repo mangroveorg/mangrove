@@ -16,7 +16,7 @@ class TestQuestionnaire(unittest.TestCase):
         question3 = {"name": "Color", "type": "select1", "sms_code":"Q3","label": "What is your favourite color","options": [{"text": {"eng": "RED"},"val": 1},{"text": {"eng": "YELLOW"},"val": 2}]}
 #        TODO : for the timebeing storing the entity uuid till we figure out how to generate and store the short ids.
 #TODO store langauge
-        self.questionare = Questionnaire(self.dbm, entity_id =self.entity_uuid,name="aids", label="Aids Questionnaire",short_id="1",question_type='survey',questions=[
+        self.questionare = Questionnaire(self.dbm, entity_id =self.entity_uuid,name="aids", label="Aids Questionnaire",questionnaire_code="1",type='survey',questions=[
                 question1,question2,question3])
         self.questionnaire__id = self.questionare.save()
 
@@ -30,7 +30,7 @@ class TestQuestionnaire(unittest.TestCase):
     def test_get_questionnaire(self):
         e = get(self.dbm, self.questionnaire__id)
         self.assertTrue(e.id)
-        self.assertTrue(e.question_type == "survey")
+        self.assertTrue(e.type == "survey")
 
     def test_should_add_name_of_questionnaire(self):
         saved = get(self.dbm, self.questionnaire__id)
@@ -42,7 +42,7 @@ class TestQuestionnaire(unittest.TestCase):
 
     def test_should_add_short_ids(self):
         saved = get(self.dbm, self.questionnaire__id)
-        self.assertTrue(saved.short_id == "1")
+        self.assertTrue(saved.questionnaire_code == "1")
 
     def test_should_add_entity_id(self):
         saved = get(self.dbm, self.questionnaire__id)
@@ -74,5 +74,5 @@ class TestQuestionnaire(unittest.TestCase):
 
 
     def test_should_submission(self):
-        data_record_id=submit(self.dbm,self.questionare.short_id ,self.questionare.entity_id,{"Q1":"Ans1","Q2":"Ans2"},"SMS")
+        data_record_id=submit(self.dbm,self.questionare.questionnaire_code ,self.questionare.entity_id,{"Q1":"Ans1","Q2":"Ans2"},"SMS")
         self.assertTrue(data_record_id)

@@ -1,6 +1,6 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
-from mangrove.datastore.question import IntegerQuestion, TextQuestion, QuestionBuilder
+from mangrove.datastore.question import IntegerQuestion, TextQuestion, SelectQuestion
 
 class TestQuestion(unittest.TestCase):
     def setup(self):
@@ -14,8 +14,9 @@ class TestQuestion(unittest.TestCase):
             "question_code": "Q1",
             "type": "text"
         }
-        question = QuestionBuilder(type="text", name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextQuestion(name="question1_Name", question_code="Q1", label="What is your name",
                                 defaultValue="some default value", language="eng")
+
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -27,7 +28,7 @@ class TestQuestion(unittest.TestCase):
             "range": {},
             "type": "integer",
             }
-        question = QuestionBuilder(type="integer",name="Age",  question_code="Q2", label="What is your age",
+        question = IntegerQuestion(name="Age",  question_code="Q2", label="What is your age",
                                    language="eng")
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -40,7 +41,7 @@ class TestQuestion(unittest.TestCase):
             "range": {"min": 15,"max": 120},
             "type": "integer",
             }
-        question = QuestionBuilder(name="Age", type="integer", question_code="Q2", label="What is your age",
+        question = IntegerQuestion(name="Age", question_code="Q2", label="What is your age",
                                    language="eng",range={"min": 15,"max": 120})
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -53,7 +54,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "Q3",
             "type": "select1",
             }
-        question = QuestionBuilder(name="color", type="select1", question_code="Q3", label="What is your favorite color",
+        question = SelectQuestion(name="color", question_code="Q3", label="What is your favorite color",
                                    language="eng",options=[("RED",1),("YELLOW",2),('green')])
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -67,7 +68,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "Q1",
             "type": "text"
         }
-        question = QuestionBuilder(type="text", name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextQuestion(name="question1_Name", question_code="Q1", label="What is your name",
                                 defaultValue="some default value" )
         question.add_or_edit_label(language="fra",label="french label")
         actual_json = question._to_json()
@@ -81,7 +82,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "Q1",
             "type": "text"
         }
-        question = QuestionBuilder(type="text", name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextQuestion(name="question1_Name", question_code="Q1", label="What is your name",
                                 defaultValue="some default value" )
         question.add_or_edit_label(language="fra",label="french label")
         question.add_or_edit_label(label="english label")

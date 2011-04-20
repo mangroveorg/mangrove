@@ -4,7 +4,7 @@ import unittest
 import uuid
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import Entity, define_type
-from mangrove.datastore.question import Question, QuestionBuilder, question_attributes
+from mangrove.datastore.question import question_attributes, TextQuestion, IntegerQuestion, SelectQuestion
 from mangrove.datastore.questionnaire import get, submit
 from mangrove.datastore.questionnaire import Questionnaire
 
@@ -12,10 +12,10 @@ class TestQuestionnaire(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
         self.entity = define_type(self.dbm,["HealthFacility","Clinic"])
-        question1 = QuestionBuilder(name="question1_Name", type="text", question_code="Q1", label="What is your name",
+        question1 = TextQuestion(name="question1_Name", question_code="Q1", label="What is your name",
                             defaultValue="some default value",language="eng")
-        question2 = QuestionBuilder(name= "Father's age", type= "integer", question_code="Q2",label= "What is your Father's Age",range= {"min": 15,"max": 120})
-        question3 = QuestionBuilder(name= "Color", type= "select1", question_code="Q3",label= "What is your favourite color",options= [("RED",1),("YELLOW",2)])
+        question2 = IntegerQuestion(name= "Father's age", question_code="Q2",label= "What is your Father's Age",range= {"min": 15,"max": 120})
+        question3 = SelectQuestion(name= "Color", question_code="Q3",label= "What is your favourite color",options= [("RED",1),("YELLOW",2)])
 
 
 
@@ -75,7 +75,7 @@ class TestQuestionnaire(unittest.TestCase):
 
     def test_should_add_new_question(self):
         questionnaire = get(self.dbm, self.questionnaire__id)
-        question = QuestionBuilder(name="added_question", type="text", question_code="Q4", label="How are you")
+        question = TextQuestion(name="added_question", question_code="Q4", label="How are you")
         questionnaire.add_question(question)
         questionnaire.save()
 

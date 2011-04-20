@@ -143,7 +143,7 @@ class QuestionnaireDocument(DocumentBase):
     metadata=DictField()
     name=TextField()
     type=TextField()
-    label=TextField()
+    label=DictField()
     questionnaire_code=TextField()
     entity_id=TextField()
     questions = ListField(DictField())
@@ -162,4 +162,7 @@ class QuestionnaireDocument(DocumentBase):
         active_langauges = self.metadata[attributes.ACTIVE_LANGUAGES]
         if not filter(lambda x:x==langauge, active_langauges):
             active_langauges.append(langauge)
+
+    def add_label(self,language,label):
+        self.label[language]=label
 

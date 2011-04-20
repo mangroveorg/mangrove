@@ -62,7 +62,7 @@ class Questionnaire(object):
         # Not made from existing doc, so create a new one
         self._doc = QuestionnaireDocument()
         self._doc.name=name
-        self._doc.label=label
+        self._doc.add_label(language,label)
         self._doc.questionnaire_code=questionnaire_code
         self._doc.entity_id=entity_id
         self._doc.type=type
@@ -111,3 +111,7 @@ class Questionnaire(object):
     def activeLanguages(self):
         return self._doc.active_languages
 
+    def add_language(self, language, label=None):
+        self._doc.active_languages = language
+        if label is not None:
+            self._doc.add_label(language,label)

@@ -3,7 +3,7 @@
 import unittest
 import uuid
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, define_type
 from mangrove.datastore.question import Question, QuestionBuilder
 from mangrove.datastore.questionnaire import get, submit
 from mangrove.datastore.questionnaire import Questionnaire
@@ -11,9 +11,7 @@ from mangrove.datastore.questionnaire import Questionnaire
 class TestQuestionnaire(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        self.entity_id = uuid.uuid4().get_hex()
-        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
-        self.entity_uuid = e.save()
+        self.entity = define_type(self.dbm,["HealthFacility","Clinic"])
         question1 = QuestionBuilder(name="question1_Name", type="text", sms_code="Q1", label="What is your name",
                             defaultValue="some default value",language="eng")
         question2 = QuestionBuilder(name= "Father's age", type= "integer", sms_code="Q2",label= "What is your Father's Age",range= {"min": 15,"max": 120})
@@ -21,7 +19,7 @@ class TestQuestionnaire(unittest.TestCase):
 
 
 
-        self.questionare = Questionnaire(self.dbm, entity_id =self.entity_uuid,name="aids", label="Aids Questionnaire",questionnaire_code="1",type='survey',questions=[
+        self.questionare = Questionnaire(self.dbm, entity_id = self.entity.id,name="aids", label="Aids Questionnaire",questionnaire_code="1",type='survey',questions=[
                 question1,question2,question3])
         self.questionnaire__id = self.questionare.save()
 
@@ -44,7 +42,7 @@ class TestQuestionnaire(unittest.TestCase):
 
     def test_should_add_label(self):
         saved = get(self.dbm, self.questionnaire__id)
-        self.assertTrue(saved.label == "Aids Questionnaire")
+        self.assertTrue(saved.label['eng'] == "Aids Questionnaire")
 
     def test_should_add_short_ids(self):
         saved = get(self.dbm, self.questionnaire__id)
@@ -52,7 +50,7 @@ class TestQuestionnaire(unittest.TestCase):
 
     def test_should_add_entity_id(self):
         saved = get(self.dbm, self.questionnaire__id)
-        self.assertTrue(saved.entity_id == self.entity_uuid)
+        self.assertTrue(saved.entity_id == self.entity.id)
 
     def test_should_add_questions(self):
         saved = get(self.dbm, self.questionnaire__id)
@@ -88,6 +86,12 @@ class TestQuestionnaire(unittest.TestCase):
         activeLangauges = self.questionare.activeLanguages
         self.assertTrue("eng" in activeLangauges)
 
+    def test_should_add_language_to_questionare(self):
+        self.questionare.add_language(language="fra",label="French Aids Questionnaire")
+        activeLangauges = self.questionare.activeLanguages
+        self.assertEquals(len(activeLangauges),2)
+        self.assertTrue("fra" in activeLangauges)
+        self.assertEquals(self.questionare.label['fra'],u'French Aids Questionnaire')
 
     def test_should_submission(self):
         data_record_id=submit(self.dbm,self.questionare.questionnaire_code ,self.questionare.entity_id,{"Q1":"Ans1","Q2":"Ans2"},"SMS")

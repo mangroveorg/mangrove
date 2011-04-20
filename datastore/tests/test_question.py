@@ -16,7 +16,7 @@ class TestQuestion(unittest.TestCase):
         }
         question = QuestionBuilder(type="text", name="question1_Name", sms_code="Q1", label="What is your name",
                                 defaultValue="some default value", language="eng")
-        actual_json = question.to_json()
+        actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
     def test_should_create_integer_question_type_for_default_english_language(self):
@@ -29,7 +29,7 @@ class TestQuestion(unittest.TestCase):
             }
         question = QuestionBuilder(type="integer",name="Age",  sms_code="Q2", label="What is your age",
                                    language="eng")
-        actual_json = question.to_json()
+        actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
     def test_should_create_integer_question_type_for_default_english_language_with_range(self):
@@ -42,7 +42,7 @@ class TestQuestion(unittest.TestCase):
             }
         question = QuestionBuilder(name="Age", type="integer", sms_code="Q2", label="What is your age",
                                    language="eng",range={"min": 15,"max": 120})
-        actual_json = question.to_json()
+        actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
     def test_should_create_select_one_question_type_for_default_english_language(self):
@@ -55,7 +55,7 @@ class TestQuestion(unittest.TestCase):
             }
         question = QuestionBuilder(name="color", type="select1", sms_code="Q3", label="What is your favorite color",
                                    language="eng",options=[("RED",1),("YELLOW",2),('green')])
-        actual_json = question.to_json()
+        actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
 

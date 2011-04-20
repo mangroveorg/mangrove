@@ -35,7 +35,7 @@ class Question(object):
             self._dict[k] = [language_dict]
 
 
-    def to_json(self):
+    def _to_json(self):
         return self._dict
 
 

@@ -15,9 +15,9 @@ class TestQuestionnaire(unittest.TestCase):
         e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
         self.entity_uuid = e.save()
         question1 = QuestionBuilder(name="question1_Name", type="text", sms_code="Q1", label="What is your name",
-                            defaultValue="some default value",language="eng").to_json()
-        question2 = QuestionBuilder(name= "Father's age", type= "integer", sms_code="Q2",label= "What is your Father's Age",range= {"min": 15,"max": 120}).to_json()
-        question3 = QuestionBuilder(name= "Color", type= "select1", sms_code="Q3",label= "What is your favourite color",options= [("RED",1),("YELLOW",2)]).to_json()
+                            defaultValue="some default value",language="eng")
+        question2 = QuestionBuilder(name= "Father's age", type= "integer", sms_code="Q2",label= "What is your Father's Age",range= {"min": 15,"max": 120})
+        question3 = QuestionBuilder(name= "Color", type= "select1", sms_code="Q3",label= "What is your favourite color",options= [("RED",1),("YELLOW",2)])
 
 
 
@@ -74,6 +74,15 @@ class TestQuestionnaire(unittest.TestCase):
 
         self.assertEquals(len(option_constraint),2)
         self.assertEquals(option_constraint[0].get("val"),1)
+
+    def test_should_add_new_question(self):
+        questionnaire = get(self.dbm, self.questionnaire__id)
+        question = QuestionBuilder(name="added_question", type="text", sms_code="Q4", label="How are you")
+        questionnaire.add_question(question)
+        questionnaire.save()
+
+        added_question = get(self.dbm, self.questionnaire__id).questions[3]
+        self.assertEquals(added_question.get("sms_code"),"Q4")
 
     def test_should_add_english_as_default_langauge(self):
         activeLangauges = self.questionare.activeLanguages

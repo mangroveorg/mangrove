@@ -63,17 +63,21 @@ class Questionnaire(object):
         self._doc = QuestionnaireDocument()
         self._doc.name=name
         self._doc.label=label
-        self._doc.questions=questions
         self._doc.questionnaire_code=questionnaire_code
         self._doc.entity_id=entity_id
         self._doc.type=type
         self._doc.active_languages=language
+        for question in questions:
+            self._doc.questions.append(question._to_json())
 
     def validate(self):
         return True
 
     def save(self):
         return self._dbm.save(self._doc).id
+    
+    def add_question(self,question_to_be_added):
+        return self._doc.questions.append(question_to_be_added._to_json())
 
     @property
     def id(self):

@@ -20,7 +20,7 @@ function(key, values, rereduce) {
                             result.timestamp = values[i].timestamp;
                             result.latest = values[i].value;
                     }
-                    result.sum = result.sum + values[i].value;
+                    if (typeof(value[i].value)=='number') result.sum = result.sum + values[i].value;
                 }
 		return final;
 	}
@@ -49,7 +49,7 @@ function(key, values, rereduce) {
                         result.timestamp = value.timestamp;
                         result.latest = value.latest;
                     }
-                result.sum = result.sum + value.sum;
+                if (typeof(value.sum)=='number') result.sum = result.sum + value.sum;
                 }
 		}
         return final;

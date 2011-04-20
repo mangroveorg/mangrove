@@ -4,6 +4,7 @@ import datarecord
 import entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import QuestionnaireDocument
+from mangrove.datastore.question import question_attributes
 from mangrove.utils.types import is_sequence, is_string
 
 def get(dbm, uuid):
@@ -79,6 +80,17 @@ class Questionnaire(object):
     def add_question(self,question_to_be_added):
         return self._doc.questions.append(question_to_be_added._to_json())
 
+    def delete_question(self,question_code):
+        questions = self._doc.questions
+        question_to_be_deleted = filter(lambda x:x[question_attributes.QUESTION_CODE] == question_code, questions)[0]
+        questions.remove(question_to_be_deleted)
+
+
+    def add_language(self, language, label=None):
+        self._doc.active_languages = language
+        if label is not None:
+            self._doc.add_label(language,label)
+
     @property
     def id(self):
         return self._doc.id
@@ -111,7 +123,3 @@ class Questionnaire(object):
     def activeLanguages(self):
         return self._doc.active_languages
 
-    def add_language(self, language, label=None):
-        self._doc.active_languages = language
-        if label is not None:
-            self._doc.add_label(language,label)

@@ -5,21 +5,22 @@ from copy import deepcopy
 class question_attributes(object):
     '''Constants for referencing standard attributes in questionnaire.'''
     LANGUAGE="language"
+    QUESTION_CODE = "question_code"
 
 class Question(object):
     NAME = "name"
     LABEL = "label"
     TYPE = "type"
-    SMS_CODE = "sms_code"
+    QUESTION_CODE = "question_code"
 
     _DEFAULT_VALUES = {
         NAME: "",
         TYPE: "",
-        SMS_CODE: "",
+        QUESTION_CODE: "",
         }
 
     _DEFAULT_LANGUAGE_SPECIFIC_VALUES = {
-        LABEL: [],
+        LABEL: {},
         }
 
     _DEFAULT_LANGUAGE = "eng"
@@ -32,11 +33,15 @@ class Question(object):
         for k, default_langauge_specific_value in self._DEFAULT_LANGUAGE_SPECIFIC_VALUES.items():
             a = kwargs.get(question_attributes.LANGUAGE, self._DEFAULT_LANGUAGE)
             language_dict = {a: kwargs.get(k)}
-            self._dict[k] = [language_dict]
+            self._dict[k] = language_dict
 
 
     def _to_json(self):
         return self._dict
+
+    def add_or_edit_label(self,label,language=None):
+        language_to_add = language if language is not None else self._DEFAULT_LANGUAGE
+        self._dict[self.LABEL][language_to_add] = label
 
 
 class IntegerQuestion(Question):

@@ -245,13 +245,8 @@ class Entity(object):
                                              data = data_dict, submission_id = submission_id)
         return self._dbm.save(data_record_doc).id
 
-    # Note: The below has not been implemented yet.
-  	 	
-  	 	
     def invalidate_data(self, uid):
-  	 	
-        '''
-        Mark datarecord identified by uid as 'invalid'.
+        '''Mark datarecord identified by uid as 'invalid'.
 
         Can be used to mark a submitted record as 'bad' so that
         it will be ignored in reporting. This is because we
@@ -275,8 +270,19 @@ class Entity(object):
 
         This should only be used internally to perform update actions on data records as necessary.
         '''
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data')
+        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        return [row['value']['_id'] for row in rows]
+
+    def get_all_data(self):
+        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
         return [row['value'] for row in rows]
+
+    def state(self):
+        '''Returns a dictionary containing the current state of the entity.
+
+        Contains the latest value of each type of data stored on the entity.
+        '''
+        pass
 
     def values(self, aggregation_rules, asof = None):
         """
@@ -290,7 +296,6 @@ class Entity(object):
             view_name = self._translate(aggregate_fn)
             result[field] = self._get_aggregate_value(field,view_name,asof)
         return result
-
 
     def _get_aggregate_value(self, field, aggregate_fn,date):
         entity_id = self._doc.id

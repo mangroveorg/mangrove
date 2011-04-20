@@ -1,3 +1,5 @@
+# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.datastore.documents import DocumentBase
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager

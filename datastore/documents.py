@@ -19,6 +19,7 @@ class attributes(object):
     GEO_PATH = '_geo'
     TYPE_PATH = '_type'
     DATA = 'data'
+    ACTIVE_LANGUAGES='activeLanguages'
 
 # This class can take care of non-json serializable objects. Another solution is to plug in a custom json encoder/decoder.
 class TZAwareDateTimeField(DateTimeField):
@@ -131,7 +132,7 @@ class EntityTypeDocument(DocumentBase):
 
     def __init__(self,name_=None):
         assert is_sequence(name_)
-        DocumentBase.__init__(self, document_type = 'EntityType')
+        DocumentBase.__init__(self, document_type = 'EntityType', id = ".".join([v for v in name_]))
         self.name = name_
 
 
@@ -139,12 +140,29 @@ class EntityTypeDocument(DocumentBase):
 
         
 class QuestionnaireDocument(DocumentBase):
+    metadata=DictField()
     name=TextField()
-    question_type=TextField()
-    label=TextField()
-    short_id=TextField()
+    type=TextField()
+    label=DictField()
+    questionnaire_code=TextField()
     entity_id=TextField()
     questions = ListField(DictField())
 
+
     def __init__(self, id=None):
         DocumentBase.__init__(self, id = id, document_type = 'Questionnaire')
+        self.metadata[attributes.ACTIVE_LANGUAGES]=[]
+
+    @property
+    def active_languages(self):
+        return self.metadata.get(attributes.ACTIVE_LANGUAGES)
+
+    @active_languages.setter
+    def active_languages(self,langauge):
+        active_langauges = self.metadata[attributes.ACTIVE_LANGUAGES]
+        if not filter(lambda x:x==langauge, active_langauges):
+            active_langauges.append(langauge)
+
+    def add_label(self,language,label):
+        self.label[language]=label
+

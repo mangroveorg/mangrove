@@ -8,7 +8,7 @@ function(key, values, rereduce) {
 			count = count + 1;
 			x = values[i];
     			if (x.timestamp > current.timestamp) current = x;
-			total = total + x.value;
+			if (typeof(x.value)=='number') total = total + x.value;
 		}
 		result.latest = current.value;
 		result.timestamp = current.timestamp;
@@ -28,7 +28,7 @@ function(key, values, rereduce) {
 			x = values[i];
 			count = count + x.count;
     			if (x.timestamp > current.timestamp) current = x;
-			total = total + x.sum;
+			if (typeof(x.sum)=='number') total = total + x.sum;
 		}
         result.latest = current.value;
         result.timestamp = current.timestamp;

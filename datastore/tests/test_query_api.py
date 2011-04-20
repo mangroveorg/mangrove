@@ -3,7 +3,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 import unittest
 from pytz import UTC
 from mangrove.datastore import views
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, load_all_entity_types, define_type
 from mangrove.datastore import data
 
 class TestQueryApi(unittest.TestCase):
@@ -21,6 +21,8 @@ class TestQueryApi(unittest.TestCase):
 
     def test_can_create_views(self):
         self.assertTrue(views.exists_view("by_values", self.manager))
+        self.assertTrue(views.exists_view("entity_types", self.manager))
+
 
     def test_should_get_current_values_for_entity(self):
         e = Entity(self.manager, entity_type=["Health_Facility.Clinic"], location=['India', 'MH', 'Pune'])
@@ -307,6 +309,15 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Officer", "Doctor")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Nurse")], {"patients": 12})
         self.assertEqual(values[("Director", "Med_Supervisor","Surgeon")] ,{"patients": 70})
+
+    def test_should_load_all_entity_types(self):
+        define_type(self.manager,["HealthFacility","Clinic"])
+        define_type(self.manager,["HealthFacility","Hospital"])
+        define_type(self.manager,["WaterPoint","Lake"])
+        define_type(self.manager,["WaterPoint","Dam"])
+        entity_types = load_all_entity_types(self.manager)
+        assert entity_types is not None
+        print entity_types
 
 #
 #

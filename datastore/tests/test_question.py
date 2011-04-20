@@ -45,5 +45,18 @@ class TestQuestion(unittest.TestCase):
         actual_json = question.to_json()
         self.assertEqual(actual_json, expected_json)
 
+    def test_should_create_select_one_question_type_for_default_english_language(self):
+        expected_json = {
+            "label": [{"eng": "What is your favorite color"}],
+            "name": "color",
+            "options": [{"text": [{"eng": "RED"}],"val": 1},{"text": [{"eng": "YELLOW"}],"val": 2},{"text":[{"eng":"green"}]}],
+            "sms_code": "Q3",
+            "type": "select1",
+            }
+        question = QuestionBuilder(name="color", type="select1", sms_code="Q3", label="What is your favorite color",
+                                   language="eng",options=[("RED",1),("YELLOW",2),('green')])
+        actual_json = question.to_json()
+        self.assertEqual(actual_json, expected_json)
+
 
     

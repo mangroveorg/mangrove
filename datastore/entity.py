@@ -6,6 +6,7 @@ from couchdb.http import ResourceConflict
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.datastore.exceptions import EntityTypeAlreadyDefined
+from mangrove.utils.types import is_empty
 from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow
 from database import DatabaseManager
@@ -18,7 +19,12 @@ def load_all_entity_types(dbm):
     return entity_types
 
 def define_type(dbm,entity_type):
-    e = EntityTypeDocument(entity_type)
+    assert is_not_empty(entity_type)
+    if type(entity_type) == str:
+        _entity_type = [entity_type.strip()]
+    else:
+        _entity_type = entity_type
+    e = EntityTypeDocument(_entity_type)
     try:
        dbm.save(e)
     except ResourceConflict :

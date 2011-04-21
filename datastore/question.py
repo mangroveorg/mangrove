@@ -8,6 +8,7 @@ class question_attributes(object):
     INTEGER_QUESTION = "integer"
     TEXT_QUESTION = "text"
     SELECT_QUESTION = 'select1'
+    MULTI_SELECT_QUESTION = 'select'
     DEFAULT_LANGUAGE = "eng"
 
 class Question(object):
@@ -66,9 +67,12 @@ class TextQuestion(Question):
 
 class SelectQuestion(Question):
     OPTIONS = "options"
+    SINGLE_SELECT_FLAG = 'single_select_flag'
 
-    def __init__(self, name, question_code, label, options=None, language=question_attributes.DEFAULT_LANGUAGE):
-        Question.__init__(self, type=question_attributes.SELECT_QUESTION, name=name, question_code=question_code,
+    def __init__(self, name, question_code, label, options=None, language=question_attributes.DEFAULT_LANGUAGE,single_select_flag=True):
+        type = question_attributes.SELECT_QUESTION if single_select_flag else question_attributes.MULTI_SELECT_QUESTION
+        self.SINGLE_SELECT_FLAG = single_select_flag
+        Question.__init__(self, type=type, name=name, question_code=question_code,
                           label=label, language=language)
         self._dict[self.OPTIONS] = []
         for option in options:
@@ -78,3 +82,7 @@ class SelectQuestion(Question):
                 single_language_specific_option = {'text': [{language: option}]}
 
             self._dict[self.OPTIONS].append(single_language_specific_option)
+
+
+
+

@@ -139,18 +139,18 @@ class EntityTypeDocument(DocumentBase):
 
 
         
-class QuestionnaireDocument(DocumentBase):
+class FormModelDocument(DocumentBase):
     metadata=DictField()
     name=TextField()
     type=TextField()
     label=DictField()
-    questionnaire_code=TextField()
+    form_code=TextField()
     entity_id=TextField()
-    questions = ListField(DictField())
+    fields = ListField(DictField())
 
 
     def __init__(self, id=None):
-        DocumentBase.__init__(self, id = id, document_type = 'Questionnaire')
+        DocumentBase.__init__(self, id = id, document_type = 'FormModel')
         self.metadata[attributes.ACTIVE_LANGUAGES]=[]
 
     @property

@@ -98,21 +98,10 @@ def entities_in(geoname, attrs=None):
     pass
 
 
-#
-# Constants
-#
-
-
-
-# Entity class is main way of interacting with Entities AND datarecords.
-# Datarecords are always submitted/retrieved from an Entity
-
-
-
-
 class Entity(object):
     """
-        Entity class is main way of interacting with Entities AND datarecords.
+    Entity class is main way of interacting with Entities AND datarecords.
+    Datarecords are always submitted/retrieved from an Entity.
     """
 
     def __init__(self, dbm, entity_type = None,location=None, aggregation_paths = None, _document = None):

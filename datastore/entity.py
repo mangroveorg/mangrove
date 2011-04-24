@@ -2,7 +2,10 @@
 
 import copy
 from datetime import datetime
+from time import mktime
+
 from couchdb.http import ResourceConflict
+
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.datastore.exceptions import EntityTypeAlreadyDefined
@@ -34,8 +37,7 @@ def define_type(dbm,entity_type):
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
     entity_doc = dbm.load(uuid, EntityDocument)
-    e = Entity(dbm, _document = entity_doc)
-    return e
+    return Entity(dbm, _document = entity_doc)
 
 def get_entities(dbm, uuids):
     return [ get(dbm, i) for i in uuids ]
@@ -282,7 +284,7 @@ class Entity(object):
     def values(self, aggregation_rules, asof = None):
         """
         returns the aggregated value for the given fields using the aggregation function specified for data collected till a point in time.
-         Eg: data_records_func = {'arv':'latest', 'num_patients':'sum'} will return latest value for ARV and sum of number of patients
+        Eg: data_records_func = {'arv':'latest', 'num_patients':'sum'} will return latest value for ARV and sum of number of patients
         """
         asof = asof or utcnow()
         result = {}
@@ -294,9 +296,10 @@ class Entity(object):
 
     def _get_aggregate_value(self, field, aggregate_fn,date):
         entity_id = self._doc.id
+        time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
         rows = self._dbm.load_all_rows_in_view('mangrove_views/'+aggregate_fn, group_level=3,descending=False,
                                                      startkey=[self.type_path, entity_id, field],
-                                                     endkey=[self.type_path, entity_id, field, date.year, date.month, date.day, {}])
+                                                     endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
         # The above will return rows in the format described:
         # Row key=['clinic', 'e4540e0ae93042f4b583b54b6fa7d77a'],
         #   value={'beds': {'timestamp_for_view': 1420070400000, 'value': '15'},

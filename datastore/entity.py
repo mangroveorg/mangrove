@@ -17,8 +17,9 @@ from database import DatabaseManager
 def load_all_entity_types(dbm):
     assert isinstance(dbm, DatabaseManager)
     rows = dbm.load_all_rows_in_view('mangrove_views/entity_types')
-    entity_types = {row["id"]:row["value"].pop() for row in rows}
-
+    entity_types = {}
+    for row in rows:
+        entity_types[row["id"]] = row["value"].pop()
     return entity_types
 
 def define_type(dbm,entity_type):

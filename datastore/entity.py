@@ -81,23 +81,30 @@ def entities_near(geocode, radius=1, attrs=None):
     '''
     pass
 
-def entities_in(geoname, attrs=None):
-    '''
-    Retrieve an entity within the given fully-qualified geographic
-    placename.
+def get_entities_in(dbm, geo_path, type_path=None):
+    '''Retrieve an entity within the given fully-qualified geographic placename.'''
+    assert isinstance(dbm, DatabaseManager)
+    assert is_string(geo_path) or isinstance(geo_path, list)
+    assert is_string(type_path) or isinstance(type_path, list) or type_path is None
 
-    Include 'type' as an attr to restrict to a given entity type
+    if is_string(geo_path):
+        geo_path = [geo_path]
+    if is_string(type_path):
+        type_path = [type_path]
 
-    returns a sequence
+    entities = []
 
-    ex.
-    found = entities_in(
-    [us,ca,sanfrancisco],
-    {'type':'patient', 'phone':'4155551212'}
-    )
+    # if type is unspecified, then return all entities
+    if type_path is not None:
+        rows = dbm.load_all_rows_in_view('mangrove_views/by_type_geo', key=(type_path + geo_path))
+        entities = [get(dbm, row.id) for row in rows]
 
-    '''
-    pass
+    # otherwise, filter by type
+    if type_path is None:
+        rows = dbm.load_all_rows_in_view('mangrove_views/by_geo', key=geo_path)
+        entities = [get(dbm, row.id) for row in rows]
+
+    return entities
 
 
 class Entity(object):

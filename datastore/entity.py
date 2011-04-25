@@ -8,7 +8,7 @@ from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.documents import EntityTypeDocument
-from mangrove.datastore.exceptions import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
 from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow

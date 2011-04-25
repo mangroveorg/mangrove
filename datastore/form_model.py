@@ -5,6 +5,7 @@ import entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.field import field_attributes
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.utils.types import is_sequence, is_string
 
 def get(dbm, uuid):
@@ -18,6 +19,8 @@ def get(dbm, uuid):
 def submit(dbm,questionnaire_code,entity_uuid,answers,channel):
     assert isinstance(dbm, DatabaseManager)
     questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code= questionnaire_code)
+    if questionnaire_document is None:
+        raise FormModelDoesNotExistsException(questionnaire_code)
     questionnaire = FormModel(dbm, _document= questionnaire_document)
     for answer in answers:
         question = filter(lambda x:x.get('sms_code')==answer,questionnaire.fields)
@@ -34,6 +37,8 @@ def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(questionnaire_code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
+    if len(rows) == 0:
+        return None
     questionnaire_id = rows[0]['value']['_id']
     return dbm.load(questionnaire_id, FormModelDocument)
 

@@ -6,7 +6,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 from mangrove.datastore.documents import DataRecordDocument
 from pytz import UTC
 import unittest
-from mangrove.datastore.exceptions import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 
 class TestDataStoreApi(unittest.TestCase):
     def setUp(self):

@@ -3,8 +3,9 @@
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import  define_type
-from mangrove.datastore.form_model import FormModel, get, submit
+from mangrove.datastore.form_model import FormModel, get, submit,_get_questionnaire_by_questionnaire_code
 from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
@@ -104,3 +105,9 @@ class TestFormModel(unittest.TestCase):
         data_record_id = submit(self.dbm, self.form_model.form_code, self.form_model.entity_id,
                                 {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
         self.assertTrue(data_record_id)
+
+    def test_should_raise_exception_if_form_model_does_not_exist(self):
+        with self.assertRaises(FormModelDoesNotExistsException) as ex:
+            submit(self.dbm, "test", self.form_model.entity_id,
+                                {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
+

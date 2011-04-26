@@ -24,7 +24,7 @@ class TestSmsPlayer(unittest.TestCase):
         question3 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                    options=[("RED", 1), ("YELLOW", 2)])
 
-        self.form_model = FormModel(self.dbm, entity_id=self.entity.id, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
                     question1, question2])
         self.form_model.add_question(question3)

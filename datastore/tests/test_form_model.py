@@ -3,7 +3,7 @@
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import  define_type
-from mangrove.datastore.form_model import FormModel, get, submit,_get_questionnaire_by_questionnaire_code
+from mangrove.datastore.form_model import FormModel, get, submit, _get_questionnaire_by_questionnaire_code
 from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 
@@ -12,11 +12,11 @@ class TestFormModel(unittest.TestCase):
         self.dbm = get_db_manager(database='mangrove-test')
         self.entity = define_type(self.dbm, ["HealthFacility", "Clinic"])
         question1 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
-                                 defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng")
         question2 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                    range={"min": 15, "max": 120})
+                                 range={"min": 15, "max": 120})
         question3 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
-                                   options=[("RED", 1), ("YELLOW", 2)])
+                                options=[("RED", 1), ("YELLOW", 2)])
 
         self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
@@ -102,12 +102,10 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
 
     def test_should_submission(self):
-        data_record_id = submit(self.dbm, self.form_model.form_code, self.form_model.entity_id,
-                                {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
+        data_record_id = submit(self.dbm, self.form_model.form_code,{"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
         self.assertTrue(data_record_id)
 
     def test_should_raise_exception_if_form_model_does_not_exist(self):
         with self.assertRaises(FormModelDoesNotExistsException) as ex:
-            submit(self.dbm, "test", self.form_model.entity_id,
-                                {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
+            submit(self.dbm, "test", {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
 

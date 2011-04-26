@@ -4,6 +4,7 @@ import datarecord
 import entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import FormModelDocument
+from mangrove.datastore.entity import get_entities_by_type
 from mangrove.datastore.field import field_attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.utils.types import is_sequence, is_string
@@ -16,7 +17,12 @@ def get(dbm, uuid):
 
 #TODO : replace entity uuid with short id when we figure out to create the short ids for the entity
 #TODO : refactoring to do things python way.
-def submit(dbm,questionnaire_code,entity_uuid,answers,channel):
+def get_entity_id(dbm):
+    e = entity.Entity(dbm, entity_type=["Reporter"], location=['India', 'MH', 'Pune'])
+    return e.id
+
+
+def submit(dbm,questionnaire_code,answers,channel):
     assert isinstance(dbm, DatabaseManager)
     questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code= questionnaire_code)
     if questionnaire_document is None:
@@ -27,7 +33,8 @@ def submit(dbm,questionnaire_code,entity_uuid,answers,channel):
         if question is None:
             return None
     if questionnaire.validate():
-        entity_instance = entity.get(dbm, entity_uuid)
+        _entity_uuid = get_entity_id(dbm)
+        entity_instance = entity.get(dbm, _entity_uuid)
         if entity_instance is not None:
             data_record_id = datarecord.submit(dbm,entity_instance.id,answers,channel)[0]
             return data_record_id

@@ -21,7 +21,8 @@ class TestDataRecord(unittest.TestCase):
 
 
     def test_should_be_able_to_submit_datarecord_on_entity(self):
-        entity = datarecord.register(self.dbm,entity_type = "HNI.Reporter", data=[("First_Name", "Jeff",)], location= ["India", "Pune"], source="web")
+        entity = datarecord.register(self.dbm,entity_type = "HNI.Reporter", data=[("First_Name", "Jeff",)],
+                                     location= ["India", "Pune"], source="web")
         assert entity
         current_values = entity.values({"First_Name": "latest"})
         self.assertEquals("Jeff", current_values["First_Name"])

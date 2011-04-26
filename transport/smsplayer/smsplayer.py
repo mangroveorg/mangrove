@@ -18,4 +18,4 @@ def parse(dbm,text,entity_id):
         question_answer.remove(question_code)
         answer = "".join(question_answer)
         submission[question_code] = answer
-    return form_model.submit(dbm,questionnaire_code,entity_id,submission,"sms")
+    return form_model.submit(dbm,questionnaire_code,submission,"sms")

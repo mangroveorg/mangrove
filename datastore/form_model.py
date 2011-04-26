@@ -44,7 +44,7 @@ def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
 
 class FormModel(object):
 
-    def __init__(self, dbm, name = None, label = None,form_code = None,fields = None, entity_id = None, type=None,language="eng",_document = None):
+    def __init__(self, dbm, name = None, label = None,form_code = None,fields = None, entity_type_id = None, type=None,language="eng",_document = None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -55,7 +55,7 @@ class FormModel(object):
         entity_type may be a string (flat type) or sequence (hierarchical type)
         '''
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or (name and is_sequence(fields) and is_string(form_code) and form_code and is_string(entity_id) and entity_id and type)
+        assert _document is not None or (name and is_sequence(fields) and is_string(form_code) and form_code and is_string(entity_type_id) and entity_type_id and type)
         assert _document is None or isinstance(_document,FormModelDocument)
 
         self._dbm = dbm
@@ -70,7 +70,7 @@ class FormModel(object):
         self._doc.name=name
         self._doc.add_label(language,label)
         self._doc.form_code=form_code
-        self._doc.entity_id=entity_id
+        self._doc.entity_id=entity_type_id
         self._doc.type=type
         self._doc.active_languages=language
         for question in fields:

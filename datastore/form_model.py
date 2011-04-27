@@ -6,7 +6,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import get_entities_by_type
 from mangrove.datastore.field import field_attributes
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException
 from mangrove.utils.types import is_sequence, is_string
 
 def get(dbm, uuid):
@@ -25,9 +25,8 @@ def get_entity_question(dbm,form_code):
 
 #TODO : replace entity uuid with short id when we figure out to create the short ids for the entity
 #TODO : refactoring to do things python way.
-def get_entity_id(dbm):
-    e = entity.Entity(dbm, entity_type=["Reporter"], location=['India', 'MH', 'Pune'])
-    return e.id
+def get_entity_id(dbm,entity_instance_short_id):
+    return entity_instance_short_id
 
 
 def submit(dbm,questionnaire_code,answers,channel):
@@ -36,17 +35,23 @@ def submit(dbm,questionnaire_code,answers,channel):
     if questionnaire_document is None:
         raise FormModelDoesNotExistsException(questionnaire_code)
     questionnaire = FormModel(dbm, _document= questionnaire_document)
+
+    entity_question = get_entity_question(dbm,questionnaire_code)
+    entity_question_code = entity_question.get(field_attributes.FIELD_CODE)
+    if answers.get(entity_question_code):
+        entity_instance_short_id = answers.pop(entity_question_code)
+        entity_instance_id = get_entity_id(dbm,entity_instance_short_id)
+    else:
+        raise EntityQuestionCodeNotSubmitted()
+
     for answer in answers:
-        question = filter(lambda x:x.get('sms_code')==answer,questionnaire.fields)
-        if question is None:
-            return None
-# take the entity question
-        # Get the entity from the systm
+        question = filter(lambda x:x.get('question_code')==answer,questionnaire.fields)
+        if len(question) == 0:
+            raise FieldDoesNotExistsException(answer)
+        
     if questionnaire.validate():
-        _entity_uuid = get_entity_id(dbm)
-        entity_instance = entity.get(dbm, _entity_uuid)
-        if entity_instance is not None:
-            data_record_id = datarecord.submit(dbm,entity_instance.id,answers,channel)[0]
+        if entity_instance_id is not None:
+            data_record_id = datarecord.submit(dbm,entity_instance_id,answers,channel)[0]
             return data_record_id
     return None
 

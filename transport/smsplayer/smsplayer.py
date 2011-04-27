@@ -3,11 +3,11 @@ from mangrove.utils.types import is_not_empty, is_empty
 from mangrove.datastore import form_model
 
 
-def sumbit(dbm,text, from_number, to_number, entity_id):
-    assert is_not_empty(text) and is_not_empty(from_number) and is_not_empty(to_number) and is_not_empty(entity_id)
-    return parse(dbm,text,entity_id)
+def sumbit(dbm,text, from_number, to_number):
+    assert is_not_empty(text) and is_not_empty(from_number) and is_not_empty(to_number)
+    return parse(dbm,text)
 
-def parse(dbm,text,entity_id):
+def parse(dbm,text):
     messages = text.split("+")
     questionnaire_code=messages[0].strip()
     messages.remove(messages[0])

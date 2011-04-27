@@ -109,3 +109,9 @@ class TestFormModel(unittest.TestCase):
         with self.assertRaises(FormModelDoesNotExistsException) as ex:
             submit(self.dbm, "test", {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
 
+    def test_should_delete_all_questions(self):
+        form_model = get(self.dbm, self.form_model__id)
+        form_model.delete_all_questions()
+        form_model.save()
+        form_model = get(self.dbm, self.form_model__id)
+        self.assertEquals(len(form_model.fields), 0)

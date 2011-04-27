@@ -97,6 +97,8 @@ class FormModel(object):
         question_to_be_deleted = filter(lambda x:x[field_attributes.FIELD_CODE] == question_code, fields)[0]
         fields.remove(question_to_be_deleted)
 
+    def delete_all_questions(self):
+        self._doc.fields = []
 
     def add_language(self, language, label=None):
         self._doc.active_languages = language

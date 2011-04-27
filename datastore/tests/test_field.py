@@ -115,3 +115,16 @@ class TestQuestion(unittest.TestCase):
         question.add_or_edit_label(label="english label")
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
+
+    def test_should_add_entity_question(self):
+        expected_json = {
+            "defaultValue": "",
+            "label": {"eng": "What is your name"},
+            "name": "question1_Name",
+            "question_code": "Q1",
+            "type": "text",
+            "entity_question_flag": True
+        }
+        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",entity_question_flag=True)
+        actual_json = question._to_json()
+        self.assertEqual(actual_json, expected_json)

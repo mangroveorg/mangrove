@@ -12,6 +12,7 @@ class field_attributes(object):
     DATE_FIELD = 'date'
     MULTISELECT_FIELD = 'select'
     DEFAULT_LANGUAGE = "eng"
+    ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
 class Field(object):
     NAME = "name"
@@ -59,13 +60,14 @@ class IntegerField(Field):
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
+    ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-
-    def __init__(self, name, question_code, label, defaultValue=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, question_code, label, defaultValue=None, language=field_attributes.DEFAULT_LANGUAGE,entity_question_flag=False):
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, question_code=question_code,
                           label=label, language=language)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
-
+        if entity_question_flag:
+            self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
 class SelectField(Field):
     OPTIONS = "options"

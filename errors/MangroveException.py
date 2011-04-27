@@ -14,3 +14,11 @@ class EntityTypeAlreadyDefined(MangroveException):
 class FormModelDoesNotExistsException(MangroveException):
     def __init__(self,questionnaire_code):
         MangroveException.__init__(self,"The questionnaire with code %s does not exists"%questionnaire_code)
+
+class FieldDoesNotExistsException(MangroveException):
+    def __init__(self,field_code):
+        MangroveException.__init__(self,"The field with code %s does not exists"%field_code)
+
+class EntityQuestionCodeNotSubmitted(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self,"The submission does not contain entity question code")

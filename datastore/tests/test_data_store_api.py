@@ -24,6 +24,12 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertTrue(uuid)
         self.dbm.delete(e._doc)
 
+    def test_create_entity_with_id(self):
+        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"],id="-1000")
+        uuid = e.save()
+        self.assertEqual(uuid,"-1000")
+        self.dbm.delete(e._doc)
+
     def test_get_entity(self):
         e = get(self.dbm, self.uuid)
         self.assertTrue(e.id)

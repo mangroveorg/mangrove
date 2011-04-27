@@ -15,6 +15,14 @@ def get(dbm, uuid):
     q = FormModel(dbm, _document = questionnaire_doc)
     return q
 
+def get_entity_question(dbm,form_code):
+    assert isinstance(dbm, DatabaseManager)
+    form_model = _get_questionnaire_by_questionnaire_code(dbm,form_code)
+    fields = form_model.fields
+    entity_fields=filter(lambda x:x.get(field_attributes.ENTITY_QUESTION_FLAG)== True,fields)
+    return entity_fields[0] if len(entity_fields)==1 else None
+
+
 #TODO : replace entity uuid with short id when we figure out to create the short ids for the entity
 #TODO : refactoring to do things python way.
 def get_entity_id(dbm):
@@ -32,6 +40,8 @@ def submit(dbm,questionnaire_code,answers,channel):
         question = filter(lambda x:x.get('sms_code')==answer,questionnaire.fields)
         if question is None:
             return None
+# take the entity question
+        # Get the entity from the systm
     if questionnaire.validate():
         _entity_uuid = get_entity_id(dbm)
         entity_instance = entity.get(dbm, _entity_uuid)

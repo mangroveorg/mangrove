@@ -3,7 +3,7 @@
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import  define_type
-from mangrove.datastore.form_model import FormModel, get, submit, _get_questionnaire_by_questionnaire_code
+from mangrove.datastore.form_model import FormModel, get, submit, get_entity_question
 from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 
@@ -20,7 +20,7 @@ class TestFormModel(unittest.TestCase):
 
         self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
-                    question1, question2])
+                        question1, question2])
         self.form_model.add_question(question3)
         self.form_model__id = self.form_model.save()
 
@@ -102,10 +102,19 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
 
     def test_should_submission(self):
-        data_record_id = submit(self.dbm, self.form_model.form_code,{"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
+        data_record_id = submit(self.dbm, self.form_model.form_code, {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
         self.assertTrue(data_record_id)
 
     def test_should_raise_exception_if_form_model_does_not_exist(self):
         with self.assertRaises(FormModelDoesNotExistsException) as ex:
             submit(self.dbm, "test", {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
 
+    def test_should_get_entity_type_question(self):
+        form_model = get(self.dbm, self.form_model__id)
+        question = TextField(name="added_question", question_code="Q4", label="How are you",entity_question_flag=True)
+        form_model.add_question(question)
+        form_model.save()
+
+        entity_question = get_entity_question(self.dbm,"1")
+        self.assertEquals(entity_question.get(field_attributes.FIELD_CODE), "Q4")
+        self.assertEquals(entity_question.get(field_attributes.ENTITY_QUESTION_FLAG), True)

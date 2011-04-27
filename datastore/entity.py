@@ -97,6 +97,9 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     # if type is unspecified, then return all entities
     if type_path is not None:
+        # TODO: is the type field necessarily a heirarchy?
+        # if not, then this needs to perform a query for each type and then take the intersection
+        # of the result sets
         rows = dbm.load_all_rows_in_view('mangrove_views/by_type_geo', key=(type_path + geo_path))
         entities = [get(dbm, row.id) for row in rows]
 
@@ -281,6 +284,10 @@ class Entity(object):
     def get_all_data(self):
         rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
         return [row['value'] for row in rows]
+
+    def data_types(self):
+        '''Returns a list of each type of data that is stored on this entity.'''
+        pass
 
     def state(self):
         '''Returns a dictionary containing the current state of the entity.

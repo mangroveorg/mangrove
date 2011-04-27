@@ -47,9 +47,10 @@ def submit(dbm,questionnaire_code,answers,channel):
 
     for answer in answers:
         question = filter(lambda x:x.get('question_code')==answer,questionnaire.fields)
-        field_name_list.append((question[0].get(field_attributes.NAME),answers[answer]))
         if len(question) == 0:
             raise FieldDoesNotExistsException(answer)
+        else:
+            field_name_list.append((question[0].get(field_attributes.NAME),answers[answer]))
         
     if questionnaire.validate():
         if entity_instance_id is not None:

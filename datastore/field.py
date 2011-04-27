@@ -13,6 +13,7 @@ class field_attributes(object):
     MULTISELECT_FIELD = 'select'
     DEFAULT_LANGUAGE = "eng"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
+    NAME = "name"
 
 class Field(object):
     NAME = "name"

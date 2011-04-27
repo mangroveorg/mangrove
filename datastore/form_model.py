@@ -20,7 +20,7 @@ def get_entity_question(dbm,form_code):
     form_model = _get_questionnaire_by_questionnaire_code(dbm,form_code)
     fields = form_model.fields
     entity_fields=filter(lambda x:x.get(field_attributes.ENTITY_QUESTION_FLAG)== True,fields)
-    return entity_fields[0] if len(entity_fields)==1 else None
+    return entity_fields[0] if len(entity_fields) == 1 else None
 
 
 #TODO : replace entity uuid with short id when we figure out to create the short ids for the entity
@@ -31,6 +31,7 @@ def get_entity_id(dbm,entity_instance_short_id):
 
 def submit(dbm,questionnaire_code,answers,channel):
     assert isinstance(dbm, DatabaseManager)
+    field_name_list = []
     questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code= questionnaire_code)
     if questionnaire_document is None:
         raise FormModelDoesNotExistsException(questionnaire_code)
@@ -46,12 +47,13 @@ def submit(dbm,questionnaire_code,answers,channel):
 
     for answer in answers:
         question = filter(lambda x:x.get('question_code')==answer,questionnaire.fields)
+        field_name_list.append((question[0].get(field_attributes.NAME),answers[answer]))
         if len(question) == 0:
             raise FieldDoesNotExistsException(answer)
         
     if questionnaire.validate():
         if entity_instance_id is not None:
-            data_record_id = datarecord.submit(dbm,entity_instance_id,answers,channel)[0]
+            data_record_id = datarecord.submit(dbm,entity_instance_id,field_name_list,channel)[0]
             return data_record_id
     return None
 

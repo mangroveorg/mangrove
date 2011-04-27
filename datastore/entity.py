@@ -114,7 +114,7 @@ class Entity(object):
     Datarecords are always submitted/retrieved from an Entity.
     """
 
-    def __init__(self, dbm, entity_type = None,location=None, aggregation_paths = None, _document = None):
+    def __init__(self, dbm, entity_type = None,location=None, aggregation_paths = None, id=None,_document = None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -138,7 +138,7 @@ class Entity(object):
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = EntityDocument()
+        self._doc = EntityDocument(id)
 
         # add aggregation paths
         if entity_type is not None:

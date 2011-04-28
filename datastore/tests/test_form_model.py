@@ -81,7 +81,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_add_new_field(self):
         form_model = get(self.dbm, self.form_model__id)
         question = TextField(name="added_question", question_code="Q4", label="How are you")
-        form_model.add_question(question)
+        form_model.add_field(question)
         form_model.save()
 
         added_question = get(self.dbm, self.form_model__id).fields[4]
@@ -89,7 +89,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_delete_field(self):
         form_model = get(self.dbm, self.form_model__id)
-        form_model.delete_question(question_code="Q3")
+        form_model.delete_field(question_code="Q3")
         form_model.save()
         form_model = get(self.dbm, self.form_model__id)
         self.assertEquals(len(form_model.fields), 3)
@@ -121,7 +121,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_delete_all_fields(self):
         form_model = get(self.dbm, self.form_model__id)
-        form_model.delete_all_questions()
+        form_model.delete_all_fields()
         form_model.save()
         form_model = get(self.dbm, self.form_model__id)
         self.assertEquals(len(form_model.fields), 0)
@@ -139,13 +139,13 @@ class TestFormModel(unittest.TestCase):
         with self.assertRaises(EntityQuestionAlreadyExistsException):
             form_model = get(self.dbm, self.form_model__id)
             question = TextField(name="added_question", question_code="Q5", label="How are you",entity_question_flag=True)
-            form_model.add_question(question)
+            form_model.add_field(question)
             form_model.save()
 
     def test_should_raise_exception_if_question_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
             form_model = get(self.dbm, self.form_model__id)
             question = TextField(name="added_question", question_code="Q1",label="How are you")
-            form_model.add_question(question)
+            form_model.add_field(question)
             form_model.save()
 

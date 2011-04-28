@@ -104,8 +104,8 @@ class DataRecordDocument(DocumentBase):
         DocumentBase.__init__(self, id, 'DataRecord')
         self.submission_id = submission_id
         data_record = []
-        for dd_type, value in data:
-            data_record.append({'type': dd_type._doc.unwrap(), 'value': value})
+        for (dd_type, value, label) in data:
+            data_record.append({'type': dd_type._doc.unwrap(), 'value': value, 'label': label})
         self.data = data_record
         self.event_time = event_time
         
@@ -122,7 +122,7 @@ class DataDictDocument(DocumentBase):
     name = TextField()
     description = TextField()
 
-    def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None, description=None):
+    def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None, description=None, **kwargs):
         '''Create a new CouchDB document that represents a DataDictType'''
         DocumentBase.__init__(self, id, 'DataDict')
 
@@ -131,6 +131,7 @@ class DataDictDocument(DocumentBase):
         assert slug is None or is_string(slug)
         assert name is None or is_string(name)
         assert description is None or is_string(description)
+        # how to assert any kwargs?
 
         self.primitive_type = primitive_type
         if constraints is None:
@@ -140,6 +141,8 @@ class DataDictDocument(DocumentBase):
         self.slug = slug
         self.name = name
         self.description = description
+        for arg, value in kwargs.items():
+            self[arg] = value
 
 
 class SubmissionLogDocument(DocumentBase):

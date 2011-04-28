@@ -7,7 +7,7 @@ from time import mktime
 from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
-from datadict import DataDictType
+from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
@@ -210,7 +210,7 @@ class Entity(object):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
-        data -- a sequence of ordered pairs, (type, value) where type is a DataDictType
+        data -- a sequence of ordered tuples, (type, value, label) where type is a DataDictType
         submission_id -- an id to a 'submission' document in the submission log from which
                         this data came
         event_time -- the time at which the event occured rather than when it was reported
@@ -232,10 +232,10 @@ class Entity(object):
             event_time = utcnow()
 
         data_list = []
-        for (dd_type, value) in data:
+        for (dd_type, value, label) in data:
             if not isinstance(dd_type, DataDictType):
-                raise ValueError('Data must be of the form (type, value) where type is a DataDictType object.')
-            data_list.append((dd_type, value))
+                raise ValueError('Data must be of the form (type, value, label).')
+            data_list.append((dd_type, value, label))
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
                                              data=data_list, submission_id=submission_id)
@@ -269,13 +269,10 @@ class Entity(object):
         rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
         return [row['value']['_id'] for row in rows]
 
-    def get_all_data(self):
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
-        return [row['value'] for row in rows]
-
     def data_types(self):
         '''Returns a list of each type of data that is stored on this entity.'''
-        pass
+        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
+        return get_datadict_types(self._dbm, [row['value'] for row in rows])
 
     def state(self):
         '''Returns a dictionary containing the current state of the entity.

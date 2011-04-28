@@ -9,10 +9,14 @@ def get_datadict_type(dbm, uuid):
     datadict_doc = dbm.load(uuid, DataDictDocument)
     return DataDictType(dbm, _document = datadict_doc)
 
+def get_datadict_types(dbm, uuids):
+    return [ get_datadict_type(dbm, i) for i in uuids ]
+
 class DataDictType(object):
     '''DataDict is an abstraction that stores named data types and constraints .'''
 
-    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, constraints=None, id=None, _document=None):
+    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
+                 constraints=None, id=None, _document=None, **kwargs):
         '''Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
@@ -24,6 +28,7 @@ class DataDictType(object):
         assert _document is not None or description is None or is_string(description)
         assert _document is not None or constraints is None or isinstance(constraints, dict)
         assert _document is None or isinstance(_document, DataDictDocument)
+        # how to assert any kwargs?
 
         self._dbm = dbm
 
@@ -33,7 +38,7 @@ class DataDictType(object):
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = DataDictDocument(id, primitive_type, constraints, slug, name, description)
+        self._doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, **kwargs)
 
     def save(self):
         return self._dbm.save(self._doc).id

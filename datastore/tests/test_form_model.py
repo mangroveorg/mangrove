@@ -5,7 +5,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 from mangrove.datastore.entity import  define_type
 from mangrove.datastore.form_model import FormModel, get, submit, get_entity_question
 from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException, EntityQuestionAllreadyExistsException, QuestionCodeAlreadyExistsException
 import mangrove.datastore.datarecord as datarecord
 
 class TestFormModel(unittest.TestCase):
@@ -134,4 +134,18 @@ class TestFormModel(unittest.TestCase):
         with self.assertRaises(FieldDoesNotExistsException):
             submit(self.dbm, self.form_model.form_code, {"ID": self.entity_instance.id, "Q1": "Ans1", "Q5": "Ans2"},
                    "SMS")
+
+    def test_should_raise_exception_if_entity_question_all_ready_exist(self):
+        with self.assertRaises(EntityQuestionAllreadyExistsException):
+            form_model = get(self.dbm, self.form_model__id)
+            question = TextField(name="added_question", question_code="Q5", label="How are you",entity_question_flag=True)
+            form_model.add_question(question)
+            form_model.save()
+
+    def test_should_raise_exception_if_question_code_is_not_unique(self):
+        with self.assertRaises(QuestionCodeAlreadyExistsException):
+            form_model = get(self.dbm, self.form_model__id)
+            question = TextField(name="added_question", question_code="Q1",label="How are you")
+            form_model.add_question(question)
+            form_model.save()
 

@@ -6,7 +6,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import get_entities_by_type
 from mangrove.datastore.field import field_attributes
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException, EntityQuestionAllreadyExistsException, QuestionCodeAlreadyExistsException
 from mangrove.utils.types import is_sequence, is_string
 
 def get(dbm, uuid):
@@ -105,8 +105,18 @@ class FormModel(object):
         return True
 
     def save(self):
+        #Validate only 1 entity q is there
+        entity_question_list=filter(lambda x:x.get("entity_question_flag")==True,self.fields)
+        if len(entity_question_list)>1:
+            raise EntityQuestionAllreadyExistsException("Entity Question already exists")
+
+        #Validate all question codes are unique
+        code_list=[code["question_code"] for code in self.fields]
+        code_list_without_duplicates=list(set(code_list))
+        if len(code_list)!=len(code_list_without_duplicates):
+            raise QuestionCodeAlreadyExistsException("All question codes must be unique")
         return self._dbm.save(self._doc).id
-    
+
     def add_question(self,question_to_be_added):
         return self._doc.fields.append(question_to_be_added._to_json())
 

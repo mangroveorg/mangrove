@@ -7,6 +7,7 @@ from time import mktime
 from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
+from datadict import DataDictType
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
@@ -117,7 +118,7 @@ class Entity(object):
     Datarecords are always submitted/retrieved from an Entity.
     """
 
-    def __init__(self, dbm, entity_type = None,location=None, aggregation_paths = None, id=None,_document = None):
+    def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None, id=None, _document=None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -160,8 +161,6 @@ class Entity(object):
                 self.set_aggregation_path(name, aggregation_paths[name])
 
         # TODO: why should Entities just be saved on init??
-
-
 
     def save(self):
         return self._dbm.save(self._doc).id
@@ -211,8 +210,7 @@ class Entity(object):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
-        data -- a sequence of n-tuples in form of (key, value, <optional type>)
-                e.g. [('name','bob','string'), ('age',20,'numeric')]
+        data -- a sequence of ordered pairs, (type, value) where type is a DataDictType
         submission_id -- an id to a 'submission' document in the submission log from which
                         this data came
         event_time -- the time at which the event occured rather than when it was reported
@@ -220,16 +218,10 @@ class Entity(object):
         This is stored in couch as:
             submission_id = "..."
             event_time = "..."
-            attributes: {
-                            'name': {
-                                'value': 'bob',
-                                'type': 'string'
-                            },
-                            'age': {
-                                'value': '20',
-                                'type': 'numeric'
-                            },
-                        }
+            data: [
+                            { 'type': <DataDictDocument>,'value': x},
+                            ...
+                        ]
         '''
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
@@ -238,19 +230,15 @@ class Entity(object):
         # records for an Entity that may never be saved? Should docs just be saved on init?
         if event_time is None:
             event_time = utcnow()
-            
-        data_dict = {}
-        for d in data:
-            if len(d)<2 or len(d)>3:
-                raise ValueError('data for a data record must be tuple of (name, value) or triple of (name,value,type)')
 
-            name = d[0]
-            value = d[1]
-            typ = d[2] if len(d)==3 else primitive_type(value)
-            data_dict[name] = { 'value': value, 'type': typ }
+        data_list = []
+        for (dd_type, value) in data:
+            if not isinstance(dd_type, DataDictType):
+                raise ValueError('Data must be of the form (type, value) where type is a DataDictType object.')
+            data_list.append((dd_type, value))
 
-        data_record_doc = DataRecordDocument(entity_doc = self._doc, event_time = event_time,
-                                             data = data_dict, submission_id = submission_id)
+        data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
+                                             data=data_list, submission_id=submission_id)
         return self._dbm.save(data_record_doc).id
 
     def invalidate_data(self, uid):

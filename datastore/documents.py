@@ -1,11 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import couchdb
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, Mapping
 import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.types import is_sequence
+from mangrove.utils.types import is_sequence, is_string
 from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 class attributes(object):
@@ -93,7 +94,7 @@ class DataRecordDocument(DocumentBase):
         A schema for the data_record is enforced here.
     """
     # data = RawField()
-    data = DictField()
+    data = ListField(DictField())
     entity_backing_field = DictField()
     submission_id = TextField()
     event_time =  TZAwareDateTimeField()
@@ -102,11 +103,43 @@ class DataRecordDocument(DocumentBase):
         assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
         self.submission_id = submission_id
-        self.data = data
+        data_record = []
+        for dd_type, value in data:
+            data_record.append({'type': dd_type._doc.unwrap(), 'value': value})
+        self.data = data_record
         self.event_time = event_time
         
         if entity_doc:
             self.entity_backing_field = entity_doc.unwrap()
+
+
+class DataDictDocument(DocumentBase):
+    '''The CouchDB data dictionary document.'''
+
+    primitive_type = TextField()
+    constraints = DictField()
+    slug = TextField()
+    name = TextField()
+    description = TextField()
+
+    def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None, description=None):
+        '''Create a new CouchDB document that represents a DataDictType'''
+        DocumentBase.__init__(self, id, 'DataDict')
+
+        assert primitive_type is None or is_string(primitive_type)
+        assert constraints is None or isinstance(constraints, dict)
+        assert slug is None or is_string(slug)
+        assert name is None or is_string(name)
+        assert description is None or is_string(description)
+
+        self.primitive_type = primitive_type
+        if constraints is None:
+            self.constraints = {}
+        else:
+            self.constraints = constraints
+        self.slug = slug
+        self.name = name
+        self.description = description
 
 
 class SubmissionLogDocument(DocumentBase):

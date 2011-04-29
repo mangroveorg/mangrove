@@ -1,9 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.errors.MangroveException import NumberNotRegisteredException
 from mangrove.utils.types import is_not_empty, is_empty
-from mangrove.datastore import form_model
 from mangrove.datastore import entity
 from mangrove.datastore import datarecord
+from mangrove.datastore import submission_api
 
 def submit(dbm,text, from_number, to_number):
     assert is_not_empty(text) and is_not_empty(from_number) and is_not_empty(to_number)
@@ -21,7 +21,7 @@ def parse(dbm,text):
         question_answer.remove(question_code)
         answer = "".join(question_answer)
         submission[question_code] = answer
-    return form_model.submit(dbm,questionnaire_code,submission,"sms")
+    return submission_api.submit(dbm,questionnaire_code,submission,"sms")
 
 def check_reporter_is_registered(dbm, from_number):
     reporter_list = entity.get_entities_by_type(dbm, "Reporter")

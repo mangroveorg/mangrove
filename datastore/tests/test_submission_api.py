@@ -2,10 +2,10 @@ import unittest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import define_type
 from mangrove.datastore.field import SelectField, IntegerField, TextField
-from mangrove.datastore.form_model import FormModel
 from mangrove.datastore.submission_api import submit
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException
+from mangrove.form_model.form_model import FormModel
 
 class TestSubmissionAPI(unittest.TestCase):
     def setUp(self):
@@ -25,7 +25,7 @@ class TestSubmissionAPI(unittest.TestCase):
         self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
                     question1, question2, question3])
-        self.form_model.add_question(question4)
+        self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):

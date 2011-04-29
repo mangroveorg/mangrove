@@ -3,8 +3,8 @@ import unittest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager, remove_db_manager
 from mangrove.datastore.entity import define_type
 from mangrove.datastore.field import SelectField, IntegerField, TextField
-from mangrove.datastore.form_model import FormModel
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, FieldDoesNotExistsException, NumberNotRegisteredException, NumberNotRegisteredException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, FieldDoesNotExistsException, NumberNotRegisteredException
+from mangrove.form_model.form_model import FormModel
 import smsplayer
 import mangrove.datastore.datarecord as datarecord
 
@@ -28,13 +28,13 @@ class TestSmsPlayer(unittest.TestCase):
 
         self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
-                        question1, question2,question3])
+                    question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
-        datarecord.register(self.dbm,entity_type=["Reporter"], data=[("telephone_number",1234567)], location=[],
-                                                  source="sms")
-        datarecord.register(self.dbm,entity_type=["Reporter"], data=[("telephone_number",12345)], location=[],
-                                                  source="sms")
+        datarecord.register(self.dbm, entity_type=["Reporter"], data=[("telephone_number", 1234567)], location=[],
+                            source="sms")
+        datarecord.register(self.dbm, entity_type=["Reporter"], data=[("telephone_number", 12345)], location=[],
+                            source="sms")
 
     def tearDown(self):
         del self.dbm.database[self.form_model__id]
@@ -43,12 +43,12 @@ class TestSmsPlayer(unittest.TestCase):
 
 
     def test_should_submit_sms(self):
-        text = "1 +ID %s +Q1 akshay +Q2 50 +Q3 2 "%self.entity_instance.id
+        text = "1 +ID %s +Q1 akshay +Q2 50 +Q3 2 " % self.entity_instance.id
         submission_id = smsplayer.submit(dbm=self.dbm, text=text, from_number=1234567, to_number=12345)
         self.assertIsNotNone(submission_id)
 
     def test_should_reject_if_questionnaire_does_not_exist(self):
-        text = "2 +ID %s +Q1 akshay +Q2 50 +Q3 2 "%self.entity_instance.id
+        text = "2 +ID %s +Q1 akshay +Q2 50 +Q3 2 " % self.entity_instance.id
         message = ""
         try:
             smsplayer.submit(dbm=self.dbm, text=text, from_number=1234567, to_number=12345)
@@ -57,15 +57,16 @@ class TestSmsPlayer(unittest.TestCase):
         self.assertEquals(message, "The questionnaire with code 2 does not exists")
 
     def test_should_reject_if_question_does_not_exist(self):
-        text = "1 +ID %s +Q1 akshay +Non_existing_Question 50 +Q3 2"%self.entity_instance.id
+        text = "1 +ID %s +Q1 akshay +Non_existing_Question 50 +Q3 2" % self.entity_instance.id
         message = ""
         try:
-            smsplayer.submit(dbm=self.dbm,text=text,from_number=12345,to_number=12345)
+            smsplayer.submit(dbm=self.dbm, text=text, from_number=12345, to_number=12345)
         except FieldDoesNotExistsException as ex:
             message = ex.message
-        self.assertEquals(message,"The field with code Non_existing_Question does not exists")
+        self.assertEquals(message, "The field with code Non_existing_Question does not exists")
 
     def test_should_reject_if_from_number_not_registered(self):
-        text = "1 +ID %s +Q1 akshay +Q2 50 +Q3 2"%self.entity_instance.id
+        text = "1 +ID %s +Q1 akshay +Q2 50 +Q3 2" % self.entity_instance.id
         with self.assertRaises(NumberNotRegisteredException):
-            smsplayer.submit(self.dbm,text,23456,1234)
+            smsplayer.submit(self.dbm, text, 23456, 1234)
+

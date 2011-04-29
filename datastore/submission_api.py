@@ -1,8 +1,8 @@
 import datarecord
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.field import field_attributes
-from mangrove.datastore.form_model import get_questionnaire, get_entity_question_code
 from mangrove.errors.MangroveException import FieldDoesNotExistsException, EntityQuestionCodeNotSubmitted
+from mangrove.form_model.form_model import get_questionnaire, get_entity_question_code
 
 
 def _get_entity_id(dbm, entity_instance_short_id):
@@ -20,6 +20,7 @@ def _get_entity_instance_id(answers, dbm, entity_question_code):
 
 def submit(dbm, questionnaire_code, answers, channel):
     assert isinstance(dbm, DatabaseManager)
+
     assert answers and channel and questionnaire_code
 
     field_name_list = []

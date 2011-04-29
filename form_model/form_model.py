@@ -16,7 +16,7 @@ def get_entity_question(dbm, form_code):
     assert isinstance(dbm, DatabaseManager)
     form_model = _get_questionnaire_by_questionnaire_code(dbm, form_code)
     fields = form_model.fields
-    entity_fields = filter(lambda x:x.get(field_attributes.ENTITY_QUESTION_FLAG) == True, fields)
+    entity_fields = [x for x in fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
     return entity_fields[0] if len(entity_fields) == 1 else None
 
 
@@ -37,14 +37,14 @@ def get_entity_field(dbm,form_code):
     assert isinstance(dbm, DatabaseManager)
     form_model = _get_form_model_by_form_model_code(dbm,form_code)
     fields = form_model.fields
-    entity_fields=filter(lambda x:x.get(field_attributes.ENTITY_QUESTION_FLAG)== True,fields)
+    entity_fields=[x for x in fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
     return entity_fields[0] if len(entity_fields) == 1 else None
 
 def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(questionnaire_code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
-    if len(rows) == 0:
+    if not len(rows):
         return None
     questionnaire_id = rows[0]['value']['_id']
     return dbm.load(questionnaire_id, FormModelDocument)
@@ -53,10 +53,13 @@ def _get_form_model_by_form_model_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(questionnaire_code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
-    if len(rows) == 0:
+    if not len(rows):
         return None
     questionnaire_id = rows[0]['value']['_id']
     return dbm.load(questionnaire_id, FormModelDocument)
+
+
+
 
 class FormModel(object):
 
@@ -90,31 +93,43 @@ class FormModel(object):
         self._doc.type=type
         self._doc.active_languages=language
         for question in fields:
-            self._doc.fields.append(question._to_json())
+            self.add_field(question)
 
     def validate(self):
+        self.validate_fields()
         return True
 
-    def save(self):
-        #Validate only 1 entity q is there
-        entity_question_list=filter(lambda x:x.get("entity_question_flag")==True,self.fields)
+    def validate_fields(self):
+        self.validate_existence_of_only_one_entity_question()
+        self.validate_uniqueness_of_question_codes()
+        return True
+
+    def validate_uniqueness_of_question_codes(self):
+        """ Validate all question codes are unique
+        """
+        code_list = [code["question_code"] for code in self.fields]
+        code_list_without_duplicates = list(set(code_list))
+        if len(code_list) != len(code_list_without_duplicates):
+            raise QuestionCodeAlreadyExistsException("All question codes must be unique")
+
+    def validate_existence_of_only_one_entity_question(self):
+        """Validate only 1 entity question is there
+        """
+        entity_question_list= [x for x in self.fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
         if len(entity_question_list)>1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 
-        #Validate all question codes are unique
-        code_list=[code["question_code"] for code in self.fields]
-        code_list_without_duplicates=list(set(code_list))
-        if len(code_list)!=len(code_list_without_duplicates):
-            raise QuestionCodeAlreadyExistsException("All question codes must be unique")
-
+    def save(self):
         return self._dbm.save(self._doc).id
 
     def add_field(self,question_to_be_added):
-        return self._doc.fields.append(question_to_be_added._to_json())
+        self._doc.fields.append(question_to_be_added._to_json())
+        self.validate_fields()
+        return self.fields
 
     def delete_field(self,question_code):
         fields = self._doc.fields
-        question_to_be_deleted = filter(lambda x:x[field_attributes.FIELD_CODE] == question_code, fields)[0]
+        question_to_be_deleted = [x for x in fields if x[field_attributes.FIELD_CODE]==question_code][0]
         fields.remove(question_to_be_deleted)
 
     def delete_all_fields(self):

@@ -32,7 +32,7 @@ def submit(dbm, questionnaire_code, answers, channel):
 
     for answer in answers:
         question = filter(lambda x:x.get('question_code') == answer, questionnaire.fields)
-        if len(question) == 0:
+        if not len(question):
             raise FieldDoesNotExistsException(answer)
         else:
             field_name_list.append((question[0].get(field_attributes.NAME), answers[answer]))

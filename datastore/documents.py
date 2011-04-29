@@ -89,7 +89,9 @@ class EntityDocument(DocumentBase):
 
 class DataRecordDocument(DocumentBase):
     """
-        The couch data_record document. It abstracts out the couch related functionality and inherits from the Document class of couchdb-python.
+        The couch data_record document. It abstracts out the couch related functionality and inherits from the Document
+        class of couchdb-python.
+
         A schema for the data_record is enforced here.
     """
     # data = RawField()
@@ -158,10 +160,10 @@ class FormModelDocument(DocumentBase):
         return self.metadata.get(attributes.ACTIVE_LANGUAGES)
 
     @active_languages.setter
-    def active_languages(self,langauge):
-        active_langauges = self.metadata[attributes.ACTIVE_LANGUAGES]
-        if not filter(lambda x:x==langauge, active_langauges):
-            active_langauges.append(langauge)
+    def active_languages(self,language):
+        active_languages = self.metadata[attributes.ACTIVE_LANGUAGES]
+        if not filter(lambda x:x==language, active_languages):
+            active_languages.append(language)
 
     def add_label(self,language,label):
         self.label[language]=label

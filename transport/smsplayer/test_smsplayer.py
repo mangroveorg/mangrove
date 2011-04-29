@@ -15,6 +15,7 @@ class TestSmsPlayer(unittest.TestCase):
         remove_db_manager(self.dbm)
         self.dbm = get_db_manager(database='mangrove-test')
         self.entity = define_type(self.dbm, ["HealthFacility", "Clinic"])
+        self.reporter = define_type(self.dbm, ["Reporter"])
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                                    data=[("Name", "Ruby",)], location=["India", "Pune"], source="sms")
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
@@ -31,7 +32,7 @@ class TestSmsPlayer(unittest.TestCase):
                     question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
-        datarecord.register(self.dbm, entity_type=["Reporter"], data=[("telephone_number", 1234567)], location=[],
+        datarecord.register(self.dbm, entity_type=["Reporter"], data=[("telephone_number", 1234567),("first_name","Test_reporter")], location=[],
                             source="sms")
         datarecord.register(self.dbm, entity_type=["Reporter"], data=[("telephone_number", 12345)], location=[],
                             source="sms")
@@ -70,3 +71,8 @@ class TestSmsPlayer(unittest.TestCase):
         with self.assertRaises(NumberNotRegisteredException):
             smsplayer.submit(self.dbm, text, 23456, 1234)
 
+    def test_should_return_from_reporter(self):
+        from_reporter = smsplayer.get_from_reporter(self.dbm,1234567)
+        print from_reporter
+        self.assertEquals("Test_reporter",from_reporter["first_name"])
+#        self.assertTrue(False)

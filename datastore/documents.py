@@ -137,9 +137,6 @@ class EntityTypeDocument(DocumentBase):
         DocumentBase.__init__(self, document_type = 'EntityType', id = ".".join([v for v in name_]))
         self.name = name_
 
-
-
-
         
 class FormModelDocument(DocumentBase):
     metadata=DictField()
@@ -157,7 +154,7 @@ class FormModelDocument(DocumentBase):
 
     @property
     def active_languages(self):
-        return self.metadata.get(attributes.ACTIVE_LANGUAGES)
+        return self.metadata[attributes.ACTIVE_LANGUAGES]
 
     @active_languages.setter
     def active_languages(self,language):

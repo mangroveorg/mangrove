@@ -8,7 +8,7 @@ from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.documents import EntityTypeDocument
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, EntityInstanceDoesNotExistsException
 from mangrove.utils.types import is_empty
 from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow
@@ -38,7 +38,10 @@ def define_type(dbm,entity_type):
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
     entity_doc = dbm.load(uuid, EntityDocument)
-    return Entity(dbm, _document = entity_doc)
+    if entity_doc is not None:
+        return Entity(dbm, _document = entity_doc)
+    else:
+        raise EntityInstanceDoesNotExistsException("Entity with id %s does not exist"%uuid)
 
 def get_entities(dbm, uuids):
     return [ get(dbm, i) for i in uuids ]

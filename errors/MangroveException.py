@@ -31,3 +31,6 @@ class QuestionCodeAlreadyExistsException(MangroveException):
 
 class NumberNotRegisteredException(MangroveException):
     pass
+
+class EntityInstanceDoesNotExistsException(MangroveException):
+    pass

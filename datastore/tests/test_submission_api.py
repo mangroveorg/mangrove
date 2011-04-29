@@ -4,7 +4,7 @@ from mangrove.datastore.entity import define_type
 from mangrove.datastore.field import SelectField, IntegerField, TextField
 from mangrove.datastore.submission_api import submit
 from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionCodeNotSubmitted, FieldDoesNotExistsException, EntityInstanceDoesNotExistsException
 from mangrove.form_model.form_model import FormModel
 
 class TestSubmissionAPI(unittest.TestCase):
@@ -51,3 +51,11 @@ class TestSubmissionAPI(unittest.TestCase):
         with self.assertRaises(FieldDoesNotExistsException):
             submit(self.dbm, self.form_model.form_code, {"ID": self.entity_instance.id, "Q1": "Ans1", "Q5": "Ans2"},
                    "SMS")
+
+    def test_should_raise_exception_if_entity_does_not_exist(self):
+        message = ""
+        try:
+            submit(self.dbm,self.form_model.form_code,{"ID": "700", "Q1": "Ans1", "Q2": "Ans2"},"SMS")
+        except EntityInstanceDoesNotExistsException as ex:
+            message = ex.message
+        self.assertEquals(message,"Entity with id 700 does not exist")

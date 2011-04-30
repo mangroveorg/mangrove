@@ -20,7 +20,7 @@ class TestDataRecord(unittest.TestCase):
         assert submission_ids[1]
 
 
-    def test_should_be_able_to_submit_datarecord_on_entity(self):
+    def test_should_be_able_to_register_an_entity(self):
         entity = datarecord.register(self.dbm,entity_type = "HNI.Reporter", data=[("First_Name", "Jeff",)],
                                      location= ["India", "Pune"], source="web")
         assert entity

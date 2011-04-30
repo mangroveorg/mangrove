@@ -40,3 +40,9 @@ def get_from_reporter(dbm,from_number):
     if len(from_reporter_list) != 1:
         raise NumberNotRegisteredException("Sorry, This number is not registered with us")
     return from_reporter_list[0]
+
+
+class SMSPlayer(object):
+    def __init__(self, dbm):
+        self.dbm = dbm
+

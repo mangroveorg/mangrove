@@ -1,5 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-#TODO: Please Read Readme.rst of errors beafore defining any new exception
+#TODO: Please Read Readme.rst of errors before defining any new exception
 
 class MangroveException(Exception):
     def __init__(self, message):

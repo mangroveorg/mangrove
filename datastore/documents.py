@@ -118,12 +118,18 @@ class SubmissionLogDocument(DocumentBase):
     
     submitted_on = TZAwareDateTimeField()
     source = TextField()
+    destination = TextField()
+    channel = TextField()
+    message = TextField()
 
-    def __init__(self, source, id=None):
+    def __init__(self, source, channel = None,destination = None,message = None, id=None):
         assert isinstance(source, str)
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
+        self.channel = channel
+        self.destination = destination
+        self.message = message
 
 
 class EntityTypeDocument(DocumentBase):

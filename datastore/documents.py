@@ -104,8 +104,9 @@ class DataRecordDocument(DocumentBase):
         DocumentBase.__init__(self, id, 'DataRecord')
         self.submission_id = submission_id
         data_record = []
-        for (dd_type, value, label) in data:
-            data_record.append({'type': dd_type._doc.unwrap(), 'value': value, 'label': label})
+        if data is not None:
+            for (dd_type, value, label) in data:
+                data_record.append({'type': dd_type._doc.unwrap(), 'value': value, 'label': label})
         self.data = data_record
         self.event_time = event_time
         

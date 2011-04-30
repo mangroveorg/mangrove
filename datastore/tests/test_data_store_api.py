@@ -4,6 +4,7 @@ from datetime import datetime
 from mangrove.datastore.entity import Entity, get, get_entities, define_type
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
+from mangrove.datastore.datadict import DataDictType
 from pytz import UTC
 import unittest
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
@@ -116,8 +117,14 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_add_data_record_to_entity(self):
         clinic_entity, reporter = self._create_clinic_and_reporter()
-        data_record = [("medicines", 20), ("doctor", "aroj"), ('facility', 'clinic', 'facility_type'),
-                       ('opened_on', datetime(2011,01,02, tzinfo = UTC)),("govt_ref_num","")]
+        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number', description='Number of medications')
+        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string', description='Name of doctor')
+        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string', description='Name of facility')
+        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime', description='Date of opening')
+        data_record = [(med_type, 20, 'meds'),
+                       (doctor_type, "aroj", 'doc'),
+                       (facility_type, 'clinic', 'facility'),
+                       (opened_type, datetime(2011,01,02, tzinfo = UTC),'opened_on')]
         data_record_id = clinic_entity.add_data(data = data_record,
                                                 event_time = datetime(2011,01,02, tzinfo = UTC),
                                                 submission_id = "123456")
@@ -125,11 +132,10 @@ class TestDataStoreApi(unittest.TestCase):
 
         # Assert the saved document structure is as expected
         saved = self.dbm.load(data_record_id, document_class=DataRecordDocument)
-        self.assertEqual(saved.data['medicines']['value'], 20)
+        for data in data_record:
+            self.assertTrue(data in saved.data)
         self.assertEqual(saved.event_time,datetime(2011,01,02, tzinfo = UTC))
         self.assertEqual(saved.submission_id,"123456")
-        self.assertEqual(saved.data['opened_on']['value'],datetime(2011,01,02, tzinfo = UTC))
-        self.assertEqual(saved.data['govt_ref_num']['value'],"")
 
         self.dbm.delete(clinic_entity._doc)
         self.dbm.delete(saved)
@@ -149,7 +155,9 @@ class TestDataStoreApi(unittest.TestCase):
     def test_invalidate_data(self):
         e = Entity(self.dbm, entity_type='store', location=['nyc'])
         e.save()
-        data = e.add_data([("apples", 20), ("oranges", 30)])
+        apple_type = DataDictType(self.dbm, name='Apples', slug='apples', primitive_type='number')
+        orange_type = DataDictType(self.dbm, name='Oranges', slug='oranges', primitive_type='number')
+        data = e.add_data([(apple_type, 20, 'apples'), (orange_type, 30, 'oranges')])
         valid_doc = self.dbm.load(data)
         self.assertFalse(valid_doc.void)
         e.invalidate_data(data)
@@ -160,9 +168,11 @@ class TestDataStoreApi(unittest.TestCase):
         e = Entity(self.dbm, entity_type='store', location=['nyc'])
         e.save()
         self.assertFalse(e._doc.void)
+        apple_type = DataDictType(self.dbm, name='Apples', slug='apples', primitive_type='number')
+        orange_type = DataDictType(self.dbm, name='Oranges', slug='oranges', primitive_type='number')
         data = [
-                [("apples", 20), ("oranges", 30)],
-                [("strawberries", 10), ("bananas", 20)]
+                [(apple_type, 20, 'apples'), (orange_type, 30, 'oranges')],
+                [(apple_type, 10, 'apples'), (orange_type, 20, 'oranges')]
         ]
         data_ids = []
         for d in data:

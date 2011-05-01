@@ -31,5 +31,6 @@ class TestSubmissions(TestCase):
         self.assertEquals(request.destination,submission_log.destination)
 
 #test_get_player
-    
+#test_authorize
+
 

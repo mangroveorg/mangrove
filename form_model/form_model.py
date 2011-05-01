@@ -127,9 +127,12 @@ class FormModel(object):
         self.validate_fields()
         return self.fields
 
+    def _find_question(self, question_code):
+        return [x for x in self._doc.fields if x[field_attributes.FIELD_CODE] == question_code][0]
+
     def delete_field(self,question_code):
         fields = self._doc.fields
-        question_to_be_deleted = [x for x in fields if x[field_attributes.FIELD_CODE]==question_code][0]
+        question_to_be_deleted = self._find_question(question_code)
         fields.remove(question_to_be_deleted)
 
     def delete_all_fields(self):
@@ -172,3 +175,22 @@ class FormModel(object):
     def activeLanguages(self):
         return self._doc.active_languages
 
+class FormSubmission(object):
+    def __init__(self,form_model, answers):
+        result = {}
+        entity_id = None
+        for field,answer in answers.items():
+            form_field = form_model._find_question(field)
+            if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
+                entity_id = answer
+            else:
+                result[field] = self._parse_field(form_field,answer)
+        self.entity_id = entity_id
+        self.form_code = form_model.form_code
+        self.values = result
+
+    def _parse_field(self, form_field, answer):
+        if form_field.get("type") == field_attributes.INTEGER_FIELD:
+            return int(answer)
+        else:
+            return answer

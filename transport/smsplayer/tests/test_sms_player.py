@@ -10,3 +10,12 @@ class TestSMSPlayer(TestCase):
         dbm = Mock(spec = DatabaseManager)
         request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
         s = SMSPlayer(dbm)
+
+    def test_should_parse_form_code_from_sms(self):
+        pass
+
+    def test_should_parse_answer_dict_from_sms(self):
+        pass
+
+    def test_should_parse_answer_list_from_sms(self):
+        pass

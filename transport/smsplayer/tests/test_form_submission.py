@@ -10,9 +10,9 @@ class TestFormSubmission(TestCase):
         dbm = Mock(spec = DatabaseManager)
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
-        question2 = TextField(name="question1_Name", question_code="NAME", label="Clinic Name",
+        question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                           defaultValue="some default value", language="eng")
-        question3 = IntegerField(name="Father's age", question_code="ARV", label="ARV Stock",
+        question3 = IntegerField(name="Arv Stock", question_code="ARV", label="ARV Stock",
                              range={"min": 15, "max": 120})
 
         form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
@@ -23,5 +23,5 @@ class TestFormSubmission(TestCase):
 
         f = FormSubmission(form_model,answers)
 
-        self.assertEqual({"NAME" : "My name", "ARV" : 10},f.values)
+        self.assertEqual({"Name" : "My name", "Arv Stock" : 10},f.values)
 

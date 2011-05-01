@@ -21,9 +21,9 @@ class TestShouldSaveSMSSubmission(TestCase):
                             source="sms")
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
-        question2 = TextField(name="question1_Name", question_code="NAME", label="Clinic Name",
+        question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng")
-        question3 = IntegerField(name="Father's age", question_code="ARV", label="ARV Stock",
+        question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
                                  range={"min": 15, "max": 120})
         question4 = SelectField(name="Color", question_code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)])
@@ -47,8 +47,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         response = s.accept(Request("sms",text,"1234","5678"))
 
         self.assertTrue(response.success)
-        data = self.entity.values({"NAME": "latest", "ARV": "latest", "COL": "latest"})
-        print data
-        self.assertEquals(data["NAME"],"CLINIC-MADA")
-        self.assertEquals(data["ARV"],50)
-        self.assertEquals(data["COL"],"RED")
+        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
+        self.assertEquals(data["Name"],"CLINIC-MADA")
+        self.assertEquals(data["Arv stock"],50)
+        self.assertEquals(data["Color"],"RED")

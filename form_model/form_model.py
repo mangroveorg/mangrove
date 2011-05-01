@@ -189,6 +189,10 @@ class FormSubmission(object):
         self.form_code = form_model.form_code
         self.values = result
 
+    def is_valid(self):
+        self.errors = False
+        return True
+
     def _parse_field(self, form_field, answer):
         if form_field.get("type") == field_attributes.INTEGER_FIELD:
             return int(answer)

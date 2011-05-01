@@ -48,7 +48,8 @@ class TestFormSubmission(TestCase):
         form_submission = FormSubmission(form_model,answers)
         self.assertEqual(form_submission.values,{ "Q1" : "My Name", "Q2" : 40, "Q3" : "RED"})
 
-
+    def test_should_apply_validations(self):
+        pass
 #        Write negative scenarios
 #        Write is_valid scenarios
 

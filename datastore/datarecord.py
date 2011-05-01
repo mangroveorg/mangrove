@@ -6,6 +6,9 @@ import entity
 from ..utils.types import is_sequence
 from ..utils.dates import utcnow
 
+
+
+
 def register(manager,entity_type, data, location, source, aggregation_paths = None):
 #    manager = get_db_manager()
     e = Entity(manager, entity_type= entity_type, location= location, aggregation_paths = aggregation_paths)

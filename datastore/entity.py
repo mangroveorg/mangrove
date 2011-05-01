@@ -35,6 +35,10 @@ def define_type(dbm,entity_type):
         raise EntityTypeAlreadyDefined(message="This type is already defined")
     return e
 
+#Delegating to get by uuid for now.
+def get_by_short_code(dbm, short_code):
+    return get(dbm, short_code)
+
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
     entity_doc = dbm.load(uuid, EntityDocument)

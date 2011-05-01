@@ -33,7 +33,7 @@ class TestFormSubmission(TestCase):
         dbm = Mock(spec = DatabaseManager)
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
-        question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question2 = TextField(name="Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range={"min": 15, "max": 120})
@@ -46,7 +46,7 @@ class TestFormSubmission(TestCase):
 
         answers = { "ID" : "1", "Q1" : "My Name", "Q2" : "40", "Q3" : "RED"  }
         form_submission = FormSubmission(form_model,answers)
-        self.assertEqual(form_submission.values,{ "Q1" : "My Name", "Q2" : 40, "Q3" : "RED"})
+        self.assertEqual(form_submission.values,{ "Name" : "My Name", "Father's age" : 40, "Color" : "RED"})
 
     def test_should_apply_validations(self):
         pass

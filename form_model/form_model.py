@@ -146,13 +146,13 @@ class FormSubmission(object):
     def __init__(self,form_model, answers):
         result = {}
         entity_id = None
-        for field,answer in answers.items():
-            form_field = form_model._find_question(field)
+        for field_code,answer in answers.items():
+            form_field = form_model._find_question(field_code)
             if form_field is None: continue  #Ignore unknown fields
             if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
                 entity_id = self._parse_field(form_field,answer)
             else:
-                result[field] = self._parse_field(form_field,answer)
+                result[form_field.get(field_attributes.NAME)] = self._parse_field(form_field,answer)
         self.entity_id = entity_id
         self.form_code = form_model.form_code
         self.values = result

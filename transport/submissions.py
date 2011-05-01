@@ -39,12 +39,14 @@ class SubmissionHandler(object):
 
     def accept(self, request):
         assert request is not None
+        assert request.source is not None
+        assert request.destination is not None
+        assert request.message is not None
         try:
             errors = []
             submission_id = None
             submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source =request.source,
-                                                destination =request.destination,message=request.message))
-
+                                                destination =request.destination,message=request.message)).id
             reporter.check_is_registered(self.dbm, request.source)
             player = self.get_player_for_transport(request)
             form_code,values = player.parse(request.message)
@@ -52,15 +54,15 @@ class SubmissionHandler(object):
             form_submission = FormSubmission(form,values)
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-                datarecord_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
-                return Response(request.message,True,errors,submission_id,datarecord_id)
+                data_record_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
+                return Response(request.message,True,errors,submission_id,data_record_id)
             else:
                 errors.extend(form_submission.errors)
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)
         except NumberNotRegisteredException as e:
             errors.append(e.message)
-        return Response("",False,errors,submission_id)
+        return Response(request.message,False,errors,submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

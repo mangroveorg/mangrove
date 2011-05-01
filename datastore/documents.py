@@ -5,7 +5,7 @@ import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.types import is_sequence
+from mangrove.utils.types import is_sequence, is_string
 from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 class attributes(object):
@@ -123,7 +123,7 @@ class SubmissionLogDocument(DocumentBase):
     message = TextField()
 
     def __init__(self, source, channel = None,destination = None,message = None, id=None):
-        assert isinstance(source, str)
+        assert is_string(source)
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()

@@ -40,4 +40,15 @@ class SMSPlayer(object):
         self.dbm = dbm
 
     def parse(self,message):
-        return "form_code",{}
+        tokens = message.split("+")
+        form_code = tokens[0].strip()
+        tokens.remove(tokens[0])
+        submission = {}
+        for token in tokens:
+            answer = token.split()
+            field_code = answer[0]
+            answer.remove(field_code)
+            answer = "".join(answer)
+            submission[field_code] = answer
+        return form_code, submission
+

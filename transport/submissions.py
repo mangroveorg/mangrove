@@ -7,7 +7,7 @@ Will log the submission and forward to the appropriate channel handler.
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
-from mangrove.errors.MangroveException import MangroveException
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
@@ -21,10 +21,12 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, message, success, submission_id):
+    def __init__(self, message, success, errors, submission_id = None,datarecord_id = None):
         self.message = message
         self.success = success
         self.submission_id = submission_id
+        self.errors = errors
+        self.datarecord_id = datarecord_id
 
 
 class UnknownTransportException(MangroveException):
@@ -37,22 +39,31 @@ class SubmissionHandler(object):
 
     def accept(self, request):
         assert request is not None
-        from_number = request.source
-        submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source = from_number,
-                                            destination =request.destination,message=request.message))
+        try:
+            errors = []
+            submission_id = None
+            submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source =request.source,
+                                                destination =request.destination,message=request.message))
 
-        reporter.check_is_registered(self.dbm,from_number)
-        player = self.get_player_for_transport(request)
-        form_code,values = player.parse(request.message)
-        form = form_model.get_questionnaire(self.dbm,form_code)
-        form_submission = FormSubmission(form,values)
-        if form_submission.is_valid():
-            e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-            e.add_data(data = form_submission.values.items(),submission_id = submission_id)
-        return Response("",True,"")
+            reporter.check_is_registered(self.dbm, request.source)
+            player = self.get_player_for_transport(request)
+            form_code,values = player.parse(request.message)
+            form = form_model.get_questionnaire(self.dbm,form_code)
+            form_submission = FormSubmission(form,values)
+            if form_submission.is_valid():
+                e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
+                datarecord_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
+                return Response(request.message,True,errors,submission_id,datarecord_id)
+            else:
+                errors.extend(form_submission.errors)
+        except FormModelDoesNotExistsException as e:
+            errors.append(e.message)
+        except NumberNotRegisteredException as e:
+            errors.append(e.message)
+        return Response("",False,errors,submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":
-            return SMSPlayer(self.dbm)
+            return SMSPlayer()
         else:
             raise UnknownTransportException(("No handler defined for transport %s") % request.transport)

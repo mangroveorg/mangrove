@@ -6,8 +6,7 @@ from mangrove.datastore.entity import  define_type
 from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, FieldDoesNotExistsException, EntityQuestionCodeNotSubmitted, FormModelDoesNotExistsException
-from mangrove.form_model.form_model import FormModel, get, get_entity_field
-from mangrove.datastore import submission_api
+from mangrove.form_model.form_model import FormModel, get
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
@@ -106,20 +105,6 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue("fra" in activeLangauges)
         self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
 
-    def test_should_get_entity_type_field(self):
-        entity_question = get_entity_field(self.dbm, "1")
-        self.assertEquals(entity_question.get(field_attributes.FIELD_CODE), "ID")
-        self.assertEquals(entity_question.get(field_attributes.ENTITY_QUESTION_FLAG), True)
-
-    def test_should_submission(self):
-        data_record_id = submission_api.submit(self.dbm, self.form_model.form_code,
-                                {"ID": self.entity_instance.id, "Q1": "Ans1", "Q2": "Ans2"}, "SMS")
-        self.assertTrue(data_record_id)
-
-    def test_should_raise_exception_if_form_model_does_not_exist(self):
-        with self.assertRaises(FormModelDoesNotExistsException) as ex:
-            submission_api.submit(self.dbm, "test", {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
-
     def test_should_delete_all_fields(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.delete_all_fields()
@@ -127,14 +112,6 @@ class TestFormModel(unittest.TestCase):
         form_model = get(self.dbm, self.form_model__id)
         self.assertEquals(len(form_model.fields), 0)
 
-    def test_should_raise_exception_if_entity_field_code_not_submitted(self):
-        with self.assertRaises(EntityQuestionCodeNotSubmitted):
-            submission_api.submit(self.dbm, self.form_model.form_code, {"Q1": "Ans1", "Q2": "Ans2"}, "SMS")
-
-    def test_should_raise_exception_if_field_does_not_exist(self):
-        with self.assertRaises(FieldDoesNotExistsException):
-            submission_api.submit(self.dbm, self.form_model.form_code, {"ID": self.entity_instance.id, "Q1": "Ans1", "Q5": "Ans2"},
-                   "SMS")
 
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):

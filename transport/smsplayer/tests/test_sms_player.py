@@ -9,7 +9,7 @@ class TestSMSPlayer(TestCase):
     def test_should_create_sms_player(self):
         dbm = Mock(spec = DatabaseManager)
         request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
-        s = SMSPlayer(dbm)
+        s = SMSPlayer()
 
     def test_should_parse_form_code_from_sms(self):
         pass

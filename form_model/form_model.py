@@ -11,34 +11,12 @@ def get(dbm, uuid):
     q = FormModel(dbm, _document=questionnaire_doc)
     return q
 
-
-def get_entity_question(dbm, form_code):
-    assert isinstance(dbm, DatabaseManager)
-    form_model = _get_questionnaire_by_questionnaire_code(dbm, form_code)
-    fields = form_model.fields
-    entity_fields = [x for x in fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
-    return entity_fields[0] if len(entity_fields) == 1 else None
-
-
-def get_entity_question_code(dbm, questionnaire_code):
-    entity_question = get_entity_question(dbm, questionnaire_code)
-    entity_question_code = entity_question.get(field_attributes.FIELD_CODE)
-    return entity_question_code
-
-
 def get_questionnaire(dbm, questionnaire_code):
     questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code=questionnaire_code)
     if questionnaire_document is None:
         raise FormModelDoesNotExistsException(questionnaire_code)
     questionnaire = FormModel(dbm, _document=questionnaire_document)
     return questionnaire
-
-def get_entity_field(dbm,form_code):
-    assert isinstance(dbm, DatabaseManager)
-    form_model = _get_form_model_by_form_model_code(dbm,form_code)
-    fields = form_model.fields
-    entity_fields=[x for x in fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
-    return entity_fields[0] if len(entity_fields) == 1 else None
 
 def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
@@ -48,18 +26,6 @@ def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
         return None
     questionnaire_id = rows[0]['value']['_id']
     return dbm.load(questionnaire_id, FormModelDocument)
-
-def _get_form_model_by_form_model_code(dbm, questionnaire_code):
-    assert isinstance(dbm, DatabaseManager)
-    assert is_string(questionnaire_code)
-    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
-    if not len(rows):
-        return None
-    questionnaire_id = rows[0]['value']['_id']
-    return dbm.load(questionnaire_id, FormModelDocument)
-
-
-
 
 class FormModel(object):
 
@@ -128,8 +94,9 @@ class FormModel(object):
         return self.fields
 
     def _find_question(self, question_code):
-        return [x for x in self._doc.fields if x[field_attributes.FIELD_CODE] == question_code][0]
-
+        matched = [field for field in self._doc.fields if field[field_attributes.FIELD_CODE] == question_code]
+        return matched[0] if len(matched) > 0 else None
+    
     def delete_field(self,question_code):
         fields = self._doc.fields
         question_to_be_deleted = self._find_question(question_code)
@@ -181,8 +148,9 @@ class FormSubmission(object):
         entity_id = None
         for field,answer in answers.items():
             form_field = form_model._find_question(field)
+            if form_field is None: continue  #Ignore unknown fields
             if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
-                entity_id = answer
+                entity_id = self._parse_field(form_field,answer)
             else:
                 result[field] = self._parse_field(form_field,answer)
         self.entity_id = entity_id

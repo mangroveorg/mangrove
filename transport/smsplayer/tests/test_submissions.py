@@ -5,6 +5,7 @@ from mock import Mock, patch
 import mangrove
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model.form_model import get_questionnaire
 from mangrove.transport.submissions import Request, SubmissionHandler, Response
 
@@ -47,13 +48,27 @@ class TestSubmissions(TestCase):
         self.assertEquals(request.source,submission_log.source)
         self.assertEquals(request.destination,submission_log.destination)
 
-#            Incomplete test: FIX IT
     def test_should_check_if_submission_by_registered_reporter(self):
         request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
         dbm = Mock(spec=DatabaseManager)
+        self.reporter_module.check_is_registered.side_effect = NumberNotRegisteredException(
+            "Sorry, This number 1234 is not registered with us")
         s = SubmissionHandler(dbm)
-        s.accept(request)
-        pass
+        response = s.accept(request)
+        self.assertEqual(1,len(response.errors))
+        self.assertEqual("Sorry, This number 1234 is not registered with us",response.errors[0])
+
+
+    def test_should_fail_submission_if_invalid_form_code(self):
+        request = Request(transport = "sms",message = "INVALID_CODE +name xyz +age 10",
+                          source = "1234", destination = "5678")
+        dbm = Mock(spec=DatabaseManager)
+        self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
+        s = SubmissionHandler(dbm)
+        response = s.accept(request)
+        self.assertEqual(1,len(response.errors))
+        self.assertEqual("The questionnaire with code INVALID_CODE does not exists",response.errors[0])
+        
 
 
 

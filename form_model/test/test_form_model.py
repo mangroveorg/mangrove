@@ -128,3 +128,7 @@ class TestFormModel(unittest.TestCase):
             form_model.add_field(question)
             form_model.save()
 
+    def test_should_set_form_code(self):
+        form_model = get(self.dbm, self.form_model__id)
+        form_model.form_code = "xyz"
+        self.assertEquals(form_model.form_code,"xyz")

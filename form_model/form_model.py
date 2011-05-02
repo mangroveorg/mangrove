@@ -122,6 +122,10 @@ class FormModel(object):
     def form_code(self):
         return self._doc.form_code
 
+    @form_code.setter
+    def form_code(self, value):
+        self._doc.form_code = value
+
     @property
     def fields(self):
         return self._doc.fields

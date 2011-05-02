@@ -93,8 +93,7 @@ class DataRecordDocument(DocumentBase):
         The couch data_record document. It abstracts out the couch related functionality and inherits from the Document class of couchdb-python.
         A schema for the data_record is enforced here.
     """
-    # data = RawField()
-    data = ListField(DictField())
+    data = DictField()
     entity_backing_field = DictField()
     submission_id = TextField()
     event_time =  TZAwareDateTimeField()
@@ -103,10 +102,10 @@ class DataRecordDocument(DocumentBase):
         assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
         self.submission_id = submission_id
-        data_record = []
+        data_record = {}
         if data is not None:
-            for (dd_type, value, label) in data:
-                data_record.append({'type': dd_type._doc.unwrap(), 'value': value, 'label': label})
+            for (label, dd_type, value) in data:
+                data_record[label] = {'value': value, 'type': dd_type._doc.unwrap()}
         self.data = data_record
         self.event_time = event_time
         

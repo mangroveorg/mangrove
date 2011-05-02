@@ -210,7 +210,7 @@ class Entity(object):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
-        data -- a sequence of ordered tuples, (type, value, label) where type is a DataDictType
+        data -- a sequence of ordered tuples, (label, type, value) where type is a DataDictType
         submission_id -- an id to a 'submission' document in the submission log from which
                         this data came
         event_time -- the time at which the event occured rather than when it was reported
@@ -232,10 +232,10 @@ class Entity(object):
             event_time = utcnow()
 
         data_list = []
-        for (dd_type, value, label) in data:
-            if not isinstance(dd_type, DataDictType):
-                raise ValueError('Data must be of the form (type, value, label).')
-            data_list.append((dd_type, value, label))
+        for (label, value, dd_type) in data:
+            if not isinstance(dd_type, DataDictType) or is_empty(label):
+                raise ValueError('Data must be of the form (label, type, value).')
+            data_list.append((label, dd_type, value))
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
                                              data=data_list, submission_id=submission_id)

@@ -121,10 +121,14 @@ class TestDataStoreApi(unittest.TestCase):
         doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string', description='Name of doctor')
         facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string', description='Name of facility')
         opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime', description='Date of opening')
-        data_record = [(med_type, 20, 'meds'),
-                       (doctor_type, "aroj", 'doc'),
-                       (facility_type, 'clinic', 'facility'),
-                       (opened_type, datetime(2011,01,02, tzinfo = UTC),'opened_on')]
+        med_type.save()
+        doctor_type.save()
+        facility_type.save()
+        opened_type.save()
+        data_record = [('meds', 20, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type),
+                       ('opened_on', datetime(2011,01,02, tzinfo = UTC), opened_type)]
         data_record_id = clinic_entity.add_data(data = data_record,
                                                 event_time = datetime(2011,01,02, tzinfo = UTC),
                                                 submission_id = "123456")
@@ -132,14 +136,16 @@ class TestDataStoreApi(unittest.TestCase):
 
         # Assert the saved document structure is as expected
         saved = self.dbm.load(data_record_id, document_class=DataRecordDocument)
-        for data in data_record:
-            self.assertTrue(data in saved.data)
+        for (label, value, dd_type) in data_record:
+            self.assertTrue(label in saved.data)
+            self.assertTrue('value' in saved.data[label])
+            self.assertTrue('type' in saved.data[label])
+            self.assertTrue(value == saved.data[label]['value'])
+            # TODO: not sure how to test that dd_type == saved.data[label]['type']
+            # it seems the following has different representations for datetimes
+            #self.assertTrue(dd_type._doc.unwrap() == DataDictDocument(saved.data[label]['type']))
         self.assertEqual(saved.event_time,datetime(2011,01,02, tzinfo = UTC))
         self.assertEqual(saved.submission_id,"123456")
-
-        self.dbm.delete(clinic_entity._doc)
-        self.dbm.delete(saved)
-        self.dbm.delete(reporter._doc)
 
     def test_should_create_entity_from_document(self):
         existing = get(self.dbm, self.uuid)
@@ -157,7 +163,9 @@ class TestDataStoreApi(unittest.TestCase):
         e.save()
         apple_type = DataDictType(self.dbm, name='Apples', slug='apples', primitive_type='number')
         orange_type = DataDictType(self.dbm, name='Oranges', slug='oranges', primitive_type='number')
-        data = e.add_data([(apple_type, 20, 'apples'), (orange_type, 30, 'oranges')])
+        apple_type.save()
+        orange_type.save()
+        data = e.add_data([('apples', 20, apple_type), ('oranges', 30, orange_type)])
         valid_doc = self.dbm.load(data)
         self.assertFalse(valid_doc.void)
         e.invalidate_data(data)
@@ -171,8 +179,8 @@ class TestDataStoreApi(unittest.TestCase):
         apple_type = DataDictType(self.dbm, name='Apples', slug='apples', primitive_type='number')
         orange_type = DataDictType(self.dbm, name='Oranges', slug='oranges', primitive_type='number')
         data = [
-                [(apple_type, 20, 'apples'), (orange_type, 30, 'oranges')],
-                [(apple_type, 10, 'apples'), (orange_type, 20, 'oranges')]
+                [('apples', 20, apple_type), ('oranges', 30, orange_type)],
+                [('apples', 10, apple_type), ('oranges', 20, orange_type)]
         ]
         data_ids = []
         for d in data:

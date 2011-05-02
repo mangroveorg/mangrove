@@ -16,15 +16,17 @@ class TestDataRecord(unittest.TestCase):
     def test_should_be_able_to_submit_datarecord_on_entity(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
         uuid = e.save()
-        name_type = DataDictType(self.dbm, name='First name', slug='first_name', primitive_type='string')
-        submission_ids = datarecord.submit(self.dbm, entity_id=uuid, data=[(name_type, "Jeff", 'first_name')], source="web")
+        name_type = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string')
+        name_type.save()
+        submission_ids = datarecord.submit(self.dbm, entity_id=uuid, data=[('first_Name', "Jeff", name_type)], source="web")
         assert submission_ids[0]
         assert submission_ids[1]
 
 
     def test_should_be_able_to_submit_datarecord_on_entity_2(self):
-        name_type = DataDictType(self.dbm, name='First name', slug='first_name', primitive_type='string')
-        entity = datarecord.register(self.dbm,entity_type = "HNI.Reporter", data=[(name_type, "Jeff", 'first_name')],
+        name_type = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string')
+        name_type.save()
+        entity = datarecord.register(self.dbm,entity_type = "HNI.Reporter", data=[('first_Name', "Jeff", name_type)],
                                      location= ["India", "Pune"], source="web")
         assert entity
         current_values = entity.values({"first_Name": "latest"})

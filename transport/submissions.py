@@ -21,7 +21,7 @@ class Request(object):
 
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
-    ERROR_RESPONSE_TEMPLATE = "Sorry, %s"
+    ERROR_RESPONSE_TEMPLATE = "%s"
     def __init__(self, reporters,success, errors, submission_id = None,datarecord_id = None):
         self.success = success
         self.submission_id = submission_id

@@ -7,13 +7,16 @@ from mangrove.datastore.field import field_attributes, TextField, IntegerField, 
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, FieldDoesNotExistsException, EntityQuestionCodeNotSubmitted, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import FormModel, get
+from mangrove.datastore.datadict import DataDictType
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
         self.entity = define_type(self.dbm, ["HealthFacility", "Clinic"])
+        self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
+        self.name_type.save()
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                                   data=[("Name", "Ruby",)], location=["India", "Pune"], source="sms")
+                                                   data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"], source="sms")
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
@@ -111,7 +114,6 @@ class TestFormModel(unittest.TestCase):
         form_model.save()
         form_model = get(self.dbm, self.form_model__id)
         self.assertEquals(len(form_model.fields), 0)
-
 
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):

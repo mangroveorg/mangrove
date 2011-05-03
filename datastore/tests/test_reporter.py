@@ -4,21 +4,24 @@ from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db
 from mangrove.datastore.datarecord import register
 from mangrove.datastore.reporter import find_reporter
 from mangrove.errors.MangroveException import EntityQuestionAlreadyExistsException, NumberNotRegisteredException, MultipleReportersForANumberException
+from mangrove.datastore.datadict import DataDictType
 
 class TestReporter(TestCase):
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
+        self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number', primitive_type='string')
+        self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name', primitive_type='string')
         #Register Reporter
         r1 = register(self.manager, entity_type=["Reporter"],
-                 data=[("telephone_number", "1234567890"), ("first_name", "A")],
+                 data=[("telephone_number", "1234567890", self.phone_number_type), ("first_name", "A", self.first_name_type)],
                  location=[],
                  source="sms")
         r2 = register(self.manager, entity_type=["Reporter"],
-                 data=[("telephone_number", "8888567890"), ("first_name", "B")],
+                 data=[("telephone_number", "8888567890", self.phone_number_type), ("first_name", "B", self.first_name_type)],
                  location=[],
                  source="sms")
         r3 = register(self.manager, entity_type=["Reporter"],
-                 data=[("telephone_number", "1234567890"), ("first_name", "B")],
+                 data=[("telephone_number", "1234567890", self.phone_number_type), ("first_name", "B", self.first_name_type)],
                  location=[],
                  source="sms")
 

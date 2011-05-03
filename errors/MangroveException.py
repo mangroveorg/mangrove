@@ -30,7 +30,12 @@ class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 
 class NumberNotRegisteredException(MangroveException):
-    pass
+    def __init__(self,from_number):
+        MangroveException.__init__(self,("Sorry, This number %s is not registered with us") % (from_number,))
+
+class MultipleReportersForANumberException(MangroveException):
+    def __init__(self,from_number):
+        MangroveException.__init__(self,("Sorry, more than one reporter found for %s") % (from_number,))
 
 class EntityInstanceDoesNotExistsException(MangroveException):
     pass

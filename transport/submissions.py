@@ -47,7 +47,7 @@ class SubmissionHandler(object):
             submission_id = None
             submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source =request.source,
                                                 destination =request.destination,message=request.message)).id
-            reporter.check_is_registered(self.dbm, request.source)
+            reporter.find_reporter(self.dbm, request.source)
             player = self.get_player_for_transport(request)
             form_code,values = player.parse(request.message)
             form = form_model.get_questionnaire(self.dbm,form_code)

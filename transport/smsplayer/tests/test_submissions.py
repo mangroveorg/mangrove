@@ -51,8 +51,7 @@ class TestSubmissions(TestCase):
     def test_should_check_if_submission_by_registered_reporter(self):
         request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
         dbm = Mock(spec=DatabaseManager)
-        self.reporter_module.check_is_registered.side_effect = NumberNotRegisteredException(
-            "Sorry, This number 1234 is not registered with us")
+        self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
         s = SubmissionHandler(dbm)
         response = s.accept(request)
         self.assertEqual(1,len(response.errors))

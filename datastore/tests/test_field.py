@@ -1,6 +1,8 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 import unittest
 from mangrove.datastore.field import SelectField, DateField, IntegerField, TextField
+from mangrove.datastore import field
 
 class TestQuestion(unittest.TestCase):
     def setup(self):
@@ -128,3 +130,53 @@ class TestQuestion(unittest.TestCase):
         question = TextField(name="question1_Name", question_code="Q1", label="What is your name",entity_question_flag=True)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
+
+    def test_should_create_field_from_dictionary(self):
+        question_json = {
+            "defaultValue": "",
+            "label": {"eng": "What is your name"},
+            "name": "question1_Name",
+            "question_code": "Q1",
+            "type": "text",
+            "entity_question_flag": True
+        }
+        created_question = field.create_field_from(question_json)
+        self.assertIsInstance(created_question, TextField)
+
+    def test_should_create_field_with_validations(self):
+        question_json = {
+            "defaultValue": "",
+            "label": {"eng": "What is your age"},
+            "name": "question1_age",
+            "question_code": "Q1",
+            "type": "integer",
+            "range":{"min":0, "max": 100},
+            "entity_question_flag": False
+        }
+        created_question = field.create_field_from(question_json)
+        self.assertIsInstance(created_question, IntegerField)
+        self.assertEqual(created_question._dict["range"],{"min":0, "max":100})
+
+    def test_should_create_field_with_options(self):
+        question_json = {
+            "name":"q3",
+            "question_code":"qc3",
+            "type":"select",
+            "choices":[{ "value":"c1" },
+                       { "value":"c2" } ],
+            "entity_question_flag":False}
+        created_question = field.create_field_from(question_json)
+        self.assertIsInstance(created_question, SelectField)
+        self.assertEqual(created_question.SINGLE_SELECT_FLAG, False)
+        
+    def test_should_create_field_with_single_select_options(self):
+        question_json = {
+            "name":"q3",
+            "question_code":"qc3",
+            "type":"select1",
+            "choices":[{ "value":"c1" },
+                       { "value":"c2" } ],
+            "entity_question_flag":False}
+        created_question = field.create_field_from(question_json)
+        self.assertIsInstance(created_question, SelectField)
+        self.assertEqual(created_question.SINGLE_SELECT_FLAG, True)

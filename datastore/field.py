@@ -99,3 +99,25 @@ class DateField(Field):
 
         self._dict[self.RANGE] = range if range is not None else {}
         self._dict[self.FORMAT] = format if format is not None else ""
+
+
+def create_field_from(dictionary):
+    """
+     Given a dictionary that defines a question, this would create a field with all the validations that are
+     defined on it.
+    """
+    type = dictionary.get("type")
+    name = dictionary.get("name")
+    code = dictionary.get("question_code")
+    is_entity_question = dictionary.get("entity_question_flag")
+    label = dictionary.get("label")
+    if type=="text":
+        return TextField(name=name,question_code=code, label=label, entity_question_flag=is_entity_question )
+    elif type =="integer":
+        range = dictionary.get("range")
+        return IntegerField(name=name,question_code=code, label=label, range = range)
+    elif type == "select" or type == "select1":
+        choices = dictionary.get("choices")
+        single_select = True if type=="select1" else False
+        return SelectField(name=name,question_code=code, label=label, options=choices, single_select_flag=single_select)
+    return None

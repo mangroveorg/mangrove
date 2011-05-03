@@ -19,14 +19,24 @@ class Request(object):
         self.source = source
         self.destination = destination
 
-
 class Response(object):
-    def __init__(self, message, success, errors, submission_id = None,datarecord_id = None):
-        self.message = message
+    SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
+    ERROR_RESPONSE_TEMPLATE = "Sorry, %s"
+    def __init__(self, reporters,success, errors, submission_id = None,datarecord_id = None):
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
         self.datarecord_id = datarecord_id
+        if success:
+            self.message = self._templatize_success_response_with_reporter_name(reporters)
+        else:
+            self.message = self._templatize_error_response()
+
+    def _templatize_success_response_with_reporter_name(self, reporters):
+        return Response.SUCCESS_RESPONSE_TEMPLATE % (reporters[0]["first_name"] if len(reporters) == 1 else "",)
+
+    def _templatize_error_response(self):
+        return Response.ERROR_RESPONSE_TEMPLATE % (", ".join(self.errors),)
 
 
 class UnknownTransportException(MangroveException):
@@ -42,12 +52,13 @@ class SubmissionHandler(object):
         assert request.source is not None
         assert request.destination is not None
         assert request.message is not None
+        reporters = []
+        submission_id = None
         try:
             errors = []
-            submission_id = None
+            reporters = reporter.find_reporter(self.dbm, request.source)
             submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source =request.source,
                                                 destination =request.destination,message=request.message)).id
-            reporter.find_reporter(self.dbm, request.source)
             player = self.get_player_for_transport(request)
             form_code,values = player.parse(request.message)
             form = form_model.get_questionnaire(self.dbm,form_code)
@@ -55,14 +66,14 @@ class SubmissionHandler(object):
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
                 data_record_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
-                return Response(request.message,True,errors,submission_id,data_record_id)
+                return Response(reporters,True,errors,submission_id,data_record_id)
             else:
                 errors.extend(form_submission.errors)
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)
         except NumberNotRegisteredException as e:
             errors.append(e.message)
-        return Response(request.message,False,errors,submission_id)
+        return Response(reporters,False,errors,submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

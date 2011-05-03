@@ -9,9 +9,7 @@ def find_reporter(dbm,from_number):
                             aggregates={"telephone_number": data.reduce_functions.LATEST,"first_name":data.reduce_functions.LATEST}
                           )
     from_reporter_list = [reporters[x] for x in reporters if reporters[x]["telephone_number"]==from_number]
-    if len(from_reporter_list) > 1:
-        raise MultipleReportersForANumberException(from_number)
     if len(from_reporter_list) == 0:
         raise NumberNotRegisteredException(from_number)
-    return from_reporter_list[0]
+    return from_reporter_list
 

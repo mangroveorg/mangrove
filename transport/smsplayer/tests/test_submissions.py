@@ -19,6 +19,7 @@ class TestSubmissions(TestCase):
         self.form_model_module = self.form_model_patcher.start()
         self.entity_module = self.entity_patcher.start()
         self.reporter_module = self.reporter_patcher.start()
+        self.reporter_module.find_reporter.return_value = [{"first_name" : "1234"}]
 
     def tearDown(self):
         self.form_model_patcher.stop()
@@ -67,8 +68,17 @@ class TestSubmissions(TestCase):
         response = s.accept(request)
         self.assertEqual(1,len(response.errors))
         self.assertEqual("The questionnaire with code INVALID_CODE does not exists",response.errors[0])
-        
+        self.assertEqual("Sorry, %s" % (response.errors[0],),response.message)
 
+    def test_should_return_success_message_with_reporter_name(self):
+        request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
+        dbm = Mock(spec=DatabaseManager)
+        self.reporter_module.find_reporter.return_value = [
+                    {"first_name": "Reporter A", "telephone_number": "1234"},
+        ]
+        s = SubmissionHandler(dbm)
+        response = s.accept(request)
+        self.assertEqual("Thank You Reporter A for your submission.",response.message)
 
 
 #test_get_player

@@ -5,6 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, FormSubmission
+from mangrove.form_model.validation import IntegerConstraint
 
 class TestFormSubmission(TestCase):
     def setUp(self):
@@ -24,7 +25,7 @@ class TestFormSubmission(TestCase):
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range={"min": 15, "max": 120})
+                               range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
@@ -49,7 +50,7 @@ class TestFormSubmission(TestCase):
         question2 = TextField(name="Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range={"min": 15, "max": 120})
+                                 range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
@@ -74,7 +75,7 @@ class TestFormSubmission(TestCase):
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                           defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Arv Stock", question_code="ARV", label="ARV Stock",
-                             range={"min": 15, "max": 120})
+                             range=IntegerConstraint(min=15,max=120))
 
         form_model = FormModel(self.dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
                                 form_code="CLINIC", type='survey',

@@ -1,8 +1,9 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField,field_attributes
 from mangrove.form_model import field
+from mangrove.form_model.validation import IntegerConstraint
 
 class TestQuestion(unittest.TestCase):
     def setup(self):
@@ -44,7 +45,7 @@ class TestQuestion(unittest.TestCase):
             "type": "integer",
             }
         question = IntegerField(name="Age", question_code="Q2", label="What is your age",
-                                   language="eng",range={"min": 15,"max": 120})
+                                   language="eng",range=IntegerConstraint(min=15,max=120))
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 

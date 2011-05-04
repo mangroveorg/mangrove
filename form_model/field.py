@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from _collections import defaultdict
+from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes
 
 
 def field_to_json(object):
@@ -81,7 +82,9 @@ class IntegerField(Field):
     def __init__(self, name, question_code, label, range=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, question_code=question_code,
                           label=label, language=language)
-        self._dict[self.RANGE] = range if range is not None else {}
+        if range is None:
+            range=IntegerConstraint()
+        self._dict[self.RANGE] = range._to_json()
 
     @property
     def range(self):
@@ -154,7 +157,8 @@ def create_question_from(dictionary):
     if type=="text":
         return TextField(name=name,question_code=code, label=label, entity_question_flag=is_entity_question )
     elif type =="integer":
-        range = dictionary.get("range")
+        range_dict = dictionary.get("range")
+        range=IntegerConstraint(min=range_dict.get(ConstraintAttributes.MIN),max=range_dict.get(ConstraintAttributes.MAX))
         return IntegerField(name=name,question_code=code, label=label, range = range)
     elif type == "select" or type == "select1":
         choices = dictionary.get("options")

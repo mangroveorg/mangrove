@@ -9,6 +9,7 @@ from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
+from mangrove.form_model.validation import IntegerConstraint
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
@@ -23,7 +24,7 @@ class TestFormModel(unittest.TestCase):
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range={"min": 15, "max": 120})
+                                 range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
@@ -159,7 +160,7 @@ class TestFormModel(unittest.TestCase):
                },
                {
                    "range": {
-                       "max": "10",
+                       "max": 10,
                        "min": 0
                    },
                    "label": {"eng": ""},
@@ -192,7 +193,7 @@ class TestFormModel(unittest.TestCase):
         entityQ = TextField(name="What are you reporting on?", question_code="eid",
                           label={"eng": "Entity being reported on"}, entity_question_flag=True)
         ageQ = IntegerField(name="What is your age?", question_code="AGE", label={"eng": ""},
-                            range={"max": "10", "min": 0})
+                            range=IntegerConstraint(min=0,max=10))
         placeQ = SelectField(name="Where do you live?", question_code="PLC", label={"eng": ""},
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],single_select_flag=False)
         questions = [entityQ, ageQ, placeQ]

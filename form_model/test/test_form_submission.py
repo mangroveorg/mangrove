@@ -3,8 +3,7 @@ from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import define_type
-from mangrove.datastore.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, FormSubmission
 
 class TestFormSubmission(TestCase):

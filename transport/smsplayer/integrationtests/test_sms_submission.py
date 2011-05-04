@@ -5,7 +5,7 @@ from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, remove_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import define_type
 from mangrove.datastore import datarecord
-from mangrove.datastore.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.submissions import SubmissionHandler, Request
 from mangrove.datastore.datadict import DataDictType

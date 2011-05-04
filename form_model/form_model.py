@@ -2,10 +2,10 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.datastore.field import field_attributes, TextField
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionAlreadyExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.form_model.field import TextField, field_attributes
 from mangrove.utils.types import is_sequence, is_string
-from mangrove.datastore import field
+from mangrove.form_model import field
 
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
@@ -80,7 +80,7 @@ class FormModel(object):
     def validate_uniqueness_of_question_codes(self):
         """ Validate all question codes are unique
         """
-        code_list = [code.question_code for code in self.questions]
+        code_list = [question.question_code for question in self.questions]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")

@@ -217,7 +217,7 @@ class Entity(object):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
-        data -- a sequence of ordered tuples, (label, type, value) where type is a DataDictType
+        data -- a sequence of ordered tuples, (label, value, type) where type is a DataDictType
         submission_id -- an id to a 'submission' document in the submission log from which
                         this data came
         event_time -- the time at which the event occured rather than when it was reported

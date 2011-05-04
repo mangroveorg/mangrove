@@ -30,3 +30,10 @@ class TestSMSPlayer(TestCase):
         self.assertEqual({},values)
         self.assertEqual("WP",form_code)
 
+    def test_should_preserve_non_leading_white_spaces_in_answer(self):
+        smsplayer = SMSPlayer()
+        form_code,values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
+        self.assertEqual({"ID" : "1", "NAME" : "FirstName LastName", "AGE" : "10"},values)
+
+
+

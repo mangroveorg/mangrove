@@ -45,14 +45,15 @@ class TestShouldSaveSMSSubmission(TestCase):
         pass
 
     def test_should_save_submitted_sms(self):
-        #text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL RED" % self.entity.id
-        #s = SubmissionHandler(self.dbm)
-        #
-        #response = s.accept(Request("sms",text,"1234","5678"))
-        #
-        #self.assertTrue(response.success)
-        #data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-        #self.assertEquals(data["Name"],"CLINIC-MADA")
-        #self.assertEquals(data["Arv stock"],50)
-        #self.assertEquals(data["Color"],"RED")
-        pass
+        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL RED" % self.entity.id
+        s = SubmissionHandler(self.dbm)
+
+        response = s.accept(Request("sms",text,"1234","5678"))
+
+        self.assertTrue(response.success)
+        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
+        self.assertEquals(data["Name"],"CLINIC-MADA")
+        self.assertEquals(data["Arv stock"],50)
+        self.assertEquals(data["Color"],"RED")
+
+

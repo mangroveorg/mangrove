@@ -65,7 +65,7 @@ class SubmissionHandler(object):
             form_submission = FormSubmission(form,values)
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-                data_record_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
+                data_record_id = e.add_data(data = form_submission.values,submission_id = submission_id)
                 return Response(reporters,True,errors,submission_id,data_record_id)
             else:
                 errors.extend(form_submission.errors)

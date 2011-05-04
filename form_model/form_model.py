@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.field import field_attributes, TextField
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionAlreadyExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
@@ -164,10 +165,13 @@ class FormModel(object):
         return self._doc.active_languages
 
 class FormSubmission(object):
-    def __init__(self,form_model, answers):
+    def _to_three_tuple(self):
+        return [  (field,value,datadict.get_default_datadict_type())  for (field,value) in self.answers.items() ]
+
+    def __init__(self,form_model, form_answers):
         result = {}
         entity_id = None
-        for field_code,answer in answers.items():
+        for field_code,answer in form_answers.items():
             form_field = form_model._find_question(field_code)
             if form_field is None: continue  #Ignore unknown fields
             if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
@@ -176,7 +180,8 @@ class FormSubmission(object):
                 result[form_field.get(field_attributes.NAME)] = self._parse_field(form_field,answer)
         self.entity_id = entity_id
         self.form_code = form_model.form_code
-        self.values = result
+        self.answers = result
+        self.values = self._to_three_tuple()
 
     def is_valid(self):
         self.errors = False

@@ -4,6 +4,10 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import DataDictDocument
 from mangrove.utils.types import is_string
 
+# Temporary stuff, till datadict is fully implemented in datawinners : Aroj
+def get_default_datadict_type():
+    return DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
+
 def get_datadict_type(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
     datadict_doc = dbm.load(uuid, DataDictDocument)

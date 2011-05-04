@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
+from nose.plugins.skip import SkipTest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import Entity
 import mangrove.datastore.datarecord as datarecord
@@ -31,3 +32,13 @@ class TestDataRecord(unittest.TestCase):
         assert entity
         current_values = entity.values({"first_Name": "latest"})
         self.assertEquals("Jeff", current_values["first_Name"])
+
+    def test_should_be_able_to_get_submitted_records_from_submission_log(self):
+        raise SkipTest
+        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
+        uuid = e.save()
+        name_type = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string')
+        name_type.save()
+        datarecord.submit(self.dbm, entity_id=uuid, data=[('first_Name', "Jeff", name_type)], source="web")
+        submissions = datarecord.get_datarecords_submitted_for_questionnaire(self.dbm, 'QC1')
+        self.assertEquals(1,len(submissions))

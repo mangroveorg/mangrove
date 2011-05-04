@@ -4,7 +4,7 @@ from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
 from mangrove.form_model.field import TextField, field_attributes
-from mangrove.utils.types import is_sequence, is_string
+from mangrove.utils.types import is_sequence, is_string, is_empty
 from mangrove.form_model import field
 
 def get(dbm, uuid):
@@ -169,26 +169,35 @@ class FormSubmission(object):
         return [  (field,value,datadict.get_default_datadict_type())  for (field,value) in self.answers.items() ]
 
     def __init__(self,form_model, form_answers):
+        self.errors = []
         result = {}
         entity_id = None
         for field_code,answer in form_answers.items():
             form_field = form_model._find_question(field_code)
-            if form_field is None: continue  #Ignore unknown fields
-            if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
-                entity_id = self._parse_field(form_field,answer)
-            else:
-                result[form_field.get(field_attributes.NAME)] = self._parse_field(form_field,answer)
+            if form_field is None: continue  #Ignore unknown fields.
+            try:
+                if is_empty(answer): continue #Ignore fields without a value
+                parsed_answer = self._parse_field(form_field,answer)
+                if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
+                    entity_id = parsed_answer
+                else:
+                    result[form_field.get(field_attributes.NAME)] = parsed_answer
+            except Exception:
+                pass  #Ignore fields that cannot be parsed.
         self.entity_id = entity_id
         self.form_code = form_model.form_code
         self.answers = result
-        self.values = self._to_three_tuple()
+
+    @property
+    def values(self):
+        return self._to_three_tuple()
 
     def is_valid(self):
-        self.errors = False
         return True
 
     def _parse_field(self, form_field, answer):
+        if answer is None:
+            return None
         if form_field.get("type") == field_attributes.INTEGER_FIELD:
             return int(answer)
-        else:
-            return answer
+        return answer.strip()

@@ -7,8 +7,6 @@ from mangrove.transport.submissions import Request
 
 class TestSMSPlayer(TestCase):
     def test_should_create_sms_player(self):
-        dbm = Mock(spec = DatabaseManager)
-        request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")
         s = SMSPlayer()
 
     def test_should_parse_form_code_from_sms(self):
@@ -19,3 +17,16 @@ class TestSMSPlayer(TestCase):
 
     def test_should_parse_answer_list_from_sms(self):
         pass
+
+    def test_should_parse_incomplete_messages_with_no_answer_values(self):
+        smsplayer = SMSPlayer()
+        form_code,values = smsplayer.parse("WP +ID 1 +BC ")
+        self.assertEqual({"ID" : "1", "BC" : ""},values)
+
+        form_code,values = smsplayer.parse("WP +ID")
+        self.assertEqual({"ID" : ""},values)
+
+        form_code,values = smsplayer.parse("WP")
+        self.assertEqual({},values)
+        self.assertEqual("WP",form_code)
+

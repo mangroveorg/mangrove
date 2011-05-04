@@ -2,10 +2,11 @@
 
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
+from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
-from mangrove.datastore.field import field_attributes, TextField, IntegerField, SelectField
+from mangrove.datastore.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, FieldDoesNotExistsException, EntityQuestionCodeNotSubmitted, FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
 
@@ -28,8 +29,7 @@ class TestFormModel(unittest.TestCase):
 
         self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
-                    question1, question2, question3])
-        self.form_model.add_field(question4)
+                    question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
@@ -64,21 +64,22 @@ class TestFormModel(unittest.TestCase):
     def test_should_add_fields(self):
         saved = get(self.dbm, self.form_model__id)
         self.assertTrue(len(saved.fields) == 4)
-        self.assertTrue(saved.fields[1].get("name") == "question1_Name")
-        self.assertTrue(saved.fields[2].get("name") == "Father's age")
+        self.assertTrue(saved.fields[1].name == "question1_Name")
+        self.assertTrue(saved.fields[2].name== "Father's age")
 
     def test_should_add_integer_field_with_constraints(self):
         integer_question = get(self.dbm, self.form_model__id).fields[2]
-        range_constraint = integer_question.get("range")
-        self.assertTrue(integer_question.get("name") == "Father's age")
+        range_constraint = integer_question.range
+        self.assertTrue(integer_question.name == "Father's age")
         self.assertTrue(range_constraint.get("min"), 15)
         self.assertTrue(range_constraint.get("max"), 120)
 
     def test_should_add_select1_field(self):
         select_question = get(self.dbm, self.form_model__id).fields[3]
-        option_constraint = select_question.get("options")
+        option_constraint = select_question.options
 
         self.assertEquals(len(option_constraint), 2)
+        print option_constraint
         self.assertEquals(option_constraint[0].get("val"), 1)
 
     def test_should_add_new_field(self):
@@ -88,7 +89,7 @@ class TestFormModel(unittest.TestCase):
         form_model.save()
 
         added_question = get(self.dbm, self.form_model__id).fields[4]
-        self.assertEquals(added_question.get(field_attributes.FIELD_CODE), "Q4")
+        self.assertEquals(added_question.question_code, "Q4")
 
     def test_should_delete_field(self):
         form_model = get(self.dbm, self.form_model__id)
@@ -108,11 +109,14 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue("fra" in activeLangauges)
         self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
 
-    def test_should_delete_all_fields(self):
+    def test_should_delete_all_fields_from_document(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.delete_all_fields()
-        form_model.save()
+        self.assertEquals(len(form_model.fields), 0)
+        
+    def test_should_delete_all_fields_from_questions(self):
         form_model = get(self.dbm, self.form_model__id)
+        form_model.delete_all_fields()
         self.assertEquals(len(form_model.fields), 0)
 
     def test_should_raise_exception_if_entity_field_already_exist(self):
@@ -135,7 +139,67 @@ class TestFormModel(unittest.TestCase):
         form_model.form_code = "xyz"
         self.assertEquals(form_model.form_code,"xyz")
 
+
     def test_should_set_entity_type(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.entity_id = "xyz"
         self.assertEquals(form_model.entity_id,"xyz")
+
+    def test_should_create_a_questionnaire_from_dictionary(self):
+        fields = [
+               {
+                   "name": "What are you reporting on?",
+                   "defaultValue": "",
+                   "label": {
+                       "eng": "Entity being reported on"
+                   },
+                   "entity_question_flag": True,
+                   "type": "text",
+                   "question_code": "eid"
+               },
+               {
+                   "range": {
+                       "max": "10",
+                       "min": 0
+                   },
+                   "label": {"eng": ""},
+                   "type": "integer",
+                   "name": "What is your age?",
+                   "question_code": "AGE"
+               },
+               {
+                   "options": [
+                       {
+                           "text": {"eng": "Pune"}
+                       },
+                       {
+                           "text": {"eng": "Bangalore"}
+                       }
+                   ],
+                   "label": {"eng": ""},
+                   "type": "select",
+                   "name": "Where do you live?",
+                   "question_code": "PLC"
+               }]
+        document = FormModelDocument()
+        document.fields = fields
+        document.entity_id = "Reporter"
+        document.document_type = "FormModel"
+        document.form_code = "F1"
+        document.name= "New Project"
+        document.type = "survey"
+        document.type = "survey"
+        entityQ = TextField(name="What are you reporting on?", question_code="eid",
+                          label={"eng": "Entity being reported on"}, entity_question_flag=True)
+        ageQ = IntegerField(name="What is your age?", question_code="AGE", label={"eng": ""},
+                            range={"max": "10", "min": 0})
+        placeQ = SelectField(name="Where do you live?", question_code="PLC", label={"eng": ""},
+                             options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],single_select_flag=False)
+        questions = [entityQ, ageQ, placeQ]
+        questionnaire = FormModel(dbm=self.dbm, _document=document)
+        self.maxDiff = None
+        self.assertEqual(questionnaire.entity_id, "Reporter")
+        self.assertEqual(questionnaire.name, "New Project")
+        self.assertEqual(questionnaire.type, "survey")
+        for i in range(len(questions)):
+            self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())

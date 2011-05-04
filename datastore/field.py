@@ -1,6 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from _collections import defaultdict
 
+
+def field_to_json(object):
+    assert isinstance(object ,Field)
+    return object._to_json()
+
 class field_attributes(object):
 
     '''Constants for referencing standard attributes in questionnaire.'''
@@ -42,6 +47,26 @@ class Field(object):
             self._dict[k] = language_dict
 
 
+    @property
+    def name(self):
+        return self._dict.get(self.NAME)
+
+    @property
+    def label(self):
+        return self._dict.get(self.LABEL)
+
+    @property
+    def type(self):
+        return self._dict.get(self.TYPE)
+
+    @property
+    def question_code(self):
+        return self._dict.get(self.QUESTION_CODE)
+
+    @property
+    def is_entity_field(self):
+        return False
+
     def _to_json(self):
         return self._dict
 
@@ -58,6 +83,10 @@ class IntegerField(Field):
                           label=label, language=language)
         self._dict[self.RANGE] = range if range is not None else {}
 
+    @property
+    def range(self):
+        return self._dict.get(self.RANGE)
+
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
@@ -70,6 +99,11 @@ class TextField(Field):
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
+    @property
+    def is_entity_field(self):
+        return self._dict.get(self.ENTITY_QUESTION_FLAG)
+    
+
 class SelectField(Field):
     OPTIONS = "options"
     SINGLE_SELECT_FLAG = 'single_select_flag'
@@ -80,13 +114,19 @@ class SelectField(Field):
         Field.__init__(self, type=type, name=name, question_code=question_code,
                           label=label, language=language)
         self._dict[self.OPTIONS] = []
-        for option in options:
-            if isinstance(option, tuple):
-                single_language_specific_option = {'text': [{language: option[0]}], 'val': option[1]}
-            else:
-                single_language_specific_option = {'text': [{language: option}]}
+        if options is not None:
+            for option in options:
+                if isinstance(option, tuple):
+                    single_language_specific_option = {'text': {language: option[0]}, 'val': option[1]}
+                elif isinstance(option, dict):
+                    single_language_specific_option = option
+                else:
+                    single_language_specific_option = {'text': {language: option}}
+                self._dict[self.OPTIONS].append(single_language_specific_option)
 
-            self._dict[self.OPTIONS].append(single_language_specific_option)
+    @property
+    def options(self):
+        return self._dict.get(self.OPTIONS)
 
 
 
@@ -101,7 +141,7 @@ class DateField(Field):
         self._dict[self.FORMAT] = format if format is not None else ""
 
 
-def create_field_from(dictionary):
+def create_question_from(dictionary):
     """
      Given a dictionary that defines a question, this would create a field with all the validations that are
      defined on it.
@@ -117,7 +157,7 @@ def create_field_from(dictionary):
         range = dictionary.get("range")
         return IntegerField(name=name,question_code=code, label=label, range = range)
     elif type == "select" or type == "select1":
-        choices = dictionary.get("choices")
+        choices = dictionary.get("options")
         single_select = True if type=="select1" else False
         return SelectField(name=name,question_code=code, label=label, options=choices, single_select_flag=single_select)
     return None

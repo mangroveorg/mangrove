@@ -52,7 +52,7 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
             "name": "color",
-            "options": [{"text": [{"eng": "RED"}],"val": 1},{"text": [{"eng": "YELLOW"}],"val": 2},{"text":[{"eng":"green"}]}],
+            "options": [{"text": {"eng": "RED"},"val": 1},{"text": {"eng": "YELLOW"},"val": 2},{"text":{"eng":"green"}}],
             "question_code": "Q3",
             "type": "select1",
             }
@@ -65,7 +65,7 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
             "name": "color",
-            "options": [{"text": [{"eng": "RED"}],"val": 1},{"text": [{"eng": "YELLOW"}],"val": 2},{"text":[{"eng":"green"}]}],
+            "options": [{"text": {"eng": "RED"},"val": 1},{"text": {"eng": "YELLOW"},"val": 2},{"text":{"eng":"green"}}],
             "question_code": "Q3",
             "type": "select",
             }
@@ -140,7 +140,7 @@ class TestQuestion(unittest.TestCase):
             "type": "text",
             "entity_question_flag": True
         }
-        created_question = field.create_field_from(question_json)
+        created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, TextField)
 
     def test_should_create_field_with_validations(self):
@@ -153,7 +153,7 @@ class TestQuestion(unittest.TestCase):
             "range":{"min":0, "max": 100},
             "entity_question_flag": False
         }
-        created_question = field.create_field_from(question_json)
+        created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, IntegerField)
         self.assertEqual(created_question._dict["range"],{"min":0, "max":100})
 
@@ -162,10 +162,10 @@ class TestQuestion(unittest.TestCase):
             "name":"q3",
             "question_code":"qc3",
             "type":"select",
-            "choices":[{ "value":"c1" },
+            "options":[{ "value":"c1" },
                        { "value":"c2" } ],
             "entity_question_flag":False}
-        created_question = field.create_field_from(question_json)
+        created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, SelectField)
         self.assertEqual(created_question.SINGLE_SELECT_FLAG, False)
         
@@ -174,9 +174,14 @@ class TestQuestion(unittest.TestCase):
             "name":"q3",
             "question_code":"qc3",
             "type":"select1",
-            "choices":[{ "value":"c1" },
-                       { "value":"c2" } ],
+            "options":[{ "text":{"eng":"hello", "fr":"bonjour"},"value":"c1" },
+                       { "text":{"eng":"world"},"value":"c2" } ],
             "entity_question_flag":False}
-        created_question = field.create_field_from(question_json)
+
+        expected_option_list = [{ "text":{"eng":"hello", "fr":"bonjour"},"value":"c1" },
+                       { "text":{"eng":"world"},"value":"c2" } ]
+        created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, SelectField)
         self.assertEqual(created_question.SINGLE_SELECT_FLAG, True)
+        self.assertEqual(created_question.options, expected_option_list)
+

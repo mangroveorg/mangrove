@@ -20,7 +20,7 @@ class DataDictType(object):
     '''DataDict is an abstraction that stores named data types and constraints .'''
 
     def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
-                 constraints=None, id=None, _document=None, **kwargs):
+                 constraints=None, tags=None, id=None, _document=None, **kwargs):
         '''Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
@@ -42,7 +42,7 @@ class DataDictType(object):
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, **kwargs)
+        self._doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
 
     def save(self):
         return self._dbm.save(self._doc).id
@@ -50,3 +50,27 @@ class DataDictType(object):
     @property
     def id(self):
         return self._doc.id
+
+    @property
+    def name(self):
+        return self._doc.name
+
+    @property
+    def slug(self):
+        return self._doc.slug
+
+    @property
+    def description(self):
+        return self._doc.description
+
+    @property
+    def constraints(self):
+        return self._doc.constraints
+
+    @property
+    def primitive_type(self):
+        return self._doc.primitive_type
+
+    @property
+    def tags(self):
+        return self._doc.tags

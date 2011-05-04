@@ -405,3 +405,40 @@ class TestQueryApi(unittest.TestCase):
 #    def test_should_fetch_all_entities_for_a_criteria(self):
 #        # Return all clinic entities with beds = 129
 #        entity.get_entities(entity_type = ['clinic'], filter = {'beds' : 129})
+
+    def test_should_fetch_aggregate_per_entity_for_all_fields_in_entity(self):
+        # Aggregate across all data records for each entity for all fields
+
+        # Setup: Create clinic entities
+        dd_types = self.create_datadict_types()
+        ENTITY_TYPE = ["Health_Facility", "Clinic"]
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
+        id1 = e.save()
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
+        id2 = e.save()
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
+        id3 = e.save()
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,aggregates={"*": data.reduce_functions.LATEST})
+
+        self.assertEqual(len(values), 3)
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds" : 20})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 20, "meds" :400 })
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, "meds" : 50})

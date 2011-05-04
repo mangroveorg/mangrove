@@ -278,13 +278,20 @@ class Entity(object):
 
     def data_types(self, tags=None):
         '''Returns a list of each type of data that is stored on this entity.'''
-        assert tags is None or isinstance(tags, list)
-        if tags is None:
+        assert tags is None or isinstance(tags, list) or is_string(tags)
+        result = []
+        if tags is None or is_empty(tags):
             rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
+            result = get_datadict_types(self._dbm, [row['value'] for row in rows])
         else:
-            for tag in tags: # TODO: make this work for multiple tags
+            if is_string(tags): tags = [tags]
+            keys = []
+            for tag in tags:
                 rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes_by_tag', key=[self.id, tag])
-        return get_datadict_types(self._dbm, [row['value'] for row in rows])
+                keys.append([row['value'] for row in rows])
+            ids_with_all_tags = list(set.intersection(*map(set, keys)))
+            result = get_datadict_types(self._dbm, ids_with_all_tags)
+        return result
 
     def state(self):
         '''Returns a dictionary containing the current state of the entity.

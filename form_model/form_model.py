@@ -118,6 +118,10 @@ class FormModel(object):
     def name(self):
         return self._doc.name
 
+    @name.setter
+    def name(self, value):
+        self._doc.name = value
+
     @property
     def form_code(self):
         return self._doc.form_code
@@ -133,6 +137,10 @@ class FormModel(object):
     @property
     def entity_id(self):
         return self._doc.entity_id
+
+    @entity_id.setter
+    def entity_id(self, value):
+        self._doc.entity_id = value
 
     @property
     def type(self):

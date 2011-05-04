@@ -134,3 +134,8 @@ class TestFormModel(unittest.TestCase):
         form_model = get(self.dbm, self.form_model__id)
         form_model.form_code = "xyz"
         self.assertEquals(form_model.form_code,"xyz")
+
+    def test_should_set_entity_type(self):
+        form_model = get(self.dbm, self.form_model__id)
+        form_model.entity_id = "xyz"
+        self.assertEquals(form_model.entity_id,"xyz")

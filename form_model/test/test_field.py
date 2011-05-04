@@ -1,8 +1,8 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.datastore.field import SelectField, DateField, IntegerField, TextField
-from mangrove.datastore import field
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
+from mangrove.form_model import field
 
 class TestQuestion(unittest.TestCase):
     def setup(self):

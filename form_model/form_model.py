@@ -1,9 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.datastore.field import field_attributes
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityQuestionAlreadyExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
-from mangrove.utils.types import is_sequence, is_string
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.form_model.field import TextField, field_attributes
+from mangrove.utils.types import is_sequence, is_string, is_empty
+from mangrove.form_model import field
 
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
@@ -44,10 +46,15 @@ class FormModel(object):
         assert _document is None or isinstance(_document,FormModelDocument)
 
         self._dbm = dbm
+        self.questions = []
 
         # Are we being constructed from an existing doc?
         if _document is not None:
             self._doc = _document
+            for question_field in _document.fields:
+                question = field.create_question_from(question_field)
+                self.questions.append(question)
+
             return
 
         # Not made from existing doc, so create a new one
@@ -73,7 +80,7 @@ class FormModel(object):
     def validate_uniqueness_of_question_codes(self):
         """ Validate all question codes are unique
         """
-        code_list = [code["question_code"] for code in self.fields]
+        code_list = [question.question_code for question in self.questions]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")
@@ -81,7 +88,8 @@ class FormModel(object):
     def validate_existence_of_only_one_entity_question(self):
         """Validate only 1 entity question is there
         """
-        entity_question_list= [x for x in self.fields if x.get(field_attributes.ENTITY_QUESTION_FLAG)==True]
+        text_questions = [question for question in self.questions if isinstance(question, TextField)]
+        entity_question_list= [x for x in text_questions if x.is_entity_field ==True]
         if len(entity_question_list)>1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 
@@ -89,6 +97,7 @@ class FormModel(object):
         return self._dbm.save(self._doc).id
 
     def add_field(self,question_to_be_added):
+        self.questions.append(question_to_be_added)
         self._doc.fields.append(question_to_be_added._to_json())
         self.validate_fields()
         return self.fields
@@ -104,6 +113,7 @@ class FormModel(object):
 
     def delete_all_fields(self):
         self._doc.fields = []
+        self.questions = []
 
     def add_language(self, language, label=None):
         self._doc.active_languages = language
@@ -118,6 +128,10 @@ class FormModel(object):
     def name(self):
         return self._doc.name
 
+    @name.setter
+    def name(self, value):
+        self._doc.name = value
+
     @property
     def form_code(self):
         return self._doc.form_code
@@ -128,11 +142,15 @@ class FormModel(object):
 
     @property
     def fields(self):
-        return self._doc.fields
+        return self.questions
 
     @property
     def entity_id(self):
         return self._doc.entity_id
+
+    @entity_id.setter
+    def entity_id(self, value):
+        self._doc.entity_id = value
 
     @property
     def type(self):
@@ -147,26 +165,39 @@ class FormModel(object):
         return self._doc.active_languages
 
 class FormSubmission(object):
-    def __init__(self,form_model, answers):
+    def _to_three_tuple(self):
+        return [  (field,value,datadict.get_default_datadict_type())  for (field,value) in self.answers.items() ]
+
+    def __init__(self,form_model, form_answers):
+        self.errors = []
         result = {}
         entity_id = None
-        for field_code,answer in answers.items():
+        for field_code,answer in form_answers.items():
             form_field = form_model._find_question(field_code)
-            if form_field is None: continue  #Ignore unknown fields
-            if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
-                entity_id = self._parse_field(form_field,answer)
-            else:
-                result[form_field.get(field_attributes.NAME)] = self._parse_field(form_field,answer)
+            if form_field is None: continue  #Ignore unknown fields.
+            try:
+                if is_empty(answer): continue #Ignore fields without a value
+                parsed_answer = self._parse_field(form_field,answer)
+                if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
+                    entity_id = parsed_answer
+                else:
+                    result[form_field.get(field_attributes.NAME)] = parsed_answer
+            except Exception:
+                pass  #Ignore fields that cannot be parsed.
         self.entity_id = entity_id
         self.form_code = form_model.form_code
-        self.values = result
+        self.answers = result
+
+    @property
+    def values(self):
+        return self._to_three_tuple()
 
     def is_valid(self):
-        self.errors = False
         return True
 
     def _parse_field(self, form_field, answer):
+        if answer is None:
+            return None
         if form_field.get("type") == field_attributes.INTEGER_FIELD:
             return int(answer)
-        else:
-            return answer
+        return answer.strip()

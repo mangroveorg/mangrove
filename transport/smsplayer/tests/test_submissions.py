@@ -68,7 +68,7 @@ class TestSubmissions(TestCase):
         response = s.accept(request)
         self.assertEqual(1,len(response.errors))
         self.assertEqual("The questionnaire with code INVALID_CODE does not exists",response.errors[0])
-        self.assertEqual("Sorry, %s" % (response.errors[0],),response.message)
+        self.assertEqual("The questionnaire with code INVALID_CODE does not exists",response.message)
 
     def test_should_return_success_message_with_reporter_name(self):
         request = Request(transport = "sms",message = "hello world",source = "1234", destination = "5678")

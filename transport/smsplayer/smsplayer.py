@@ -1,4 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import re
+
 class SMSPlayer(object):
     def __init__(self):
         pass
@@ -9,12 +11,14 @@ class SMSPlayer(object):
         tokens.remove(tokens[0])
         submission = {}
         for token in tokens:
-            answer = token.split()
-            field_code = answer[0]
-            answer.remove(field_code)
-            answer = "".join(answer)
-            submission[field_code] = answer
+            field_code,answer = self._parse_token(token)
+            submission[field_code] = answer.strip()
         return form_code, submission
+
+    def _parse_token(self, token):
+        m = re.match(r"(\S+)(.*)",token)  #Match first non white space set of values.
+        return m.groups()
+
 
 
 

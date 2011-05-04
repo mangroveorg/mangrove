@@ -21,7 +21,7 @@ class Request(object):
 
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
-    ERROR_RESPONSE_TEMPLATE = "Sorry, %s"
+    ERROR_RESPONSE_TEMPLATE = "%s"
     def __init__(self, reporters,success, errors, submission_id = None,datarecord_id = None):
         self.success = success
         self.submission_id = submission_id
@@ -65,7 +65,7 @@ class SubmissionHandler(object):
             form_submission = FormSubmission(form,values)
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-                data_record_id = e.add_data(data = form_submission.values.items(),submission_id = submission_id)
+                data_record_id = e.add_data(data = form_submission.values,submission_id = submission_id)
                 return Response(reporters,True,errors,submission_id,data_record_id)
             else:
                 errors.extend(form_submission.errors)

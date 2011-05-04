@@ -276,9 +276,14 @@ class Entity(object):
         rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
         return [row['value']['_id'] for row in rows]
 
-    def data_types(self):
+    def data_types(self, tags=None):
         '''Returns a list of each type of data that is stored on this entity.'''
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
+        assert tags is None or isinstance(tags, list)
+        if tags is None:
+            rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
+        else:
+            for tag in tags: # TODO: make this work for multiple tags
+                rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes_by_tag', key=[self.id, tag])
         return get_datadict_types(self._dbm, [row['value'] for row in rows])
 
     def state(self):

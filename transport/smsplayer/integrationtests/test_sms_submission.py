@@ -5,8 +5,9 @@ from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, remove_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import define_type
 from mangrove.datastore import datarecord
-from mangrove.datastore.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.validation import IntegerConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request
 from mangrove.datastore.datadict import DataDictType
 
@@ -28,7 +29,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
-                                 range={"min": 15, "max": 120})
+                                 range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
@@ -45,14 +46,15 @@ class TestShouldSaveSMSSubmission(TestCase):
         pass
 
     def test_should_save_submitted_sms(self):
-        #text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL RED" % self.entity.id
-        #s = SubmissionHandler(self.dbm)
-        #
-        #response = s.accept(Request("sms",text,"1234","5678"))
-        #
-        #self.assertTrue(response.success)
-        #data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-        #self.assertEquals(data["Name"],"CLINIC-MADA")
-        #self.assertEquals(data["Arv stock"],50)
-        #self.assertEquals(data["Color"],"RED")
-        pass
+        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL RED" % self.entity.id
+        s = SubmissionHandler(self.dbm)
+
+        response = s.accept(Request("sms",text,"1234","5678"))
+
+        self.assertTrue(response.success)
+        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
+        self.assertEquals(data["Name"],"CLINIC-MADA")
+        self.assertEquals(data["Arv stock"],50)
+        self.assertEquals(data["Color"],"RED")
+
+

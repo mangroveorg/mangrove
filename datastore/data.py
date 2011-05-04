@@ -49,9 +49,14 @@ def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endt
     for val in values:
         key = key_strategy(val)
         field = val["field"]
+        interested_aggregate = None
         if field in aggregates:
-            interested_aggregate = aggregates[field]
-            result.setdefault(key, {})[field] = val[interested_aggregate]
+            interested_aggregate = aggregates.get(field)
+#        * overrides field specific aggregation, returns the aggregation for all fields.
+        if "*" in aggregates:
+            interested_aggregate = aggregates.get("*")
+        if interested_aggregate:
+                result.setdefault(key, {})[field] = val[interested_aggregate]
     return result
 
 

@@ -18,7 +18,7 @@ def set_server(url):
     global _server
     _server = url
 
-    
+
 def reset():
     global _server,_db
     _server = settings.SERVER

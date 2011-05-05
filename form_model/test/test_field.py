@@ -2,7 +2,7 @@
 
 import unittest
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, field_attributes
 from mangrove.form_model import field
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 

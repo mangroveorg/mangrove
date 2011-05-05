@@ -3,6 +3,7 @@
 from validate import is_integer, is_string
 
 
+
 class ConstraintAttributes(object):
     MAX = "max"
     MIN = "min"

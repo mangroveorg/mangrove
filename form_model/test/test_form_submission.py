@@ -39,6 +39,7 @@ class TestFormSubmission(TestCase):
         self.assertEqual(form_submission.entity_id, "1")
 
     def test_should_create_form_submission_with_answer_values(self):
+        dbm = Mock(spec=DatabaseManager)
         ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
         self.datadict_module.get_default_datadict_type.return_value = ddtype
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED"}
@@ -80,13 +81,12 @@ class TestFormSubmission(TestCase):
         self.assertEqual({"Name": "My Name", "Father's age": 40, "Color": "RED"}, f.answers)
         self.assertEqual(3, len(f.values))
 
-
     #        Write negative scenarios
     #        Write is_valid scenarios
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
+                              , language="eng", entity_question_flag=True)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range=IntegerConstraint(min=15, max=120))
 
@@ -102,8 +102,8 @@ class TestFormSubmission(TestCase):
 
     def test_give_error_for_wrong_text_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, length=TextConstraint(5, 10))
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
+                              , language="eng", entity_question_flag=True, length=TextConstraint(5, 10))
         form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
                                form_code="AIDS", type='survey',
                                fields=[question1])

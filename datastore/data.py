@@ -4,12 +4,12 @@ class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
     SUM="sum"
     LATEST="latest"
-    COUNT ="count" #Returns number of records containing the field
+    COUNT ="count"  #Returns number of records containing the field
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):
         if aggregate_on.get('type') == 'location':
-              path = row['aggregation_paths']['_geo']
+            path = row['aggregation_paths']['_geo']
         else:
               path = row['aggregation_paths'][aggregate_on.get('type')]
         key = tuple(path[:aggregate_on['level']])
@@ -95,7 +95,8 @@ def _translate_aggregation_type(aggregate_on):
 
 
 def _interested(filter, d):
-    if filter is None: return True
+    if filter is None:
+        return True
     interested_location = filter.get("location")
     if interested_location:
         return interested_location == d.get('location')[:len(interested_location)]

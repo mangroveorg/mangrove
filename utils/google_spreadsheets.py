@@ -104,7 +104,7 @@ class GoogleSpreadsheetsClient(object):
         for ss in spreadsheets_feed.entry:
             ss_title = ss.title.text
             wrapped_ss = GoogleSpreadsheet(self._client, ss)
-            self._spreadsheets[ss_title] = wrapped_ss                                         
+            self._spreadsheets[ss_title] = wrapped_ss
 
     def keys(self):
         """

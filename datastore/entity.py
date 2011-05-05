@@ -181,6 +181,7 @@ class Entity(object):
         '''Returns a copy of the dict'''
 #        return dict(self._doc.aggregation_paths)
         return copy.deepcopy(self._doc.aggregation_paths)
+
     @property
     def type_path(self):
         '''Returns a copy of the path'''

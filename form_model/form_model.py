@@ -197,7 +197,8 @@ class FormSubmission(object):
         self.form_answers=form_answers
         for field_code,answer in form_answers.items():
             form_field = form_model._find_question(field_code)
-            if form_field is None: continue  #Ignore unknown fields.
+            if form_field is None:
+                continue  #Ignore unknown fields.
             try:
                 if is_empty(answer): continue #Ignore fields without a value
                 parsed_answer = self._parse_field(form_field,answer)

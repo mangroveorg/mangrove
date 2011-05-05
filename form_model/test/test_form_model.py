@@ -9,7 +9,7 @@ from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.validation import IntegerConstraint
+from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
@@ -22,7 +22,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",length=TextConstraint(5,10))
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
@@ -156,7 +156,8 @@ class TestFormModel(unittest.TestCase):
                    },
                    "entity_question_flag": True,
                    "type": "text",
-                   "question_code": "eid"
+                   "question_code": "eid",
+                   "length":{"min":1,"max":10},
                },
                {
                    "range": {
@@ -191,7 +192,7 @@ class TestFormModel(unittest.TestCase):
         document.type = "survey"
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", question_code="eid",
-                          label={"eng": "Entity being reported on"}, entity_question_flag=True)
+                          label={"eng": "Entity being reported on"}, entity_question_flag=True,length=TextConstraint(min=1,max=10))
         ageQ = IntegerField(name="What is your age?", question_code="AGE", label={"eng": ""},
                             range=IntegerConstraint(min=0,max=10))
         placeQ = SelectField(name="Where do you live?", question_code="PLC", label={"eng": ""},
@@ -206,16 +207,24 @@ class TestFormModel(unittest.TestCase):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
 
 
-
     def test_should_validate_for_valid_integer_value(self):
-        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "16", "Q3" : "X"}
+        answers = { "ID" : "1", "Q2" : "16"}
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_error_for_invalid_integer_value(self):
-        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "200", "Q3" : "X"}
+        answers = { "ID" : "1","Q2" : "200"}
         self.assertFalse(self.form_model.is_valid(answers))
         self.assertEqual(len(self.form_model.errors),1)
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
-        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "20"}
+        answers = { "ID" : "1", "Q1" : "Asif Momin", "Q2" : "20"}
         self.assertTrue(self.form_model.is_valid(answers))
+
+    def test_should_validate_for_valid_text_value(self):
+        answers = { "ID" : "1", "Q1" : "Asif Momin"}
+        self.assertTrue(self.form_model.is_valid(answers))
+
+    def test_should_return_errors_for_invalid_text_and_integer(self):
+        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "200", "Q3" : "X"}
+        self.assertFalse(self.form_model.is_valid(answers))
+        self.assertEqual(len(self.form_model.errors),2)

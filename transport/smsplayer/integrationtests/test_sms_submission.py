@@ -7,7 +7,7 @@ from mangrove.datastore.entity import define_type
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
-from mangrove.form_model.validation import IntegerConstraint
+from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request
 from mangrove.datastore.datadict import DataDictType
 
@@ -27,7 +27,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",length=TextConstraint(4,15))
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
                                  range=IntegerConstraint(min=15,max=120))
         question4 = SelectField(name="Color", question_code="COL", label="Color",
@@ -58,10 +58,17 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEquals(data["Color"],"RED")
 
     def test_should_give_error_for_wrong_integer_value(self):
-        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 150 +COL RED" % self.entity.id
+        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms",text,"1234","5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors),1)
 
+    def test_should_give_error_for_wrong_text_value(self):
+        text = "CLINIC +ID %s +NAME ABC" % self.entity.id
+        s = SubmissionHandler(self.dbm)
+
+        response = s.accept(Request("sms",text,"1234","5678"))
+        self.assertFalse(response.success)
+        self.assertEqual(len(response.errors),1)

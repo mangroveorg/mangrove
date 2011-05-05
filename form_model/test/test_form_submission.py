@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, FormSubmission
-from mangrove.form_model.validation import IntegerConstraint
+from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
 class TestFormSubmission(TestCase):
     def setUp(self):
@@ -84,8 +84,6 @@ class TestFormSubmission(TestCase):
 #        Write negative scenarios
 #        Write is_valid scenarios
 
-        
-
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec = DatabaseManager)
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
@@ -98,6 +96,20 @@ class TestFormSubmission(TestCase):
                                     fields = [question1,question3])
 
         answers = { "ID" : "1", "Q2" : "10"}
+
+        form_submission = FormSubmission(form_model,answers)
+        self.assertFalse(form_submission.is_valid())
+        self.assertEqual(len(form_submission.errors),1)
+
+    def test_give_error_for_wrong_text_answers(self):
+        dbm = Mock(spec = DatabaseManager)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
+                              , language="eng", entity_question_flag=True,length=TextConstraint(5,10))
+        form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
+                                    form_code="AIDS", type='survey',
+                                    fields = [question1])
+
+        answers = { "ID" : "1"}
 
         form_submission = FormSubmission(form_model,answers)
         self.assertFalse(form_submission.is_valid())

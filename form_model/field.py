@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from _collections import defaultdict
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException
-from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes
-from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException
+from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint
+from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError
 
 
 def field_to_json(object):
@@ -105,17 +105,25 @@ class IntegerField(Field):
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
+    LENGTH = "length"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, question_code, label, defaultValue=None, language=field_attributes.DEFAULT_LANGUAGE,entity_question_flag=False):
+    def __init__(self, name, question_code, label, length=None,defaultValue=None, language=field_attributes.DEFAULT_LANGUAGE,entity_question_flag=False):
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, question_code=question_code,
                           label=label, language=language)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
+        self.constraint=length if length is not None else TextConstraint()
+        self._dict[self.LENGTH]=self.constraint._to_json()
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
     def validate(self, value):
-        return True
+        try:
+            return self.constraint.validate(value)
+        except VdtValueTooLongError:
+            raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE],value)
+        except VdtValueTooShortError:
+            raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE],value)
 
     @property
     def is_entity_field(self):
@@ -173,7 +181,9 @@ def create_question_from(dictionary):
     is_entity_question = dictionary.get("entity_question_flag")
     label = dictionary.get("label")
     if type=="text":
-        return TextField(name=name,question_code=code, label=label, entity_question_flag=is_entity_question )
+        length_dict = dictionary.get("length")
+        length=TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),max=length_dict.get(ConstraintAttributes.MAX))
+        return TextField(name=name,question_code=code, label=label, entity_question_flag=is_entity_question,length=length )
     elif type =="integer":
         range_dict = dictionary.get("range")
         range=IntegerConstraint(min=range_dict.get(ConstraintAttributes.MIN),max=range_dict.get(ConstraintAttributes.MAX))

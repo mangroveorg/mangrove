@@ -47,3 +47,11 @@ class AnswerTooBigException(MangroveException):
 class AnswerTooSmallException(MangroveException):
     def __init__(self,question_code,answer):
         MangroveException.__init__(self,("answer %s for question %s is smaller than allowed") % (answer,question_code,))
+
+class AnswerTooLongException(MangroveException):
+    def __init__(self,question_code,answer):
+        MangroveException.__init__(self,("answer %s for question %s is longer than allowed") % (answer,question_code,))
+
+class AnswerTooShortException(MangroveException):
+    def __init__(self,question_code,answer):
+        MangroveException.__init__(self,("answer %s for question %s is shorter than allowed") % (answer,question_code,))

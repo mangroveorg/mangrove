@@ -122,17 +122,25 @@ class FormModel(object):
         if label is not None:
             self._doc.add_label(language,label)
 
-    def is_valid(self,answers):
+    def _validate_answer_for_field(self, answer, field):
+        success=True
         try:
-            for field in self.fields:
-                field_answer = answers.get(field.question_code)
-                answer = answers.get(field.question_code)
-                if (field_answer is not None) and (not is_empty(answer) ):#ignore empty answers
-                    field.validate(answer);
-            return True
+            field.validate(answer);
         except MangroveException as e:
+            success = False
             self.errors.append(e.message)
-        return False
+        return success
+
+    def is_valid(self,answers):
+        success=True
+        for field in self.fields:
+            answer = answers.get(field.question_code)
+            if not is_empty(answer) :#ignore empty answers
+                is_valid = self._validate_answer_for_field(answer, field)
+                if success is True:
+                    success=is_valid
+
+        return success
 
     @property
     def id(self):

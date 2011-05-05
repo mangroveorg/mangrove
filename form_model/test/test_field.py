@@ -1,7 +1,7 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField,field_attributes
 from mangrove.form_model import field
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
@@ -202,11 +202,12 @@ class TestQuestion(unittest.TestCase):
         valid_value = question.validate("120")
         self.assertEqual(valid_value,120)
 
-    def test_should_return_error_for_integer_range_validation_for_min_value(self):
-        with self.assertRaises(AnswerTooBigException) as e:
+    def test_should_return_error_for_wrong_type_for_integer(self):
+        with self.assertRaises(AnswerWrongType) as e:
             question = IntegerField(name="Age", question_code="Q2", label="What is your age",
                                    language="eng",range=IntegerConstraint(min=15,max=120))
-            question.validate(150)
+            question.validate("asas")
+        self.assertEqual(e.exception.message,"answer to question Q2 is of wrong type")
 
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooBigException) as e:

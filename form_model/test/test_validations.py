@@ -1,7 +1,7 @@
 import unittest
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.utils.types import is_empty
-from mangrove.utils.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError
+from mangrove.utils.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 class TestIntegerValidations(unittest.TestCase):
 
@@ -45,6 +45,10 @@ class TestIntegerValidations(unittest.TestCase):
             constraint = IntegerConstraint(min=10, max=20)
             constraint.validate(1)
 
+    def test_should_raise_exception_for_non_integer_value(self):
+        with self.assertRaises(VdtTypeError):
+            constraint = IntegerConstraint(min=10, max=20)
+            constraint.validate("asasd")
 
 class TestTextValidations(unittest.TestCase):
 

@@ -125,7 +125,7 @@ class FormModel(object):
     def _validate_answer_for_field(self, answer, field):
         success=True
         try:
-            field.validate(answer);
+            field.validate(answer)
         except MangroveException as e:
             success = False
             self.errors.append(e.message)

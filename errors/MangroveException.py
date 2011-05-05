@@ -55,3 +55,7 @@ class AnswerTooLongException(MangroveException):
 class AnswerTooShortException(MangroveException):
     def __init__(self,question_code,answer):
         MangroveException.__init__(self,("answer %s for question %s is shorter than allowed") % (answer,question_code,))
+
+class AnswerWrongType(MangroveException):
+    def __init__(self,question_code):
+        MangroveException.__init__(self,("answer to question %s is of wrong type") % (question_code,))

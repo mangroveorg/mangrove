@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from _collections import defaultdict
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
 from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint
-from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError
+from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
 def field_to_json(object):
@@ -95,6 +95,8 @@ class IntegerField(Field):
             raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE],value)
         except VdtValueTooSmallError:
             raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE],value)
+        except VdtTypeError:
+            raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE])
 
 
     @property

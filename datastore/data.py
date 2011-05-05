@@ -1,17 +1,20 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
+
+
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
-    SUM="sum"
-    LATEST="latest"
-    COUNT ="count"  #Returns number of records containing the field
+    SUM = "sum"
+    LATEST = "latest"
+    COUNT = "count"  #Returns number of records containing the field
+
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):
         if aggregate_on.get('type') == 'location':
             path = row['aggregation_paths']['_geo']
         else:
-              path = row['aggregation_paths'][aggregate_on.get('type')]
+            path = row['aggregation_paths'][aggregate_on.get('type')]
         key = tuple(path[:aggregate_on['level']])
     else:
         key = row["entity_id"]
@@ -34,6 +37,7 @@ def _get_key_strategy(aggregate_on):
             key = row["entity_id"]
             return key
         return _aggregate_by_entity
+
 
 def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endtime=None, filter=None):
     result = {}
@@ -103,6 +107,6 @@ def _interested(filter, d):
 
 
 def _apply_filter(values, filter):
-    if filter is None: return values
+    if filter is None:
+        return values
     return [d for d in values if _interested(filter, d)]
-

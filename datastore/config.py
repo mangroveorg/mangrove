@@ -7,6 +7,7 @@ import settings
 _server = settings.SERVER
 _db = settings.DATABASE
 
+
 def set_database(db):
     """
         Allows switching database at runtime.
@@ -14,12 +15,13 @@ def set_database(db):
     global _db
     _db = db
 
+
 def set_server(url):
     global _server
     _server = url
 
 
 def reset():
-    global _server,_db
+    global _server, _db
     _server = settings.SERVER
     _db = settings.DATABASE

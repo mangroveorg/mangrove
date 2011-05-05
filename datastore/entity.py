@@ -15,6 +15,7 @@ from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
 from ..utils.dates import utcnow
 from database import DatabaseManager
 
+
 def load_all_entity_types(dbm):
     assert isinstance(dbm, DatabaseManager)
     rows = dbm.load_all_rows_in_view('mangrove_views/entity_types')
@@ -23,7 +24,8 @@ def load_all_entity_types(dbm):
         entity_types[row["id"]] = row["value"].pop()
     return entity_types
 
-def define_type(dbm,entity_type):
+
+def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
     if type(entity_type) == str:
         _entity_type = [entity_type.strip()]
@@ -31,25 +33,32 @@ def define_type(dbm,entity_type):
         _entity_type = entity_type
     e = EntityTypeDocument(_entity_type)
     try:
-       dbm.save(e)
+        dbm.save(e)
     except ResourceConflict :
         raise EntityTypeAlreadyDefined(message="This type is already defined")
     return e
 
-#Delegating to get by uuid for now.
+
 def get_by_short_code(dbm, short_code):
+    """
+        Delegating to get by uuid for now.
+
+    """
     return get(dbm, short_code)
+
 
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
     entity_doc = dbm.load(uuid, EntityDocument)
     if entity_doc is not None:
-        return Entity(dbm, _document = entity_doc)
+        return Entity(dbm, _document=entity_doc)
     else:
-        raise EntityInstanceDoesNotExistsException("Entity with id %s does not exist"%uuid)
+        raise EntityInstanceDoesNotExistsException("Entity with id %s does not exist" % uuid)
+
 
 def get_entities(dbm, uuids):
-    return [ get(dbm, i) for i in uuids ]
+    return [get(dbm, i) for i in uuids]
+
 
 def get_entities_by_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
@@ -77,6 +86,7 @@ def entities_for_attributes(attrs):
 
     pass
 
+
 # geo aggregation specific calls
 def entities_near(geocode, radius=1, attrs=None):
     '''
@@ -89,6 +99,7 @@ def entities_near(geocode, radius=1, attrs=None):
 
     '''
     pass
+
 
 def get_entities_in(dbm, geo_path, type_path=None):
     '''Retrieve an entity within the given fully-qualified geographic placename.'''
@@ -208,13 +219,13 @@ class Entity(object):
         assert is_sequence(path) and is_not_empty(path)
 
         assert isinstance(self._doc[attributes.AGG_PATHS], dict)
-        self._doc[attributes.AGG_PATHS][name]=list(path)
+        self._doc[attributes.AGG_PATHS][name] = list(path)
 
         # TODO: Depending on implementation we will need to update aggregation paths
         # on data records--in which case we need to set a dirty flag and handle this
         # in save
 
-    def add_data(self, data = (), event_time = None, submission_id = None):
+    def add_data(self, data=(), event_time=None, submission_id=None):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
@@ -233,7 +244,7 @@ class Entity(object):
         '''
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
-        assert self.id is not None # should never be none, even if haven't been saved, should have a UUID
+        assert self.id is not None  # should never be none, even if haven't been saved, should have a UUID
         # TODO: should we have a flag that says that this has been saved at least once to avoid adding data
         # records for an Entity that may never be saved? Should docs just be saved on init?
         if event_time is None:
@@ -285,7 +296,8 @@ class Entity(object):
             rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
             result = get_datadict_types(self._dbm, [row['value'] for row in rows])
         else:
-            if is_string(tags): tags = [tags]
+            if is_string(tags):
+                tags = [tags]
             keys = []
             for tag in tags:
                 rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes_by_tag', key=[self.id, tag])
@@ -301,23 +313,22 @@ class Entity(object):
         '''
         pass
 
-    def values(self, aggregation_rules, asof = None):
+    def values(self, aggregation_rules, asof=None):
         """
         returns the aggregated value for the given fields using the aggregation function specified for data collected till a point in time.
         Eg: data_records_func = {'arv':'latest', 'num_patients':'sum'} will return latest value for ARV and sum of number of patients
         """
         asof = asof or utcnow()
         result = {}
-        
-        for field,aggregate_fn in aggregation_rules.items():
+        for field, aggregate_fn in aggregation_rules.items():
             view_name = self._translate(aggregate_fn)
-            result[field] = self._get_aggregate_value(field,view_name,asof)
+            result[field] = self._get_aggregate_value(field, view_name, asof)
         return result
 
-    def _get_aggregate_value(self, field, aggregate_fn,date):
+    def _get_aggregate_value(self, field, aggregate_fn, date):
         entity_id = self._doc.id
         time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/'+aggregate_fn, group_level=3,descending=False,
+        rows = self._dbm.load_all_rows_in_view('mangrove_views/' + aggregate_fn, group_level=3, descending=False,
                                                      startkey=[self.type_path, entity_id, field],
                                                      endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
         # The above will return rows in the format described:
@@ -332,16 +343,5 @@ class Entity(object):
         return rows[0]['value']['latest'] if len(rows) else None
 
     def _translate(self, aggregate_fn):
-        view_names = { "latest" : "by_values" }
+        view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
-
-
-
-
-
-    
-
-
-
-
-    

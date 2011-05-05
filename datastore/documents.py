@@ -9,6 +9,7 @@ from time import struct_time
 from mangrove.utils.types import is_sequence, is_string
 from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
+
 class attributes(object):
     '''Constants for referencing standard attributes in docs.'''
     MODIFIED = 'modified'
@@ -20,10 +21,14 @@ class attributes(object):
     GEO_PATH = '_geo'
     TYPE_PATH = '_type'
     DATA = 'data'
-    ACTIVE_LANGUAGES='activeLanguages'
+    ACTIVE_LANGUAGES = 'activeLanguages'
 
-# This class can take care of non-json serializable objects. Another solution is to plug in a custom json encoder/decoder.
+
 class TZAwareDateTimeField(DateTimeField):
+    """
+     This class can take care of non-json serializable objects. Another solution is to plug in a custom json encoder/decoder.
+
+    """
     def _to_python(self, value):
         if isinstance(value, basestring):
             try:
@@ -31,7 +36,7 @@ class TZAwareDateTimeField(DateTimeField):
             except ValueError:
                 raise ValueError('Invalid ISO date/time %r' % value)
         return value
-    
+
     def _to_json(self, value):
         if isinstance(value, struct_time):
             value = datetime.datetime.utcfromtimestamp(calendar.timegm(value))
@@ -46,13 +51,14 @@ class DocumentBase(Document):
     document_type = TextField()
     void = BooleanField()
 
-    def __init__(self, id = None, document_type=None, **values):
+    def __init__(self, id=None, document_type=None, **values):
         if id is None:
             id = uuid4().hex
-        Document.__init__(self,id=id, **values)
+        Document.__init__(self, id=id, **values)
         self.created = utcnow()
         self.document_type = document_type
         self.void = False
+
 
 class EntityDocument(DocumentBase):
     """
@@ -60,9 +66,9 @@ class EntityDocument(DocumentBase):
         A schema for the entity is enforced here.
     """
     aggregation_paths = DictField()
-    
-    def __init__(self, id=None, aggregation_paths = None):
-        DocumentBase.__init__(self, id = id, document_type = 'Entity')
+
+    def __init__(self, id=None, aggregation_paths=None):
+        DocumentBase.__init__(self, id=id, document_type='Entity')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
 
     @property
@@ -98,9 +104,9 @@ class DataRecordDocument(DocumentBase):
     data = DictField()
     entity_backing_field = DictField()
     submission_id = TextField()
-    event_time =  TZAwareDateTimeField()
+    event_time = TZAwareDateTimeField()
 
-    def __init__(self, id = None, entity_doc = None, event_time = None, submission_id = None, data = None):
+    def __init__(self, id=None, entity_doc=None, event_time=None, submission_id=None, data=None):
         assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
         self.submission_id = submission_id
@@ -110,7 +116,7 @@ class DataRecordDocument(DocumentBase):
                 data_record[label] = {'value': value, 'type': dd_type._doc.unwrap()}
         self.data = data_record
         self.event_time = event_time
-        
+
         if entity_doc:
             self.entity_backing_field = entity_doc.unwrap()
 
@@ -135,7 +141,7 @@ class DataDictDocument(DocumentBase):
         assert slug is None or is_string(slug)
         assert name is None or is_string(name)
         assert description is None or is_string(description)
-        assert tags is None or isinstance(tags, list) # do we want to check that they are strings?
+        assert tags is None or isinstance(tags, list)  # do we want to check that they are strings?
         # how to assert any kwargs?
 
         self.primitive_type = primitive_type
@@ -158,14 +164,14 @@ class SubmissionLogDocument(DocumentBase):
     """
         The submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
     """
-    
+
     submitted_on = TZAwareDateTimeField()
     source = TextField()
     destination = TextField()
     channel = TextField()
     message = TextField()
 
-    def __init__(self, source, channel = None,destination = None,message = None, id=None):
+    def __init__(self, source, channel=None, destination=None, message=None, id=None):
         assert is_string(source)
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
@@ -181,36 +187,34 @@ class EntityTypeDocument(DocumentBase):
         """
     name = ListField(TextField())
 
-    def __init__(self,name_=None):
+    def __init__(self, name_=None):
         assert is_sequence(name_)
-        DocumentBase.__init__(self, document_type = 'EntityType', id = ".".join([v for v in name_]))
+        DocumentBase.__init__(self, document_type='EntityType', id=".".join([v for v in name_]))
         self.name = name_
 
-        
+
 class FormModelDocument(DocumentBase):
-    metadata=DictField()
-    name=TextField()
-    type=TextField()
-    label=DictField()
-    form_code=TextField()
-    entity_id=TextField()
+    metadata = DictField()
+    name = TextField()
+    type = TextField()
+    label = DictField()
+    form_code = TextField()
+    entity_id = TextField()
     fields = ListField(DictField())
 
-
     def __init__(self, id=None):
-        DocumentBase.__init__(self, id = id, document_type = 'FormModel')
-        self.metadata[attributes.ACTIVE_LANGUAGES]=[]
+        DocumentBase.__init__(self, id=id, document_type='FormModel')
+        self.metadata[attributes.ACTIVE_LANGUAGES] = []
 
     @property
     def active_languages(self):
         return self.metadata[attributes.ACTIVE_LANGUAGES]
 
     @active_languages.setter
-    def active_languages(self,language):
+    def active_languages(self, language):
         active_languages = self.metadata[attributes.ACTIVE_LANGUAGES]
-        if not filter(lambda x:x==language, active_languages):
+        if not filter(lambda x: x == language, active_languages):
             active_languages.append(language)
 
-    def add_label(self,language,label):
-        self.label[language]=label
-
+    def add_label(self, language, label):
+        self.label[language] = label

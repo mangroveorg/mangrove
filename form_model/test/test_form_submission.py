@@ -81,10 +81,24 @@ class TestFormSubmission(TestCase):
         self.assertEqual(3,len(f.values))
 
 
-    def test_should_apply_validations(self):
-        pass
 #        Write negative scenarios
 #        Write is_valid scenarios
 
         
 
+    def test_give_error_for_wrong_integer_answers(self):
+        dbm = Mock(spec = DatabaseManager)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
+                              , language="eng", entity_question_flag=True)
+        question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
+                               range=IntegerConstraint(min=15,max=120))
+
+        form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
+                                    form_code="AIDS", type='survey',
+                                    fields = [question1,question3])
+
+        answers = { "ID" : "1", "Q2" : "10"}
+
+        form_submission = FormSubmission(form_model,answers)
+        self.assertFalse(form_submission.is_valid())
+        self.assertEqual(len(form_submission.errors),1)

@@ -1,3 +1,5 @@
+from mangrove.utils.validate import is_integer
+
 class ConstraintAttributes(object):
     MAX="max"
     MIN="min"
@@ -16,6 +18,8 @@ class IntegerConstraint(object):
             dict[ConstraintAttributes.MAX] = self.max
         return dict
 
+    def validate(self,value):
+        return is_integer(value,min=self.min,max=self.max)
 
 
 

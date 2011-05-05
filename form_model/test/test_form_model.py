@@ -204,3 +204,18 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(questionnaire.type, "survey")
         for i in range(len(questions)):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
+
+
+
+    def test_should_validate_for_valid_integer_value(self):
+        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "16", "Q3" : "X"}
+        self.assertTrue(self.form_model.is_valid(answers))
+
+    def test_should_return_error_for_invalid_integer_value(self):
+        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "200", "Q3" : "X"}
+        self.assertFalse(self.form_model.is_valid(answers))
+        self.assertEqual(len(self.form_model.errors),1)
+
+    def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
+        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "20"}
+        self.assertTrue(self.form_model.is_valid(answers))

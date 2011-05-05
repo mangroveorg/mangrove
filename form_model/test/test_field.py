@@ -1,6 +1,7 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField,field_attributes
 from mangrove.form_model import field
 from mangrove.form_model.validation import IntegerConstraint
@@ -186,3 +187,30 @@ class TestQuestion(unittest.TestCase):
         self.assertEqual(created_question.SINGLE_SELECT_FLAG, True)
         self.assertEqual(created_question.options, expected_option_list)
 
+    def test_should_return_error_for_integer_range_validation(self):
+        question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+                                   language="eng",range=IntegerConstraint(min=15,max=120))
+        valid_value = question.validate("120")
+        self.assertEqual(valid_value,120)
+
+    def test_should_return_error_for_integer_range_validation_for_min_value(self):
+        with self.assertRaises(AnswerTooBigException) as e:
+            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+                                   language="eng",range=IntegerConstraint(min=15,max=120))
+            question.validate(150)
+
+    def test_should_return_error_for_integer_range_validation_for_min_value(self):
+        with self.assertRaises(AnswerTooBigException) as e:
+            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+                                   language="eng",range=IntegerConstraint(min=15,max=120))
+            valid_value = question.validate(150)
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message,"answer 150 for question Q2 is greater than allowed")
+
+    def test_should_return_error_for_integer_range_validation_for_min_value(self):
+        with self.assertRaises(AnswerTooSmallException) as e:
+            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+                                   language="eng",range=IntegerConstraint(min=15,max=120))
+            valid_value = question.validate(11)
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message,"answer 11 for question Q2 is smaller than allowed")

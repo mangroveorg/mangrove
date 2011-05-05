@@ -57,4 +57,11 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEquals(data["Arv stock"],50)
         self.assertEquals(data["Color"],"RED")
 
+    def test_should_give_error_for_wrong_integer_value(self):
+        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 150 +COL RED" % self.entity.id
+        s = SubmissionHandler(self.dbm)
+
+        response = s.accept(Request("sms",text,"1234","5678"))
+        self.assertFalse(response.success)
+        self.assertEqual(len(response.errors),1)
 

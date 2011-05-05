@@ -2,7 +2,7 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException
 from mangrove.form_model.field import TextField, field_attributes
 from mangrove.utils.types import is_sequence, is_string, is_empty
 from mangrove.form_model import field
@@ -47,7 +47,7 @@ class FormModel(object):
 
         self._dbm = dbm
         self.questions = []
-
+        self.errors=[]
         # Are we being constructed from an existing doc?
         if _document is not None:
             self._doc = _document
@@ -96,6 +96,8 @@ class FormModel(object):
     def save(self):
         return self._dbm.save(self._doc).id
 
+
+
     def add_field(self,question_to_be_added):
         self.questions.append(question_to_be_added)
         self._doc.fields.append(question_to_be_added._to_json())
@@ -119,6 +121,18 @@ class FormModel(object):
         self._doc.active_languages = language
         if label is not None:
             self._doc.add_label(language,label)
+
+    def is_valid(self,answers):
+        try:
+            for field in self.fields:
+                field_answer = answers.get(field.question_code)
+                answer = answers.get(field.question_code)
+                if (field_answer is not None) and (not is_empty(answer) ):#ignore empty answers
+                    field.validate(answer);
+            return True
+        except MangroveException as e:
+            self.errors.append(e.message)
+        return False
 
     @property
     def id(self):
@@ -169,9 +183,10 @@ class FormSubmission(object):
         return [  (field,value,datadict.get_default_datadict_type())  for (field,value) in self.answers.items() ]
 
     def __init__(self,form_model, form_answers):
-        self.errors = []
         result = {}
         entity_id = None
+        self.form_model=form_model
+        self.form_answers=form_answers
         for field_code,answer in form_answers.items():
             form_field = form_model._find_question(field_code)
             if form_field is None: continue  #Ignore unknown fields.
@@ -193,7 +208,7 @@ class FormSubmission(object):
         return self._to_three_tuple()
 
     def is_valid(self):
-        return True
+        return self.form_model.is_valid(self.form_answers)
 
     def _parse_field(self, form_field, answer):
         if answer is None:
@@ -201,3 +216,7 @@ class FormSubmission(object):
         if form_field.get("type") == field_attributes.INTEGER_FIELD:
             return int(answer)
         return answer.strip()
+
+    @property
+    def errors(self):
+         return self.form_model.errors

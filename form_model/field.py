@@ -1,6 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from _collections import defaultdict
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException
 from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes
+from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError
 
 
 def field_to_json(object):
@@ -82,13 +84,23 @@ class IntegerField(Field):
     def __init__(self, name, question_code, label, range=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, question_code=question_code,
                           label=label, language=language)
-        if range is None:
-            range=IntegerConstraint()
-        self._dict[self.RANGE] = range._to_json()
+
+        self.constraint= range if range is not None else IntegerConstraint()
+        self._dict[self.RANGE] = self.constraint._to_json()
+
+    def validate(self, value):
+        try:
+            return self.constraint.validate(value)
+        except VdtValueTooBigError:
+            raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE],value)
+        except VdtValueTooSmallError:
+            raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE],value)
+
 
     @property
     def range(self):
         return self._dict.get(self.RANGE)
+
 
 
 class TextField(Field):
@@ -101,6 +113,9 @@ class TextField(Field):
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
+
+    def validate(self, value):
+        return True
 
     @property
     def is_entity_field(self):
@@ -126,6 +141,9 @@ class SelectField(Field):
                 else:
                     single_language_specific_option = {'text': {language: option}}
                 self._dict[self.OPTIONS].append(single_language_specific_option)
+
+    def validate(self, value):
+        return True
 
     @property
     def options(self):

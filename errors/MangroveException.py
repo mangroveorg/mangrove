@@ -39,3 +39,11 @@ class MultipleReportersForANumberException(MangroveException):
 
 class EntityInstanceDoesNotExistsException(MangroveException):
     pass
+
+class AnswerTooBigException(MangroveException):
+    def __init__(self,question_code,answer):
+        MangroveException.__init__(self,("answer %s for question %s is greater than allowed") % (answer,question_code,))
+
+class AnswerTooSmallException(MangroveException):
+    def __init__(self,question_code,answer):
+        MangroveException.__init__(self,("answer %s for question %s is smaller than allowed") % (answer,question_code,))

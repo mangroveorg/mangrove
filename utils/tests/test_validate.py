@@ -1,5 +1,7 @@
 import unittest
+
 from mangrove.utils.validate import is_integer, VdtTypeError, VdtValueTooBigError, VdtValueTooSmallError, is_string, VdtValueTooShortError, VdtValueTooLongError, is_string_list, is_option, is_option_in_list
+
 
 class TestValidate(unittest.TestCase):
     def setUp(self):
@@ -41,22 +43,21 @@ class TestValidate(unittest.TestCase):
         is_valid = is_string(string)
         self.assertTrue(is_valid)
 
-
-    def test_should_validate_range(self):
+    def test_should_validate_text_range(self):
         some_text = "something"
         min_range = 0
         max_range = 11
         isvalid = is_string(some_text, min_range, max_range)
         self.assertTrue(isvalid)
 
-    def test_should_raise_exception_for_integer_above_range(self):
+    def test_should_raise_exception_for_text_above_range(self):
         with self.assertRaises(VdtValueTooLongError):
             some_text = "something wrong"
             min_range = 0
             max_range = 11
             is_string(some_text, min_range, max_range)
 
-    def test_should_raise_exception_for_integer_below_range(self):
+    def test_should_raise_exception_for_text_below_range(self):
         with self.assertRaises(VdtValueTooShortError):
             some_text = "wrong"
             min_range = 11
@@ -66,4 +67,3 @@ class TestValidate(unittest.TestCase):
     def test_should_select_one_option(self):
         list = ["asif", "mahesh"]
         self.assertTrue(is_option_in_list("asif", list))
-

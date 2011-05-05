@@ -1,12 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from _ast import Sub
+
 from unittest.case import TestCase
 from mock import Mock, patch
-import mangrove
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.form_model.form_model import get_questionnaire
 from mangrove.transport.submissions import Request, SubmissionHandler, Response
 
 

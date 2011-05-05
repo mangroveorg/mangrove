@@ -1,9 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from unittest.case import TestCase
-from mock import Mock
-from mangrove.datastore.database import DatabaseManager
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
-from mangrove.transport.submissions import Request
+
 
 class TestSMSPlayer(TestCase):
     def test_should_create_sms_player(self):
@@ -34,6 +33,4 @@ class TestSMSPlayer(TestCase):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
         self.assertEqual({"ID": "1", "NAME": "FirstName LastName", "AGE": "10"}, values)
-
-
 

@@ -11,7 +11,7 @@ from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, EntityInstanceDoesNotExistsException
 from mangrove.utils.types import is_empty
-from ..utils.types import is_not_empty, is_sequence, is_string, primitive_type
+from ..utils.types import is_not_empty, is_sequence, is_string
 from ..utils.dates import utcnow
 from database import DatabaseManager
 
@@ -34,7 +34,7 @@ def define_type(dbm, entity_type):
     e = EntityTypeDocument(_entity_type)
     try:
         dbm.save(e)
-    except ResourceConflict :
+    except ResourceConflict:
         raise EntityTypeAlreadyDefined(message="This type is already defined")
     return e
 

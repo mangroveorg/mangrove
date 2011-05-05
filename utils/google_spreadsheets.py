@@ -4,25 +4,26 @@
 
 import gdata.spreadsheet.service
 
+
 def make_hierarchical_dict(d, sep=u":"):
     """
     Given a flat dict d, each key in d is broken up by the separator
     sep, and a hierarchical dict is returned.
     """
-    assert type(d)==dict
-    assert type(sep)==unicode
+    assert type(d) == dict
+    assert type(sep) == unicode
 
     result = {}
     for key, value in d.items():
         path = key.split(sep)
         curr_dict = result
         for i, directory in enumerate(path):
-            if i==(len(path)-1):
+            if i == (len(path) - 1):
                 assert directory not in curr_dict
                 curr_dict[directory] = value
             else:
                 if directory in curr_dict:
-                    assert type(curr_dict[directory])==dict
+                    assert type(curr_dict[directory]) == dict
                 else:
                     curr_dict[directory] = {}
                 curr_dict = curr_dict[directory]
@@ -64,7 +65,7 @@ class GoogleSpreadsheet(object):
         returning a dict for each row.
         """
         ws = self._worksheets[title]
-        wksht_id = ws.id.text.rsplit( '/', 1 )[ -1 ]
+        wksht_id = ws.id.text.rsplit('/', 1)[-1]
         for entry in self._client.GetListFeed(self._key(), wksht_id).entry:
             d = dict(zip(
                 entry.custom.keys(),

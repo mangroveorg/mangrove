@@ -20,6 +20,3 @@ class SMSPlayer(object):
         m = re.match(r"(\S+)(.*)", token)  # Match first non white space set of values.
         return m.groups()
 
-
-
-

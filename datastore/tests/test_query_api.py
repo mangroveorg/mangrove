@@ -39,7 +39,7 @@ class TestQueryApi(unittest.TestCase):
     def test_should_get_current_values_for_entity(self):
         dd_types = self.create_datadict_types()
         e = Entity(self.manager, entity_type=["Health_Facility.Clinic"], location=['India', 'MH', 'Pune'])
-        id = e.save()
+        e.save()
         e.add_data(data=[("beds", 10, dd_types['beds']), ("meds", 20, dd_types['meds']), ("doctors", 2, dd_types['doctors'])],
                    event_time=datetime.datetime(2011, 01, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 15, dd_types['beds']), ("doctors", 2, dd_types['doctors'])], event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -70,7 +70,7 @@ class TestQueryApi(unittest.TestCase):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id1 = e.save()
+        e.save()
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']), \
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -78,7 +78,7 @@ class TestQueryApi(unittest.TestCase):
                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id2 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']), \
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -181,7 +181,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -190,7 +190,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
@@ -215,7 +215,7 @@ class TestQueryApi(unittest.TestCase):
 
         # Entities for State 1: Maharashtra
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id1 = e.save()
+        e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
@@ -225,7 +225,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id2 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -234,7 +234,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
-        id3 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -244,7 +244,7 @@ class TestQueryApi(unittest.TestCase):
 
         # Entities for State 2: karnataka
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -252,7 +252,7 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -261,7 +261,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
-        id6 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
@@ -285,7 +285,7 @@ class TestQueryApi(unittest.TestCase):
         # Entities for State 1: Maharashtra
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Surgeon"])
-        id1 = e.save()
+        e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
@@ -296,7 +296,8 @@ class TestQueryApi(unittest.TestCase):
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.set_aggregation_path("governance", ["Director", "Med_Supervisor", "Surgeon"])
-        id2 = e.save()
+        e.save()
+
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -306,7 +307,8 @@ class TestQueryApi(unittest.TestCase):
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Doctor"])
-        id3 = e.save()
+        e.save()
+
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -317,7 +319,7 @@ class TestQueryApi(unittest.TestCase):
         # Entities for State 2: karnataka
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         e.set_aggregation_path("governance", ["Director", "Med_Supervisor", "Nurse"])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -326,7 +328,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Surgeon"])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -337,7 +339,7 @@ class TestQueryApi(unittest.TestCase):
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Nurse"])
-        id6 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)

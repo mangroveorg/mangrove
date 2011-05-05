@@ -2,7 +2,7 @@
 #  This is an integration test.
 # Send sms, parse and save.
 from unittest.case import TestCase
-from mangrove.datastore.database import get_db_manager, remove_db_manager, _delete_db_and_remove_db_manager
+from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import define_type
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField

@@ -14,9 +14,11 @@ def parse_iso_date_str(s):
     except Exception:
         raise ValueError("datestring not valid format")
 
+
 def is_naive_datetime(d):
     assert isinstance(d, datetime)
     return (d.tzinfo is None)
+
 
 def to_aware_utc(d):
     '''Returns a tz aware datetime in UTC for given datetime.
@@ -26,10 +28,11 @@ def to_aware_utc(d):
     assert isinstance(d, datetime)
     if is_naive_datetime(d):
         # assume was in UTC!
-        d = d.replace(tzinfo = pytz.UTC)
+        d = d.replace(tzinfo=pytz.UTC)
     else:
         d = d.astimezone(pytz.UTC)
     return d
+
 
 def to_naive_utc(d):
     '''Returns a naive (no timezone) datetime in UTC.
@@ -38,16 +41,19 @@ def to_naive_utc(d):
     '''
     assert isinstance(d, datetime)
     if not is_naive_datetime(d):
-        d = d.astimezone(pytz.UTC).replace(tzinfo = None)
+        d = d.astimezone(pytz.UTC).replace(tzinfo=None)
     return d
+
 
 def utcnow():
     return to_aware_utc(datetime.utcnow())
+
 
 def py_datetime_to_js_datestring(d):
     if not isinstance(d, datetime):
         raise ValueError("not a datetime")
     return to_aware_utc(d).isoformat()
+
 
 def js_datestring_to_py_datetime(s):
     if not is_string(s):
@@ -55,4 +61,3 @@ def js_datestring_to_py_datetime(s):
     if is_empty(s):
         raise ValueError("Not a valid datetime string")
     return to_aware_utc(parse_iso_date_str(s))
-

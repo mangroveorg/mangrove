@@ -24,17 +24,21 @@ def is_empty(arg):
 
     return False
 
+
 def is_not_empty(arg):
     '''Convenience inverse of is_empty '''
     return not is_empty(arg)
+
 
 def is_sequence(arg):
     '''Returns True is passed arg is an iterable sequence'''
     return hasattr(arg, '__iter__')
 
+
 def is_string(arg):
     '''Test for string in proper way to handle both strings and unicode strings'''
     return isinstance(arg, basestring)
+
 
 def is_number(arg):
     '''True if arg is any type in Pythons "number tower"
@@ -43,11 +47,13 @@ def is_number(arg):
     '''
     return isinstance(arg, Number)
 
+
 def string_as_bool(arg):
     '''True if the argument is any of ("t", "true", "y", "yes", "1", false otherwise'''
     if arg is not None and unicode(arg).lower() in (u'y', u'yes', u't', u'true', u'1'):
         return True
     return False
+
 
 def primitive_type(arg):
     ''' Returns a string representing the primitive type.
@@ -65,6 +71,3 @@ def primitive_type(arg):
     elif is_string(arg):
         typ = 'text'
     return typ
-
-
-  

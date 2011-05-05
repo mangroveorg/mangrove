@@ -2,7 +2,7 @@
 from _collections import defaultdict
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
 from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint
-from mangrove.utils.validate import is_integer, VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
+from mangrove.utils.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
 def field_to_json(object):

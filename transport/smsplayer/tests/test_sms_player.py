@@ -20,20 +20,20 @@ class TestSMSPlayer(TestCase):
 
     def test_should_parse_incomplete_messages_with_no_answer_values(self):
         smsplayer = SMSPlayer()
-        form_code,values = smsplayer.parse("WP +ID 1 +BC ")
-        self.assertEqual({"ID" : "1", "BC" : ""},values)
+        form_code, values = smsplayer.parse("WP +ID 1 +BC ")
+        self.assertEqual({"ID": "1", "BC": ""}, values)
 
-        form_code,values = smsplayer.parse("WP +ID")
-        self.assertEqual({"ID" : ""},values)
+        form_code, values = smsplayer.parse("WP +ID")
+        self.assertEqual({"ID": ""}, values)
 
-        form_code,values = smsplayer.parse("WP")
-        self.assertEqual({},values)
-        self.assertEqual("WP",form_code)
+        form_code, values = smsplayer.parse("WP")
+        self.assertEqual({}, values)
+        self.assertEqual("WP", form_code)
 
     def test_should_preserve_non_leading_white_spaces_in_answer(self):
         smsplayer = SMSPlayer()
-        form_code,values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
-        self.assertEqual({"ID" : "1", "NAME" : "FirstName LastName", "AGE" : "10"},values)
+        form_code, values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
+        self.assertEqual({"ID": "1", "NAME": "FirstName LastName", "AGE": "10"}, values)
 
 
 

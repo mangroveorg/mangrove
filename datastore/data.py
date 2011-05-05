@@ -6,7 +6,7 @@ class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
     SUM = "sum"
     LATEST = "latest"
-    COUNT = "count"  #Returns number of records containing the field
+    COUNT = "count"  # Returns number of records containing the field
 
 
 def _get_result_key(aggregate_on, row):
@@ -31,11 +31,13 @@ def _get_key_strategy(aggregate_on):
                 path = row['aggregation_paths'][aggregate_on.get('type')]
             key = tuple(path[:aggregate_on['level']])
             return key
+
         return _aggregate_by_path
     else:
         def _aggregate_by_entity(row):
             key = row["entity_id"]
             return key
+
         return _aggregate_by_entity
 
 
@@ -56,11 +58,11 @@ def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endt
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)
-#        * overrides field specific aggregation, returns the aggregation for all fields.
+        #        * overrides field specific aggregation, returns the aggregation for all fields.
         if "*" in aggregates:
             interested_aggregate = aggregates.get("*")
         if interested_aggregate:
-                result.setdefault(key, {})[field] = val[interested_aggregate]
+            result.setdefault(key, {})[field] = val[interested_aggregate]
     return result
 
 

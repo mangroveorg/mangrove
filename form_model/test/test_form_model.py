@@ -11,6 +11,7 @@ from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
+
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
@@ -18,13 +19,14 @@ class TestFormModel(unittest.TestCase):
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.name_type.save()
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                                   data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"], source="sms")
+                                                   data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
+                                                   source="sms")
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
                               , language="eng", entity_question_flag=True)
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng",length=TextConstraint(5,10))
+                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10))
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=IntegerConstraint(min=15,max=120))
+                                 range=IntegerConstraint(min=15, max=120))
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
@@ -66,7 +68,7 @@ class TestFormModel(unittest.TestCase):
         saved = get(self.dbm, self.form_model__id)
         self.assertTrue(len(saved.fields) == 4)
         self.assertTrue(saved.fields[1].name == "question1_Name")
-        self.assertTrue(saved.fields[2].name== "Father's age")
+        self.assertTrue(saved.fields[2].name == "Father's age")
 
     def test_should_add_integer_field_with_constraints(self):
         integer_question = get(self.dbm, self.form_model__id).fields[2]
@@ -114,7 +116,7 @@ class TestFormModel(unittest.TestCase):
         form_model = get(self.dbm, self.form_model__id)
         form_model.delete_all_fields()
         self.assertEquals(len(form_model.fields), 0)
-        
+
     def test_should_delete_all_fields_from_questions(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.delete_all_fields()
@@ -138,65 +140,66 @@ class TestFormModel(unittest.TestCase):
     def test_should_set_form_code(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.form_code = "xyz"
-        self.assertEquals(form_model.form_code,"xyz")
-
+        self.assertEquals(form_model.form_code, "xyz")
 
     def test_should_set_entity_type(self):
         form_model = get(self.dbm, self.form_model__id)
         form_model.entity_id = "xyz"
-        self.assertEquals(form_model.entity_id,"xyz")
+        self.assertEquals(form_model.entity_id, "xyz")
 
     def test_should_create_a_questionnaire_from_dictionary(self):
         fields = [
-               {
-                   "name": "What are you reporting on?",
-                   "defaultValue": "",
-                   "label": {
-                       "eng": "Entity being reported on"
-                   },
-                   "entity_question_flag": True,
-                   "type": "text",
-                   "question_code": "eid",
-                   "length":{"min":1,"max":10},
-               },
-               {
-                   "range": {
-                       "max": 10,
-                       "min": 0
-                   },
-                   "label": {"eng": ""},
-                   "type": "integer",
-                   "name": "What is your age?",
-                   "question_code": "AGE"
-               },
-               {
-                   "options": [
-                       {
-                           "text": {"eng": "Pune"}
-                       },
-                       {
-                           "text": {"eng": "Bangalore"}
-                       }
-                   ],
-                   "label": {"eng": ""},
-                   "type": "select",
-                   "name": "Where do you live?",
-                   "question_code": "PLC"
-               }]
+                    {
+                    "name": "What are you reporting on?",
+                    "defaultValue": "",
+                    "label": {
+                        "eng": "Entity being reported on"
+                    },
+                    "entity_question_flag": True,
+                    "type": "text",
+                    "question_code": "eid",
+                    "length": {"min": 1, "max": 10},
+                    },
+                    {
+                        "range": {
+                            "max": 10,
+                            "min": 0
+                        },
+                        "label": {"eng": ""},
+                        "type": "integer",
+                        "name": "What is your age?",
+                        "question_code": "AGE"
+                    },
+                    {
+                        "options": [
+                                    {
+                                    "text": {"eng": "Pune"}
+                                },
+                                    {
+                                        "text": {"eng": "Bangalore"}
+                                    }
+                        ],
+                        "label": {"eng": ""},
+                        "type": "select",
+                        "name": "Where do you live?",
+                        "question_code": "PLC"
+                    }]
         document = FormModelDocument()
         document.fields = fields
         document.entity_id = "Reporter"
         document.document_type = "FormModel"
         document.form_code = "F1"
-        document.name= "New Project"
+        document.name = "New Project"
         document.type = "survey"
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", question_code="eid",
-                          label={"eng": "Entity being reported on"}, entity_question_flag=True,length=TextConstraint(min=1,max=10))
+                            label={"eng": "Entity being reported on"}, entity_question_flag=True,
+                            length=TextConstraint(min=1, max=10))
         ageQ = IntegerField(name="What is your age?", question_code="AGE", label={"eng": ""},
-                            range=IntegerConstraint(min=0,max=10))
+                            range=IntegerConstraint(min=0, max=10))
         placeQ = SelectField(name="Where do you live?", question_code="PLC", label={"eng": ""},
-                             options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],single_select_flag=False)
+                             options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
+                             single_select_flag=False)
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel(dbm=self.dbm, _document=document)
         self.maxDiff = None
@@ -206,25 +209,24 @@ class TestFormModel(unittest.TestCase):
         for i in range(len(questions)):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
 
-
     def test_should_validate_for_valid_integer_value(self):
-        answers = { "ID" : "1", "Q2" : "16"}
+        answers = {"ID": "1", "Q2": "16"}
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_error_for_invalid_integer_value(self):
-        answers = { "ID" : "1","Q2" : "200"}
+        answers = {"ID": "1", "Q2": "200"}
         self.assertFalse(self.form_model.is_valid(answers))
-        self.assertEqual(len(self.form_model.errors),1)
+        self.assertEqual(len(self.form_model.errors), 1)
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
-        answers = { "ID" : "1", "Q1" : "Asif Momin", "Q2" : "20"}
+        answers = {"ID": "1", "Q1": "Asif Momin", "Q2": "20"}
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_validate_for_valid_text_value(self):
-        answers = { "ID" : "1", "Q1" : "Asif Momin"}
+        answers = {"ID": "1", "Q1": "Asif Momin"}
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
-        answers = { "ID" : "1", "Q1" : "Asif", "Q2" : "200", "Q3" : "X"}
+        answers = {"ID": "1", "Q1": "Asif", "Q2": "200", "Q3": "X"}
         self.assertFalse(self.form_model.is_valid(answers))
-        self.assertEqual(len(self.form_model.errors),2)
+        self.assertEqual(len(self.form_model.errors), 2)

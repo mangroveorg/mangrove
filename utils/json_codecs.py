@@ -2,6 +2,7 @@
 
 from dates import js_datestring_to_py_datetime, py_datetime_to_js_datestring
 from types import is_sequence
+
 try:
     import json
 except ImportError:
@@ -14,12 +15,13 @@ except ImportError:
 
 class _json_encoder(json.JSONEncoder):
     def default(self, o):
-       try:
-           return py_datetime_to_js_datestring(o)
-       except ValueError:
-           # wasn't a date
-           pass
-       return json.JSONEncoder.default(self, o)
+        try:
+            return py_datetime_to_js_datestring(o)
+        except ValueError:
+            # wasn't a date
+            pass
+        return json.JSONEncoder.default(self, o)
+
 
 def _decode_hook(s):
     out = {}
@@ -45,9 +47,11 @@ def _decode_hook(s):
         out[k] = v
     return out
 
+
 def decode_json(s):
-    return json.loads(s, object_hook = _decode_hook)
+    return json.loads(s, object_hook=_decode_hook)
+
 
 def encode_json(o):
-    return json.dumps(o, cls = _json_encoder)
+    return json.dumps(o, cls=_json_encoder)
 

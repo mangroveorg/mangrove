@@ -130,39 +130,37 @@
 
 __version__ = '1.0.1'
 
-
 __all__ = (
-    '__version__',
-    'dottedQuadToNum',
-    'numToDottedQuad',
-    'ValidateError',
-    'VdtUnknownCheckError',
-    'VdtParamError',
-    'VdtTypeError',
-    'VdtValueError',
-    'VdtValueTooSmallError',
-    'VdtValueTooBigError',
-    'VdtValueTooShortError',
-    'VdtValueTooLongError',
-    'VdtMissingValue',
-    'Validator',
-    'is_integer',
-    'is_float',
-    'is_boolean',
-    'is_list',
-    'is_tuple',
-    'is_ip_addr',
-    'is_string',
-    'is_int_list',
-    'is_bool_list',
-    'is_float_list',
-    'is_string_list',
-    'is_ip_addr_list',
-    'is_mixed_list',
-    'is_option',
-    '__docformat__',
+'__version__',
+'dottedQuadToNum',
+'numToDottedQuad',
+'ValidateError',
+'VdtUnknownCheckError',
+'VdtParamError',
+'VdtTypeError',
+'VdtValueError',
+'VdtValueTooSmallError',
+'VdtValueTooBigError',
+'VdtValueTooShortError',
+'VdtValueTooLongError',
+'VdtMissingValue',
+'Validator',
+'is_integer',
+'is_float',
+'is_boolean',
+'is_list',
+'is_tuple',
+'is_ip_addr',
+'is_string',
+'is_int_list',
+'is_bool_list',
+'is_float_list',
+'is_string_list',
+'is_ip_addr_list',
+'is_mixed_list',
+'is_option',
+'__docformat__',
 )
-
 
 import re
 
@@ -274,13 +272,13 @@ def dottedQuadToNum(ip):
     Traceback (most recent call last):
     ValueError: Not a good dotted-quad IP: 255.255.255.256
     """
-    
+
     # import here to avoid it when ip_addr values are not used
     import socket, struct
-    
+
     try:
         return struct.unpack('!L',
-            socket.inet_aton(ip.strip()))[0]
+                             socket.inet_aton(ip.strip()))[0]
     except socket.error:
         # bug in inet_aton, corrected in Python 2.4
         if ip.strip() == '255.255.255.255':
@@ -311,10 +309,10 @@ def numToDottedQuad(num):
     Traceback (most recent call last):
     ValueError: Not a good numeric IP: 4294967296
     """
-    
+
     # import here to avoid it when ip_addr values are not used
     import socket, struct
-    
+
     # no need to intercept here, 4294967295L is fine
     if num > 4294967295L or num < 0:
         raise ValueError('Not a good numeric IP: %s' % num)
@@ -381,7 +379,7 @@ class VdtTypeError(ValidateError):
 
 class VdtValueError(ValidateError):
     """The value supplied was of the correct type, but was not an allowed value."""
-    
+
     def __init__(self, value):
         """
         >>> raise VdtValueError('jedi')
@@ -517,7 +515,7 @@ class Validator(object):
     _func_re = re.compile(r'(.+?)\((.*)\)', re.DOTALL)
 
     # this regex takes apart keyword arguments
-    _key_arg = re.compile(r'^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$',  re.DOTALL)
+    _key_arg = re.compile(r'^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$', re.DOTALL)
 
 
     # this regex finds keyword=list(....) type values
@@ -554,10 +552,10 @@ class Validator(object):
             'pass': self._pass,
             'option': is_option,
             'force_list': force_list,
-        }
+            }
         if functions is not None:
             self.functions.update(functions)
-        # tekNico: for use by ConfigObj
+            # tekNico: for use by ConfigObj
         self.baseErrorClass = ValidateError
         self._cache = {}
 
@@ -584,16 +582,16 @@ class Validator(object):
         ''
         """
         fun_name, fun_args, fun_kwargs, default = self._parse_with_caching(check)
-            
+
         if missing:
             if default is None:
                 # no information needed here - to be handled by caller
                 raise VdtMissingValue()
             value = self._handle_none(default)
-        
+
         if value is None:
             return None
-        
+
         return self._check_value(value, fun_name, fun_args, fun_kwargs)
 
 
@@ -618,8 +616,8 @@ class Validator(object):
             fun_kwargs = dict([(str(key), value) for (key, value) in fun_kwargs.items()])
             self._cache[check] = fun_name, list(fun_args), dict(fun_kwargs), default
         return fun_name, fun_args, fun_kwargs, default
-        
-        
+
+
     def _check_value(self, value, fun_name, fun_args, fun_kwargs):
         try:
             fun = self.functions[fun_name]
@@ -657,7 +655,7 @@ class Validator(object):
                         val = self._unquote(val)
                     fun_kwargs[keymatch.group(1)] = val
                     continue
-                
+
                 fun_args.append(self._unquote(arg))
         else:
             # allows for function names without (args)
@@ -696,8 +694,8 @@ class Validator(object):
         '0'
         """
         return value
-    
-    
+
+
     def get_default_value(self, check):
         """
         Given a check, return the default value for the check
@@ -861,9 +859,9 @@ def is_float(value, min=None, max=None):
 
 
 bool_dict = {
-    True: True, 'on': True, '1': True, 'true': True, 'yes': True, 
+    True: True, 'on': True, '1': True, 'true': True, 'yes': True,
     False: False, 'off': False, '0': False, 'false': False, 'no': False,
-}
+    }
 
 
 def is_boolean(value):
@@ -915,8 +913,8 @@ def is_boolean(value):
             return bool_dict[value.lower()]
         except KeyError:
             raise VdtTypeError(value)
-    # we do an equality test rather than an identity test
-    # this ensures Python 2.2 compatibilty
+            # we do an equality test rather than an identity test
+        # this ensures Python 2.2 compatibilty
     # and allows 0 and 1 to represent True and False
     if value == False:
         return False
@@ -1216,8 +1214,7 @@ def force_list(value, min=None, max=None):
     if not isinstance(value, (list, tuple)):
         value = [value]
     return is_list(value, min, max)
-    
-    
+
 
 fun_dict = {
     'integer': is_integer,
@@ -1225,7 +1222,7 @@ fun_dict = {
     'ip_addr': is_ip_addr,
     'string': is_string,
     'boolean': is_boolean,
-}
+    }
 
 
 def is_mixed_list(value, *args):
@@ -1314,6 +1311,7 @@ def is_option(value, *options):
     if not value in options:
         raise VdtValueError(value)
     return value
+
 
 def is_option_in_list(value, list_of_options):
     """
@@ -1429,6 +1427,7 @@ def _test2():
     3
     """
 
+
 def _test3():
     r"""
     >>> vtor.check('string(default="")', '', missing=True)
@@ -1455,15 +1454,16 @@ def _test3():
     >>> vtor.check("string_list(default=list('\n'))", '', missing=True)
     ['\n']
     """
-    
-    
+
+
 if __name__ == '__main__':
     # run the code tests in doctest format
     import sys
     import doctest
+
     m = sys.modules.get('__main__')
     globs = m.__dict__.copy()
     globs.update({
         'vtor': Validator(),
-    })
+        })
     doctest.testmod(m, globs=globs)

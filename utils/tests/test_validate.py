@@ -6,17 +6,17 @@ class TestValidate(unittest.TestCase):
         pass
 
     def test_should_validate_integer(self):
-        i=10
+        i = 10
         isvalid = is_integer(i)
         self.assertTrue(isvalid)
 
     def test_should_raise_exception_for_invalid_integer(self):
         with self.assertRaises(VdtTypeError):
-            i="as"
+            i = "as"
             is_integer(i)
 
     def test_should_validate_range(self):
-        i=10
+        i = 10
         min_range = 0
         max_range = 11
         isvalid = is_integer(i, min_range, max_range)
@@ -24,14 +24,14 @@ class TestValidate(unittest.TestCase):
 
     def test_should_raise_exception_for_integer_above_range(self):
         with self.assertRaises(VdtValueTooBigError):
-            i=12
+            i = 12
             min_range = 0
             max_range = 11
             is_integer(i, min_range, max_range)
 
     def test_should_raise_exception_for_integer_below_range(self):
         with self.assertRaises(VdtValueTooSmallError):
-            i=1
+            i = 1
             min_range = 2
             max_range = 11
             is_integer(i, min_range, max_range)
@@ -64,6 +64,6 @@ class TestValidate(unittest.TestCase):
             is_string(some_text, min_range, max_range)
 
     def test_should_select_one_option(self):
-        list=["asif","mahesh"]
-        self.assertTrue(is_option_in_list("asif",list))
+        list = ["asif", "mahesh"]
+        self.assertTrue(is_option_in_list("asif", list))
 

@@ -3,25 +3,25 @@ from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.utils.types import is_empty
 from mangrove.utils.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
-class TestIntegerValidations(unittest.TestCase):
 
+class TestIntegerValidations(unittest.TestCase):
     def test_should_return_min_max_as_dictionary_for_integer(self):
-        expected_dict={"min":10,"max":20}
+        expected_dict = {"min": 10, "max": 20}
         constraint = IntegerConstraint(min=10, max=20)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_max_as_dictionary(self):
-        expected_dict={"max":20}
+        expected_dict = {"max": 20}
         constraint = IntegerConstraint(min=None, max=20)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
-        expected_dict={"min":1}
+        expected_dict = {"min": 1}
         constraint = IntegerConstraint(min=1)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
         constraint = IntegerConstraint()
@@ -31,9 +31,9 @@ class TestIntegerValidations(unittest.TestCase):
     def test_should_validate_range(self):
         constraint = IntegerConstraint(min=10, max=20)
         valid_data = constraint.validate(15)
-        self.assertEqual(valid_data,15)
+        self.assertEqual(valid_data, 15)
         valid_data = constraint.validate("15")
-        self.assertEqual(valid_data,15)
+        self.assertEqual(valid_data, 15)
 
     def test_should_raise_exception_for_integer_above_range(self):
         with self.assertRaises(VdtValueTooBigError):
@@ -50,25 +50,25 @@ class TestIntegerValidations(unittest.TestCase):
             constraint = IntegerConstraint(min=10, max=20)
             constraint.validate("asasd")
 
-class TestTextValidations(unittest.TestCase):
 
+class TestTextValidations(unittest.TestCase):
     def test_should_return_min_max_as_dictionary_for_integer(self):
-        expected_dict={"min":10,"max":20}
+        expected_dict = {"min": 10, "max": 20}
         constraint = TextConstraint(min=10, max=20)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_max_as_dictionary(self):
-        expected_dict={"max":20}
+        expected_dict = {"max": 20}
         constraint = TextConstraint(min=None, max=20)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
-        expected_dict={"min":1}
+        expected_dict = {"min": 1}
         constraint = TextConstraint(min=1)
         actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict,actual_dict)
+        self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
         constraint = TextConstraint()
@@ -78,7 +78,7 @@ class TestTextValidations(unittest.TestCase):
     def test_should_validate_range(self):
         constraint = TextConstraint(min=10, max=20)
         valid_data = constraint.validate("valid_string")
-        self.assertEqual(valid_data,"valid_string")
+        self.assertEqual(valid_data, "valid_string")
 
     def test_should_raise_exception_for_integer_above_range(self):
         with self.assertRaises(VdtValueTooLongError):

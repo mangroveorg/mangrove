@@ -12,17 +12,20 @@ from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
 
+
 class Request(object):
-    def __init__(self, transport,message,source,destination):
+    def __init__(self, transport, message, source, destination):
         self.transport = transport
         self.message = message
         self.source = source
         self.destination = destination
 
+
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
     ERROR_RESPONSE_TEMPLATE = "%s"
-    def __init__(self, reporters,success, errors, submission_id = None,datarecord_id = None):
+
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None):
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
@@ -57,23 +60,24 @@ class SubmissionHandler(object):
         try:
             errors = []
             reporters = reporter.find_reporter(self.dbm, request.source)
-            submission_id = self.dbm.save(SubmissionLogDocument(channel = request.transport,source =request.source,
-                                                destination =request.destination,message=request.message)).id
+            submission_id = self.dbm.save(SubmissionLogDocument(channel=request.transport, source=request.source,
+                                                                destination=request.destination,
+                                                                message=request.message)).id
             player = self.get_player_for_transport(request)
-            form_code,values = player.parse(request.message)
-            form = form_model.get_questionnaire(self.dbm,form_code)
-            form_submission = FormSubmission(form,values)
+            form_code, values = player.parse(request.message)
+            form = form_model.get_questionnaire(self.dbm, form_code)
+            form_submission = FormSubmission(form, values)
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-                data_record_id = e.add_data(data = form_submission.values,submission_id = submission_id)
-                return Response(reporters,True,errors,submission_id,data_record_id)
+                data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+                return Response(reporters, True, errors, submission_id, data_record_id)
             else:
                 errors.extend(form_submission.errors)
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)
         except NumberNotRegisteredException as e:
             errors.append(e.message)
-        return Response(reporters,False,errors,submission_id)
+        return Response(reporters, False, errors, submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

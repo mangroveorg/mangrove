@@ -7,6 +7,7 @@ from mangrove.datastore.entity import Entity, load_all_entity_types, define_type
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 
+
 class TestQueryApi(unittest.TestCase):
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
@@ -34,7 +35,6 @@ class TestQueryApi(unittest.TestCase):
     def test_can_create_views(self):
         self.assertTrue(views.exists_view("by_values", self.manager))
         self.assertTrue(views.exists_view("entity_types", self.manager))
-
 
     def test_should_get_current_values_for_entity(self):
         dd_types = self.create_datadict_types()
@@ -91,7 +91,7 @@ class TestQueryApi(unittest.TestCase):
                                        "patients": data.reduce_functions.COUNT},
                             aggregate_on={'type': 'location', "level": 2})
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[("India","MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
+        self.assertEqual(values[("India", "MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
 
     def test_should_fetch_aggregate_per_entity(self):
         # Aggregate across all data records for each entity
@@ -145,7 +145,6 @@ class TestQueryApi(unittest.TestCase):
 #        self.assertEqual(values[id1],{ "director" : "Dr. A", "beds" : 300, "patients" : 10})
 #        self.assertEqual(values[id2],{ "director" : "Dr. B1", "beds" : 100, "patients" : 50})
 #        self.assertEqual(values[id3],{ "director" : "Dr. C", "beds" : 200, "patients" : 12})
-
 
     def test_should_filter_aggregate_per_entity_for_a_location(self):
         dd_types = self.create_datadict_types()
@@ -208,7 +207,6 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id2_pune], {"director": "Dr. AA", "beds": 200, "patients": 70})
         self.assertEqual(values[id3_pune], {"director": "Dr. AAA", "beds": 200, "patients": 100})
 
-
     def test_should_fetch_aggregate_grouped_by_hierarchy_path_for_location(self):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
@@ -261,8 +259,6 @@ class TestQueryApi(unittest.TestCase):
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
-
-
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
         id6 = e.save()
@@ -279,7 +275,6 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("India", "MH")], {"patients": 200})
         self.assertEqual(values[("India", "Karnataka")], {"patients": 140})
         self.assertEqual(values[("India", "Kerala")], {"patients": 12})
-
 
     def test_should_fetch_aggregate_grouped_by_hierarchy_path_for_any(self):
         dd_types = self.create_datadict_types()
@@ -339,7 +334,6 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
-
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Nurse"])
@@ -354,7 +348,7 @@ class TestQueryApi(unittest.TestCase):
 
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("Director", "Med_Officer")], {"patients": 212})
-        self.assertEqual(values[("Director", "Med_Supervisor")] ,{"patients": 140})
+        self.assertEqual(values[("Director", "Med_Supervisor")], {"patients": 140})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
                                     aggregates={"patients": data.reduce_functions.SUM},
@@ -365,13 +359,13 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Officer", "Surgeon")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Doctor")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Nurse")], {"patients": 12})
-        self.assertEqual(values[("Director", "Med_Supervisor","Surgeon")] ,{"patients": 70})
+        self.assertEqual(values[("Director", "Med_Supervisor", "Surgeon")] , {"patients": 70})
 
     def test_should_load_all_entity_types(self):
-        define_type(self.manager,["HealthFacility","Clinic"])
-        define_type(self.manager,["HealthFacility","Hospital"])
-        define_type(self.manager,["WaterPoint","Lake"])
-        define_type(self.manager,["WaterPoint","Dam"])
+        define_type(self.manager, ["HealthFacility", "Clinic"])
+        define_type(self.manager, ["HealthFacility", "Hospital"])
+        define_type(self.manager, ["WaterPoint", "Lake"])
+        define_type(self.manager, ["WaterPoint", "Dam"])
         entity_types = load_all_entity_types(self.manager)
         assert entity_types is not None
         print entity_types
@@ -436,9 +430,9 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,aggregates={"*": data.reduce_functions.LATEST})
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE, aggregates={"*": data.reduce_functions.LATEST})
 
         self.assertEqual(len(values), 3)
-        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds" : 20})
-        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 20, "meds" :400 })
-        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, "meds" : 50})
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds": 20})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 20, "meds": 400})
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, "meds": 50})

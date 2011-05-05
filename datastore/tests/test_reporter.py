@@ -6,6 +6,7 @@ from mangrove.datastore.reporter import find_reporter
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 
+
 class TestReporter(TestCase):
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
@@ -29,7 +30,6 @@ class TestReporter(TestCase):
                  location=[],
                  source="sms")
 
-
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.manager)
 
@@ -49,7 +49,3 @@ class TestReporter(TestCase):
         self.assertEqual(2, len(reporter_list))
         self.assertTrue(dict(first_name="A", telephone_number="1234567890") in reporter_list)
         self.assertTrue(dict(first_name="B", telephone_number="1234567890") in reporter_list)
-
-
-
-

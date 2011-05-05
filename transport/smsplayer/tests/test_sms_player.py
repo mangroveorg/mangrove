@@ -33,3 +33,4 @@ class TestSMSPlayer(TestCase):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
         self.assertEqual({"ID": "1", "NAME": "FirstName LastName", "AGE": "10"}, values)
+

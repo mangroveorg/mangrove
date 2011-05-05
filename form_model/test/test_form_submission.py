@@ -39,7 +39,6 @@ class TestFormSubmission(TestCase):
         self.assertEqual(form_submission.entity_id, "1")
 
     def test_should_create_form_submission_with_answer_values(self):
-        dbm = Mock(spec=DatabaseManager)
         ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
         self.datadict_module.get_default_datadict_type.return_value = ddtype
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED"}

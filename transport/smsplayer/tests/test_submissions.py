@@ -3,7 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.documents import RawSubmissionLogDocument, SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.transport.submissions import Request, SubmissionHandler, Response
 
@@ -35,15 +35,18 @@ class TestSubmissions(TestCase):
         self.assertIsNotNone(response.success)
 
     def test_should_log_submission(self):
-        request = Request(transport="sms", message="hello world", source="1234", destination="5678")
+        request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
         s.accept(request)
-        submission_log = dbm.save.call_args[0][0]
+        submission_log = dbm.save.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(request.transport, submission_log.channel)
-        self.assertEquals(request.message, submission_log.message)
         self.assertEquals(request.source, submission_log.source)
+        self.assertEquals(request.destination, submission_log.destination)
+        self.assertEquals(False,submission_log.status)
+        self.assertEquals("QR1",submission_log.form_code)
+        self.assertEquals({'Q1': '20', 'EID': '100'},submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
     def test_should_check_if_submission_by_registered_reporter(self):

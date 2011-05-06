@@ -4,7 +4,7 @@
 Common entry point for all submissions to Mangrove via multiple channels.
 Will log the submission and forward to the appropriate channel handler.
 """
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.documents import  SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException
@@ -50,6 +50,12 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
+    def update_submission_log(self, submission_id, status, message=""):
+        log = self.dbm.load(submission_id, SubmissionLogDocument)
+        log.status = status
+        log.error_message = message
+        self.dbm.save(log)
+
     def accept(self, request):
         assert request is not None
         assert request.source is not None
@@ -60,19 +66,23 @@ class SubmissionHandler(object):
         try:
             errors = []
             reporters = reporter.find_reporter(self.dbm, request.source)
-            submission_id = self.dbm.save(SubmissionLogDocument(channel=request.transport, source=request.source,
-                                                                destination=request.destination,
-                                                                message=request.message)).id
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
+            submission_id = self.dbm.save(SubmissionLogDocument(channel=request.transport, source=request.source,
+                                                                destination=request.destination, form_code=form_code, values=values,
+                                                                status=False, error_message="")).id
             form = form_model.get_questionnaire(self.dbm, form_code)
             form_submission = FormSubmission(form, values)
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
                 data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+                self.update_submission_log(submission_id,True)
+
                 return Response(reporters, True, errors, submission_id, data_record_id)
             else:
                 errors.extend(form_submission.errors)
+                self.update_submission_log(submission_id, False, str(errors))
+
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)
         except NumberNotRegisteredException as e:

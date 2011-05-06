@@ -159,9 +159,10 @@ class DataDictDocument(DocumentBase):
             self[arg] = value
 
 
-class SubmissionLogDocument(DocumentBase):
+class RawSubmissionLogDocument(DocumentBase):
     """
-        The submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
+        The raw submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
+        along with the raw sms string that came in
     """
 
     submitted_on = TZAwareDateTimeField()
@@ -172,7 +173,7 @@ class SubmissionLogDocument(DocumentBase):
 
     def __init__(self, source, channel=None, destination=None, message=None, id=None):
         assert is_string(source)
-        DocumentBase.__init__(self, id, 'SubmissionLog')
+        DocumentBase.__init__(self, id, 'RawSubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
         self.channel = channel
@@ -217,9 +218,30 @@ class FormModelDocument(DocumentBase):
     def add_label(self, language, label):
         self.label[language] = label
 
-#class AggregationTreeDocument(DocumentBase):
-#    tree = HierarchyField()
-#
-#    def __init__(self, id=None):
-#        DocumentBase.__init__(id=id, document_type='AggregationTree')
-#   
+
+class SubmissionLogDocument(DocumentBase):
+    """
+        The processed submission log document. It will contain metadata about the submission. (Eg: source, submitted_on etc.)
+        along with the parsed key value pairs of the sms that came in
+    """
+
+    submitted_on = TZAwareDateTimeField()
+    source = TextField()
+    destination = TextField()
+    channel = TextField()
+    values = DictField()
+    status = BooleanField()
+    error_message = TextField()
+    form_code = TextField()
+
+    def __init__(self, source, channel=None, destination=None, values=None, id=None, status=None, error_message=None, form_code=None):
+        assert is_string(source)
+        DocumentBase.__init__(self, id, 'SubmissionLog')
+        self.source = source
+        self.submitted_on = utcnow()
+        self.channel = channel
+        self.destination = destination
+        self.form_code=form_code
+        self.values = values
+        self.status = status
+        self.error_message = error_message

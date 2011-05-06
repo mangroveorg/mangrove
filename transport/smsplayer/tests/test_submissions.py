@@ -25,19 +25,12 @@ class TestSubmissions(TestCase):
         self.entity_patcher.stop()
         self.reporter_patcher.stop()
 
-<<<<<<< HEAD
-=======
 
->>>>>>> Refactoring of Submission and fixing the build
     def test_should_log_submission(self):
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
-<<<<<<< HEAD
         self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("hello")
-=======
-        self.form_model_module.get_questionnaire.side_effect=FormModelDoesNotExistsException("hello")
->>>>>>> Refactoring of Submission and fixing the build
         s.accept(request)
         submission_log = dbm.save.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
@@ -79,10 +72,5 @@ class TestSubmissions(TestCase):
 #        s = SubmissionHandler(dbm)
 #        response = s.accept(request)
 #        self.assertEqual("Thank You Reporter A for your submission.", response.message)
-<<<<<<< HEAD
-=======
-
->>>>>>> Refactoring of Submission and fixing the build
-
 #test_get_player
 #test_authorize

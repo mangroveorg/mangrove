@@ -3,7 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.documents import  SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.transport.submissions import Request, SubmissionHandler
 
@@ -69,7 +69,6 @@ class TestSubmissions(TestCase):
 #        s = SubmissionHandler(dbm)
 #        response = s.accept(request)
 #        self.assertEqual("Thank You Reporter A for your submission.", response.message)
-
 
 #test_get_player
 #test_authorize

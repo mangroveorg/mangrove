@@ -3,12 +3,13 @@
 # Send sms, parse and save.
 from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
+from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import define_type
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
-from mangrove.transport.submissions import SubmissionHandler, Request
+from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
 
 
@@ -84,3 +85,20 @@ class TestShouldSaveSMSSubmission(TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
+
+    def test_get_submissions_for_form(self):        
+        submission_id1 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+                                                                destination=12345, form_code="abc", values={'Q1': 'ans1', 'Q2': 'ans2'},
+                                                                status=False, error_message="")).id
+        submission_id2 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+                                                                destination=12345, form_code="abc", values={'Q1': 'ans12', 'Q2': 'ans22'},
+                                                                status=False, error_message="")).id
+        submission_id3 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+                                                                destination=12345, form_code="def", values={'defQ1': 'defans12', 'defQ2': 'defans22'},
+                                                                status=False, error_message="")).id
+
+        submission_list = get_submissions_made_for_questionnaire("abc", self.dbm)
+        self.assertEquals(2, len(submission_list))
+        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[0]['values'])
+        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[1]['values'])
+        

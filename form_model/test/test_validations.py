@@ -1,5 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
- 
+
 import unittest
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.utils.types import is_empty
@@ -93,4 +93,3 @@ class TestTextValidations(unittest.TestCase):
         with self.assertRaises(VdtValueTooShortError):
             constraint = TextConstraint(min=10, max=20)
             constraint.validate("small")
-

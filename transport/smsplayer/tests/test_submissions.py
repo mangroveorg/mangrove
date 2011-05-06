@@ -24,7 +24,7 @@ class TestSubmissions(TestCase):
         self.reporter_patcher.stop()
 
     def test_should_accept_sms_submission(self):
-        request = Request(transport = "sms", message = "hello world", source = "1234", destination = "5678")
+        request = Request(transport="sms", message="hello world", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
         response = s.accept(request)
@@ -80,5 +80,3 @@ class TestSubmissions(TestCase):
 
 #test_get_player
 #test_authorize
-
-

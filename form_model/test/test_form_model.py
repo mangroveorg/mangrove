@@ -21,8 +21,8 @@ class TestFormModel(unittest.TestCase):
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                                    data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
                                                    source="sms")
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True)
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng", length=TextConstraint(5, 10))
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",

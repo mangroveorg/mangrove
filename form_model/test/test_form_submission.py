@@ -14,8 +14,8 @@ class TestFormSubmission(TestCase):
         self.datadict_module = self.datadict_patcher.start()
         self.dbm = Mock(spec=DatabaseManager)
 
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True)
         question2 = TextField(name="Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng")
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
@@ -83,11 +83,10 @@ class TestFormSubmission(TestCase):
 
     #        Write negative scenarios
     #        Write is_valid scenarios
-
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range=IntegerConstraint(min=15, max=120))
 
@@ -103,8 +102,8 @@ class TestFormSubmission(TestCase):
 
     def test_give_error_for_wrong_text_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True, length=TextConstraint(5, 10))
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, length=TextConstraint(5, 10))
         form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
                                form_code="AIDS", type='survey',
                                fields=[question1])

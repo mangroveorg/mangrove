@@ -149,7 +149,7 @@ def get_percent(key, row):
     else:
         return None
 
-
+    
 def get_boolean(key, row):
     """Reads a boolean from a row."""
     if key in row and row[key]:

@@ -26,7 +26,6 @@ class TestIntegerValidations(unittest.TestCase):
         self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_empty_dict_for_empty_integer_constraint(self):
-        # TODO: Huh? Shouldn't this actually throw an exception? Why have 'empty' constraints?
         constraint = IntegerConstraint()
         actual_dict = constraint._to_json()
         self.assertTrue(is_empty(actual_dict))
@@ -74,7 +73,6 @@ class TestTextValidations(unittest.TestCase):
         self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_empty_dict_for_empty_text_constraint(self):
-        # TODO: Huh? Another empty constraint? Why not throw an exception??
         constraint = TextConstraint()
         actual_dict = constraint._to_json()
         self.assertTrue(is_empty(actual_dict))
@@ -93,3 +91,8 @@ class TestTextValidations(unittest.TestCase):
         with self.assertRaises(VdtValueTooShortError):
             constraint = TextConstraint(min=10, max=20)
             constraint.validate("small")
+
+    def test_should_validate_range_and_strip_text(self):
+        constraint = TextConstraint(min=10, max=20)
+        valid_data = constraint.validate("valid_string      ")
+        self.assertEqual(valid_data, "valid_string")

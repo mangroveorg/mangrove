@@ -211,7 +211,9 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
+        expected_cleaned_data = {"entity_question": "1", "Father's age": 16}
         self.assertTrue(self.form_model.is_valid(answers))
+        self.assertEqual(self.form_model.cleaned_data,expected_cleaned_data)
 
     def test_should_return_error_for_invalid_integer_value(self):
         answers = {"ID": "1", "Q2": "200"}
@@ -220,7 +222,10 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"ID": "1", "Q1": "Asif Momin", "Q2": "20"}
-        self.assertTrue(self.form_model.is_valid(answers))
+        expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
+        valid= self.form_model.is_valid(answers)
+        self.assertTrue(valid)
+        self.assertEqual(self.form_model.cleaned_data,expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}
@@ -230,3 +235,19 @@ class TestFormModel(unittest.TestCase):
         answers = {"ID": "1", "Q1": "Asif", "Q2": "200", "Q3": "X"}
         self.assertFalse(self.form_model.is_valid(answers))
         self.assertEqual(len(self.form_model.errors), 2)
+
+    def test_should_strip_whitespaces(self):
+        answers = {"Q1": "   My Name", "Q2": "  40 ", "Q3": "RED     "}
+        expected_cleaned_data={"question1_Name": "My Name", "Father's age": 40, "Color": "RED"}
+        valid= self.form_model.is_valid(answers)
+        self.assertTrue(valid)
+        self.assertEqual(0, len(self.form_model.errors))
+        self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
+
+    def test_should_ignore_fields_without_values(self):
+        answers = {"Q1": "My Name", "Q2": "", "Q3": "   "}
+        expected_cleaned_data={"question1_Name": "My Name"}
+        valid= self.form_model.is_valid(answers)
+        self.assertTrue(valid)
+        self.assertEqual(0, len(self.form_model.errors))
+        self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)

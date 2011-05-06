@@ -40,4 +40,4 @@ class TextConstraint(object):
         return dict
 
     def validate(self, value):
-        return is_string(value, min=self.min, max=self.max)
+        return is_string(value.strip(), min=self.min, max=self.max)

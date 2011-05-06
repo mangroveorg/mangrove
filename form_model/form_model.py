@@ -54,6 +54,7 @@ class FormModel(object):
         self._dbm = dbm
         self.questions = []
         self.errors = []
+        self.answers={}
         # Are we being constructed from an existing doc?
         if _document is not None:
             self._doc = _document
@@ -128,8 +129,10 @@ class FormModel(object):
 
     def _validate_answer_for_field(self, answer, field):
         success = True
+        value=None
         try:
-            field.validate(answer)
+            value=field.validate(answer)
+            self.answers[field.name]=value
         except MangroveException as e:
             success = False
             self.errors.append(e.message)
@@ -137,6 +140,7 @@ class FormModel(object):
 
     def is_valid(self, answers):
         success = True
+        result={}
         for field in self.fields:
             answer = answers.get(field.question_code)
             if not is_empty(answer):  # ignore empty answers
@@ -147,12 +151,22 @@ class FormModel(object):
         return success
 
     @property
+    def cleaned_data(self):
+        return self.answers
+
+    @property
     def id(self):
         return self._doc.id
 
     @property
     def name(self):
         return self._doc.name
+
+    @property
+    def entity_question(self):
+        text_questions = [question for question in self.questions if isinstance(question, TextField)]
+        entity_question = [x for x in text_questions if x.is_entity_field == True]
+        return entity_question[0]
 
     @name.setter
     def name(self, value):
@@ -193,34 +207,25 @@ class FormModel(object):
 
 class FormSubmission(object):
     def _to_three_tuple(self):
-        return [(field, value, datadict.get_default_datadict_type())  for (field, value) in self.answers.items()]
+        return [(field, value, datadict.get_default_datadict_type())  for (field, value) in self.cleaned_data.items()]
 
     def __init__(self, form_model, form_answers):
-        result = {}
-        entity_id = None
         self.form_model = form_model
         self.form_answers = form_answers
-        for field_code, answer in form_answers.items():
-            form_field = form_model._find_question(field_code)
-            if form_field is None:
-                continue  # Ignore unknown fields.
-            try:
-                if is_empty(answer):
-                    continue  # Ignore fields without a value
-                parsed_answer = self._parse_field(form_field, answer)
-                if form_field.get(field_attributes.ENTITY_QUESTION_FLAG):
-                    entity_id = parsed_answer
-                else:
-                    result[form_field.get(field_attributes.NAME)] = parsed_answer
-            except Exception:
-                pass  # Ignore fields that cannot be parsed.
-        self.entity_id = entity_id
-        self.form_code = form_model.form_code
-        self.answers = result
+        entity_question = self.form_model.entity_question
+        self.entity_id = self.form_answers.get(entity_question.question_code)
+        if(self.entity_id is not None):
+            del form_answers[entity_question.question_code]
+        self.form_code = self.form_model.form_code
+        self.answers = form_model
 
     @property
     def values(self):
         return self._to_three_tuple()
+
+    @property
+    def cleaned_data(self):
+        return self.form_model.cleaned_data
 
     def is_valid(self):
         return self.form_model.is_valid(self.form_answers)

@@ -154,7 +154,7 @@ class SelectField(Field):
                 self._dict[self.OPTIONS].append(single_language_specific_option)
 
     def validate(self, value):
-        return True
+        return value.strip()
 
     @property
     def options(self):

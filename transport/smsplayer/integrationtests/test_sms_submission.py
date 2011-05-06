@@ -11,6 +11,7 @@ from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request
 from mangrove.datastore.datadict import DataDictType
 
+
 class TestShouldSaveSMSSubmission(TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')

@@ -24,7 +24,7 @@ class TestSubmissions(TestCase):
         self.reporter_patcher.stop()
 
     def test_should_accept_sms_submission(self):
-        request = Request(transport = "sms", message = "hello world", source = "1234", destination = "5678")
+        request = Request(transport="sms", message="hello world", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
         response = s.accept(request)
@@ -44,9 +44,9 @@ class TestSubmissions(TestCase):
         self.assertEquals(request.transport, submission_log.channel)
         self.assertEquals(request.source, submission_log.source)
         self.assertEquals(request.destination, submission_log.destination)
-        self.assertEquals(False,submission_log.status)
-        self.assertEquals("QR1",submission_log.form_code)
-        self.assertEquals({'Q1': '20', 'EID': '100'},submission_log.values)
+        self.assertEquals(False, submission_log. status)
+        self.assertEquals("QR1", submission_log.form_code)
+        self.assertEquals({'Q1': '20', 'EID': '100'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
     def test_should_check_if_submission_by_registered_reporter(self):

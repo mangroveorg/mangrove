@@ -140,6 +140,7 @@ class FormModel(object):
 
     def is_valid(self, answers):
         success = True
+        result={}
         for field in self.fields:
             answer = answers.get(field.question_code)
             if not is_empty(answer):  # ignore empty answers

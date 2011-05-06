@@ -5,7 +5,8 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import  SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.transport.submissions import Request, SubmissionHandler
+from mangrove.form_model.form_model import FormModel
+from mangrove.transport.submissions import Request, SubmissionHandler, Response
 
 
 class TestSubmissions(TestCase):
@@ -18,16 +19,25 @@ class TestSubmissions(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self.reporter_module.find_reporter.return_value = [{"first_name": "1234"}]
 
+
     def tearDown(self):
         self.form_model_patcher.stop()
         self.entity_patcher.stop()
         self.reporter_patcher.stop()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Refactoring of Submission and fixing the build
     def test_should_log_submission(self):
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
+<<<<<<< HEAD
         self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("hello")
+=======
+        self.form_model_module.get_questionnaire.side_effect=FormModelDoesNotExistsException("hello")
+>>>>>>> Refactoring of Submission and fixing the build
         s.accept(request)
         submission_log = dbm.save.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
@@ -69,6 +79,10 @@ class TestSubmissions(TestCase):
 #        s = SubmissionHandler(dbm)
 #        response = s.accept(request)
 #        self.assertEqual("Thank You Reporter A for your submission.", response.message)
+<<<<<<< HEAD
+=======
+
+>>>>>>> Refactoring of Submission and fixing the build
 
 #test_get_player
 #test_authorize

@@ -211,9 +211,14 @@ class FormModelDocument(DocumentBase):
 
     @active_languages.setter
     def active_languages(self, language):
-        active_languages = self.metadata[attributes.ACTIVE_LANGUAGES]
-        if not filter(lambda x: x == language, active_languages):
-            active_languages.append(language)
+        if not language in self.metadata[attributes.ACTIVE_LANGUAGES]:
+            self.metadata[attributes.ACTIVE_LANGUAGES].append(language)
 
     def add_label(self, language, label):
         self.label[language] = label
+
+#class AggregationTreeDocument(DocumentBase):
+#    tree = HierarchyField()
+#
+#    def __init__(self, id=None):
+#        DocumentBase.__init__(id=id, document_type='AggregationTree')

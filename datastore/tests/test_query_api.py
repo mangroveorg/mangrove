@@ -7,6 +7,7 @@ from mangrove.datastore.entity import Entity, load_all_entity_types, define_type
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 
+
 class TestQueryApi(unittest.TestCase):
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
@@ -35,11 +36,10 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(views.exists_view("by_values", self.manager))
         self.assertTrue(views.exists_view("entity_types", self.manager))
 
-
     def test_should_get_current_values_for_entity(self):
         dd_types = self.create_datadict_types()
         e = Entity(self.manager, entity_type=["Health_Facility.Clinic"], location=['India', 'MH', 'Pune'])
-        id = e.save()
+        e.save()
         e.add_data(data=[("beds", 10, dd_types['beds']), ("meds", 20, dd_types['meds']), ("doctors", 2, dd_types['doctors'])],
                    event_time=datetime.datetime(2011, 01, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 15, dd_types['beds']), ("doctors", 2, dd_types['doctors'])], event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -70,7 +70,7 @@ class TestQueryApi(unittest.TestCase):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id1 = e.save()
+        e.save()
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']), \
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -78,7 +78,7 @@ class TestQueryApi(unittest.TestCase):
                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id2 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']), \
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
@@ -91,7 +91,7 @@ class TestQueryApi(unittest.TestCase):
                                        "patients": data.reduce_functions.COUNT},
                             aggregate_on={'type': 'location', "level": 2})
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[("India","MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
+        self.assertEqual(values[("India", "MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
 
     def test_should_fetch_aggregate_per_entity(self):
         # Aggregate across all data records for each entity
@@ -146,7 +146,6 @@ class TestQueryApi(unittest.TestCase):
 #        self.assertEqual(values[id2],{ "director" : "Dr. B1", "beds" : 100, "patients" : 50})
 #        self.assertEqual(values[id3],{ "director" : "Dr. C", "beds" : 200, "patients" : 12})
 
-
     def test_should_filter_aggregate_per_entity_for_a_location(self):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
@@ -182,7 +181,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -191,7 +190,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
@@ -208,7 +207,6 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id2_pune], {"director": "Dr. AA", "beds": 200, "patients": 70})
         self.assertEqual(values[id3_pune], {"director": "Dr. AAA", "beds": 200, "patients": 100})
 
-
     def test_should_fetch_aggregate_grouped_by_hierarchy_path_for_location(self):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
@@ -217,7 +215,7 @@ class TestQueryApi(unittest.TestCase):
 
         # Entities for State 1: Maharashtra
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id1 = e.save()
+        e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
@@ -227,7 +225,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id2 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -236,7 +234,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
-        id3 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -246,7 +244,7 @@ class TestQueryApi(unittest.TestCase):
 
         # Entities for State 2: karnataka
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -254,18 +252,16 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
-
-
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
-        id6 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
@@ -280,7 +276,6 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("India", "Karnataka")], {"patients": 140})
         self.assertEqual(values[("India", "Kerala")], {"patients": 12})
 
-
     def test_should_fetch_aggregate_grouped_by_hierarchy_path_for_any(self):
         dd_types = self.create_datadict_types()
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
@@ -290,7 +285,7 @@ class TestQueryApi(unittest.TestCase):
         # Entities for State 1: Maharashtra
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Surgeon"])
-        id1 = e.save()
+        e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
@@ -301,7 +296,8 @@ class TestQueryApi(unittest.TestCase):
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.set_aggregation_path("governance", ["Director", "Med_Supervisor", "Surgeon"])
-        id2 = e.save()
+        e.save()
+
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -311,7 +307,8 @@ class TestQueryApi(unittest.TestCase):
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Doctor"])
-        id3 = e.save()
+        e.save()
+
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
                          ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -322,7 +319,7 @@ class TestQueryApi(unittest.TestCase):
         # Entities for State 2: karnataka
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         e.set_aggregation_path("governance", ["Director", "Med_Supervisor", "Nurse"])
-        id4 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -331,7 +328,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Surgeon"])
-        id5 = e.save()
+        e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                          ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
@@ -339,11 +336,10 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
-
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Nurse"])
-        id6 = e.save()
+        e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
@@ -354,7 +350,7 @@ class TestQueryApi(unittest.TestCase):
 
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("Director", "Med_Officer")], {"patients": 212})
-        self.assertEqual(values[("Director", "Med_Supervisor")] ,{"patients": 140})
+        self.assertEqual(values[("Director", "Med_Supervisor")], {"patients": 140})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
                                     aggregates={"patients": data.reduce_functions.SUM},
@@ -365,13 +361,13 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Officer", "Surgeon")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Doctor")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Nurse")], {"patients": 12})
-        self.assertEqual(values[("Director", "Med_Supervisor","Surgeon")] ,{"patients": 70})
+        self.assertEqual(values[("Director", "Med_Supervisor", "Surgeon")] , {"patients": 70})
 
     def test_should_load_all_entity_types(self):
-        define_type(self.manager,["HealthFacility","Clinic"])
-        define_type(self.manager,["HealthFacility","Hospital"])
-        define_type(self.manager,["WaterPoint","Lake"])
-        define_type(self.manager,["WaterPoint","Dam"])
+        define_type(self.manager, ["HealthFacility", "Clinic"])
+        define_type(self.manager, ["HealthFacility", "Hospital"])
+        define_type(self.manager, ["WaterPoint", "Lake"])
+        define_type(self.manager, ["WaterPoint", "Dam"])
         entity_types = load_all_entity_types(self.manager)
         assert entity_types is not None
         print entity_types
@@ -405,3 +401,40 @@ class TestQueryApi(unittest.TestCase):
 #    def test_should_fetch_all_entities_for_a_criteria(self):
 #        # Return all clinic entities with beds = 129
 #        entity.get_entities(entity_type = ['clinic'], filter = {'beds' : 129})
+
+    def test_should_fetch_aggregate_per_entity_for_all_fields_in_entity(self):
+        # Aggregate across all data records for each entity for all fields
+
+        # Setup: Create clinic entities
+        dd_types = self.create_datadict_types()
+        ENTITY_TYPE = ["Health_Facility", "Clinic"]
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
+        id1 = e.save()
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
+        id2 = e.save()
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
+        id3 = e.save()
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE, aggregates={"*": data.reduce_functions.LATEST})
+
+        self.assertEqual(len(values), 3)
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds": 20})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 20, "meds": 400})
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, "meds": 50})

@@ -1,17 +1,20 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
+
+
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
-    SUM="sum"
-    LATEST="latest"
-    COUNT ="count" #Returns number of records containing the field
+    SUM = "sum"
+    LATEST = "latest"
+    COUNT = "count"  # Returns number of records containing the field
+
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):
         if aggregate_on.get('type') == 'location':
-              path = row['aggregation_paths']['_geo']
+            path = row['aggregation_paths']['_geo']
         else:
-              path = row['aggregation_paths'][aggregate_on.get('type')]
+            path = row['aggregation_paths'][aggregate_on.get('type')]
         key = tuple(path[:aggregate_on['level']])
     else:
         key = row["entity_id"]
@@ -28,12 +31,15 @@ def _get_key_strategy(aggregate_on):
                 path = row['aggregation_paths'][aggregate_on.get('type')]
             key = tuple(path[:aggregate_on['level']])
             return key
+
         return _aggregate_by_path
     else:
         def _aggregate_by_entity(row):
             key = row["entity_id"]
             return key
+
         return _aggregate_by_entity
+
 
 def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endtime=None, filter=None):
     result = {}
@@ -49,8 +55,13 @@ def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endt
     for val in values:
         key = key_strategy(val)
         field = val["field"]
+        interested_aggregate = None
         if field in aggregates:
-            interested_aggregate = aggregates[field]
+            interested_aggregate = aggregates.get(field)
+        #        * overrides field specific aggregation, returns the aggregation for all fields.
+        if "*" in aggregates:
+            interested_aggregate = aggregates.get("*")
+        if interested_aggregate:
             result.setdefault(key, {})[field] = val[interested_aggregate]
     return result
 
@@ -90,13 +101,14 @@ def _translate_aggregation_type(aggregate_on):
 
 
 def _interested(filter, d):
-    if filter is None: return True
+    if filter is None:
+        return True
     interested_location = filter.get("location")
     if interested_location:
         return interested_location == d.get('location')[:len(interested_location)]
 
 
 def _apply_filter(values, filter):
-    if filter is None: return values
+    if filter is None:
+        return values
     return [d for d in values if _interested(filter, d)]
-

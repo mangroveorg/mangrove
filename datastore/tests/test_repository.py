@@ -5,6 +5,7 @@ from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 
+
 class TestDatabaseManager(unittest.TestCase):
 
     def setUp(self):
@@ -33,5 +34,5 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertTrue(document1)
 
     def test_should_return_none_if_documentid_is_empty(self):
-        user = self.database_manager.load('',Entity)
+        user = self.database_manager.load('', Entity)
         self.assertTrue(not user)

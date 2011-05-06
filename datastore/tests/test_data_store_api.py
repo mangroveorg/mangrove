@@ -9,10 +9,11 @@ from pytz import UTC
 import unittest
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 
+
 class TestDataStoreApi(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         self.uuid = e.save()
 
     def tearDown(self):
@@ -20,15 +21,15 @@ class TestDataStoreApi(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_create_entity(self):
-        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         uuid = e.save()
         self.assertTrue(uuid)
         self.dbm.delete(e._doc)
 
     def test_create_entity_with_id(self):
-        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"],id="-1000")
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")
         uuid = e.save()
-        self.assertEqual(uuid,"-1000")
+        self.assertEqual(uuid, "-1000")
         self.dbm.delete(e._doc)
 
     def test_get_entity(self):
@@ -37,31 +38,31 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertTrue(e.type_string == "clinic")
 
     def test_should_add_location_hierarchy_on_create(self):
-        e = Entity(self.dbm, entity_type="clinic", location=["India","MH","Pune"])
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         uuid = e.save()
         saved = get(self.dbm, uuid)
-        self.assertEqual(saved.location_path,["India","MH","Pune"])
+        self.assertEqual(saved.location_path, ["India", "MH", "Pune"])
 
     def test_should_add_entity_type_on_create(self):
-        e = Entity(self.dbm, entity_type=["healthfacility","clinic"])
+        e = Entity(self.dbm, entity_type=["healthfacility", "clinic"])
         uuid = e.save()
         saved = get(self.dbm, uuid)
-        self.assertEqual(saved.type_path,["healthfacility","clinic"])
+        self.assertEqual(saved.type_path, ["healthfacility", "clinic"])
 
     def test_should_add_entity_type_on_create_as_aggregation_tree(self):
         e = Entity(self.dbm, entity_type="health_facility.clinic")
         uuid = e.save()
         saved = get(self.dbm, uuid)
-        self.assertEqual(saved.type_path,["health_facility","clinic"])
+        self.assertEqual(saved.type_path, ["health_facility", "clinic"])
 
     def test_should_add_passed_in_hierarchy_path_on_create(self):
-        e = Entity(self.dbm, entity_type=["HealthFacility","Clinic"],location=["India","MH","Pune"],aggregation_paths={"org": ["TW_Global","TW_India","TW_Pune"],
+        e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"], aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
                                       "levels": ["Lead Consultant", "Sr. Consultant", "Consultant"]})
         uuid = e.save()
         saved = get(self.dbm, uuid)
         hpath = saved._doc.aggregation_paths
-        self.assertEqual(hpath["org"],["TW_Global","TW_India","TW_Pune"])
-        self.assertEqual(hpath["levels"],["Lead Consultant", "Sr. Consultant", "Consultant"])
+        self.assertEqual(hpath["org"], ["TW_Global", "TW_India", "TW_Pune"])
+        self.assertEqual(hpath["levels"], ["Lead Consultant", "Sr. Consultant", "Consultant"])
 
     def test_hierarchy_addition(self):
         e = get(self.dbm, self.uuid)
@@ -78,14 +79,14 @@ class TestDataStoreApi(unittest.TestCase):
         org_hierarchy[0] = ["NewValue"]
         e.save()
         saved = get(self.dbm, self.uuid)
-        self.assertTrue(saved.aggregation_paths["org"] == ["TW","PS","IS"])
+        self.assertTrue(saved.aggregation_paths["org"] == ["TW", "PS", "IS"])
 
     def test_save_aggregation_path_only_via_api(self):
         e = get(self.dbm, self.uuid)
-        e.location_path[0]="US"
+        e.location_path[0] = "US"
         e.save()
         saved = get(self.dbm, self.uuid)
-        self.assertTrue(saved.location_path==["India","MH","Pune"])  # Hierarchy has not changed.
+        self.assertTrue(saved.location_path == ["India", "MH", "Pune"])  # Hierarchy has not changed.
 
     def test_should_save_hierarchy_tree_only_through_api(self):
         e = get(self.dbm, self.uuid)
@@ -95,16 +96,16 @@ class TestDataStoreApi(unittest.TestCase):
         e.aggregation_paths['org'][0] = "XYZ"
         e.save()
         saved = get(self.dbm, self.uuid)
-        self.assertEqual(saved.aggregation_paths["org"], ["TW","PS","IS"])
+        self.assertEqual(saved.aggregation_paths["org"], ["TW", "PS", "IS"])
 
     def test_get_entities(self):
-        e2 = Entity(self.dbm, "hospital",["India","TN","Chennai"])
+        e2 = Entity(self.dbm, "hospital", ["India", "TN", "Chennai"])
         id2 = e2.save()
         entities = get_entities(self.dbm, [self.uuid, id2])
-        self.assertEqual(len(entities),2)
+        self.assertEqual(len(entities), 2)
         saved = dict([(e.id, e) for e in entities])
         self.assertEqual(saved[id2].type_string, "hospital")
-        self.assertEqual(saved[self.uuid].type_string,"clinic")
+        self.assertEqual(saved[self.uuid].type_string, "clinic")
         self.dbm.delete(e2._doc)
 
     def _create_clinic_and_reporter(self):
@@ -128,10 +129,10 @@ class TestDataStoreApi(unittest.TestCase):
         data_record = [('meds', 20, med_type),
                        ('doc', "aroj", doctor_type),
                        ('facility', 'clinic', facility_type),
-                       ('opened_on', datetime(2011,01,02, tzinfo = UTC), opened_type)]
-        data_record_id = clinic_entity.add_data(data = data_record,
-                                                event_time = datetime(2011,01,02, tzinfo = UTC),
-                                                submission_id = "123456")
+                       ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
+        data_record_id = clinic_entity.add_data(data=data_record,
+                                                event_time=datetime(2011, 01, 02, tzinfo=UTC),
+                                                submission_id="123456")
         self.assertTrue(data_record_id is not None)
 
         # Assert the saved document structure is as expected
@@ -144,19 +145,19 @@ class TestDataStoreApi(unittest.TestCase):
             # TODO: not sure how to test that dd_type == saved.data[label]['type']
             # it seems the following has different representations for datetimes
             #self.assertTrue(dd_type._doc.unwrap() == DataDictDocument(saved.data[label]['type']))
-        self.assertEqual(saved.event_time,datetime(2011,01,02, tzinfo = UTC))
-        self.assertEqual(saved.submission_id,"123456")
+        self.assertEqual(saved.event_time, datetime(2011, 01, 02, tzinfo=UTC))
+        self.assertEqual(saved.submission_id, "123456")
 
     def test_should_create_entity_from_document(self):
         existing = get(self.dbm, self.uuid)
-        e = Entity(self.dbm, _document = existing._doc)
+        e = Entity(self.dbm, _document=existing._doc)
         self.assertTrue(e._doc is not None)
-        self.assertEqual(e.id,existing.id)
-        self.assertEqual(e.type_path,existing.type_path)
+        self.assertEqual(e.id, existing.id)
+        self.assertEqual(e.type_path, existing.type_path)
 
     def test_should_fail_create_for_invalid_arguments(self):
         with self.assertRaises(AssertionError):
-            Entity(self.dbm, _document = "xyz")
+            Entity(self.dbm, _document="xyz")
 
     def test_invalidate_data(self):
         e = Entity(self.dbm, entity_type='store', location=['nyc'])
@@ -192,28 +193,13 @@ class TestDataStoreApi(unittest.TestCase):
         for id in data_ids:
             self.assertTrue(self.dbm.load(id).void)
 
-
     def test_should_define_entity_type(self):
-        e = define_type(self.dbm,["HealthFacility","Clinic"])
+        e = define_type(self.dbm, ["HealthFacility", "Clinic"])
         assert (e is not None)
         self.assertEqual(e.id, "HealthFacility.Clinic")
-        self.assertEqual(e.name,["HealthFacility","Clinic"])
+        self.assertEqual(e.name, ["HealthFacility", "Clinic"])
 
     def test_should_throw_back_proper_error_message(self):
-        e = define_type(self.dbm,["HealthFacility","Clinic"])
+        define_type(self.dbm, ["HealthFacility", "Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
-            define_type(self.dbm,["HealthFacility","Clinic"])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            define_type(self.dbm, ["HealthFacility", "Clinic"])

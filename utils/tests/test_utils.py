@@ -12,18 +12,19 @@ try:
 except ImportError:
     import simplejson as json
 
+
 class TestTypeUtils(TestCase):
     an_int = 1
     a_float = 2.1
     a_bool = True
-    true_strings = ('y','Y','yes','yeS', 'yES', 'YES', 'Yes', '1', 't', 'T', 'True', 'TrUe',
+    true_strings = ('y', 'Y', 'yes', 'yeS', 'yES', 'YES', 'Yes', '1', 't', 'T', 'True', 'TrUe',
                     u'y', u'Y', u'yes', u'yeS', u'yES', u'YES', u'Yes', u'1', u't', u'T', u'True', u'TrUe',
-                    )
-    not_true_strings = ('a',u"v", 0, None, ())
+    )
+    not_true_strings = ('a', u"v", 0, None, ())
     a_datetime = datetime.now()
-    a_list = [1,2]
-    a_tuple = (1,2)
-    a_dict = {1:2}
+    a_list = [1, 2]
+    a_tuple = (1, 2)
+    a_dict = {1: 2}
     a_blank_string = ''
     a_blank_unicode = u''
     a_ws_string = '          '
@@ -37,19 +38,19 @@ class TestTypeUtils(TestCase):
     an_empty_tupe = ()
 
     empties = (
-                None, a_blank_string, a_ws_string, an_empty_dict,
-                an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode
+    None, a_blank_string, a_ws_string, an_empty_dict,
+    an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode
     )
 
     non_empties = (
-                    an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict,
-                    a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
+    an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict,
+    a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
     )
 
     seqs = (a_list, a_tuple, a_dict, an_empty_dict, an_empty_list, an_empty_tupe, true_strings)
     non_seqs = (
-                None, an_int, a_float, a_bool, a_string, a_blank_string, a_nonempty_ws_string,
-                a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
+    None, an_int, a_float, a_bool, a_string, a_blank_string, a_nonempty_ws_string,
+    a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
     )
 
     nums = (an_int, a_float)
@@ -58,21 +59,21 @@ class TestTypeUtils(TestCase):
     )
 
     strs = (
-            a_string, a_unicode, a_ws_string, a_ws_unicode,
-            a_nonempty_ws_unicode, a_nonempty_ws_string, a_blank_unicode, a_blank_string
+    a_string, a_unicode, a_ws_string, a_ws_unicode,
+    a_nonempty_ws_unicode, a_nonempty_ws_string, a_blank_unicode, a_blank_string
     )
-    
+
     non_strs = (
-                None, an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict, an_empty_dict,
-                an_empty_list, an_empty_tupe
+    None, an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict, an_empty_dict,
+    an_empty_list, an_empty_tupe
     )
 
     bools = (True, False)
     non_bools = (
-                 None, a_blank_string, a_ws_string, an_empty_dict,
-                 an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode,
-                 an_int, a_float, a_datetime, a_list, a_tuple, a_dict,
-                 a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
+    None, a_blank_string, a_ws_string, an_empty_dict,
+    an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode,
+    an_int, a_float, a_datetime, a_list, a_tuple, a_dict,
+    a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
     )
 
     def _test_a_list(self, pos, neg, test, pos_fail_msg, neg_fail_msg):
@@ -83,58 +84,59 @@ class TestTypeUtils(TestCase):
         if neg is not None:
             for neg in neg:
                 self.assertFalse(test(neg), "'%s' %s" % (unicode(neg), neg_fail_msg))
-    
+
     def test_empty(self):
         self._test_a_list(self.empties, self.non_empties, utils.types.is_empty,
-                         "failed 'is_empty'", "passed 'is_empty'")
+                          "failed 'is_empty'", "passed 'is_empty'")
 
     def test_not_empty(self):
         self._test_a_list(self.non_empties, self.empties, utils.types.is_not_empty,
-                         "failed 'is_not_empty'", "passed 'is_not_empty'")
+                          "failed 'is_not_empty'", "passed 'is_not_empty'")
 
     def test_is_sequence(self):
         self._test_a_list(self.seqs, self.non_seqs, utils.types.is_sequence,
                           "failed 'is_sequence'", "passed 'is_sequence'")
 
     def test_is_number(self):
-        self._test_a_list([True, False]+list(self.nums),  self.non_nums, utils.types.is_number,
+        self._test_a_list([True, False] + list(self.nums), self.non_nums, utils.types.is_number,
                           "failed 'is_number'", "passed 'is_number'")
 
     def test_is_string(self):
-        self._test_a_list(self.strs,  self.non_strs, utils.types.is_string,
+        self._test_a_list(self.strs, self.non_strs, utils.types.is_string,
                           "failed 'is_string'", "passed 'is_string'")
 
     def test_string_as_bool(self):
         self._test_a_list(self.true_strings, self.not_true_strings,
-                          lambda x : utils.types.string_as_bool(x),
+                          lambda x: utils.types.string_as_bool(x),
                           ": string_as_bool returned 'False'", ": string_as_bool returned 'True'")
 
     def test_primitive_type(self):
         self._test_a_list(self.strs, None,
-                          lambda x : utils.types.primitive_type(x) == 'text',
+                          lambda x: utils.types.primitive_type(x) == 'text',
                           ": primitive_type returned something other than 'text'", "")
 
         self._test_a_list(self.nums, None,
-                          lambda x : utils.types.primitive_type(x) == 'numeric',
+                          lambda x: utils.types.primitive_type(x) == 'numeric',
                           ": primitive_type returned something other than 'numeric'", "")
 
         self._test_a_list([self.a_datetime], None,
-                          lambda x : utils.types.primitive_type(x) == 'datetime',
+                          lambda x: utils.types.primitive_type(x) == 'datetime',
                           ": primitive_type returned something other than 'datetime'", "")
 
         self._test_a_list(self.bools, None,
-                          lambda x : utils.types.primitive_type(x) == 'boolean',
+                          lambda x: utils.types.primitive_type(x) == 'boolean',
                           ": primitive_type returned something other than 'boolean'", "")
 
         self._test_a_list([None], None,
-                          lambda x : utils.types.primitive_type(x) == 'unknown',
+                          lambda x: utils.types.primitive_type(x) == 'unknown',
                           ": primitive_type returned something other than 'unknown'", "")
+
 
 class TestDateUtils(TestCase):
     def setUp(self):
         datetuple = (2011, 03, 22, 02, 23, 42)
         self.naive_utc = datetime(*datetuple)
-        self.tz_aware_utc = datetime(*datetuple, tzinfo = pytz.UTC)
+        self.tz_aware_utc = datetime(*datetuple, tzinfo=pytz.UTC)
         self.us_pacific = self.tz_aware_utc.astimezone(pytz.timezone('US/Pacific'))
         self.ist = self.tz_aware_utc.astimezone(pytz.timezone('Asia/Kolkata'))
 
@@ -156,7 +158,7 @@ class TestDateUtils(TestCase):
 
         # make sure naives aren't messed with
         self.assertEqual(utils.dates.to_naive_utc(self.naive_utc), self.naive_utc)
-        
+
     def test_to_aware_utc(self):
         # make sure a naive converts properly
         aware = utils.dates.to_aware_utc(self.naive_utc)
@@ -183,18 +185,18 @@ class TestDateUtils(TestCase):
         # hard to test that are equal one as can't make parallel calls to utils and datetime.utcnow!
         # so take them, throw away the microseconds on the assumption that they will be constructed
         # in the same second
-        un = un.replace(microsecond = 0)
-        dn = dn.replace(tzinfo = pytz.UTC, microsecond = 0)
+        un = un.replace(microsecond=0)
+        dn = dn.replace(tzinfo=pytz.UTC, microsecond=0)
         self.assertEqual(un, dn)
 
 
 class TestJSONUtils(TestCase):
     def setUp(self):
         self.dt = utils.dates.utcnow()
-        self.dict_with_dt = { 'now': self.dt, 'str': '12345', 'int': 12345, 'list': [1,2,3,4,5] }
+        self.dict_with_dt = {'now': self.dt, 'str': '12345', 'int': 12345, 'list': [1, 2, 3, 4, 5]}
         self.list_with_dt = [self.dt, self.dt, self.dt]
         self.dict_with_list_of_dts = {'dict': {'list': self.list_with_dt, 'int': 10}}
-        self.dict_no_dt = {'dict': {'list': [1,2,3,'a','b','c'], 'int': 10}}
+        self.dict_no_dt = {'dict': {'list': [1, 2, 3, 'a', 'b', 'c'], 'int': 10}}
 
     def test_encode_decode(self):
         # want to make sure this doesn't throw an exception. Not sure
@@ -211,7 +213,6 @@ class TestJSONUtils(TestCase):
         for i in range(len(strs)):
             self.assertDictEqual(utils.json_codecs.decode_json(strs[i]), objs[i])
 
-
-        
     def test_decode(self):
         pass
+

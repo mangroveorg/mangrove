@@ -14,7 +14,8 @@ import views
 
 _dbms = {}
 
-def get_db_manager(server = None, database = None):
+
+def get_db_manager(server=None, database=None):
     global _dbms
     assert _dbms is not None
 
@@ -31,6 +32,7 @@ def get_db_manager(server = None, database = None):
 
     return _dbms[k]
 
+
 def remove_db_manager(dbm):
     global _dbms
     assert isinstance(dbm, DatabaseManager) and dbm in _dbms.values()
@@ -39,15 +41,17 @@ def remove_db_manager(dbm):
         try:
             del _dbms[(dbm.url, dbm.database_name)]
         except KeyError:
-            pass # must have been already deleted
+            pass  # must have been already deleted
+
 
 def _delete_db_and_remove_db_manager(dbm):
     '''This is really only used for testing puropses.'''
     del dbm.server[dbm.database_name]
     remove_db_manager(dbm)
 
+
 class DatabaseManager(object):
-    def __init__(self, server = None, database = None):
+    def __init__(self, server=None, database=None):
         """
             Connect to the CouchDB server. If no database name is given , use the name provided in the settings
         """
@@ -71,19 +75,18 @@ class DatabaseManager(object):
     def __repr__(self):
         return repr(self.database)
 
-    def load_all_rows_in_view(self,view_name,**values):
-        return self.database.view(view_name,**values).rows
+    def load_all_rows_in_view(self, view_name, **values):
+        return self.database.view(view_name, **values).rows
 
-    def create_view(self,view_name,map,reduce, view_document='mangrove_views'):
-        view = ViewDefinition(view_document,view_name,map,reduce)
+    def create_view(self, view_name, map, reduce, view_document='mangrove_views'):
+        view = ViewDefinition(view_document, view_name, map, reduce)
         view.sync(self.database)
 
     def create_default_views(self):
         views.create_views(self)
 
-    def save(self, document, modified = None):
+    def save(self, document, modified=None):
         assert modified is None or isinstance(modified, datetime)
-
         document.modified = (modified if modified is not None else dates.utcnow())
         document.store(self.database)
         return document
@@ -98,5 +101,5 @@ class DatabaseManager(object):
 
     def load(self, id, document_class=DocumentBase):
         if id:
-            return document_class.load(self.database, id = id)
+            return document_class.load(self.database, id=id)
         return None

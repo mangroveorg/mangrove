@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
+
 def slugify(text, delim=u'_'):
     '''Generates an ASCII-only slug.'''
     import re

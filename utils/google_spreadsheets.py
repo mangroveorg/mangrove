@@ -3,6 +3,7 @@
 # everything worked smoothly.
 
 import gdata.spreadsheet.service
+import re
 
 
 def make_hierarchical_dict(d, sep=u":"):
@@ -119,3 +120,48 @@ class GoogleSpreadsheetsClient(object):
         Return the GoogleSpreadsheet object with this title.
         """
         return self._spreadsheets[title]
+
+
+def get_string(key, row):
+    """Reads a string from a row."""
+    if key in row and row[key]:
+        return row[key].strip()
+    else:
+        return None
+
+def get_number(key, row):
+    """Reads a number from a row (assume all as float)."""
+    if key in row and row[key]:
+        return float(row[key])
+    else:
+        return None
+
+def get_percent(key, row):
+    """Reads a percentage from a row."""
+    if key in row and row[key]:
+        percent = row[key]
+        if '%' in percent:
+            return float(percent.replace('%', '')) / 100.0
+        else:
+            return float(percent)
+    else:
+        return None
+
+def get_boolean(key, row):
+    """Reads a boolean from a row."""
+    if key in row and row[key]:
+        value = row[key]
+        regex = re.compile('(true|t|yes|y|1)', re.IGNORECASE)
+        if regex.search(value):
+            return True
+        else:
+            return False
+    else:
+        return None
+
+def get_list(key, row):
+    """Reads a comma-separated list from a row (interpreted as strings)."""
+    if key in row and row[key]:
+        return [i.strip() for i in row[key].split(',') if i.strip()]
+    else:
+        return None

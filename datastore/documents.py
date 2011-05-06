@@ -234,8 +234,7 @@ class SubmissionLogDocument(DocumentBase):
     error_message = TextField()
     form_code = TextField()
 
-    def __init__(self, source, channel=None, destination=None, values=None, id=None, status=None, error_message=None, form_code=None):
-        assert is_string(source)
+    def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None, error_message=None, form_code=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()

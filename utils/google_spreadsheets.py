@@ -129,12 +129,14 @@ def get_string(key, row):
     else:
         return None
 
+
 def get_number(key, row):
     """Reads a number from a row (assume all as float)."""
     if key in row and row[key]:
         return float(row[key])
     else:
         return None
+
 
 def get_percent(key, row):
     """Reads a percentage from a row."""
@@ -147,6 +149,7 @@ def get_percent(key, row):
     else:
         return None
 
+
 def get_boolean(key, row):
     """Reads a boolean from a row."""
     if key in row and row[key]:
@@ -158,6 +161,7 @@ def get_boolean(key, row):
             return False
     else:
         return None
+
 
 def get_list(key, row):
     """Reads a comma-separated list from a row (interpreted as strings)."""

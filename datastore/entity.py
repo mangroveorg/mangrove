@@ -253,7 +253,7 @@ class Entity(object):
         data_list = []
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):
-                raise ValueError('Data must be of the form (label, type, value).')
+                raise ValueError('Data must be of the form (label, value, DataDictType).')
             data_list.append((label, dd_type, value))
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,

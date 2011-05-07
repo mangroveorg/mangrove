@@ -3,10 +3,9 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import  SubmissionLogDocument
+from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.form_model.form_model import FormModel
-from mangrove.transport.submissions import Request, SubmissionHandler, Response
+from mangrove.transport.submissions import Request, SubmissionHandler
 
 
 class TestSubmissions(TestCase):
@@ -19,12 +18,10 @@ class TestSubmissions(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self.reporter_module.find_reporter.return_value = [{"first_name": "1234"}]
 
-
     def tearDown(self):
         self.form_model_patcher.stop()
         self.entity_patcher.stop()
         self.reporter_patcher.stop()
-
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")

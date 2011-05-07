@@ -224,7 +224,7 @@ class TestFormModel(unittest.TestCase):
         expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
         valid= self.form_model.is_valid(answers)
         self.assertTrue(valid)
-        self.assertEqual(self.form_model.cleaned_data,expected_result)
+        self.assertEqual(self.form_model.cleaned_data, expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}

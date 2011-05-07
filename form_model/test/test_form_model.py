@@ -213,7 +213,7 @@ class TestFormModel(unittest.TestCase):
         answers = {"ID": "1", "Q2": "16"}
         expected_cleaned_data = {"entity_question": "1", "Father's age": 16}
         self.assertTrue(self.form_model.is_valid(answers))
-        self.assertEqual(self.form_model.cleaned_data,expected_cleaned_data)
+        self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
 
     def test_should_return_error_for_invalid_integer_value(self):
         answers = {"ID": "1", "Q2": "200"}
@@ -225,7 +225,7 @@ class TestFormModel(unittest.TestCase):
         expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
         valid= self.form_model.is_valid(answers)
         self.assertTrue(valid)
-        self.assertEqual(self.form_model.cleaned_data,expected_result)
+        self.assertEqual(self.form_model.cleaned_data, expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}

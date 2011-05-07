@@ -35,7 +35,8 @@ def get_db_manager(server=None, database=None):
 
 def remove_db_manager(dbm):
     global _dbms
-    assert isinstance(dbm, DatabaseManager) and dbm in _dbms.values()
+    assert isinstance(dbm, DatabaseManager)
+    assert dbm in _dbms.values()
 
     with Lock():
         try:

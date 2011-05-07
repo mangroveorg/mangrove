@@ -361,7 +361,7 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Officer", "Surgeon")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Doctor")], {"patients": 100})
         self.assertEqual(values[("Director", "Med_Officer", "Nurse")], {"patients": 12})
-        self.assertEqual(values[("Director", "Med_Supervisor", "Surgeon")] , {"patients": 70})
+        self.assertEqual(values[("Director", "Med_Supervisor", "Surgeon")], {"patients": 70})
 
     def test_should_load_all_entity_types(self):
         define_type(self.manager, ["HealthFacility", "Clinic"])

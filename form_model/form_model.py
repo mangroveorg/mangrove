@@ -54,7 +54,7 @@ class FormModel(object):
         self._dbm = dbm
         self.questions = []
         self.errors = []
-        self.answers={}
+        self.answers = {}
         # Are we being constructed from an existing doc?
         if _document is not None:
             self._doc = _document
@@ -129,10 +129,10 @@ class FormModel(object):
 
     def _validate_answer_for_field(self, answer, field):
         success = True
-        value=None
+        value = None
         try:
-            value=field.validate(answer)
-            self.answers[field.name]=value
+            value = field.validate(answer)
+            self.answers[field.name] = value
         except MangroveException as e:
             success = False
             self.errors.append(e.message)
@@ -140,7 +140,6 @@ class FormModel(object):
 
     def is_valid(self, answers):
         success = True
-        result={}
         for field in self.fields:
             answer = answers.get(field.question_code)
             if not is_empty(answer):  # ignore empty answers

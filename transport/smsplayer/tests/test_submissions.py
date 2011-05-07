@@ -3,10 +3,9 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import RawSubmissionLogDocument, SubmissionLogDocument
+from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.form_model.form_model import FormModel
-from mangrove.transport.submissions import Request, SubmissionHandler, Response
+from mangrove.transport.submissions import Request, SubmissionHandler
 
 
 class TestSubmissions(TestCase):
@@ -19,18 +18,16 @@ class TestSubmissions(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self.reporter_module.find_reporter.return_value = [{"first_name": "1234"}]
 
-
     def tearDown(self):
         self.form_model_patcher.stop()
         self.entity_patcher.stop()
         self.reporter_patcher.stop()
 
-
     def test_should_log_submission(self):
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         dbm = Mock(spec=DatabaseManager)
         s = SubmissionHandler(dbm)
-        self.form_model_module.get_questionnaire.side_effect=FormModelDoesNotExistsException("hello")
+        self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("hello")
         s.accept(request)
         submission_log = dbm.save.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
@@ -50,7 +47,6 @@ class TestSubmissions(TestCase):
         response = s.accept(request)
         self.assertEqual(1, len(response.errors))
         self.assertEqual("Sorry, This number 1234 is not registered with us", response.errors[0])
-
 
     def test_should_fail_submission_if_invalid_form_code(self):
         request = Request(transport="sms", message="INVALID_CODE +name xyz +age 10",

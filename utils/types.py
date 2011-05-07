@@ -5,10 +5,13 @@ from datetime import datetime
 
 
 def is_empty(arg):
-    '''Generalizes 'empty' checks on Strings, sequences, and dicts.
-        Returns 'True' for None, empty strings, strings with just white-space,
-        and sequences with len == 0
-        '''
+    '''
+    Generalizes 'empty' checks on Strings, sequences, and dicts.
+
+    Returns 'True' for None, empty strings, strings with just white-space,
+    and sequences with len == 0
+    '''
+
     if arg is None:
         return True
 

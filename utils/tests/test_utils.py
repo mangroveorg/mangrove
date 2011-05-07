@@ -212,7 +212,3 @@ class TestJSONUtils(TestCase):
 
         for i in range(len(strs)):
             self.assertDictEqual(utils.json_codecs.decode_json(strs[i]), objs[i])
-
-    def test_decode(self):
-        pass
-

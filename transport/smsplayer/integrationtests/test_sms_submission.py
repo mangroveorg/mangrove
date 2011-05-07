@@ -30,8 +30,8 @@ class TestShouldSaveSMSSubmission(TestCase):
                             data=[("telephone_number", '1234', self.telephone_number_type),
                                   ("first_name", "Test_reporter", self.first_name_type)], location=[],
                             source="sms")
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True)
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng", length=TextConstraint(4, 15))
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
@@ -43,7 +43,6 @@ class TestShouldSaveSMSSubmission(TestCase):
                                     form_code="CLINIC", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
-
 
     def tearDown(self):
         del self.dbm.database[self.form_model__id]

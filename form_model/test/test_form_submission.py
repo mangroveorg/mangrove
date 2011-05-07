@@ -85,8 +85,7 @@ class TestFormSubmission(TestCase):
     #        Write is_valid scenarios
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity"
-                              , language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range=IntegerConstraint(min=15, max=120))
 
@@ -99,4 +98,3 @@ class TestFormSubmission(TestCase):
         form_submission = FormSubmission(form_model, answers)
         self.assertFalse(form_submission.is_valid())
         self.assertEqual(len(form_submission.errors), 1)
-

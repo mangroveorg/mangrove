@@ -5,7 +5,7 @@ import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.types import is_sequence, is_string
+from mangrove.utils.types import is_sequence, is_string, is_not_empty
 from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 
@@ -25,7 +25,7 @@ class attributes(object):
 
 class TZAwareDateTimeField(DateTimeField):
     """
-     This class can take care of non-json serializable objects. Another solution is to plug in a custom json encoder/decoder.
+    Interprets date strings in ISO format with timezones properly.
 
     """
     def _to_python(self, value):
@@ -61,8 +61,8 @@ class DocumentBase(Document):
 
 class EntityDocument(DocumentBase):
     """
-        The couch entity document. It abstracts out the couch related functionality and inherits from the Document class of couchdb-python.
-        A schema for the entity is enforced here.
+    The couch entity document. It abstracts out the couch related functionality and inherits from the Document class of couchdb-python.
+    A schema for the entity is enforced here.
     """
     aggregation_paths = DictField()
 
@@ -95,10 +95,10 @@ class EntityDocument(DocumentBase):
 
 class DataRecordDocument(DocumentBase):
     """
-        The couch data_record document. It abstracts out the couch related functionality and inherits from the Document
-        class of couchdb-python.
+    The couch data_record document. It abstracts out the couch related functionality and inherits from the Document
+    class of couchdb-python.
 
-        A schema for the data_record is enforced here.
+    A schema for the data_record is enforced here.
     """
     data = DictField()
     entity_backing_field = DictField()
@@ -161,8 +161,8 @@ class DataDictDocument(DocumentBase):
 
 class RawSubmissionLogDocument(DocumentBase):
     """
-        The raw submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
-        along with the raw sms string that came in
+    The raw submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
+    along with the raw sms string that came in
     """
 
     submitted_on = TZAwareDateTimeField()
@@ -182,9 +182,7 @@ class RawSubmissionLogDocument(DocumentBase):
 
 
 class EntityTypeDocument(DocumentBase):
-    """
-        This document defines the type of the entity.
-        """
+    """This document defines the type of the entity."""
     name = ListField(TextField())
 
     def __init__(self, name_=None):
@@ -221,8 +219,8 @@ class FormModelDocument(DocumentBase):
 
 class SubmissionLogDocument(DocumentBase):
     """
-        The processed submission log document. It will contain metadata about the submission. (Eg: source, submitted_on etc.)
-        along with the parsed key value pairs of the sms that came in
+    The processed submission log document. It will contain metadata about the submission. (Eg: source, submitted_on etc.)
+    along with the parsed key value pairs of the sms that came in
     """
 
     submitted_on = TZAwareDateTimeField()
@@ -240,7 +238,23 @@ class SubmissionLogDocument(DocumentBase):
         self.submitted_on = utcnow()
         self.channel = channel
         self.destination = destination
-        self.form_code=form_code
+        self.form_code = form_code
         self.values = values
         self.status = status
         self.error_message = error_message
+
+
+class AggregationTreeDocument(DocumentBase):
+    root = DictField()
+    root_id = TextField()
+    name = TextField()
+
+    def __init__(self, name, root=None, root_id=None, id=None):
+        assert is_string(name) and is_not_empty(name)
+        assert root is None or (isinstance(root, dict) and is_not_empty(root_id))
+
+        DocumentBase.__init__(self, id=id, document_type='AggregationTree')
+
+        self.name = name
+        if root is None:
+            self.root = {}

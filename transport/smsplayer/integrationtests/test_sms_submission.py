@@ -92,3 +92,11 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEquals(2, len(submission_list))
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[0]['values'])
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[1]['values'])
+
+    def test_error_messages_are_being_logged_in_submissions(self):
+        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
+        self.assertEquals(1, len(submission_list))
+        self.assertEquals("answer 150 for question ARV is greater than allowed\n", submission_list[0]['error_message'])

@@ -52,10 +52,13 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def update_submission_log(self, submission_id, status, message=""):
+    def update_submission_log(self, submission_id, status, errors):
+        error_message = ""
+        for each in errors:
+            error_message = error_message + each + "\n"
         log = self.dbm.load(submission_id, SubmissionLogDocument)
         log.status = status
-        log.error_message = message
+        log.error_message = log.error_message + (error_message or "")
         self.dbm.save(log)
 
     def accept(self, request):
@@ -78,12 +81,11 @@ class SubmissionHandler(object):
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
                 data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
-                self.update_submission_log(submission_id, True)
-
+                self.update_submission_log(submission_id, True, errors=[])
                 return Response(reporters, True, errors, submission_id, data_record_id)
             else:
                 errors.extend(form_submission.errors)
-                self.update_submission_log(submission_id, False, str(errors))
+                self.update_submission_log(submission_id, False, errors)
 
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)

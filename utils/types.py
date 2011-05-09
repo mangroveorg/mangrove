@@ -37,6 +37,11 @@ def is_sequence(arg):
     '''Returns True is passed arg is a list or a tuple'''
     return isinstance(arg, list) or isinstance(arg, tuple)
 
+def is_iterable(arg):
+    '''Returns True is passed arg is iterable--e.g. 'in' and 'for x in' work with it'''
+    return hasattr(arg, '__iter__')
+
+
 
 def is_string(arg):
     '''Test for string in proper way to handle both strings and unicode strings'''

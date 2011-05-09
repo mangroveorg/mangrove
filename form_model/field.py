@@ -1,7 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from _collections import defaultdict
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
+from datetime import datetime
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
 from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -103,6 +104,25 @@ class IntegerField(Field):
     def range(self):
         return self._dict.get(self.RANGE)
 
+class DateField(Field):
+    DATE_FORMAT = "date_format"
+
+    def __init__(self, name, question_code, label, date_format=None, language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
+                       label=label, language=language)
+
+        self._dict[self.DATE_FORMAT] = date_format
+
+    def validate(self, value):
+        try:
+            return datetime.strptime(value, self._dict[self.DATE_FORMAT])
+        except ValueError:
+            raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
+
+    @property
+    def date_format(self):
+        return self._dict.get(self.DATE_FORMAT)
+
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
@@ -160,19 +180,6 @@ class SelectField(Field):
     def options(self):
         return self._dict.get(self.OPTIONS)
 
-
-class DateField(Field):
-    RANGE = "range"
-    FORMAT = "format"
-
-    def __init__(self, name, question_code, label, format, range=None, language=field_attributes.DEFAULT_LANGUAGE):
-        Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
-                       label=label, language=language)
-
-        self._dict[self.RANGE] = range if range is not None else {}
-        self._dict[self.FORMAT] = format if format is not None else ""
-
-
 def create_question_from(dictionary):
     """
      Given a dictionary that defines a question, this would create a field with all the validations that are
@@ -194,6 +201,9 @@ def create_question_from(dictionary):
         range = IntegerConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                                   max=range_dict.get(ConstraintAttributes.MAX))
         return IntegerField(name=name, question_code=code, label=label, range=range)
+    elif type == "date":
+        date_format = dictionary.get("date_format")
+        return DateField(name=name, question_code=code, label=label, date_format=date_format)
     elif type == "select" or type == "select1":
         choices = dictionary.get("options")
         single_select = True if type == "select1" else False

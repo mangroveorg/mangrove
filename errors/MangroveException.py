@@ -79,3 +79,7 @@ class AnswerTooShortException(MangroveException):
 class AnswerWrongType(MangroveException):
     def __init__(self, question_code):
         MangroveException.__init__(self, ("Answer to question %s is of wrong type.") % (question_code,))
+
+class IncorrectDate(MangroveException):
+    def __init__(self, question_code, answer, date_format):
+        MangroveException.__init__(self, ('Answer to question %s is invalid: %s, expected date in %s format') % (question_code, answer, date_format) )

@@ -35,11 +35,11 @@ class TestTypeUtils(TestCase):
     a_nonempty_ws_string = '      ab c  '
     an_empty_list = []
     an_empty_dict = {}
-    an_empty_tupe = ()
+    an_empty_tuple = ()
 
     empties = (
     None, a_blank_string, a_ws_string, an_empty_dict,
-    an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode
+    an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode
     )
 
     non_empties = (
@@ -47,15 +47,16 @@ class TestTypeUtils(TestCase):
     a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
     )
 
-    seqs = (a_list, a_tuple, a_dict, an_empty_dict, an_empty_list, an_empty_tupe, true_strings)
+    seqs = (a_list, a_tuple, an_empty_list, an_empty_tuple, true_strings, not_true_strings)
+    
     non_seqs = (
     None, an_int, a_float, a_bool, a_string, a_blank_string, a_nonempty_ws_string,
-    a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
+    a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode, a_dict, an_empty_dict,
     )
 
     nums = (an_int, a_float)
     non_nums = (None, a_list, a_tuple, a_dict, a_blank_string, a_nonempty_ws_string, a_string, an_empty_dict,
-                an_empty_list, an_empty_tupe, a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
+                an_empty_list, an_empty_tuple, a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
     )
 
     strs = (
@@ -65,13 +66,13 @@ class TestTypeUtils(TestCase):
 
     non_strs = (
     None, an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict, an_empty_dict,
-    an_empty_list, an_empty_tupe
+    an_empty_list, an_empty_tuple
     )
 
     bools = (True, False)
     non_bools = (
     None, a_blank_string, a_ws_string, an_empty_dict,
-    an_empty_list, an_empty_tupe, a_blank_unicode, a_ws_unicode,
+    an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode,
     an_int, a_float, a_datetime, a_list, a_tuple, a_dict,
     a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
     )

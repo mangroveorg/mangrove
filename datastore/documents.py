@@ -249,8 +249,8 @@ class AggregationTreeDocument(DocumentBase):
     root_id = TextField()
     name = TextField()
 
-    def __init__(self, name, root=None, root_id=None, id=None):
-        assert is_string(name) and is_not_empty(name)
+    def __init__(self, name=None, root=None, root_id=None, id=None):
+        assert name is None or (is_string(name) and is_not_empty(name))
         assert root is None or (isinstance(root, dict) and is_not_empty(root_id))
 
         DocumentBase.__init__(self, id=id, document_type='AggregationTree')

@@ -4,10 +4,21 @@ from threading import Lock
 
 import networkx as nx
 
-from mangrove.utils.types import is_not_empty
+from mangrove.utils.types import is_not_empty, is_sequence
 from documents import AggregationTreeDocument
 from database import DatabaseManager
 
+def get(dbm, id):
+    assert isinstance(dbm, DatabaseManager)
+    doc = dbm.load(id, AggregationTreeDocument)
+    if doc is not None:
+        return AggregationTree(dbm, _document=doc)
+    else:
+        raise ValueError("AggregationTree with id %s does not exist" % id)
+
+
+def get_aggregation_trees(dbm, ids):
+    return [get(dbm, i) for i in ids]
 
 class AggregationTree(object):
     '''
@@ -46,7 +57,7 @@ class AggregationTree(object):
     '''
     root_id = '__root'
 
-    def __init__(self, dbm, name, _document=None):
+    def __init__(self, dbm, name=None, _document=None):
         '''
         Note: _document is for 'protected' factory methods. If it is passed in the other
         arguments are ignored.
@@ -81,6 +92,40 @@ class AggregationTree(object):
     def name(self, value):
         self._doc.name = value
 
+    def add_path(self, nodes):
+        '''Adds a path to the tree.
+
+        If the first item in the path is AggregationTree.root_id, this will be added at root.
+
+        Otherwise, the method attempts to find the first (depth first search) occurrence of the first element
+        in the sequence, and adds the path there.
+
+        The 'nodes' list can contain tuples of the form '(node_name, dict)' to associate data
+        with the nodes.
+        e.g. add_path('a', ('b', {size: 10}), 'c')
+        
+        Raises a 'ValueError' if the path does NOT start with root and the first item cannot be found.
+        '''
+
+        assert is_sequence(nodes) and is_not_empty(nodes)
+
+        first = (nodes[0][0] if is_sequence(nodes[0]) else nodes[0])
+        if not first in self.graph:
+            raise ValueError('First item in path: %s not in Tree.' % first)
+
+        # iterate, add nodes, and pull out path
+        path = []
+        for n in nodes:
+            if is_sequence(n):
+                self.graph.add_node(n)
+                path.append(n[0])
+            else:
+                path.append(n)
+
+        # add the path
+        self.graph.add_path(path)
+
+
     def _sync_doc_to_graph(self):
         '''Converts internal CouchDB document dict into tree graph'''
 
@@ -108,7 +153,7 @@ class AggregationTree(object):
             # now recurse
             if is_not_empty(children):
                 for c in children:
-                    build_graph(graph, current_id, c)
+                    build_graph(graph, current_id, c, children[c])
 
         graph = nx.DiGraph()
         build_graph(graph, None, AggregationTree.root_id, self._doc.root)

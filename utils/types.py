@@ -34,8 +34,8 @@ def is_not_empty(arg):
 
 
 def is_sequence(arg):
-    '''Returns True is passed arg is an iterable sequence'''
-    return hasattr(arg, '__iter__')
+    '''Returns True is passed arg is a list or a tuple'''
+    return isinstance(arg, list) or isinstance(arg, tuple)
 
 
 def is_string(arg):

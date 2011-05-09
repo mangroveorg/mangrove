@@ -46,7 +46,7 @@ class TestSubmissions(TestCase):
         s = SubmissionHandler(dbm)
         response = s.accept(request)
         self.assertEqual(1, len(response.errors))
-        self.assertEqual("Sorry, This number 1234 is not registered with us", response.errors[0])
+        self.assertEqual("Sorry, this number 1234 is not registered with us.", response.errors[0])
 
     def test_should_fail_submission_if_invalid_form_code(self):
         request = Request(transport="sms", message="INVALID_CODE +name xyz +age 10",
@@ -56,8 +56,8 @@ class TestSubmissions(TestCase):
         s = SubmissionHandler(dbm)
         response = s.accept(request)
         self.assertEqual(1, len(response.errors))
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exists", response.errors[0])
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exists", response.message)
+        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.errors[0])
+        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.message)
 
 #TODO : need to rewrite this test when Submission handler is broken in two part
 #    def test_should_return_success_message_with_reporter_name(self):

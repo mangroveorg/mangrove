@@ -77,20 +77,6 @@ class TestQuestion(unittest.TestCase):
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
-    def test_should_create_date_question(self):
-        expected_json = {
-            "label": {"eng": "What is your Birth Date"},
-            "name": "birthdate",
-            "range": {"min": "15/1/2008", "max": "15/1/2011"},
-            "format": "dd/mm/yyyy",
-            "question_code": "Q6",
-            "type": "date",
-            }
-        question = DateField(name="birthdate", question_code="Q6", label="What is your Birth Date", format="dd/mm/yyyy",
-                             range={"min": "15/1/2008", "max": "15/1/2011"}, language="eng")
-        actual_json = question._to_json()
-        self.assertEqual(actual_json, expected_json)
-
     def test_should_add_label_for_french_language(self):
         expected_json = {
             "defaultValue": "some default value",
@@ -209,7 +195,7 @@ class TestQuestion(unittest.TestCase):
             question = IntegerField(name="Age", question_code="Q2", label="What is your age",
                                     language="eng", range=IntegerConstraint(min=15, max=120))
             question.validate("asas")
-        self.assertEqual(e.exception.message, "answer to question Q2 is of wrong type")
+        self.assertEqual(e.exception.message, "Answer to question Q2 is of wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
@@ -217,7 +203,7 @@ class TestQuestion(unittest.TestCase):
                                     language="eng", range=IntegerConstraint(min=15, max=120))
             valid_value = question.validate(150)
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "answer 150 for question Q2 is greater than allowed")
+        self.assertEqual(e.exception.message, "Answer 150 for question Q2 is greater than allowed.")
 
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
@@ -225,7 +211,7 @@ class TestQuestion(unittest.TestCase):
                                     language="eng", range=IntegerConstraint(min=15, max=120))
             valid_value = question.validate(11)
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "answer 11 for question Q2 is smaller than allowed")
+        self.assertEqual(e.exception.message, "Answer 11 for question Q2 is smaller than allowed.")
 
     def test_successful_text_length_validation(self):
         question = TextField(name="Name", question_code="Q2", label="What is your Name",
@@ -243,7 +229,7 @@ class TestQuestion(unittest.TestCase):
                                  language="eng", length=TextConstraint(min=1, max=4))
             valid_value = question.validate("long_answer")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "answer long_answer for question Q2 is longer than allowed")
+        self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
 
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
@@ -251,4 +237,4 @@ class TestQuestion(unittest.TestCase):
                                  language="eng", length=TextConstraint(min=15, max=120))
             valid_value = question.validate("short")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "answer short for question Q2 is shorter than allowed")
+        self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")

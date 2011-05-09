@@ -4,6 +4,7 @@
 Common entry point for all submissions to Mangrove via multiple channels.
 Will log the submission and forward to the appropriate channel handler.
 """
+from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.documents import  SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
@@ -11,6 +12,7 @@ from mangrove.errors.MangroveException import MangroveException, FormModelDoesNo
 from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
+from mangrove.utils.types import is_string
 
 
 class Request(object):
@@ -50,10 +52,13 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def update_submission_log(self, submission_id, status, message=""):
+    def update_submission_log(self, submission_id, status, errors):
+        error_message = ""
+        for each in errors:
+            error_message = error_message + each + "\n"
         log = self.dbm.load(submission_id, SubmissionLogDocument)
         log.status = status
-        log.error_message = message
+        log.error_message = log.error_message + (error_message or "")
         self.dbm.save(log)
 
     def accept(self, request):
@@ -76,12 +81,11 @@ class SubmissionHandler(object):
             if form_submission.is_valid():
                 e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
                 data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
-                self.update_submission_log(submission_id, True)
-
+                self.update_submission_log(submission_id, True, errors=[])
                 return Response(reporters, True, errors, submission_id, data_record_id)
             else:
                 errors.extend(form_submission.errors)
-                self.update_submission_log(submission_id, False, str(errors))
+                self.update_submission_log(submission_id, False, errors)
 
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)
@@ -94,3 +98,12 @@ class SubmissionHandler(object):
             return SMSPlayer()
         else:
             raise UnknownTransportException(("No handler defined for transport %s") % request.transport)
+
+
+def get_submissions_made_for_questionnaire(dbm, form_code, page_number=0, page_size=20, count_only=False):
+    assert is_string(form_code)
+    if count_only:
+        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', startkey=[form_code], endkey=[form_code, {}], group=True, group_level=1, reduce=True)
+    else:
+        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', reduce=False, startkey=[form_code], endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
+    return [each.value for each in rows]

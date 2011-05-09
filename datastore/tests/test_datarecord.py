@@ -33,8 +33,8 @@ class TestDataRecord(unittest.TestCase):
         current_values = entity.values({"first_Name": "latest"})
         self.assertEquals("Jeff", current_values["first_Name"])
 
+    @SkipTest
     def test_should_be_able_to_get_submitted_records_from_submission_log(self):
-        raise SkipTest
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         uuid = e.save()
         name_type = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string')

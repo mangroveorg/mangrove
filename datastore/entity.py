@@ -11,8 +11,8 @@ from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.documents import EntityTypeDocument
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, EntityInstanceDoesNotExistsException
 from mangrove.utils.types import is_empty
-from ..utils.types import is_not_empty, is_sequence, is_string
-from ..utils.dates import utcnow
+from mangrove.utils.types import is_not_empty, is_sequence, is_string
+from mangrove.utils.dates import utcnow
 from database import DatabaseManager
 
 
@@ -27,11 +27,12 @@ def load_all_entity_types(dbm):
 
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
-    if type(entity_type) == str:
-        _entity_type = [entity_type.strip()]
-    else:
-        _entity_type = entity_type
-    e = EntityTypeDocument(_entity_type)
+
+    type_path = ([entity_type] if is_string(entity_type) else entity_type)
+    type_path = [i.strip() for i in type_path]
+
+
+    e = EntityTypeDocument(type_path)
     try:
         dbm.save(e)
     except ResourceConflict:

@@ -12,7 +12,7 @@ class SMSPlayer(object):
         form_code = tokens[0].strip()
         tokens.remove(tokens[0])
         #remove any space if any. for example if the message is +
-        tokens=[token for token in tokens if token]
+        tokens = [token for token in tokens if token]
         submission = {}
         for token in tokens:
             field_code, answer = self._parse_token(token)

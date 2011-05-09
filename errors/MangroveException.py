@@ -16,7 +16,8 @@ class EntityTypeAlreadyDefined(MangroveException):
 
 class FormModelDoesNotExistsException(MangroveException):
     def __init__(self, questionnaire_code):
-        MangroveException.__init__(self, "The questionnaire with code %s does not exists" % questionnaire_code)
+        error_message = "The questionnaire with code %s does not exists" % questionnaire_code if questionnaire_code else "The questionnaire does not exists"
+        MangroveException.__init__(self, error_message)
 
 
 class FieldDoesNotExistsException(MangroveException):

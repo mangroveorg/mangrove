@@ -33,3 +33,14 @@ class TestSMSPlayer(TestCase):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
         self.assertEqual({"ID": "1", "NAME": "FirstName LastName", "AGE": "10"}, values)
+
+    def test_should_handle_submission_of_seperator(self):
+        smsplayer = SMSPlayer()
+        form_code, values = smsplayer.parse("+")
+        self.assertEqual({}, values)
+
+    def test_should_handle_submission_of_seperator(self):
+        smsplayer = SMSPlayer()
+        form_code, values = smsplayer.parse("")
+        self.assertEqual({}, values)
+        self.assertEqual('', form_code)

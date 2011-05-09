@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
+from mangrove.utils.types import is_empty
 
 
 class SMSPlayer(object):
@@ -10,6 +11,8 @@ class SMSPlayer(object):
         tokens = message.split("+")
         form_code = tokens[0].strip()
         tokens.remove(tokens[0])
+        #remove any space if any. for example if the message is +
+        tokens=[token for token in tokens if token]
         submission = {}
         for token in tokens:
             field_code, answer = self._parse_token(token)

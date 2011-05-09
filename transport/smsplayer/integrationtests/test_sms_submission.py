@@ -76,3 +76,11 @@ class TestShouldSaveSMSSubmission(TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
+
+    def test_should_give_error_for_no_value(self):
+        text = "+"
+        s = SubmissionHandler(self.dbm)
+
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertEqual(len(response.errors), 1)

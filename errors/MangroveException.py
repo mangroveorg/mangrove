@@ -16,18 +16,18 @@ class EntityTypeAlreadyDefined(MangroveException):
 
 class FormModelDoesNotExistsException(MangroveException):
     def __init__(self, questionnaire_code):
-        error_message = "The questionnaire with code %s does not exists" % questionnaire_code if questionnaire_code else "The questionnaire does not exists"
+        error_message = "The questionnaire with code %s does not exist." % questionnaire_code if questionnaire_code else "The questionnaire does not exist."
         MangroveException.__init__(self, error_message)
 
 
 class FieldDoesNotExistsException(MangroveException):
     def __init__(self, field_code):
-        MangroveException.__init__(self, "The field with code %s does not exists" % field_code)
+        MangroveException.__init__(self, "The field with code %s does not exist." % field_code)
 
 
 class EntityQuestionCodeNotSubmitted(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "The submission does not contain entity question code")
+        MangroveException.__init__(self, "The submission does not contain entity question code.")
 
 
 class EntityQuestionAlreadyExistsException(MangroveException):
@@ -40,12 +40,12 @@ class QuestionCodeAlreadyExistsException(MangroveException):
 
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, ("Sorry, This number %s is not registered with us") % (from_number,))
+        MangroveException.__init__(self, ("Sorry, this number %s is not registered with us.") % (from_number,))
 
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, ("Sorry, more than one reporter found for %s") % (from_number,))
+        MangroveException.__init__(self, ("Sorry, more than one reporter found for %s.") % (from_number,))
 
 
 class EntityInstanceDoesNotExistsException(MangroveException):
@@ -55,27 +55,27 @@ class EntityInstanceDoesNotExistsException(MangroveException):
 class AnswerTooBigException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("answer %s for question %s is greater than allowed") % (answer, question_code,))
+                                   ("Answer %s for question %s is greater than allowed.") % (answer, question_code,))
 
 
 class AnswerTooSmallException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("answer %s for question %s is smaller than allowed") % (answer, question_code,))
+                                   ("Answer %s for question %s is smaller than allowed.") % (answer, question_code,))
 
 
 class AnswerTooLongException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("answer %s for question %s is longer than allowed") % (answer, question_code,))
+                                   ("Answer %s for question %s is longer than allowed.") % (answer, question_code,))
 
 
 class AnswerTooShortException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("answer %s for question %s is shorter than allowed") % (answer, question_code,))
+                                   ("Answer %s for question %s is shorter than allowed.") % (answer, question_code,))
 
 
 class AnswerWrongType(MangroveException):
     def __init__(self, question_code):
-        MangroveException.__init__(self, ("answer to question %s is of wrong type") % (question_code,))
+        MangroveException.__init__(self, ("Answer to question %s is of wrong type.") % (question_code,))

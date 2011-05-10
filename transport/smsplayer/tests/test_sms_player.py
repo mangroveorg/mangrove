@@ -39,7 +39,7 @@ class TestSMSPlayer(TestCase):
         form_code, values = smsplayer.parse("+")
         self.assertEqual({}, values)
 
-    def test_should_handle_submission_of_seperator(self):
+    def test_should_handle_no_seperator(self):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("")
         self.assertEqual({}, values)

@@ -4,8 +4,6 @@ import copy
 from datetime import datetime
 from time import mktime
 
-from couchdb.http import ResourceConflict
-
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
@@ -16,6 +14,7 @@ from mangrove.utils.dates import utcnow
 from database import DatabaseManager
 
 ENTITY_TYPE_TREE = '_entity_type'
+
 
 def get_all_entity_types(dbm):
     assert isinstance(dbm, DatabaseManager)

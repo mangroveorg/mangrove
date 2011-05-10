@@ -60,7 +60,6 @@ class TestTypeUtils(TestCase):
 
     non_iters = non_seqs[:-2]  # remove dicts
 
-
     nums = (an_int, a_float)
     non_nums = (None, a_list, a_tuple, a_dict, a_blank_string, a_nonempty_ws_string, a_string, an_empty_dict,
                 an_empty_list, an_empty_tuple, a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode

@@ -5,7 +5,7 @@ import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.types import is_sequence, is_string, is_not_empty
+from mangrove.utils.types import is_string, is_not_empty
 from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 
@@ -185,16 +185,6 @@ class RawSubmissionLogDocument(DocumentBase):
         self.channel = channel
         self.destination = destination
         self.message = message
-
-
-class EntityTypeDocument(DocumentBase):
-    """This document defines the type of the entity."""
-    name = ListField(TextField())
-
-    def __init__(self, name_=None):
-        assert is_sequence(name_)
-        DocumentBase.__init__(self, document_type='EntityType', id=".".join([v for v in name_]))
-        self.name = name_
 
 
 class FormModelDocument(DocumentBase):

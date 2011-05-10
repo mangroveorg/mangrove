@@ -167,10 +167,6 @@ class FormModel(object):
         entity_question = [x for x in text_questions if x.is_entity_field == True]
         return entity_question[0]
 
-    @name.setter
-    def name(self, value):
-        self._doc.name = value
-
     @property
     def form_code(self):
         return self._doc.form_code

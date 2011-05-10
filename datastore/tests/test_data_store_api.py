@@ -205,6 +205,6 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertIn([entity_type[0]], types)
 
     def test_should_throw_back_proper_error_message(self):
-        define_type(self.dbm, ["HealthFacility", "Clinic"])
+        define_type(self.dbm, ["HealthFacility, Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
             define_type(self.dbm, ["HealthFacility", "Clinic"])

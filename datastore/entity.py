@@ -26,6 +26,7 @@ def define_type(dbm, entity_type):
 
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
+    type_path = [", ".join(type_path)]
 
     # get the entity type aggregation tree, or create on if none-exists
     entity_tree = atree.get_by_name(dbm, ENTITY_TYPE_TREE, get_or_create=True)
@@ -37,7 +38,7 @@ def define_type(dbm, entity_type):
         raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
 
     # now make the new one
-    entity_tree.add_path([atree.AggregationTree.root_id] + [entity_type])
+    entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
 
 
 def get_by_short_code(dbm, short_code):

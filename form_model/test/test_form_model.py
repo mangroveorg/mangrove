@@ -252,3 +252,7 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(valid)
         self.assertEqual(0, len(self.form_model.errors))
         self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
+
+    def test_should_set_name(self):
+        self.form_model.name = 'test_name'
+        self.assertEquals(self.form_model.name,'test_name')

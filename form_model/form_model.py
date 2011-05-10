@@ -164,6 +164,10 @@ class FormModel(object):
     def name(self):
         return self._doc.name
 
+    @name.setter
+    def name(self, value):
+        self._doc.name = value
+
     @property
     def entity_question(self):
         text_questions = [question for question in self.questions if isinstance(question, TextField)]

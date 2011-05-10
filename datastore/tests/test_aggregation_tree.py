@@ -3,7 +3,7 @@
 import unittest
 from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.database import _delete_db_and_remove_db_manager as trash_db
-from mangrove.datastore.aggregationtree import AggregationTree as ATree, get as get_atree
+from mangrove.datastore.aggregationtree import AggregationTree as ATree, get as get_atree, get_by_id, get_by_name
 
 
 class TestAggregationTrees(unittest.TestCase):
@@ -58,3 +58,23 @@ class TestAggregationTrees(unittest.TestCase):
             t = ATree(self.dbm, '_test_tree')
             t.add_path([1, 2, 3, 4])
 
+    def test_load_by_name_id(self):
+        by_name = {}
+        by_id = {}
+        for name in ('t1', 't2', 't3', 't4'):
+            t = ATree(self.dbm, name)
+            id = t.save()
+            by_name[name] = (id, name)
+            by_id[id] = (id, name)
+
+        for name in by_name:
+            self.assertTrue(get_by_name(self.dbm, name)._doc.id == by_name[name][0])
+
+        for id in by_id:
+            self.assertTrue(get_by_id(self.dbm, id)._doc.name == by_id[id][1])
+
+        with self.assertRaises(KeyError):
+            get_by_id(self.dbm, 'no exist')
+
+        with self.assertRaises(KeyError):
+            get_by_name(self.dbm, 'no exist')

@@ -4,11 +4,96 @@ from threading import Lock
 
 import networkx as nx
 
-from mangrove.utils.types import is_not_empty, is_sequence
+from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from documents import AggregationTreeDocument
 from database import DatabaseManager
 
+aggregation_trees_by_id = {}
+aggregation_trees_by_name = {}
+aggregation_trees_lock = Lock()
+
+
+# private helpers
+def _load_tree(dbm, id_name):
+    assert isinstance(dbm, DatabaseManager)
+    assert is_sequence(id_name)
+
+    tree = get(dbm, id_name[0])
+    with aggregation_trees_lock:
+        aggregation_trees_by_id[id_name[0]] = tree
+        aggregation_trees_by_name[id_name[1]] = tree
+    return tree
+
+
+def _get_tree_names_ids(dbm):
+    by_name = {}
+    by_id = {}
+    rows = dbm.load_all_rows_in_view('mangrove_views/aggregation_trees')
+    for r in rows:
+        id = r['id']
+        name = r['value']
+        by_id[id] = (id, name)
+        by_name[name] = (id, name)
+
+    return (by_name, by_id)
+
+
+# getters
+def get_by_id(dbm, id, force_reload=False):
+    '''
+    Looks for and loads AggregationTree with the given ID. Tree is placed in cache.
+
+    force_reload will force a reload of tree names and the given tree.
+
+    Raises KeyError if the given ID cannot be found.
+
+    '''
+    assert isinstance(dbm, DatabaseManager)
+    assert is_not_empty(id)
+
+    if not force_reload and id in aggregation_trees_by_id:
+        return aggregation_trees_by_id[id]
+
+    # wanted a reload, or couldn't find the name, so lets try pulling all the
+    # names from Couch
+    by_name, by_id = _get_tree_names_ids(dbm)
+
+    if id not in by_id:
+        raise KeyError('Could not find tree with id: %s' % id)
+
+    return _load_tree(dbm, by_id[id])
+
+
+def get_by_name(dbm, name, force_reload=False):
+    '''
+    Looks for and loads AggregationTree with the given Name. Tree is placed in cache.
+
+    force_reload will force a reload of tree names and the given tree.
+
+    Raises KeyError if the given Name cannot be found.
+
+    '''
+    assert isinstance(dbm, DatabaseManager)
+    assert is_not_empty(name)
+
+    if not force_reload and name in aggregation_trees_by_name:
+        return aggregation_trees_by_name[name]
+
+    # wanted a reload, or couldn't find the name, so lets try pulling all the
+    # names from Couch
+    by_name, by_id = _get_tree_names_ids(dbm)
+
+    if name not in by_name:
+        raise KeyError('Could not find tree with name: %s' % name)
+
+    return _load_tree(dbm, by_name[name])
+
+
 def get(dbm, id):
+    '''
+    WARNING: By Passes Cache! You probably want to call 'get_by_id' or 'get_by_name'
+
+    '''
     assert isinstance(dbm, DatabaseManager)
     doc = dbm.load(id, AggregationTreeDocument)
     if doc is not None:
@@ -16,9 +101,6 @@ def get(dbm, id):
     else:
         raise ValueError("AggregationTree with id %s does not exist" % id)
 
-
-def get_aggregation_trees(dbm, ids):
-    return [get(dbm, i) for i in ids]
 
 class AggregationTree(object):
     '''
@@ -161,7 +243,6 @@ class AggregationTree(object):
 
     def _sync_graph_to_doc(self):
         '''Converts internal tree to dict for CouchDB document'''
-
         assert self.graph is not None
 
         def build_dicts(dicts, parent, node_dict):

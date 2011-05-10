@@ -1,8 +1,8 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
 from mangrove.form_model import field
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
@@ -238,3 +238,60 @@ class TestQuestion(unittest.TestCase):
             valid_value = question.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
+
+    def test_should_create_date_field(self):
+        question_json = {
+            "defaultValue": "",
+            "label": {"eng": "What is your birth date"},
+            "name": "Birth_date",
+            "question_code": "Q1",
+            "type": "date",
+            "date_format": "%m.%Y",
+        }
+        created_question = field.create_question_from(question_json)
+        self.assertIsInstance(created_question, DateField)
+        self.assertEqual(created_question.date_format, "%m.%Y")
+
+    def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%m.%Y")
+            valid_value = question.validate("13.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in %m.%Y format")
+
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%d.%m.%Y")
+            valid_value = question.validate("33.12.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in %d.%m.%Y format")
+
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%m.%d.%Y")
+            valid_value = question.validate("13.01.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")
+
+    def test_should_accept_(self):
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%m.%Y")
+            valid_value = question.validate("13.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in %m.%Y format")
+
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%d.%m.%Y")
+            valid_value = question.validate("33.12.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in %d.%m.%Y format")
+
+        with self.assertRaises(IncorrectDate) as e:
+            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+                                 language="eng", date_format="%m.%d.%Y")
+            valid_value = question.validate("13.01.2010")
+            self.assertFalse(valid_value)
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")

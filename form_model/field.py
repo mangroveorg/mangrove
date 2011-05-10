@@ -108,7 +108,7 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, question_code, label, date_format=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, question_code, label, date_format, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
                        label=label, language=language)
 

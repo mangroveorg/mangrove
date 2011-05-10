@@ -46,7 +46,7 @@ class FormModel(object):
         If _couch_document is passed, the other args are ignored
 
         entity_type may be a string (flat type) or sequence (hierarchical type)
-        
+
         '''
         assert isinstance(dbm, DatabaseManager)
         assert _document is not None or \

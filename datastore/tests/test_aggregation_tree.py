@@ -3,7 +3,8 @@
 import unittest
 from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.database import _delete_db_and_remove_db_manager as trash_db
-from mangrove.datastore.aggregationtree import AggregationTree as ATree, get as get_atree, get_by_id, get_by_name
+from mangrove.datastore.aggregationtree import AggregationTree as ATree, get as get_atree, \
+    get_by_id, get_by_name, _blow_tree_cache
 
 
 class TestAggregationTrees(unittest.TestCase):
@@ -108,4 +109,9 @@ class TestAggregationTrees(unittest.TestCase):
 
         # now call with create
         t = get_by_name(self.dbm, 'foobarbaz', get_or_create=True)
+        self.assertTrue(t.name == 'foobarbaz')
 
+        # now blow cache and get again
+        _blow_tree_cache()
+        t = get_by_name(self.dbm, 'foobarbaz')
+        self.assertTrue(t.name == 'foobarbaz')

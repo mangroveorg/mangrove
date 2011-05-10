@@ -104,6 +104,7 @@ class IntegerField(Field):
     def range(self):
         return self._dict.get(self.RANGE)
 
+
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
@@ -179,6 +180,7 @@ class SelectField(Field):
     @property
     def options(self):
         return self._dict.get(self.OPTIONS)
+
 
 def create_question_from(dictionary):
     """

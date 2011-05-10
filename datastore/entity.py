@@ -4,8 +4,6 @@ import copy
 from datetime import datetime
 from time import mktime
 
-from couchdb.http import ResourceConflict
-
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
@@ -16,6 +14,7 @@ from mangrove.utils.dates import utcnow
 from database import DatabaseManager
 
 ENTITY_TYPE_TREE = '_entity_type'
+
 
 def get_all_entity_types(dbm):
     assert isinstance(dbm, DatabaseManager)
@@ -38,7 +37,7 @@ def define_type(dbm, entity_type):
         raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
 
     # now make the new one
-    entity_tree.add_path([atree.AggregationTree.root_id]+entity_type)
+    entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
 
 
 def get_by_short_code(dbm, short_code):

@@ -371,7 +371,7 @@ class TestQueryApi(unittest.TestCase):
         entity_types = get_all_entity_types(self.manager)
 
         expected = [['HealthFacility'],
-                    ['HealthFacility','Clinic'],
+                    ['HealthFacility', 'Clinic'],
                     ['HealthFacility', 'Hospital'],
                     ['WaterPoint'],
                     ['WaterPoint', 'Lake'],

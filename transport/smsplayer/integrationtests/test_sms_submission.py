@@ -19,8 +19,8 @@ from mangrove.datastore.aggregationtree import _blow_tree_cache
 class TestShouldSaveSMSSubmission(TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        self.entity_type =  ["HealthFacility", "Clinic"]
-        define_type(self.dbm,self.entity_type)
+        self.entity_type = ["HealthFacility", "Clinic"]
+        define_type(self.dbm, self.entity_type)
         self.reporter_type = define_type(self.dbm, ["Reporter"])
         self.name_type = DataDictType(self.dbm, name='Name', slug='Name', primitive_type='string')
         self.first_name_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
@@ -81,7 +81,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
-    def test_get_submissions_for_form(self):        
+    def test_get_submissions_for_form(self):
         submission_id1 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
                                                                 destination=12345, form_code="abc", values={'Q1': 'ans1', 'Q2': 'ans2'},
                                                                 status=False, error_message="")).id

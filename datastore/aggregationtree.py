@@ -41,6 +41,7 @@ def _get_tree_names_ids(dbm):
 
     return (by_name, by_id)
 
+
 # TODO: Move all this cache stuff into DatabaseManager...
 def _blow_tree_cache(dbm=None):
     global aggregation_trees_by_id
@@ -116,7 +117,7 @@ def get_by_name(dbm, name, force_reload=False, get_or_create=False):
             # definitely don't have it, so need to make it
             tree = AggregationTree(dbm, name)
             id = tree.save()
-            by_name[name]=(id, name)
+            by_name[name] = (id, name)
         else:
             raise KeyError('Could not find tree with name: %s' % name)
 
@@ -215,7 +216,7 @@ class AggregationTree(object):
         '''
         # TODO: hold this as a cache that is blown by Add Path
         return [p[1:] for p in nx.shortest_path(self.graph, AggregationTree.root_id,).values() if is_not_empty(p[1:])]
-    
+
     def get_leaf_paths(self):
         '''
         Returns a list of lists for all unique paths from root to leaves.
@@ -227,8 +228,7 @@ class AggregationTree(object):
         # TODO: this is a hacky, probably really slow way to do ths. I need to either find the fast way or cache this.
         # But it is a crazy list comprehension ;-)
         return [nx.shortest_path(self.graph, AggregationTree.root_id, n)[1:] for n in
-                [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n)==1]]
-
+                [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n) == 1]]
 
     def add_path(self, nodes):
         '''Adds a path to the tree.
@@ -241,7 +241,7 @@ class AggregationTree(object):
         The 'nodes' list can contain tuples of the form '(node_name, dict)' to associate data
         with the nodes.
         e.g. add_path('a', ('b', {size: 10}), 'c')
-        
+
         Raises a 'ValueError' if the path does NOT start with root and the first item cannot be found.
         '''
 
@@ -262,7 +262,6 @@ class AggregationTree(object):
 
         # add the path
         self.graph.add_path(path)
-
 
     def _sync_doc_to_graph(self):
         '''Converts internal CouchDB document dict into tree graph'''

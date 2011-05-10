@@ -21,7 +21,6 @@ class TestDataStoreApi(unittest.TestCase):
         _blow_tree_cache(self.dbm)
         _delete_db_and_remove_db_manager(self.dbm)
 
-
     def test_create_entity(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         uuid = e.save()

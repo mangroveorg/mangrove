@@ -198,13 +198,17 @@ class TestDataStoreApi(unittest.TestCase):
         entity_type = ["HealthFacility", "Clinic"]
         entity_types = get_all_entity_types(self.dbm)
         self.assertNotIn(entity_type, entity_types)
-
         define_type(self.dbm, entity_type)
         types = get_all_entity_types(self.dbm)
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
 
     def test_should_throw_back_proper_error_message(self):
-        define_type(self.dbm, ["HealthFacility, Clinic"])
+        define_type(self.dbm, ["HealthFacility", "Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
             define_type(self.dbm, ["HealthFacility", "Clinic"])
+
+    def test_should_define_single_entity(self):
+        define_type(self.dbm,["Clinic"])
+        entity_types = get_all_entity_types(self.dbm)
+        self.assertEqual(entity_types,[["Clinic"]])

@@ -155,10 +155,9 @@ class TextField(Field):
 
 class SelectField(Field):
     OPTIONS = "options"
-    SINGLE_SELECT_FLAG = 'single_select_flag'
-
-    def __init__(self, name, question_code, label, options=None, language=field_attributes.DEFAULT_LANGUAGE,
+    def __init__(self, name, question_code, label, options, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
+        assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.SINGLE_SELECT_FLAG = single_select_flag
         Field.__init__(self, type=type, name=name, question_code=question_code,
@@ -175,6 +174,8 @@ class SelectField(Field):
                     single_language_specific_option = {'text': {language: option}}
                 valid_choices.append(single_language_specific_option)
         self.constraint = ChoiceConstraint(list_of_valid_choices=[each.get('text').get(language) for each in valid_choices], single_select_constraint=single_select_flag, question_code=question_code)
+
+    SINGLE_SELECT_FLAG = 'single_select_flag'
     def validate(self, value):
         return self.constraint.validate(answer=value)
 

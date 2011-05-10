@@ -1,6 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 #  This is an integration test.
 # Send sms, parse and save.
+
 from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
@@ -11,12 +13,14 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
+from mangrove.datastore.aggregationtree import _blow_tree_cache
 
 
 class TestShouldSaveSMSSubmission(TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        self.entity_type = define_type(self.dbm, ["HealthFacility", "Clinic"])
+        self.entity_type =  ["HealthFacility", "Clinic"]
+        define_type(self.dbm,self.entity_type)
         self.reporter_type = define_type(self.dbm, ["Reporter"])
         self.name_type = DataDictType(self.dbm, name='Name', slug='Name', primitive_type='string')
         self.first_name_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
@@ -40,13 +44,13 @@ class TestShouldSaveSMSSubmission(TestCase):
         question4 = SelectField(name="Color", question_code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
-        self.form_model = FormModel(self.dbm, entity_type_id=self.entity_type.id, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="CLINIC", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
-        del self.dbm.database[self.form_model__id]
+        _blow_tree_cache()
         _delete_db_and_remove_db_manager(self.dbm)
         pass
 

@@ -10,12 +10,14 @@ from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsExcept
 from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
+from mangrove.datastore.aggregationtree import _blow_tree_cache
 
 
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        self.entity = define_type(self.dbm, ["HealthFacility", "Clinic"])
+        self.entity_type = ["HealthFacility", "Clinic"]
+        define_type(self.dbm, ["HealthFacility", "Clinic"])
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.name_type.save()
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
@@ -30,13 +32,13 @@ class TestFormModel(unittest.TestCase):
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
-        self.form_model = FormModel(self.dbm, entity_type_id=self.entity.id, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
                     question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
-        del self.dbm.database[self.form_model__id]
+        _blow_tree_cache()
         _delete_db_and_remove_db_manager(self.dbm)
         pass
 
@@ -62,7 +64,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_add_entity_id(self):
         saved = get(self.dbm, self.form_model__id)
-        self.assertTrue(saved.entity_id == self.entity.id)
+        self.assertListEqual(saved.entity_type, self.entity_type)
 
     def test_should_add_fields(self):
         saved = get(self.dbm, self.form_model__id)
@@ -186,7 +188,7 @@ class TestFormModel(unittest.TestCase):
                     }]
         document = FormModelDocument()
         document.fields = fields
-        document.entity_id = "Reporter"
+        document.entity_type = ["Reporter"]
         document.document_type = "FormModel"
         document.form_code = "F1"
         document.name = "New Project"
@@ -203,7 +205,7 @@ class TestFormModel(unittest.TestCase):
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel(dbm=self.dbm, _document=document)
         self.maxDiff = None
-        self.assertEqual(questionnaire.entity_id, "Reporter")
+        self.assertListEqual(questionnaire.entity_type, ["Reporter"])
         self.assertEqual(questionnaire.name, "New Project")
         self.assertEqual(questionnaire.type, "survey")
         for i in range(len(questions)):

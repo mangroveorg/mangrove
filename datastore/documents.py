@@ -6,7 +6,7 @@ import calendar
 from uuid import uuid4
 from time import struct_time
 from mangrove.utils.types import is_sequence, is_string, is_not_empty
-from ..utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
+from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 
 class attributes(object):
@@ -203,7 +203,7 @@ class FormModelDocument(DocumentBase):
     type = TextField()
     label = DictField()
     form_code = TextField()
-    entity_id = TextField()
+    entity_type = ListField(TextField())
     fields = ListField(DictField())
 
     def __init__(self, id=None):

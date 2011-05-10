@@ -4,7 +4,7 @@ from threading import Lock
 
 import networkx as nx
 
-from mangrove.utils.types import is_not_empty, is_sequence, is_string
+from mangrove.utils.types import is_not_empty, is_sequence
 from documents import AggregationTreeDocument
 from database import DatabaseManager
 
@@ -20,8 +20,12 @@ def _load_tree(dbm, id_name):
 
     tree = get(dbm, id_name[0])
     with aggregation_trees_lock:
-        aggregation_trees_by_id[id_name[0]] = tree
-        aggregation_trees_by_name[id_name[1]] = tree
+        if dbm not in aggregation_trees_by_id:
+            aggregation_trees_by_id[dbm] = {}
+        if dbm not in aggregation_trees_by_name:
+            aggregation_trees_by_name[dbm] = {}
+        aggregation_trees_by_id[dbm][id_name[0]] = tree
+        aggregation_trees_by_name[dbm][id_name[1]] = tree
     return tree
 
 
@@ -37,6 +41,23 @@ def _get_tree_names_ids(dbm):
 
     return (by_name, by_id)
 
+# TODO: Move all this cache stuff into DatabaseManager...
+def _blow_tree_cache(dbm=None):
+    global aggregation_trees_by_id
+    global aggregation_trees_by_name
+
+    if dbm is not None:
+        with aggregation_trees_lock:
+            try:
+                del aggregation_trees_by_id[dbm]
+                del aggregation_trees_by_name[dbm]
+            except Exception:
+                pass
+    else:
+        with aggregation_trees_lock:
+            aggregation_trees_by_id = {}
+            aggregation_trees_by_name = {}
+
 
 # getters
 def get_by_id(dbm, id, force_reload=False):
@@ -51,8 +72,10 @@ def get_by_id(dbm, id, force_reload=False):
     assert isinstance(dbm, DatabaseManager)
     assert is_not_empty(id)
 
-    if not force_reload and id in aggregation_trees_by_id:
-        return aggregation_trees_by_id[id]
+    if not dbm in aggregation_trees_by_id:
+        aggregation_trees_by_id[dbm] = {}
+    elif not force_reload and id in aggregation_trees_by_id[dbm]:
+        return aggregation_trees_by_id[dbm][id]
 
     # wanted a reload, or couldn't find the name, so lets try pulling all the
     # names from Couch
@@ -64,11 +87,14 @@ def get_by_id(dbm, id, force_reload=False):
     return _load_tree(dbm, by_id[id])
 
 
-def get_by_name(dbm, name, force_reload=False):
+def get_by_name(dbm, name, force_reload=False, get_or_create=False):
     '''
     Looks for and loads AggregationTree with the given Name. Tree is placed in cache.
 
     force_reload will force a reload of tree names and the given tree.
+
+    get_or_create will cause tree to be created if it doesn't exists. Will force a reload if
+    tree not found in cache.
 
     Raises KeyError if the given Name cannot be found.
 
@@ -76,15 +102,23 @@ def get_by_name(dbm, name, force_reload=False):
     assert isinstance(dbm, DatabaseManager)
     assert is_not_empty(name)
 
-    if not force_reload and name in aggregation_trees_by_name:
-        return aggregation_trees_by_name[name]
+    if not dbm in aggregation_trees_by_name:
+        aggregation_trees_by_name[dbm] = {}
+    elif not force_reload and name in aggregation_trees_by_name[dbm]:
+            return aggregation_trees_by_name[dbm][name]
 
     # wanted a reload, or couldn't find the name, so lets try pulling all the
     # names from Couch
     by_name, by_id = _get_tree_names_ids(dbm)
 
     if name not in by_name:
-        raise KeyError('Could not find tree with name: %s' % name)
+        if get_or_create:
+            # definitely don't have it, so need to make it
+            tree = AggregationTree(dbm, name)
+            id = tree.save()
+            by_name[name]=(id, name)
+        else:
+            raise KeyError('Could not find tree with name: %s' % name)
 
     return _load_tree(dbm, by_name[name])
 
@@ -170,9 +204,31 @@ class AggregationTree(object):
     def name(self):
         return self._doc.name
 
-    @name.setter
-    def name(self, value):
-        self._doc.name = value
+    def get_paths(self):
+        '''
+        Returns a list of lists, each one a path from root to every node, with root removed.
+
+        So a simple tree of ROOT->A->B->C returns [[A],[A,B], [A,B,C]]
+
+        Use this method if every node has meaning, e.g. HEALTH FAC->HOSPITAL->REGIONAL
+
+        '''
+        # TODO: hold this as a cache that is blown by Add Path
+        return [p[1:] for p in nx.shortest_path(self.graph, AggregationTree.root_id,).values() if is_not_empty(p[1:])]
+    
+    def get_leaf_paths(self):
+        '''
+        Returns a list of lists for all unique paths from root to leaves.
+
+        Paths do not include ROOT and start one level below root
+
+        '''
+
+        # TODO: this is a hacky, probably really slow way to do ths. I need to either find the fast way or cache this.
+        # But it is a crazy list comprehension ;-)
+        return [nx.shortest_path(self.graph, AggregationTree.root_id, n)[1:] for n in
+                [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n)==1]]
+
 
     def add_path(self, nodes):
         '''Adds a path to the tree.

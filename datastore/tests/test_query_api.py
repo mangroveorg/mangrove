@@ -3,7 +3,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 import unittest
 from pytz import UTC
 from mangrove.datastore import views
-from mangrove.datastore.entity import Entity, load_all_entity_types, define_type
+from mangrove.datastore.entity import Entity, get_all_entity_types, define_type
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 
@@ -368,9 +368,17 @@ class TestQueryApi(unittest.TestCase):
         define_type(self.manager, ["HealthFacility", "Hospital"])
         define_type(self.manager, ["WaterPoint", "Lake"])
         define_type(self.manager, ["WaterPoint", "Dam"])
-        entity_types = load_all_entity_types(self.manager)
-        assert entity_types is not None
-        print entity_types
+        entity_types = get_all_entity_types(self.manager)
+
+        expected = [['HealthFacility'],
+                    ['HealthFacility','Clinic'],
+                    ['HealthFacility', 'Hospital'],
+                    ['WaterPoint'],
+                    ['WaterPoint', 'Lake'],
+                    ['WaterPoint', 'Dam']]
+
+        for e in expected:
+            self.assertIn(e, entity_types)
 
 #
 #

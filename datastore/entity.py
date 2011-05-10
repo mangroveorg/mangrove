@@ -8,36 +8,37 @@ from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
-from mangrove.datastore.documents import EntityTypeDocument
+import mangrove.datastore.aggregationtree as atree
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, EntityInstanceDoesNotExistsException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
 from database import DatabaseManager
 
+ENTITY_TYPE_TREE = '_entity_type'
 
-def load_all_entity_types(dbm):
+def get_all_entity_types(dbm):
     assert isinstance(dbm, DatabaseManager)
-    rows = dbm.load_all_rows_in_view('mangrove_views/entity_types')
-    entity_types = {}
-    for row in rows:
-        entity_types[row["id"]] = row["value"].pop()
-    return entity_types
+    return atree.get_by_name(dbm, ENTITY_TYPE_TREE, get_or_create=True).get_paths()
 
 
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
 
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
-    type_path = [i.strip() for i in type_path]
+    type_path = [item.strip() for item in type_path]
 
+    # get the entity type aggregation tree, or create on if none-exists
+    entity_tree = atree.get_by_name(dbm, ENTITY_TYPE_TREE, get_or_create=True)
 
-    e = EntityTypeDocument(type_path)
-    try:
-        dbm.save(e)
-    except ResourceConflict:
-        raise EntityTypeAlreadyDefined(message="This type is already defined")
-    return e
+    # types are all the paths in the tree
+    entity_types = entity_tree.get_paths()
+
+    if type_path in entity_types:
+        raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
+
+    # now make the new one
+    entity_tree.add_path([atree.AggregationTree.root_id]+entity_type)
 
 
 def get_by_short_code(dbm, short_code):

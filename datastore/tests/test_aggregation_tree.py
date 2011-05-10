@@ -37,6 +37,28 @@ class TestAggregationTrees(unittest.TestCase):
 
         self.assertDictEqual(get_atree(self.dbm, t1_id).graph.adj, get_atree(self.dbm, t2_id).graph.adj)
 
+    def test_get_paths(self):
+        t = ATree(self.dbm, 'paths_test')
+
+        t.add_path([ATree.root_id, 1, 2, 3])
+        t.add_path([1, 1.1])
+
+        expected = [[1], [1, 2], [1, 2, 3], [1, 1.1]]
+        tree_paths = t.get_paths()
+        for p in expected:
+            self.assertIn(p, tree_paths)
+
+    def test_get_leaf_paths(self):
+        t = ATree(self.dbm, 'leaf_paths_test')
+        paths = [(ATree.root_id, 'a', 'b', 'c', 'd'),
+                 (ATree.root_id, 1, 2, 3, 4)]
+        for p in paths:
+            t.add_path(p)
+
+        tree_paths = t.get_leaf_paths()
+        for p in [list(p[1:]) for p in paths]:
+            self.assertIn(p, tree_paths)
+
     def test_add_path_bad_args(self):
         # blank path
         with self.assertRaises(AssertionError):
@@ -78,3 +100,12 @@ class TestAggregationTrees(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             get_by_name(self.dbm, 'no exist')
+
+    def test_load_by_name_create(self):
+        # prove it doesn't exist by calling and getting exception
+        with self.assertRaises(KeyError):
+            get_by_name(self.dbm, 'foobarbaz')
+
+        # now call with create
+        t = get_by_name(self.dbm, 'foobarbaz', get_or_create=True)
+

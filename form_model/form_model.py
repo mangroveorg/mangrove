@@ -1,10 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException
 from mangrove.form_model.field import TextField, field_attributes
-from mangrove.utils.types import is_sequence, is_string, is_empty
+from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
 
@@ -34,9 +35,10 @@ def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
 
 
 class FormModel(object):
-    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type_id=None, type=None,
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
                  language="eng", _document=None):
-        '''Construct a new entity.
+        '''
+        Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
         should not be passed in standard construction.
@@ -44,11 +46,12 @@ class FormModel(object):
         If _couch_document is passed, the other args are ignored
 
         entity_type may be a string (flat type) or sequence (hierarchical type)
+        
         '''
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or (
-        name is not None and is_sequence(fields) and is_string(form_code) and form_code is not None and is_string(
-            entity_type_id) and entity_type_id is not None and type is not None)
+        assert _document is not None or \
+            (name is not None and is_sequence(fields) and is_string(form_code) and
+             form_code is not None and is_not_empty(entity_type) and type is not None)
         assert _document is None or isinstance(_document, FormModelDocument)
 
         self._dbm = dbm
@@ -69,7 +72,7 @@ class FormModel(object):
         self._doc.name = name
         self._doc.add_label(language, label)
         self._doc.form_code = form_code
-        self._doc.entity_id = entity_type_id
+        self._doc.entity_type = entity_type
         self._doc.type = type
         self._doc.active_languages = language
         for question in fields:
@@ -180,12 +183,12 @@ class FormModel(object):
         return self.questions
 
     @property
-    def entity_id(self):
-        return self._doc.entity_id
+    def entity_type(self):
+        return self._doc.entity_type
 
-    @entity_id.setter
-    def entity_id(self, value):
-        self._doc.entity_id = value
+    @entity_type.setter
+    def entity_type(self, value):
+        self._doc.entity_type = value
 
     @property
     def type(self):

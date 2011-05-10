@@ -1,10 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, get, get_entities, define_type
+from mangrove.datastore.entity import Entity, get, get_entities, define_type, get_all_entity_types
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
+from mangrove.datastore.aggregationtree import _blow_tree_cache
 from pytz import UTC
 import unittest
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
@@ -17,8 +18,9 @@ class TestDataStoreApi(unittest.TestCase):
         self.uuid = e.save()
 
     def tearDown(self):
-        del self.dbm.database[self.uuid]
+        _blow_tree_cache(self.dbm)
         _delete_db_and_remove_db_manager(self.dbm)
+
 
     def test_create_entity(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
@@ -194,10 +196,14 @@ class TestDataStoreApi(unittest.TestCase):
             self.assertTrue(self.dbm.load(id).void)
 
     def test_should_define_entity_type(self):
-        e = define_type(self.dbm, ["HealthFacility", "Clinic"])
-        assert (e is not None)
-        self.assertEqual(e.id, "HealthFacility.Clinic")
-        self.assertEqual(e.name, ["HealthFacility", "Clinic"])
+        entity_type = ["HealthFacility", "Clinic"]
+        entity_types = get_all_entity_types(self.dbm)
+        self.assertNotIn(entity_type, entity_types)
+
+        define_type(self.dbm, entity_type)
+        types = get_all_entity_types(self.dbm)
+        self.assertIn(entity_type, types)
+        self.assertIn([entity_type[0]], types)
 
     def test_should_throw_back_proper_error_message(self):
         define_type(self.dbm, ["HealthFacility", "Clinic"])

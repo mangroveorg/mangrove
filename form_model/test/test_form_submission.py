@@ -23,7 +23,7 @@ class TestFormSubmission(TestCase):
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
 
-        self.form_model = FormModel(self.dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                     form_code="AIDS", type='survey',
                                     fields=[question1, question2, question3, question4])
 
@@ -89,7 +89,7 @@ class TestFormSubmission(TestCase):
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
                                  range=IntegerConstraint(min=15, max=120))
 
-        form_model = FormModel(dbm, entity_type_id="Clinic", name="aids", label="Aids form_model",
+        form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                form_code="AIDS", type='survey',
                                fields=[question1, question3])
 

@@ -51,7 +51,7 @@ class FormModel(object):
         assert isinstance(dbm, DatabaseManager)
         assert _document is not None or \
             (name is not None and is_sequence(fields) and is_string(form_code) and
-             form_code is not None and is_not_empty(entity_type) and type is not None)
+             form_code is not None and type is not None)
         assert _document is None or isinstance(_document, FormModelDocument)
 
         self._dbm = dbm

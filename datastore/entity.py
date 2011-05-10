@@ -38,7 +38,7 @@ def define_type(dbm, entity_type):
         raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
 
     # now make the new one
-    entity_tree.add_path([atree.AggregationTree.root_id]+entity_type)
+    entity_tree.add_path([atree.AggregationTree.root_id] + [entity_type])
 
 
 def get_by_short_code(dbm, short_code):

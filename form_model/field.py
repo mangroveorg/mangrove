@@ -3,7 +3,7 @@
 from _collections import defaultdict
 from datetime import datetime
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
-from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint
+from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -164,6 +164,7 @@ class SelectField(Field):
         Field.__init__(self, type=type, name=name, question_code=question_code,
                        label=label, language=language)
         self._dict[self.OPTIONS] = []
+        valid_choices = self._dict[self.OPTIONS]
         if options is not None:
             for option in options:
                 if isinstance(option, tuple):
@@ -172,10 +173,10 @@ class SelectField(Field):
                     single_language_specific_option = option
                 else:
                     single_language_specific_option = {'text': {language: option}}
-                self._dict[self.OPTIONS].append(single_language_specific_option)
-
+                valid_choices.append(single_language_specific_option)
+        self.constraint = ChoiceConstraint(list_of_valid_choices=[each.get('text').get(language) for each in valid_choices], single_select_constraint=single_select_flag, question_code=question_code)
     def validate(self, value):
-        return value.strip()
+        return self.constraint.validate(answer=value)
 
     @property
     def options(self):

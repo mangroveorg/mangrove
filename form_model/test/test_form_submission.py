@@ -41,29 +41,29 @@ class TestFormSubmission(TestCase):
     def test_should_create_form_submission_with_answer_values(self):
         ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
         self.datadict_module.get_default_datadict_type.return_value = ddtype
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED"}
+        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a"}
 
         form_submission = FormSubmission(self.form_model, answers)
         form_submission.is_valid()
 
-        self.assertEqual(form_submission.cleaned_data, {"Name": "My Name", "Father's age": 40, "Color": "RED"})
+        self.assertEqual(form_submission.cleaned_data, {"Name": "My Name", "Father's age": 40, "Color": ["RED"]})
         self.assertEqual(3, len(form_submission.values))
         self.assertIn(("Name", "My Name", ddtype), form_submission.values)
         self.assertIn(("Father's age", 40, ddtype), form_submission.values)
-        self.assertIn(("Color", "RED", ddtype), form_submission.values)
+        self.assertIn(("Color", ["RED"], ddtype), form_submission.values)
 
     def test_should_ignore_non_form_fields(self):
         ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
         self.datadict_module.get_default_datadict_type.return_value = ddtype
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED", "EXTRA_FIELD": "X", "EXTRA_FIELD2": "Y"}
+        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a", "EXTRA_FIELD": "X", "EXTRA_FIELD2": "Y"}
 
         f = FormSubmission(self.form_model, answers)
         f.is_valid()
-        self.assertEqual({"Name": "My Name", "Father's age": 40, "Color": "RED"}, f.cleaned_data)
+        self.assertEqual({"Name": "My Name", "Father's age": 40, "Color": ["RED"]}, f.cleaned_data)
         self.assertEqual(3, len(f.values))
         self.assertIn(("Name", "My Name", ddtype), f.values)
         self.assertIn(("Father's age", 40, ddtype), f.values)
-        self.assertIn(("Color", "RED", ddtype), f.values)
+        self.assertIn(("Color", ["RED"], ddtype), f.values)
 
     def test_should_ignore_fields_without_values(self):
         answers = {"ID": "1", "Q1": "My Name", "Q2": "", "Q3": "   "}

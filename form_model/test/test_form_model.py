@@ -233,13 +233,13 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
-        answers = {"ID": "1", "Q1": "Asif", "Q2": "200", "Q3": "X"}
+        answers = {"ID": "1", "Q1": "Asif", "Q2": "200", "Q3": "a"}
         self.assertFalse(self.form_model.is_valid(answers))
         self.assertEqual(len(self.form_model.errors), 2)
 
     def test_should_strip_whitespaces(self):
-        answers = {"Q1": "   My Name", "Q2": "  40 ", "Q3": "RED     "}
-        expected_cleaned_data = {"question1_Name": "My Name", "Father's age": 40, "Color": "RED"}
+        answers = {"Q1": "   My Name", "Q2": "  40 ", "Q3": "a     "}
+        expected_cleaned_data = {"question1_Name": "My Name", "Father's age": 40, "Color": ["RED"]}
         valid = self.form_model.is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(0, len(self.form_model.errors))

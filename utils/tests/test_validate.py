@@ -69,3 +69,5 @@ class TestValidate(unittest.TestCase):
     def test_should_select_one_option(self):
         list = ["asif", "mahesh"]
         self.assertTrue(is_option_in_list("asif", list))
+
+

@@ -1,8 +1,14 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
+
+from mangrove.errors.MangroveException import IncorrectDate
+from mangrove.form_model.field import DateField
+
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, \
+    AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
+from mangrove.form_model.field import TextField, IntegerField, SelectField
+
 from mangrove.form_model import field
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
@@ -161,8 +167,8 @@ class TestQuestion(unittest.TestCase):
             "name": "q3",
             "question_code": "qc3",
             "type": "select",
-            "options": [{"value": "c1"},
-                        {"value": "c2"}],
+            "options": [{"text":{"eng":"option 1"}, "value": "c1"},
+                        {"text":{"eng":"option 1"},"value": "c2"}],
             "entity_question_flag": False}
         created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, SelectField)
@@ -239,6 +245,7 @@ class TestQuestion(unittest.TestCase):
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
 
+<<<<<<< HEAD
     def test_should_create_date_field(self):
         question_json = {
             "defaultValue": "",
@@ -295,3 +302,11 @@ class TestQuestion(unittest.TestCase):
             valid_value = question.validate("13.01.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")
+=======
+    def test_should_validate_single_answer(self):
+        with self.assertRaises(AnswerHasTooManyValuesException) as e:
+            clinic_question = SelectField(name="clinic type", question_code="Q1", label="What type of clinic is it?",
+                                           language="eng", options=["village", "urban"], single_select_flag=True)
+            clinic_question.validate("vu")
+        self.assertEqual(e.exception.message, "Answer vu for question Q1 contains more than one value.")
+>>>>>>> Adding choice validation for when values are passed in|<Ashish/Mahesh>

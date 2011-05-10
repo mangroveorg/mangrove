@@ -75,6 +75,20 @@ class AnswerTooShortException(MangroveException):
         MangroveException.__init__(self,
                                    ("Answer %s for question %s is shorter than allowed.") % (answer, question_code,))
 
+class AnswerHasTooManyValuesException(MangroveException):
+    def __init__(self, question_code, answer):
+        MangroveException.__init__(self,
+                                   ("Answer %s for question %s contains more than one value.") % (answer, question_code,))
+
+class AnswerHasNoValuesException(MangroveException):
+    def __init__(self, question_code, answer):
+        MangroveException.__init__(self,
+                                   ("Answer %s for question %s contains more than one value.") % (answer, question_code,))
+
+class AnswerNotInListException(MangroveException):
+    def __init__(self, question_code, answer):
+        MangroveException.__init__(self,
+                                   ("Answer %s for question %s is not present in the allowed options.") % (answer, question_code,))
 
 class AnswerWrongType(MangroveException):
     def __init__(self, question_code):

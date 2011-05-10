@@ -149,7 +149,6 @@ class FormModel(object):
                 is_valid = self._validate_answer_for_field(answer, field)
                 if success is True:
                     success = is_valid
-
         return success
 
     @property

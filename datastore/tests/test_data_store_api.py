@@ -199,6 +199,7 @@ class TestDataStoreApi(unittest.TestCase):
         entity_types = get_all_entity_types(self.dbm)
         self.assertNotIn(entity_type, entity_types)
         define_type(self.dbm, entity_type)
+        _blow_tree_cache()
         types = get_all_entity_types(self.dbm)
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
@@ -210,5 +211,6 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_define_single_entity(self):
         define_type(self.dbm,["Clinic"])
+        _blow_tree_cache()
         entity_types = get_all_entity_types(self.dbm)
-        self.assertEqual(entity_types,[["Clinic"]])
+        self.assertListEqual(entity_types,[["Clinic"]])

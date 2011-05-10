@@ -38,6 +38,7 @@ def define_type(dbm, entity_type):
 
     # now make the new one
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
+    entity_tree.save()
 
 
 def get_by_short_code(dbm, short_code):

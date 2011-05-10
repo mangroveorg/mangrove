@@ -3,6 +3,7 @@
 import copy
 from datetime import datetime
 from time import mktime
+from collections import defaultdict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
@@ -299,8 +300,36 @@ class Entity(object):
 
         This should only be used internally to perform update actions on data records as necessary.
         '''
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        rows = self._get_rows()
         return [row['value']['_id'] for row in rows]
+
+    def _get_rows(self):
+        """
+        Return a list of all the data records associated with this
+        entity.
+        """
+        return self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        
+    def get_all_data(self):
+        """
+        Return a dict where the first level of keys is the event time,
+        the second level is the data dict type slug, and the third
+        contains the data type, value, and label of the data record.
+        """
+        result = defaultdict(dict)
+        for row in self._get_rows():
+            event_time = row['value'][u'event_time']
+            data_keys = row['value']['data'].keys()
+            assert len(data_keys)==1
+            label = data_keys[0]
+            value = row['value']['data'][label][u'value']
+            data_type = row['value']['data'][label]['type']
+            result[event_time][data_type['slug']] = {
+                u'type': data_type,
+                u'value': value,
+                u'label': label,
+                }
+        return result
 
     def data_types(self, tags=None):
         '''Returns a list of each type of data that is stored on this entity.'''

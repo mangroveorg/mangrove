@@ -137,7 +137,8 @@ class Entity(object):
     Datarecords are always submitted/retrieved from an Entity.
     """
 
-    def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None, id=None, _document=None):
+    def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
+                 geometry=None, centroid=None, gr_id=None, id=None, _document=None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -151,6 +152,9 @@ class Entity(object):
         assert _document is not None or entity_type is None or is_sequence(entity_type) or is_string(entity_type)
         assert _document is not None or location is None or is_sequence(location)
         assert _document is not None or aggregation_paths is None or isinstance(aggregation_paths, dict)
+        assert _document is not None or geometry is None or isinstance(geometry, dict)
+        assert _document is not None or centroid is None or isinstance(centroid, list)
+        assert _document is not None or gr_id is None or is_string(gr_id)
         assert _document is None or isinstance(_document, EntityDocument)
 
         self._dbm = dbm
@@ -171,6 +175,15 @@ class Entity(object):
 
         if location is not None:
             self._doc.location = location
+
+        if geometry is not None:
+            self._doc.geometry = geometry
+
+        if centroid is not None:
+            self._doc.centroid = centroid
+
+        if gr_id is not None:
+            self._doc.gr_id = gr_id
 
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)

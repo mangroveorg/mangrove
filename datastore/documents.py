@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
 import datetime
 import calendar
 from uuid import uuid4
@@ -65,10 +65,16 @@ class EntityDocument(DocumentBase):
     A schema for the entity is enforced here.
     """
     aggregation_paths = DictField()
+    geometry = DictField()
+    centroid = ListField(FloatField())
+    gr_id = TextField()
 
-    def __init__(self, id=None, aggregation_paths=None):
+    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None):
         DocumentBase.__init__(self, id=id, document_type='Entity')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
+        self._geometry = geometry
+        self._centroid = centroid
+        self._gr_id = gr_id
 
     @property
     def entity_type(self):

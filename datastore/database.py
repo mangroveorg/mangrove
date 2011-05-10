@@ -58,7 +58,7 @@ class DatabaseManager(object):
         """
         self.url = (server if server is not None else SERVER)
         self.database_name = database or DATABASE
-        self.server = couchdb.Server(self.url)
+        self.server = couchdb.client.Server(self.url)
         try:
             self.database = self.server[self.database_name]
         except ResourceNotFound:

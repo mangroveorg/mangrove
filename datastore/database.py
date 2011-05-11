@@ -17,6 +17,7 @@ import views
 
 
 _dbms = {}
+_dbms_lock = Lock()
 
 
 def get_db_manager(server=None, database=None):
@@ -29,7 +30,7 @@ def get_db_manager(server=None, database=None):
     k = (srv, db)
     # check if already created and in dict
     if k not in _dbms or _dbms[k] is None:
-        with Lock():
+        with _dbms_lock:
             if k not in _dbms or _dbms[k] is None:
                 # nope, create it
                 _dbms[k] = DatabaseManager(server, database)
@@ -42,18 +43,20 @@ def remove_db_manager(dbm):
     assert isinstance(dbm, DatabaseManager)
     assert dbm in _dbms.values()
 
-    with Lock():
+    with _dbms_lock:
         try:
             del _dbms[(dbm.url, dbm.database_name)]
-        except KeyError:
+        except KeyError, ex:
+            print ex
+            assert False
             pass  # must have been already deleted
 
 
 def _delete_db_and_remove_db_manager(dbm):
     '''This is really only used for testing purposes.'''
+    remove_db_manager(dbm)
     if dbm.database_name in dbm.server:
         del dbm.server[dbm.database_name]
-    remove_db_manager(dbm)
 
 
 class DataObject(object):

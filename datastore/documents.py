@@ -194,7 +194,7 @@ class FormModelDocument(DocumentBase):
     label = DictField()
     form_code = TextField()
     entity_type = ListField(TextField())
-    fields = ListField(DictField())
+    json_fields = ListField(DictField())
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')

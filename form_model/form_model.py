@@ -9,25 +9,14 @@ from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
 
-def get(dbm, id):
+def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
-    return dbm.get(id, FormModel)
+    assert is_string(code)
+    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code)
+    if len(rows)==0:
+        raise FormModelDoesNotExistsException(code)
 
-
-def get_questionnaire(dbm, questionnaire_code):
-    id = _get_questionnaire_id_by_questionnaire_code(dbm, questionnaire_code=questionnaire_code)
-    if id is None:
-        raise FormModelDoesNotExistsException(questionnaire_code)
-    return  get(dbm, id)
-
-
-def _get_questionnaire_id_by_questionnaire_code(dbm, questionnaire_code):
-    assert isinstance(dbm, DatabaseManager)
-    assert is_string(questionnaire_code)
-    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
-    if not len(rows):
-        return None
-    return rows[0]['value']['_id']
+    return dbm.get(rows[0]['value']['_id'], FormModel)
 
 
 class FormModel(DataObject):
@@ -42,7 +31,7 @@ class FormModel(DataObject):
 
         DataObject.__init__(self, dbm)
         
-        self.questions = []
+        self.form_fields = []
         self.errors = []
         self.answers = {}
 
@@ -50,7 +39,10 @@ class FormModel(DataObject):
         if name is None:
             return
 
-        # Not made from existing doc, so create a new one
+        # Not made from existing doc, so build ourselves up
+        self.form_fields = fields
+        self.validate_fields()
+
         doc = FormModelDocument()
         doc.name = name
         doc.add_label(language, label)
@@ -58,62 +50,56 @@ class FormModel(DataObject):
         doc.entity_type = entity_type
         doc.type = type
         doc.active_languages = language
+        self._set_document(doc)
 
-        self._doc = doc
-
-        # TODO: refactor so that can just call _set_document with the new doc
-        for question in fields:
-            self.add_field(question)
 
     def _set_document(self, document):
         DataObject._set_document(self, document)
-        for question_field in document.fields:
-            question = field.create_question_from(question_field)
-            self.questions.append(question)
+
+        # make form_model level fields for any json fields in to
+        for json_field in document.json_fields:
+            f = field.create_question_from(json_field)
+            self.form_fields.append(f)
+
+    def save(self):
+        # convert fields to json fields before save
+        self._doc.json_fields = [f._to_json() for f in self.form_fields]
+        return DataObject.save(self)
 
     def validate(self):
         self.validate_fields()
         return True
 
     def validate_fields(self):
-        self.validate_existence_of_only_one_entity_question()
-        self.validate_uniqueness_of_question_codes()
+        self.validate_existence_of_only_one_entity_field()
+        self.validate_uniqueness_of_field_codes()
         return True
 
-    def validate_uniqueness_of_question_codes(self):
+    def validate_uniqueness_of_field_codes(self):
         """ Validate all question codes are unique
         """
-        code_list = [question.question_code for question in self.questions]
+        code_list = [f.question_code for f in self.form_fields]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")
 
-    def validate_existence_of_only_one_entity_question(self):
-        """Validate only 1 entity question is there
-        """
-        text_questions = [question for question in self.questions if isinstance(question, TextField)]
-        entity_question_list = [x for x in text_questions if x.is_entity_field == True]
+    def validate_existence_of_only_one_entity_field(self):
+        """Validate only 1 entity question is there"""
+        entity_question_list = [f for f in self.form_fields if isinstance(f, TextField) and f.is_entity_field == True]
         if len(entity_question_list) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 
-    def add_field(self, question_to_be_added):
-        self.questions.append(question_to_be_added)
-        self._doc.fields.append(question_to_be_added._to_json())
+    def add_field(self, field):
+        self.form_fields.append(field)
         self.validate_fields()
-        return self.fields
-
-    def _find_question(self, question_code):
-        matched = [field for field in self._doc.fields if field[field_attributes.FIELD_CODE] == question_code]
-        return matched[0] if len(matched) > 0 else None
+        return self.form_fields
 
     def delete_field(self, question_code):
-        fields = self._doc.fields
-        question_to_be_deleted = self._find_question(question_code)
-        fields.remove(question_to_be_deleted)
+        self.form_fields = [f for f in self.form_fields if f.question_code != question_code]
+        self.validate_fields()
 
     def delete_all_fields(self):
-        self._doc.fields = []
-        self.questions = []
+        self.form_fields = []
 
     def add_language(self, language, label=None):
         self._doc.active_languages = language
@@ -133,7 +119,7 @@ class FormModel(DataObject):
 
     def is_valid(self, answers):
         success = True
-        for field in self.fields:
+        for field in self.form_fields:
             answer = answers.get(field.question_code)
             if not is_empty(answer):  # ignore empty answers
                 is_valid = self._validate_answer_for_field(answer, field)
@@ -155,9 +141,12 @@ class FormModel(DataObject):
 
     @property
     def entity_question(self):
-        text_questions = [question for question in self.questions if isinstance(question, TextField)]
-        entity_question = [x for x in text_questions if x.is_entity_field == True]
-        return entity_question[0]
+        val = None
+        for f in self.form_fields:
+            if isinstance(f, TextField) and f.is_entity_field:
+                val = f
+                break
+        return f
 
     @property
     def form_code(self):
@@ -169,7 +158,7 @@ class FormModel(DataObject):
 
     @property
     def fields(self):
-        return self.questions
+        return self.form_fields
 
     @property
     def entity_type(self):

@@ -3,7 +3,7 @@
 from datetime import datetime
 from mangrove.datastore.entity import Entity, get, get_entities, define_type, get_all_entity_types
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
-from mangrove.datastore.documents import DataRecordDocument
+from mangrove.datastore.documents import DataRecordDocument, EntityDocument
 from mangrove.datastore.datadict import DataDictType
 from pytz import UTC
 import unittest
@@ -148,9 +148,8 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertEqual(saved.submission_id, "123456")
 
     def test_should_create_entity_from_document(self):
-        existing = get(self.dbm, self.uuid)
-        e = Entity(self.dbm)
-        e._set_document(existing._doc)
+        existing = self.dbm.get(self.uuid, Entity)
+        e = Entity.new_from_db(self.dbm, existing._doc)
         self.assertTrue(e._doc is not None)
         self.assertEqual(e.id, existing.id)
         self.assertEqual(e.type_path, existing.type_path)

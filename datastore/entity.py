@@ -2,6 +2,8 @@
 
 import copy
 from datetime import datetime
+import random
+from string import upper
 from time import mktime
 from collections import defaultdict
 
@@ -47,6 +49,10 @@ def get_by_short_code(dbm, short_code):
     """
     return get(dbm, short_code)
 
+def generate_entity_id(database_manager, entity_type):
+    list = map(chr, range(97,121)) + range(0,9)
+    random.shuffle(list)
+    return (entity_type + reduce(lambda acc,i: str(acc) + str(i) , list[0:3], '')).upper()
 
 def get(dbm, id):
     assert isinstance(dbm, DatabaseManager)
@@ -344,3 +350,5 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
+
+

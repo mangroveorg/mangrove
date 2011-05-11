@@ -29,12 +29,13 @@ class TestSubmissions(TestCase):
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
-        # dbm = Mock(spec=DatabaseManager) # HACK!
+        # dbm = Mock(spec=DatabaseManager)
         dbm = self.dbm
         s = SubmissionHandler(dbm)
-        self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("hello")
+        self.form_model_module.get_form_model_by_code.side_effect = FormModelDoesNotExistsException("hello")
         response = s.accept(request)
         submission_log = dbm._load_document(response.submission_id, SubmissionLogDocument)
+        # submission_log = dbm.save.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(request.transport, submission_log.channel)
         self.assertEquals(request.source, submission_log.source)
@@ -57,9 +58,8 @@ class TestSubmissions(TestCase):
     def test_should_fail_submission_if_invalid_form_code(self):
         request = Request(transport="sms", message="INVALID_CODE +name xyz +age 10",
                           source="1234", destination="5678")
-        # dbm = Mock(spec=DatabaseManager)
-        dbm = self.dbm
-        self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
+        dbm = Mock(spec=DatabaseManager)
+        self.form_model_module.get_form_model_by_code.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
         s = SubmissionHandler(dbm)
         response = s.accept(request)
         self.assertEqual(1, len(response.errors))

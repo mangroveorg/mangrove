@@ -200,8 +200,7 @@ class TestFormModel(unittest.TestCase):
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False)
         questions = [entityQ, ageQ, placeQ]
-        questionnaire = FormModel(dbm=self.dbm)
-        questionnaire._set_document(document)
+        questionnaire = FormModel.new_from_db(self.dbm, document)
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, ["Reporter"])
         self.assertEqual(questionnaire.name, "New Project")

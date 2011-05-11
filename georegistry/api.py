@@ -16,7 +16,11 @@ def get_locations_tree(country_code, limit=GEOREGISTRY_API_DEFAULT_LIMIT):
 
 def get_feature_by_id(id):
     assert is_string(id)
-    return _query('/feature/%s.json' % id)['features'][0]
+    query = _query('/feature/%s.json' % id)
+    if query:
+        return query['features'][0]
+    else:
+        return None
 
 
 def _query(url, **params):
@@ -26,11 +30,9 @@ def _query(url, **params):
         try:
             query = GEOREGISTRY_API_BASE_URL + url + '?%s' % params
             data = urllib.urlopen(query)
-            print '[%s] ...' % (t + 1)
             if data.getcode() == 200:
                 ret_val = json.loads(data.read())
                 break
         except IOError as e:
             print e.message
-            print 'Query was: %s' % query
     return ret_val

@@ -73,3 +73,12 @@ class DataDictType(DataObject):
     @property
     def tags(self):
         return self._doc.tags
+
+    def to_json(self):
+        return self._doc.unwrap()
+
+    @classmethod
+    def create_from_json(cls, json,dbm):
+        doc = DataDictDocument.wrap(json)
+        return DataDictType(dbm,_document=doc)
+

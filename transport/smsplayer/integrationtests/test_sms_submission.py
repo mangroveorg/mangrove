@@ -17,15 +17,18 @@ from mangrove.datastore.datadict import DataDictType
 
 class TestShouldSaveSMSSubmission(TestCase):
     def setUp(self):
-        self.dbm = get_db_manager(database='mangrove-test')
+        self.dbm = get_db_manager(database='mangrove-test1')
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, self.entity_type)
         self.reporter_type = define_type(self.dbm, ["Reporter"])
+
         self.name_type = DataDictType(self.dbm, name='Name', slug='Name', primitive_type='string')
         self.first_name_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
                                             primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='first_name', slug='first_name',
                                                   primitive_type='string')
+        self.ddtype =  DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
+
         self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                           data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
                                           source="sms")
@@ -34,14 +37,15 @@ class TestShouldSaveSMSSubmission(TestCase):
                             data=[("telephone_number", '1234', self.telephone_number_type),
                                   ("first_name", "Test_reporter", self.first_name_type)], location=[],
                             source="sms")
+
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True)
+                              language="eng", entity_question_flag=True, ddtype=self.ddtype)
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15))
+                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15), ddtype=self.ddtype)
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
-                                 range=IntegerConstraint(min=15, max=120))
+                                 range=IntegerConstraint(min=15, max=120), ddtype=self.ddtype)
         question4 = SelectField(name="Color", question_code="COL", label="Color",
-                                options=[("RED", 1), ("YELLOW", 2)])
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="CLINIC", type='survey', fields=[question1, question2, question3])

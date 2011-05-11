@@ -13,15 +13,16 @@ class TestFormSubmission(TestCase):
         self.datadict_patcher = patch("mangrove.form_model.form_model.datadict")
         self.datadict_module = self.datadict_patcher.start()
         self.dbm = Mock(spec=DatabaseManager)
+        self.ddtype = Mock(spec=DataDictType)
 
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True)
+                              language="eng", entity_question_flag=True, ddtype=self.ddtype)
         question2 = TextField(name="Name", question_code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng", ddtype=self.ddtype)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=IntegerConstraint(min=15, max=120))
+                                 range=IntegerConstraint(min=15, max=120), ddtype=self.ddtype)
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)])
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype)
 
         self.form_model = FormModel(self.dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                     form_code="AIDS", type='survey',
@@ -85,9 +86,9 @@ class TestFormSubmission(TestCase):
     #        Write is_valid scenarios
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=IntegerConstraint(min=15, max=120))
+                                 range=IntegerConstraint(min=15, max=120), ddtype=self.ddtype)
 
         form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                form_code="AIDS", type='survey',

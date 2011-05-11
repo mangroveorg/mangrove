@@ -2,6 +2,8 @@
 
 from _collections import defaultdict
 from datetime import datetime
+from mangrove.datastore.database import get_db_manager
+from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
 from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
@@ -31,11 +33,13 @@ class Field(object):
     LABEL = "label"
     TYPE = "type"
     QUESTION_CODE = "question_code"
+    DDTYPE = "ddtype"
 
     _DEFAULT_VALUES = {
         NAME: "",
         TYPE: "",
         QUESTION_CODE: "",
+        DDTYPE: None
         }
 
     _DEFAULT_LANGUAGE_SPECIFIC_VALUES = {
@@ -44,6 +48,7 @@ class Field(object):
 
     def __init__(self, **kwargs):
         self._dict = defaultdict(dict)
+
         for k, default_value in self._DEFAULT_VALUES.items():
             self._dict[k] = kwargs.get(k, default_value)
 
@@ -72,8 +77,14 @@ class Field(object):
     def is_entity_field(self):
         return False
 
+    @property
+    def ddtype(self):
+        return self._dict.get(self.DDTYPE)
+
     def _to_json(self):
-        return self._dict
+        dict = self._dict
+        dict['ddtype'] = dict['ddtype'].to_json()
+        return dict
 
     def add_or_edit_label(self, label, language=None):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
@@ -83,9 +94,9 @@ class Field(object):
 class IntegerField(Field):
     RANGE = "range"
 
-    def __init__(self, name, question_code, label, range=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, question_code, label, ddtype, range=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, question_code=question_code,
-                       label=label, language=language)
+                       label=label, language=language, ddtype = ddtype)
 
         self.constraint = range if range is not None else IntegerConstraint()
         self._dict[self.RANGE] = self.constraint._to_json()
@@ -108,9 +119,9 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, question_code, label, date_format, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, question_code, label, date_format, language=field_attributes.DEFAULT_LANGUAGE, ddtype=None):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
-                       label=label, language=language)
+                       label=label, language=language, ddtype=ddtype)
 
         self._dict[self.DATE_FORMAT] = date_format
 
@@ -130,10 +141,10 @@ class TextField(Field):
     LENGTH = "length"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, question_code, label, length=None, defaultValue=None,
+    def __init__(self, name, question_code, label, ddtype = None, length=None, defaultValue=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, question_code=question_code,
-                       label=label, language=language)
+                       label=label, language=language, ddtype=ddtype)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         self.constraint = length if length is not None else TextConstraint()
         self._dict[self.LENGTH] = self.constraint._to_json()
@@ -157,12 +168,12 @@ class SelectField(Field):
     OPTIONS = "options"
 
     def __init__(self, name, question_code, label, options, language=field_attributes.DEFAULT_LANGUAGE,
-                 single_select_flag=True):
+                 single_select_flag=True, ddtype = None):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.SINGLE_SELECT_FLAG = single_select_flag
         Field.__init__(self, type=type, name=name, question_code=question_code,
-                       label=label, language=language)
+                       label=label, language=language, ddtype=ddtype)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -196,23 +207,24 @@ def create_question_from(dictionary):
     code = dictionary.get("question_code")
     is_entity_question = dictionary.get("entity_question_flag")
     label = dictionary.get("label")
+    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"),get_db_manager())
     if type == "text":
         length_dict = dictionary.get("length")
         length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
                                 max=length_dict.get(ConstraintAttributes.MAX))
         return TextField(name=name, question_code=code, label=label, entity_question_flag=is_entity_question,
-                         length=length)
+                         length=length,ddtype = ddtype)
     elif type == "integer":
         range_dict = dictionary.get("range")
         range = IntegerConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                                   max=range_dict.get(ConstraintAttributes.MAX))
-        return IntegerField(name=name, question_code=code, label=label, range=range)
+        return IntegerField(name=name, question_code=code, label=label, range=range,ddtype = ddtype)
     elif type == "date":
         date_format = dictionary.get("date_format")
-        return DateField(name=name, question_code=code, label=label, date_format=date_format)
+        return DateField(name=name, question_code=code, label=label, date_format=date_format,ddtype = ddtype)
     elif type == "select" or type == "select1":
         choices = dictionary.get("options")
         single_select = True if type == "select1" else False
         return SelectField(name=name, question_code=code, label=label, options=choices,
-                           single_select_flag=single_select)
+                           single_select_flag=single_select,ddtype = ddtype)
     return None

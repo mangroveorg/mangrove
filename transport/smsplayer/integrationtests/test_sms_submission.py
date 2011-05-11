@@ -7,9 +7,9 @@ from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import define_type
-from mangrove.datastore import datarecord
+from mangrove.datastore import datarecord, entity
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
@@ -103,3 +103,31 @@ class TestShouldSaveSMSSubmission(TestCase):
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
+
+    def test_should_create_new_entity_on_registration(self):
+        question1 = TextField(name="entity_type", question_code="ET", label="What is associated entity type?",
+                          language="eng", entity_question_flag=False)
+        question2 = TextField(name="name", question_code="N", label="What is the entity's name?",
+                              defaultValue="some default value", language="eng")
+        question3 = TextField(name="short_name", question_code="S", label="What is the entity's short name?",
+                              defaultValue="some default value", language="eng")
+        question4 = TextField(name="location", question_code="L", label="What is the entity's location?",
+                              defaultValue="some default value", language="eng")
+        question5 = TextField(name="description", question_code="D", label="Describe the entity",
+                              defaultValue="some default value", language="eng")
+        question6 = TextField(name="short_name", question_code="M", label="What is the associated mobile number?",
+                              defaultValue="some default value", language="eng")
+
+        form_model = RegistrationFormModel(self.dbm, name="REG", form_code="REG", fields=[
+                        question1, question2, question3, question4, question5, question6])
+        qid = form_model.save()
+
+        text = "REG +ET dog"
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        print response.success
+        assert response.success
+        entity_id = response.datarecord_id
+        e = entity.get(self.dbm, entity_id)
+        assert e
+

@@ -6,138 +6,10 @@ import networkx as nx
 
 from mangrove.utils.types import is_not_empty, is_sequence
 from documents import AggregationTreeDocument
-from database import DatabaseManager
-
-aggregation_trees_by_id = {}
-aggregation_trees_by_name = {}
-aggregation_trees_lock = Lock()
+from database import DatabaseManager, DataObject
 
 
-# private helpers
-def _load_tree(dbm, id_name):
-    assert isinstance(dbm, DatabaseManager)
-    assert is_sequence(id_name)
-
-    tree = get(dbm, id_name[0])
-    with aggregation_trees_lock:
-        if dbm not in aggregation_trees_by_id:
-            aggregation_trees_by_id[dbm] = {}
-        if dbm not in aggregation_trees_by_name:
-            aggregation_trees_by_name[dbm] = {}
-        aggregation_trees_by_id[dbm][id_name[0]] = tree
-        aggregation_trees_by_name[dbm][id_name[1]] = tree
-    return tree
-
-
-def _get_tree_names_ids(dbm):
-    by_name = {}
-    by_id = {}
-    rows = dbm.load_all_rows_in_view('mangrove_views/aggregation_trees')
-    for r in rows:
-        id = r['id']
-        name = r['value']
-        by_id[id] = (id, name)
-        by_name[name] = (id, name)
-
-    return (by_name, by_id)
-
-
-# TODO: Move all this cache stuff into DatabaseManager...
-def _blow_tree_cache(dbm=None):
-    global aggregation_trees_by_id
-    global aggregation_trees_by_name
-
-    if dbm is not None:
-        with aggregation_trees_lock:
-            try:
-                del aggregation_trees_by_id[dbm]
-                del aggregation_trees_by_name[dbm]
-            except Exception:
-                pass
-    else:
-        with aggregation_trees_lock:
-            aggregation_trees_by_id = {}
-            aggregation_trees_by_name = {}
-
-
-# getters
-def get_by_id(dbm, id, force_reload=False):
-    '''
-    Looks for and loads AggregationTree with the given ID. Tree is placed in cache.
-
-    force_reload will force a reload of tree names and the given tree.
-
-    Raises KeyError if the given ID cannot be found.
-
-    '''
-    assert isinstance(dbm, DatabaseManager)
-    assert is_not_empty(id)
-
-    if not dbm in aggregation_trees_by_id:
-        aggregation_trees_by_id[dbm] = {}
-    elif not force_reload and id in aggregation_trees_by_id[dbm]:
-        return aggregation_trees_by_id[dbm][id]
-
-    # wanted a reload, or couldn't find the name, so lets try pulling all the
-    # names from Couch
-    by_name, by_id = _get_tree_names_ids(dbm)
-
-    if id not in by_id:
-        raise KeyError('Could not find tree with id: %s' % id)
-
-    return _load_tree(dbm, by_id[id])
-
-
-def get_by_name(dbm, name, force_reload=False, get_or_create=False):
-    '''
-    Looks for and loads AggregationTree with the given Name. Tree is placed in cache.
-
-    force_reload will force a reload of tree names and the given tree.
-
-    get_or_create will cause tree to be created if it doesn't exists. Will force a reload if
-    tree not found in cache.
-
-    Raises KeyError if the given Name cannot be found.
-
-    '''
-    assert isinstance(dbm, DatabaseManager)
-    assert is_not_empty(name)
-
-    if not dbm in aggregation_trees_by_name:
-        aggregation_trees_by_name[dbm] = {}
-    elif not force_reload and name in aggregation_trees_by_name[dbm]:
-            return aggregation_trees_by_name[dbm][name]
-
-    # wanted a reload, or couldn't find the name, so lets try pulling all the
-    # names from Couch
-    by_name, by_id = _get_tree_names_ids(dbm)
-
-    if name not in by_name:
-        if get_or_create:
-            # definitely don't have it, so need to make it
-            tree = AggregationTree(dbm, name)
-            id = tree.save()
-            by_name[name] = (id, name)
-        else:
-            raise KeyError('Could not find tree with name: %s' % name)
-
-    return _load_tree(dbm, by_name[name])
-
-
-def get(dbm, id):
-    '''
-    WARNING: By Passes Cache! You probably want to call 'get_by_id' or 'get_by_name'
-
-    '''
-    assert isinstance(dbm, DatabaseManager)
-    doc = dbm.load(id, AggregationTreeDocument)
-    if doc is not None:
-        return AggregationTree(dbm, _document=doc)
-    else:
-        raise ValueError("AggregationTree with id %s does not exist" % id)
-
-
-class AggregationTree(object):
+class AggregationTree(DataObject):
     '''
     Representation of an aggregation tree.
 
@@ -145,11 +17,12 @@ class AggregationTree(object):
 
     The tree is represented in Couch as dicts of dicts under the attribute '_root'
 
-    Each tree has a unique _id and an expected unique _name.
+    Each tree has a unique _id which should be a memorable name like 'geographic_boundaries'
 
 
-    Each node in the tree is a dict of arbitrary attributes, a _unique_ '_id' attribute
-    and a special '_children' attribute that holds the child nodes.
+    Each node in the tree is a dict of arbitrary attributes a special '_children' attribute that holds the child nodes.
+
+    The node's name is the node's key in the parent dict or '__root' for the root node
 
     So a tree with a partial list of countries and states/provinces of this form (in pseudo-lisp-code):
 
@@ -160,50 +33,52 @@ class AggregationTree(object):
     would look like this
 
     {
-    _id: 123445435
-    _name: _geo
+    _id: _geo
     _root: {
             children: {
-                         { id: India, children: [{ id: Maharashtra}, { id: Kerala}, {id: Karnataka}]},
-                         { id: US, children: [{ id: California, _children: [{id: SF}]}, {id: Ohio}]},
+                        India: { _children: { Maharashtra: {}}, {Kerala: {}}, {Karnataka: {}}},,
+                        US: {_children: { {California: {_children: {SF: {}}}}, {Ohio: {}}},
                       }
             }
     }
 
 
     '''
+    __document_class__ = AggregationTreeDocument
     root_id = '__root'
 
-    def __init__(self, dbm, name=None, _document=None):
+    def __init__(self, dbm, id=None):
         '''
         Note: _document is for 'protected' factory methods. If it is passed in the other
         arguments are ignored.
 
         '''
-        assert isinstance(dbm, DatabaseManager)
-        assert ((_document is None and is_not_empty(name)) or
-               (_document is not None and isinstance(_document, AggregationTreeDocument)))
+        assert (id is None or is_not_empty(id))
 
-        self._dbm = dbm
+        DataObject.__init__(self, dbm)
         self.graph = None
 
-        if _document is not None:
-            self._doc = _document
-        else:
-            self._doc = AggregationTreeDocument(name)
+        # being constructed from DB? If so, no more work here
+        if id is None:
+            return
 
+        # ok, newly constructed, so set up a new Document
+        self._set_document(AggregationTreeDocument(id=id))
+
+    def _set_document(self, document):
+        DataObject._set_document(self, document)
         self._sync_doc_to_graph()
 
     def save(self):
         id = None
         with Lock():
             self._sync_graph_to_doc()
-            id = self._dbm.save(self._doc).id
+            id = DataObject.save(self)
         return id
 
     @property
     def name(self):
-        return self._doc.name
+        return self.id
 
     def get_paths(self):
         '''

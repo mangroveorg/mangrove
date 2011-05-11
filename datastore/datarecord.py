@@ -1,11 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from datetime import datetime
 
 from documents import SubmissionLogDocument
 from entity import Entity
 import entity
-from ..utils.types import is_sequence
-from ..utils.dates import utcnow
+from mangrove.utils.types import is_sequence
+from mangrove.utils.dates import utcnow
 
 
 def register(manager, entity_type, data, location, source, aggregation_paths=None):
@@ -26,7 +27,7 @@ def submit(manager, entity_id, data, source):
     assert is_sequence(data) and len(data) > 0
     e = entity.get(manager, entity_id)
     submission_log = SubmissionLogDocument(source=source)
-    submission_log = manager.save(submission_log)
+    submission_log = manager._save_document(submission_log)
     data_record_id = e.add_data(data=data, event_time=utcnow(), submission_id=submission_log.id)
     return data_record_id, submission_log.id
 

@@ -29,7 +29,7 @@ class TestSubmissions(TestCase):
         s = SubmissionHandler(dbm)
         self.form_model_module.get_questionnaire.side_effect = FormModelDoesNotExistsException("hello")
         s.accept(request)
-        submission_log = dbm.save.call_args_list[0][0][0]
+        submission_log = dbm._save_document.call_args_list[0][0][0]
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(request.transport, submission_log.channel)
         self.assertEquals(request.source, submission_log.source)

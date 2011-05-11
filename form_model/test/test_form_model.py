@@ -10,7 +10,6 @@ from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsExcept
 from mangrove.form_model.form_model import FormModel, get
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
-from mangrove.datastore.aggregationtree import _blow_tree_cache
 
 
 class TestFormModel(unittest.TestCase):
@@ -38,7 +37,6 @@ class TestFormModel(unittest.TestCase):
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
-        _blow_tree_cache()
         _delete_db_and_remove_db_manager(self.dbm)
         pass
 
@@ -203,7 +201,8 @@ class TestFormModel(unittest.TestCase):
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False)
         questions = [entityQ, ageQ, placeQ]
-        questionnaire = FormModel(dbm=self.dbm, _document=document)
+        questionnaire = FormModel(dbm=self.dbm)
+        questionnaire._set_document(document)
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, ["Reporter"])
         self.assertEqual(questionnaire.name, "New Project")

@@ -1,60 +1,54 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import DataDictDocument
 from mangrove.utils.types import is_string
 
-# Temporary stuff, till datadict is fully implemented in datawinners : Aroj
+# TODO: Temporary stuff, till datadict is fully implemented in datawinners : Aroj
 
 
 def get_default_datadict_type():
     return DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
 
 
-def get_datadict_type(dbm, uuid):
+def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)
-    datadict_doc = dbm.load(uuid, DataDictDocument)
-    return DataDictType(dbm, _document=datadict_doc)
+    return dbm.get(id, DataDictType)
 
 
-def get_datadict_types(dbm, uuids):
-    return [get_datadict_type(dbm, i) for i in uuids]
+def get_datadict_types(dbm, ids):
+    assert isinstance(dbm, DatabaseManager)
+    return dbm.get_many(ids, DataDictType)
 
 
-class DataDictType(object):
+class DataDictType(DataObject):
     '''DataDict is an abstraction that stores named data types and constraints .'''
 
+    __document_class__ = DataDictDocument
+
     def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
-                 constraints=None, tags=None, id=None, _document=None, **kwargs):
+                 constraints=None, tags=None, id=None, **kwargs):
         '''Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
         '''
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or is_string(name)
-        assert _document is not None or is_string(slug)
-        assert _document is not None or is_string(primitive_type)
-        assert _document is not None or description is None or is_string(description)
-        assert _document is not None or constraints is None or isinstance(constraints, dict)
-        assert _document is None or isinstance(_document, DataDictDocument)
+        assert name is None or is_string(name)
+        assert slug is None or is_string(slug)
+        assert primitive_type is None or is_string(primitive_type)
+        assert description is None or is_string(description)
+        assert constraints is None or isinstance(constraints, dict)
         # how to assert any kwargs?
 
-        self._dbm = dbm
+        DataObject.__init__(self, dbm)
 
         # Are we being constructed from an existing doc?
-        if _document is not None:
-            self._doc = _document
+        if name is None:
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
-
-    def save(self):
-        return self._dbm.save(self._doc).id
-
-    @property
-    def id(self):
-        return self._doc.id
+        doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
+        self._set_document(doc)
 
     @property
     def name(self):

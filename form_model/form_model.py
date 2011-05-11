@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException
@@ -9,74 +9,67 @@ from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
 
-def get(dbm, uuid):
+def get(dbm, id):
     assert isinstance(dbm, DatabaseManager)
-    questionnaire_doc = dbm.load(uuid, FormModelDocument)
-    q = FormModel(dbm, _document=questionnaire_doc)
-    return q
+    return dbm.get(id, FormModel)
 
 
 def get_questionnaire(dbm, questionnaire_code):
-    questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code=questionnaire_code)
-    if questionnaire_document is None:
+    id = _get_questionnaire_id_by_questionnaire_code(dbm, questionnaire_code=questionnaire_code)
+    if id is None:
         raise FormModelDoesNotExistsException(questionnaire_code)
-    questionnaire = FormModel(dbm, _document=questionnaire_document)
-    return questionnaire
+    return  get(dbm, id)
 
 
-def _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code):
+def _get_questionnaire_id_by_questionnaire_code(dbm, questionnaire_code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(questionnaire_code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=questionnaire_code)
     if not len(rows):
         return None
-    questionnaire_id = rows[0]['value']['_id']
-    return dbm.load(questionnaire_id, FormModelDocument)
+    return rows[0]['value']['_id']
 
 
-class FormModel(object):
-    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="eng", _document=None):
-        '''
-        Construct a new entity.
+class FormModel(DataObject):
+    __document_class__ = FormModelDocument
 
-        Note: _couch_document is used for 'protected' factory methods and
-        should not be passed in standard construction.
-
-        If _couch_document is passed, the other args are ignored
-
-        entity_type may be a string (flat type) or sequence (hierarchical type)
-
-        '''
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None, language="eng"):
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or \
-            (name is not None and is_sequence(fields) and is_string(form_code) and
-             form_code is not None and type is not None)
-        assert _document is None or isinstance(_document, FormModelDocument)
+        assert name is None or is_not_empty(name)
+        assert fields is None or is_sequence(fields)
+        assert form_code is None or (is_string(form_code) and is_not_empty(form_code))
+        assert type is None or is_not_empty(type)
 
-        self._dbm = dbm
+        DataObject.__init__(self, dbm)
+        
         self.questions = []
         self.errors = []
         self.answers = {}
-        # Are we being constructed from an existing doc?
-        if _document is not None:
-            self._doc = _document
-            for question_field in _document.fields:
-                question = field.create_question_from(question_field)
-                self.questions.append(question)
 
+        # Are we being constructed from scratch or existing doc?
+        if name is None:
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = FormModelDocument()
-        self._doc.name = name
-        self._doc.add_label(language, label)
-        self._doc.form_code = form_code
-        self._doc.entity_type = entity_type
-        self._doc.type = type
-        self._doc.active_languages = language
+        doc = FormModelDocument()
+        doc.name = name
+        doc.add_label(language, label)
+        doc.form_code = form_code
+        doc.entity_type = entity_type
+        doc.type = type
+        doc.active_languages = language
+
+        self._doc = doc
+
+        # TODO: refactor so that can just call _set_document with the new doc
         for question in fields:
             self.add_field(question)
+
+    def _set_document(self, document):
+        DataObject._set_document(self, document)
+        for question_field in document.fields:
+            question = field.create_question_from(question_field)
+            self.questions.append(question)
 
     def validate(self):
         self.validate_fields()
@@ -102,9 +95,6 @@ class FormModel(object):
         entity_question_list = [x for x in text_questions if x.is_entity_field == True]
         if len(entity_question_list) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
-
-    def save(self):
-        return self._dbm.save(self._doc).id
 
     def add_field(self, question_to_be_added):
         self.questions.append(question_to_be_added)
@@ -154,10 +144,6 @@ class FormModel(object):
     @property
     def cleaned_data(self):
         return self.answers
-
-    @property
-    def id(self):
-        return self._doc.id
 
     @property
     def name(self):

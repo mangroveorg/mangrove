@@ -5,7 +5,6 @@ from mangrove.datastore.entity import Entity, get, get_entities, define_type, ge
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.aggregationtree import _blow_tree_cache
 from pytz import UTC
 import unittest
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
@@ -18,20 +17,19 @@ class TestDataStoreApi(unittest.TestCase):
         self.uuid = e.save()
 
     def tearDown(self):
-        _blow_tree_cache(self.dbm)
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_create_entity(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         uuid = e.save()
         self.assertTrue(uuid)
-        self.dbm.delete(e._doc)
+        self.dbm.delete(e)
 
     def test_create_entity_with_id(self):
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")
         uuid = e.save()
         self.assertEqual(uuid, "-1000")
-        self.dbm.delete(e._doc)
+        self.dbm.delete(e)
 
     def test_get_entity(self):
         e = get(self.dbm, self.uuid)
@@ -51,10 +49,10 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertEqual(saved.type_path, ["healthfacility", "clinic"])
 
     def test_should_add_entity_type_on_create_as_aggregation_tree(self):
-        e = Entity(self.dbm, entity_type="health_facility.clinic")
+        e = Entity(self.dbm, entity_type="health_facility")
         uuid = e.save()
         saved = get(self.dbm, uuid)
-        self.assertEqual(saved.type_path, ["health_facility", "clinic"])
+        self.assertEqual(saved.type_path, ["health_facility"])
 
     def test_should_add_passed_in_hierarchy_path_on_create(self):
         e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"], aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
@@ -107,7 +105,7 @@ class TestDataStoreApi(unittest.TestCase):
         saved = dict([(e.id, e) for e in entities])
         self.assertEqual(saved[id2].type_string, "hospital")
         self.assertEqual(saved[self.uuid].type_string, "clinic")
-        self.dbm.delete(e2._doc)
+        self.dbm.delete(e2)
 
     def _create_clinic_and_reporter(self):
         clinic_entity = Entity(self.dbm, entity_type="clinic",
@@ -137,7 +135,7 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertTrue(data_record_id is not None)
 
         # Assert the saved document structure is as expected
-        saved = self.dbm.load(data_record_id, document_class=DataRecordDocument)
+        saved = self.dbm._load_document(data_record_id, document_class=DataRecordDocument)
         for (label, value, dd_type) in data_record:
             self.assertTrue(label in saved.data)
             self.assertTrue('value' in saved.data[label])
@@ -151,14 +149,11 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_create_entity_from_document(self):
         existing = get(self.dbm, self.uuid)
-        e = Entity(self.dbm, _document=existing._doc)
+        e = Entity(self.dbm)
+        e._set_document(existing._doc)
         self.assertTrue(e._doc is not None)
         self.assertEqual(e.id, existing.id)
         self.assertEqual(e.type_path, existing.type_path)
-
-    def test_should_fail_create_for_invalid_arguments(self):
-        with self.assertRaises(AssertionError):
-            Entity(self.dbm, _document="xyz")
 
     def test_invalidate_data(self):
         e = Entity(self.dbm, entity_type='store', location=['nyc'])
@@ -168,10 +163,10 @@ class TestDataStoreApi(unittest.TestCase):
         apple_type.save()
         orange_type.save()
         data = e.add_data([('apples', 20, apple_type), ('oranges', 30, orange_type)])
-        valid_doc = self.dbm.load(data)
+        valid_doc = self.dbm._load_document(data)
         self.assertFalse(valid_doc.void)
         e.invalidate_data(data)
-        invalid_doc = self.dbm.load(data)
+        invalid_doc = self.dbm._load_document(data)
         self.assertTrue(invalid_doc.void)
 
     def test_invalidate_entity(self):
@@ -187,19 +182,18 @@ class TestDataStoreApi(unittest.TestCase):
         data_ids = []
         for d in data:
             id = e.add_data(d)
-            self.assertFalse(self.dbm.load(id).void)
+            self.assertFalse(self.dbm._load_document(id).void)
             data_ids.append(id)
         e.invalidate()
         self.assertTrue(e._doc.void)
         for id in data_ids:
-            self.assertTrue(self.dbm.load(id).void)
+            self.assertTrue(self.dbm._load_document(id).void)
 
     def test_should_define_entity_type(self):
         entity_type = ["HealthFacility", "Clinic"]
         entity_types = get_all_entity_types(self.dbm)
         self.assertNotIn(entity_type, entity_types)
         define_type(self.dbm, entity_type)
-        _blow_tree_cache()
         types = get_all_entity_types(self.dbm)
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
@@ -211,6 +205,5 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_define_single_entity(self):
         define_type(self.dbm,["Clinic"])
-        _blow_tree_cache()
         entity_types = get_all_entity_types(self.dbm)
         self.assertListEqual(entity_types,[["Clinic"]])

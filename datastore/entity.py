@@ -331,11 +331,7 @@ class Entity(object):
             label = data_keys[0]
             value = row['value']['data'][label][u'value']
             data_type = row['value']['data'][label]['type']
-            result[event_time][data_type['slug']] = {
-                u'type': data_type,
-                u'value': value,
-                u'label': label,
-                }
+            result[event_time][data_type['slug']] = value
         return result
 
     def data_types(self, tags=None):

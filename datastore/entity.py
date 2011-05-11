@@ -2,7 +2,10 @@
 
 import copy
 from datetime import datetime
+import random
+from string import upper
 from time import mktime
+from collections import defaultdict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
@@ -38,6 +41,7 @@ def define_type(dbm, entity_type):
 
     # now make the new one
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
+    entity_tree.save()
 
 
 def get_by_short_code(dbm, short_code):
@@ -47,6 +51,10 @@ def get_by_short_code(dbm, short_code):
     """
     return get(dbm, short_code)
 
+def generate_entity_id(database_manager, entity_type):
+    list = map(chr, range(97,121)) + range(0,9)
+    random.shuffle(list)
+    return (entity_type + reduce(lambda acc,i: str(acc) + str(i) , list[0:3], '')).upper()
 
 def get(dbm, uuid):
     assert isinstance(dbm, DatabaseManager)
@@ -299,8 +307,36 @@ class Entity(object):
 
         This should only be used internally to perform update actions on data records as necessary.
         '''
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        rows = self._get_rows()
         return [row['value']['_id'] for row in rows]
+
+    def _get_rows(self):
+        """
+        Return a list of all the data records associated with this
+        entity.
+        """
+        return self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        
+    def get_all_data(self):
+        """
+        Return a dict where the first level of keys is the event time,
+        the second level is the data dict type slug, and the third
+        contains the data type, value, and label of the data record.
+        """
+        result = defaultdict(dict)
+        for row in self._get_rows():
+            event_time = row['value'][u'event_time']
+            data_keys = row['value']['data'].keys()
+            assert len(data_keys)==1
+            label = data_keys[0]
+            value = row['value']['data'][label][u'value']
+            data_type = row['value']['data'][label]['type']
+            result[event_time][data_type['slug']] = {
+                u'type': data_type,
+                u'value': value,
+                u'label': label,
+                }
+        return result
 
     def data_types(self, tags=None):
         '''Returns a list of each type of data that is stored on this entity.'''
@@ -359,3 +395,5 @@ class Entity(object):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
+
+

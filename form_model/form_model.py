@@ -20,7 +20,10 @@ def get_questionnaire(dbm, questionnaire_code):
     questionnaire_document = _get_questionnaire_by_questionnaire_code(dbm, questionnaire_code=questionnaire_code)
     if questionnaire_document is None:
         raise FormModelDoesNotExistsException(questionnaire_code)
-    questionnaire = FormModel(dbm, _document=questionnaire_document)
+    if questionnaire_document.type == 'registration':
+        questionnaire = RegistrationFormModel(dbm, _document=questionnaire_document)
+    else:
+        questionnaire = FormModel(dbm, _document=questionnaire_document)
     return questionnaire
 
 
@@ -206,7 +209,38 @@ class FormModel(object):
         return self._doc.active_languages
 
 
+class RegistrationFormModel(FormModel):
+
+    def __init__(self, dbm, name=None, form_code=None, fields=None, entity_type=None,
+                 language="eng", _document=None):
+        FormModel.__init__(self, dbm, name=name, label=None, form_code=form_code, fields=fields, entity_type=entity_type, type='registration',
+                 language=language, _document=_document)
+
+    def validate_existence_of_only_one_entity_type_question(self):
+        """Validate only 1 entity type question is there
+        """
+        text_questions = [question for question in self.questions if isinstance(question, TextField)]
+        entity_question_list = [x for x in text_questions if x.question_code.lower() == 'et']
+        if len(entity_question_list) > 1:
+            raise EntityQuestionAlreadyExistsException("Entity Type Question already exists")
+
+    def validate_fields(self):
+        self.validate_existence_of_only_one_entity_type_question()
+        self.validate_uniqueness_of_question_codes()
+        return True
+
+#    TODO: Implement these
+    @property
+    def location(self):
+        return None
+
+    @property
+    def aggregation_paths(self):
+        return None
+
+
 class FormSubmission(object):
+
     def _to_three_tuple(self):
         return [(field, value, datadict.get_default_datadict_type())  for (field, value) in self.cleaned_data.items()]
 
@@ -217,6 +251,39 @@ class FormSubmission(object):
         self.entity_id = self.form_answers.get(entity_question.question_code)
         if(self.entity_id is not None):
             del form_answers[entity_question.question_code]
+        self.form_code = self.form_model.form_code
+        self.answers = form_model
+
+    @property
+    def values(self):
+        return self._to_three_tuple()
+
+    @property
+    def cleaned_data(self):
+        return self.form_model.cleaned_data
+
+    def is_valid(self):
+        return self.form_model.is_valid(self.form_answers)
+
+    def _parse_field(self, form_field, answer):
+        if answer is None:
+            return None
+        if form_field.get("type") == field_attributes.INTEGER_FIELD:
+            return int(answer)
+        return answer.strip()
+
+    @property
+    def errors(self):
+        return self.form_model.errors
+
+class RegistrationFormSubmission(object):
+
+    def _to_three_tuple(self):
+        return [(field, value, datadict.get_default_datadict_type())  for (field, value) in self.cleaned_data.items()]
+
+    def __init__(self, form_model, form_answers):
+        self.form_model = form_model
+        self.form_answers = form_answers
         self.form_code = self.form_model.form_code
         self.answers = form_model
 

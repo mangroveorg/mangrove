@@ -8,9 +8,10 @@ Will log the submission and forward to the appropriate channel handler.
 from mangrove.datastore.documents import  SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
+from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model import form_model
-from mangrove.form_model.form_model import FormSubmission
+from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
 from mangrove.utils.types import is_string
 
@@ -77,15 +78,28 @@ class SubmissionHandler(object):
                                                                 destination=request.destination, form_code=form_code, values=values,
                                                                 status=False, error_message="")).id
             form = form_model.get_questionnaire(self.dbm, form_code)
-            form_submission = FormSubmission(form, values)
-            if form_submission.is_valid():
-                e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
-                data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
-                self.update_submission_log(submission_id, True, errors=[])
-                return Response(reporters, True, errors, submission_id, data_record_id)
-            else:
-                errors.extend(form_submission.errors)
-                self.update_submission_log(submission_id, False, errors)
+            if form.type == 'survey':
+                form_submission = FormSubmission(form, values)
+                if form_submission.is_valid():
+                    e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
+                    data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+                    self.update_submission_log(submission_id, True, errors=[])
+                    return Response(reporters, True, errors, submission_id, data_record_id)
+                else:
+                    errors.extend(form_submission.errors)
+                    self.update_submission_log(submission_id, False, errors)
+            elif form.type == 'registration':
+                form_submission = RegistrationFormSubmission(form, values)
+                if form_submission.is_valid():
+                    entity_type = form.answers.get('entity_type')
+                    entity_id = entity.generate_entity_id(self.dbm, entity_type)
+                    e = Entity(self.dbm, entity_type=entity_type, location=form.location, aggregation_paths=form.aggregation_paths, id=entity_id)
+                    e.save()
+                    self.update_submission_log(submission_id, True, errors=[])
+                    return Response(reporters, True, errors, submission_id, entity_id)
+                else:
+                    errors.extend(form_submission.errors)
+                    self.update_submission_log(submission_id, False, errors)
 
         except FormModelDoesNotExistsException as e:
             errors.append(e.message)

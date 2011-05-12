@@ -228,6 +228,14 @@ class Entity(DataObject):
         p = self.location_path
         return ('' if p is None else '.'.join(p))
 
+    @property
+    def geometry(self):
+        return self._doc.geometry
+
+    @property
+    def centroid(self):
+        return self._doc.centroid
+
     def set_aggregation_path(self, name, path):
         assert self._doc is not None
         assert is_string(name) and is_not_empty(name)

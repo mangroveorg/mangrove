@@ -9,7 +9,8 @@ class CsvReader(object):
         self.open(path)
 
     def open(self, path):
-        self._file = codecs.open(path, encoding='utf-8')
+        #self._file = codecs.open(path, encoding='utf-8')
+        self._file = open(path, 'rU') # universal new-line mode
         # http://stackoverflow.com/questions/904041/reading-a-utf8-csv-file-with-python/904085#904085
         self._csv_reader = csv.reader(self._file)
 
@@ -26,7 +27,7 @@ class CsvReader(object):
         of data.
         """
         row = self._csv_reader.next()
-        return [unicode(cell, 'utf-8') for cell in row]
+        return [cell for cell in row]
 
     def _set_headers(self):
         self._headers = self.next()

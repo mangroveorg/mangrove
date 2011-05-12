@@ -5,7 +5,7 @@ import datetime
 import calendar
 from uuid import uuid4
 from time import struct_time
-from mangrove.utils.types import is_string, is_not_empty
+from mangrove.utils.types import is_string
 from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 
@@ -194,7 +194,7 @@ class FormModelDocument(DocumentBase):
     label = DictField()
     form_code = TextField()
     entity_type = ListField(TextField())
-    fields = ListField(DictField())
+    json_fields = ListField(DictField())
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')
@@ -243,14 +243,11 @@ class SubmissionLogDocument(DocumentBase):
 class AggregationTreeDocument(DocumentBase):
     root = DictField()
     root_id = TextField()
-    name = TextField()
 
-    def __init__(self, name=None, root=None, root_id=None, id=None):
-        assert name is None or (is_string(name) and is_not_empty(name))
-        assert root is None or (isinstance(root, dict) and is_not_empty(root_id))
+    def __init__(self, root=None, id=None):
+        assert root is None or isinstance(root, dict)
 
         DocumentBase.__init__(self, id=id, document_type='AggregationTree')
 
-        self.name = name
         if root is None:
             self.root = {}

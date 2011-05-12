@@ -6,7 +6,8 @@ from mangrove.datastore import data
 
 def find_reporter(dbm, from_number):
     reporters = data.fetch(dbm, entity_type=["Reporter"],
-                            aggregates={"telephone_number": data.reduce_functions.LATEST, "first_name": data.reduce_functions.LATEST}
+                            aggregates={"telephone_number": data.reduce_functions.LATEST,
+                                        "first_name": data.reduce_functions.LATEST}
                           )
     from_reporter_list = [reporters[x] for x in reporters if reporters[x]["telephone_number"] == from_number]
     if len(from_reporter_list) == 0:

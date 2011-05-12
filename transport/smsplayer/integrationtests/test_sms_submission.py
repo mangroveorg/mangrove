@@ -6,14 +6,13 @@
 from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.datastore.entity import define_type
-from mangrove.datastore import datarecord, entity
+from mangrove.datastore.entity import define_type, Entity
+from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.aggregationtree import _blow_tree_cache
 
 
 class TestShouldSaveSMSSubmission(TestCase):
@@ -50,9 +49,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
-        _blow_tree_cache()
         _delete_db_and_remove_db_manager(self.dbm)
-        pass
 
     def test_should_save_submitted_sms(self):
         text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.id
@@ -81,13 +78,13 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_get_submissions_for_form(self):
-        submission_id1 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+        submission_id1 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                                 destination=12345, form_code="abc", values={'Q1': 'ans1', 'Q2': 'ans2'},
                                                                 status=False, error_message="")).id
-        submission_id2 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+        submission_id2 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                                 destination=12345, form_code="abc", values={'Q1': 'ans12', 'Q2': 'ans22'},
                                                                 status=False, error_message="")).id
-        submission_id3 = self.dbm.save(SubmissionLogDocument(channel="transport", source=1234,
+        submission_id3 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                                 destination=12345, form_code="def", values={'defQ1': 'defans12', 'defQ2': 'defans22'},
                                                                 status=False, error_message="")).id
 
@@ -128,6 +125,5 @@ class TestShouldSaveSMSSubmission(TestCase):
         print response.success
         assert response.success
         entity_id = response.datarecord_id
-        e = entity.get(self.dbm, entity_id)
+        e = self.dbm.get(entity_id, Entity)
         assert e
-

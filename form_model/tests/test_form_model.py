@@ -6,11 +6,10 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import    QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
-from mangrove.form_model.form_model import FormModel, get
+from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.form_model.form_model import FormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
-from mangrove.datastore.aggregationtree import _blow_tree_cache
 
 
 class TestFormModel(unittest.TestCase):
@@ -38,49 +37,47 @@ class TestFormModel(unittest.TestCase):
         self.form_model__id = self.form_model.save()
 
     def tearDown(self):
-        _blow_tree_cache()
         _delete_db_and_remove_db_manager(self.dbm)
-        pass
 
     def test_create_form_model(self):
         self.assertTrue(self.form_model__id)
 
     def test_get_form_model(self):
-        e = get(self.dbm, self.form_model__id)
+        e = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(e.id)
         self.assertTrue(e.type == "survey")
 
     def test_should_add_name_of_form_model(self):
-        saved = get(self.dbm, self.form_model__id)
+        saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(saved.name == "aids")
 
     def test_should_add_label(self):
-        saved = get(self.dbm, self.form_model__id)
+        saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(saved.label['eng'] == "Aids form_model")
 
     def test_should_add_short_ids(self):
-        saved = get(self.dbm, self.form_model__id)
+        saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(saved.form_code == "1")
 
     def test_should_add_entity_id(self):
-        saved = get(self.dbm, self.form_model__id)
+        saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertListEqual(saved.entity_type, self.entity_type)
 
     def test_should_add_fields(self):
-        saved = get(self.dbm, self.form_model__id)
+        saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(len(saved.fields) == 4)
         self.assertTrue(saved.fields[1].name == "question1_Name")
         self.assertTrue(saved.fields[2].name == "Father's age")
 
     def test_should_add_integer_field_with_constraints(self):
-        integer_question = get(self.dbm, self.form_model__id).fields[2]
+        integer_question = self.dbm.get(self.form_model__id, FormModel).form_fields[2]
         range_constraint = integer_question.range
         self.assertTrue(integer_question.name == "Father's age")
         self.assertTrue(range_constraint.get("min"), 15)
         self.assertTrue(range_constraint.get("max"), 120)
 
     def test_should_add_select1_field(self):
-        select_question = get(self.dbm, self.form_model__id).fields[3]
+        select_question = self.dbm.get(self.form_model__id, FormModel).form_fields[3]
         option_constraint = select_question.options
 
         self.assertEquals(len(option_constraint), 2)
@@ -88,19 +85,19 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(option_constraint[0].get("val"), 1)
 
     def test_should_add_new_field(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         question = TextField(name="added_question", question_code="Q4", label="How are you")
         form_model.add_field(question)
         form_model.save()
 
-        added_question = get(self.dbm, self.form_model__id).fields[4]
+        added_question = self.dbm.get(self.form_model__id, FormModel).form_fields[4]
         self.assertEquals(added_question.question_code, "Q4")
 
     def test_should_delete_field(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.delete_field(question_code="Q3")
         form_model.save()
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel, force_reload=True)
         self.assertEquals(len(form_model.fields), 3)
 
     def test_should_add_english_as_default_langauge(self):
@@ -115,18 +112,18 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
 
     def test_should_delete_all_fields_from_document(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.delete_all_fields()
-        self.assertEquals(len(form_model.fields), 0)
+        self.assertEquals(len(form_model.form_fields), 0)
 
     def test_should_delete_all_fields_from_questions(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.delete_all_fields()
-        self.assertEquals(len(form_model.fields), 0)
+        self.assertEquals(len(form_model.form_fields), 0)
 
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):
-            form_model = get(self.dbm, self.form_model__id)
+            form_model = self.dbm.get(self.form_model__id, FormModel)
             question = TextField(name="added_question", question_code="Q5", label="How are you",
                                  entity_question_flag=True)
             form_model.add_field(question)
@@ -134,18 +131,18 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_raise_exception_if_question_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
-            form_model = get(self.dbm, self.form_model__id)
+            form_model = self.dbm.get(self.form_model__id, FormModel)
             question = TextField(name="added_question", question_code="Q1", label="How are you")
             form_model.add_field(question)
             form_model.save()
 
     def test_should_set_form_code(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.form_code = "xyz"
         self.assertEquals(form_model.form_code, "xyz")
 
     def test_should_set_entity_type(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.entity_id = "xyz"
         self.assertEquals(form_model.entity_id, "xyz")
 
@@ -187,7 +184,7 @@ class TestFormModel(unittest.TestCase):
                         "question_code": "PLC"
                     }]
         document = FormModelDocument()
-        document.fields = fields
+        document.json_fields = fields
         document.entity_type = ["Reporter"]
         document.document_type = "FormModel"
         document.form_code = "F1"
@@ -203,13 +200,13 @@ class TestFormModel(unittest.TestCase):
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False)
         questions = [entityQ, ageQ, placeQ]
-        questionnaire = FormModel(dbm=self.dbm, _document=document)
+        questionnaire = FormModel.new_from_db(self.dbm, document)
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, ["Reporter"])
         self.assertEqual(questionnaire.name, "New Project")
         self.assertEqual(questionnaire.type, "survey")
         for i in range(len(questions)):
-            self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
+            self.assertEqual(questionnaire.form_fields[i]._to_json(), questions[i]._to_json())
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
@@ -255,4 +252,4 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_set_name(self):
         self.form_model.name = 'test_name'
-        self.assertEquals(self.form_model.name,'test_name')
+        self.assertEquals(self.form_model.name, 'test_name')

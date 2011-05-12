@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from mangrove.datastore.documents import DocumentBase
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import EntityDocument
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 
@@ -27,12 +27,14 @@ class TestDatabaseManager(unittest.TestCase):
     def test_should_persist_and_load_document_to_database(self):
         document = DocumentBase(document_type='TestDocument')
 
-        document = self.database_manager.save(document)
+        document = self.database_manager._save_document(document)
         self.assertTrue(document.document_type == 'TestDocument')
 
-        document1 = self.database_manager.load(document.id)
+        document1 = self.database_manager._load_document(document.id)
         self.assertTrue(document1)
 
     def test_should_return_none_if_documentid_is_empty(self):
-        user = self.database_manager.load('', Entity)
-        self.assertTrue(not user)
+        self.assertIsNone(self.database_manager._load_document('', EntityDocument))
+
+    def test_should_return_none_if_no_document_for_id(self):
+        self.assertIsNone(self.database_manager._load_document('123abc', EntityDocument))

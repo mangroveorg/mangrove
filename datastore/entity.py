@@ -3,25 +3,28 @@
 import copy
 from datetime import datetime
 import random
-from string import upper
 from time import mktime
 from collections import defaultdict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, EntityInstanceDoesNotExistsException
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
-from database import DatabaseManager
+from database import DatabaseManager, DataObject
 
-ENTITY_TYPE_TREE = '_entity_type'
+ENTITY_TYPE_TREE = 'entity_type_tree'
+
+
+def _get_entity_type_tree(dbm):
+    assert isinstance(dbm, DatabaseManager)
+    return dbm.get(ENTITY_TYPE_TREE, atree.AggregationTree, get_or_create=True)
 
 
 def get_all_entity_types(dbm):
-    assert isinstance(dbm, DatabaseManager)
-    return atree.get_by_name(dbm, ENTITY_TYPE_TREE, get_or_create=True).get_paths()
+    return _get_entity_type_tree(dbm).get_paths()
 
 
 def define_type(dbm, entity_type):
@@ -30,16 +33,11 @@ def define_type(dbm, entity_type):
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
 
-    # get the entity type aggregation tree, or create on if none-exists
-    entity_tree = atree.get_by_name(dbm, ENTITY_TYPE_TREE, get_or_create=True)
-
-    # types are all the paths in the tree
-    entity_types = entity_tree.get_paths()
-
-    if type_path in entity_types:
+    if type_path in get_all_entity_types(dbm):
         raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
 
     # now make the new one
+    entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
     entity_tree.save()
 
@@ -49,24 +47,13 @@ def get_by_short_code(dbm, short_code):
         Delegating to get by uuid for now.
 
     """
-    return get(dbm, short_code)
+    return dbm.get(short_code, Entity)
+
 
 def generate_entity_id(database_manager, entity_type):
-    list = map(chr, range(97,121)) + range(0,9)
+    list = map(chr, range(97, 121)) + range(0, 9)
     random.shuffle(list)
-    return (entity_type + reduce(lambda acc,i: str(acc) + str(i) , list[0:3], '')).upper()
-
-def get(dbm, uuid):
-    assert isinstance(dbm, DatabaseManager)
-    entity_doc = dbm.load(uuid, EntityDocument)
-    if entity_doc is not None:
-        return Entity(dbm, _document=entity_doc)
-    else:
-        raise EntityInstanceDoesNotExistsException("Entity with id %s does not exist" % uuid)
-
-
-def get_entities(dbm, uuids):
-    return [get(dbm, i) for i in uuids]
+    return (entity_type + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
 
 
 def get_entities_by_type(dbm, entity_type):
@@ -75,7 +62,7 @@ def get_entities_by_type(dbm, entity_type):
     assert is_string(entity_type)
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
-    entities = [get(dbm, row['value']['_id']) for row in rows]
+    entities = [dbm.get(row['value']['_id'], Entity) for row in rows]
 
     return entities
 
@@ -88,7 +75,7 @@ def get_entities_by_value(dbm, dd_type, value, label=None, as_of=None):
     # do we need to assert value? i think not since it could be None/null/etc.
     if label is None: label = dd_type.slug
     rows = dbm.load_all_rows_in_view('mangrove_views/by_label_type_value', key=[label, dd_type.slug, value])
-    entities = [get(dbm, row['value']) for row in rows]
+    entities = [dbm.get(row['value'], Entity) for row in rows]
     return [e for e in entities if e.values({label: 'latest'}, asof=as_of) == {label: value}]
 
 
@@ -144,24 +131,26 @@ def get_entities_in(dbm, geo_path, type_path=None):
         # if not, then this needs to perform a query for each type and then take the intersection
         # of the result sets
         rows = dbm.load_all_rows_in_view('mangrove_views/by_type_geo', key=(type_path + geo_path))
-        entities = [get(dbm, row.id) for row in rows]
+        entities = [dbm.get(row.id, Entity) for row in rows]
 
     # otherwise, filter by type
     if type_path is None:
         rows = dbm.load_all_rows_in_view('mangrove_views/by_geo', key=geo_path)
-        entities = [get(dbm, row.id) for row in rows]
+        entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
 
 
-class Entity(object):
+class Entity(DataObject):
     """
     Entity class is main way of interacting with Entities AND datarecords.
     Datarecords are always submitted/retrieved from an Entity.
     """
 
+    __document_class__ = EntityDocument
+
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
-                 geometry=None, centroid=None, gr_id=None, id=None, _document=None):
+                 geometry=None, centroid=None, gr_id=None, id=None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -172,41 +161,40 @@ class Entity(object):
         entity_type may be a string (flat type) or sequence (hierarchical type)
         '''
         assert isinstance(dbm, DatabaseManager)
-        assert _document is not None or entity_type is None or is_sequence(entity_type) or is_string(entity_type)
-        assert _document is not None or location is None or is_sequence(location)
-        assert _document is not None or aggregation_paths is None or isinstance(aggregation_paths, dict)
-        assert _document is not None or geometry is None or isinstance(geometry, dict)
-        assert _document is not None or centroid is None or isinstance(centroid, list)
-        assert _document is not None or gr_id is None or is_string(gr_id)
-        assert _document is None or isinstance(_document, EntityDocument)
+        assert entity_type is None or is_sequence(entity_type) or is_string(entity_type)
+        assert location is None or is_sequence(location)
+        assert aggregation_paths is None or isinstance(aggregation_paths, dict)
+        assert geometry is None or isinstance(geometry, dict)
+        assert centroid is None or isinstance(centroid, list)
+        assert gr_id is None or is_string(gr_id)
 
-        self._dbm = dbm
+        DataObject.__init__(self, dbm)
 
-        # Are we being constructed from an existing doc?
-        if _document is not None:
-            self._doc = _document
+        # Are we being constructed from an existing doc, in which case all the work is
+        # in _set_document?
+        if entity_type is None:
             return
 
         # Not made from existing doc, so create a new one
-        self._doc = EntityDocument(id)
+        doc = EntityDocument(id)
+        self._set_document(doc)
 
         # add aggregation paths
-        if entity_type is not None:
-            if is_string(entity_type):
-                entity_type = entity_type.split(".")
-            self._doc.entity_type = entity_type
+        if is_string(entity_type):
+            entity_type = [entity_type]
+        doc.entity_type = entity_type
 
         if location is not None:
-            self._doc.location = location
+            doc.location = location
 
         if geometry is not None:
-            self._doc.geometry = geometry
+            doc.geometry = geometry
 
         if centroid is not None:
-            self._doc.centroid = centroid
+            doc.centroid = centroid
 
         if gr_id is not None:
-            self._doc.gr_id = gr_id
+            doc.gr_id = gr_id
 
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
@@ -215,19 +203,9 @@ class Entity(object):
                     raise ValueError('Attempted to add an aggregation path with a reserved name')
                 self.set_aggregation_path(name, aggregation_paths[name])
 
-        # TODO: why should Entities just be saved on init??
-
-    def save(self):
-        return self._dbm.save(self._doc).id
-
-    @property
-    def id(self):
-        return self._doc.id
-
     @property
     def aggregation_paths(self):
         '''Returns a copy of the dict'''
-#        return dict(self._doc.aggregation_paths)
         return copy.deepcopy(self._doc.aggregation_paths)
 
     @property
@@ -295,7 +273,7 @@ class Entity(object):
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
                                              data=data_list, submission_id=submission_id)
-        return self._dbm.save(data_record_doc).id
+        return self._dbm._save_document(data_record_doc).id
 
     def invalidate_data(self, uid):
         '''Mark datarecord identified by uid as 'invalid'.
@@ -308,9 +286,11 @@ class Entity(object):
         self._dbm.invalidate(uid)
 
     def invalidate(self):
-        '''Mark the entity as invalid.
+        '''
+        Mark the entity as invalid.
 
         This will also mark all associated data records as invalid.
+
         '''
         self._doc.void = True
         self.save()
@@ -331,7 +311,7 @@ class Entity(object):
         entity.
         """
         return self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
-        
+
     def get_all_data(self):
         """
         Return a dict where the first level of keys is the event time,
@@ -342,15 +322,11 @@ class Entity(object):
         for row in self._get_rows():
             event_time = row['value'][u'event_time']
             data_keys = row['value']['data'].keys()
-            assert len(data_keys)==1
+            assert len(data_keys) == 1
             label = data_keys[0]
             value = row['value']['data'][label][u'value']
             data_type = row['value']['data'][label]['type']
-            result[event_time][data_type['slug']] = {
-                u'type': data_type,
-                u'value': value,
-                u'label': label,
-                }
+            result[event_time][data_type['slug']] = value
         return result
 
     def data_types(self, tags=None):
@@ -410,5 +386,3 @@ class Entity(object):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
-
-

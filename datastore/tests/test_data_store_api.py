@@ -214,3 +214,51 @@ class TestDataStoreApi(unittest.TestCase):
         _blow_tree_cache()
         entity_types = get_all_entity_types(self.dbm)
         self.assertListEqual(entity_types,[["Clinic"]])
+
+    def test_should_return_data_types(self):
+        med_type = DataDictType(self.dbm,
+                                name='Medicines',
+                                slug='meds',
+                                primitive_type='number',
+                                description='Number of medications',
+                                tags=['med'])
+        med_type.save()
+        doctor_type = DataDictType(self.dbm,
+                                   name='Doctor',
+                                   slug='doc',
+                                   primitive_type='string',
+                                   description='Name of doctor',
+                                   tags=['doctor', 'med'])
+        doctor_type.save()
+        facility_type = DataDictType(self.dbm,
+                                     name='Facility',
+                                     slug='facility',
+                                     primitive_type='string',
+                                     description='Name of facility')
+        facility_type.save()
+        e = Entity(self.dbm)
+        e.save()
+        data_record = [('meds', 20, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type)]
+        e.add_data(data_record)
+        # med (tag in list)
+        types = [typ.slug for typ in e.data_types(['med'])]
+        self.assertTrue(med_type.slug in types)
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(facility_type.slug not in types)
+        # doctor (tag as string)
+        types = [typ.slug for typ in e.data_types('doctor')]
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(med_type.slug not in types)
+        self.assertTrue(facility_type.slug not in types)
+        # med and doctor (more than one tag)
+        types = [typ.slug for typ in e.data_types(['med', 'doctor'])]
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(med_type.slug not in types)
+        self.assertTrue(facility_type.slug not in types)
+        # no tags
+        types = [typ.slug for typ in e.data_types()]
+        self.assertTrue(med_type.slug in types)
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(facility_type.slug in types)

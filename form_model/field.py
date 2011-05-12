@@ -48,7 +48,7 @@ class Field(object):
 
     def __init__(self, **kwargs):
         self._dict = defaultdict(dict)
-
+        assert kwargs.get(self.DDTYPE) is not None  
         for k, default_value in self._DEFAULT_VALUES.items():
             self._dict[k] = kwargs.get(k, default_value)
 
@@ -82,7 +82,7 @@ class Field(object):
         return self._dict.get(self.DDTYPE)
 
     def _to_json(self):
-        dict = self._dict
+        dict = self._dict.copy()
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
@@ -196,7 +196,7 @@ class SelectField(Field):
         return self._dict.get(self.OPTIONS)
 
 
-def create_question_from(dictionary):
+def create_question_from(dictionary, dbm):
     """
      Given a dictionary that defines a question, this would create a field with all the validations that are
      defined on it.
@@ -206,7 +206,7 @@ def create_question_from(dictionary):
     code = dictionary.get("question_code")
     is_entity_question = dictionary.get("entity_question_flag")
     label = dictionary.get("label")
-    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"),get_db_manager())
+    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == "text":
         length_dict = dictionary.get("length")
         length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),

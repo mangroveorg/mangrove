@@ -147,7 +147,7 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(form_model.form_code, "xyz")
 
     def test_should_persist_ddtype(self):
-        form_model = get(self.dbm, self.form_model__id)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
 
         self.assertEqual(form_model.fields[0].ddtype.slug,self.string_ddtype.slug)
         self.assertEqual(form_model.fields[0].ddtype.id,self.string_ddtype.id)

@@ -80,5 +80,5 @@ class DataDictType(DataObject):
     @classmethod
     def create_from_json(cls, json,dbm):
         doc = DataDictDocument.wrap(json)
-        return DataDictType(dbm,_document=doc)
+        return DataDictType.new_from_db(dbm,doc)
 

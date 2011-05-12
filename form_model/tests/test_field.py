@@ -2,6 +2,7 @@
 
 import unittest
 from mock import Mock, patch
+from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate
@@ -21,9 +22,9 @@ class TestQuestion(unittest.TestCase):
         self.ddtype = Mock(spec=DataDictType)
         self.DDTYPE_JSON = {'test':'test'}
         self.ddtype.to_json.return_value = self.DDTYPE_JSON
-        self.patcher = patch('mangrove.form_model.field.DataDictType')
+        self.patcher = patch(target='mangrove.form_model.field.DataDictType',spec=DataDictType)
         self.ddtype_module = self.patcher.start()
-#        self.ddtype_module.create_from_json.return_value = self.ddtype
+        self.dbm = Mock(spec=DatabaseManager)
 
     def tearDown(self):
         self.patcher.stop()
@@ -163,7 +164,7 @@ class TestQuestion(unittest.TestCase):
             "entity_question_flag": True,
             "ddtype": self.ddtype
         }
-        created_question = field.create_question_from(question_json)
+        created_question = field.create_question_from(question_json, self.dbm)
         self.assertIsInstance(created_question, TextField)
         self.assertIsInstance(created_question.constraint, TextConstraint)
         self.assertEqual(created_question.constraint.max, 10)
@@ -182,7 +183,7 @@ class TestQuestion(unittest.TestCase):
             "range": {"min": 0, "max": 100},
             "entity_question_flag": False
         }
-        created_question = field.create_question_from(question_json)
+        created_question = field.create_question_from(question_json, self.dbm)
         self.assertIsInstance(created_question, IntegerField)
         self.assertEqual(created_question._dict["range"], {"min": 0, "max": 100})
         self.assertIsInstance(created_question.constraint, IntegerConstraint)
@@ -200,7 +201,7 @@ class TestQuestion(unittest.TestCase):
             "options": [{"text":{"eng":"option 1"}, "value": "c1"},
                         {"text":{"eng":"option 1"}, "value": "c2"}],
             "entity_question_flag": False}
-        created_question = field.create_question_from(question_json)
+        created_question = field.create_question_from(question_json, self.dbm)
         self.assertIsInstance(created_question, SelectField)
         self.assertEqual(created_question.SINGLE_SELECT_FLAG, False)
         self.assertEqual(created_question.ddtype, self.ddtype)
@@ -219,7 +220,7 @@ class TestQuestion(unittest.TestCase):
 
         expected_option_list = [{"text": {"eng": "hello", "fr": "bonjour"}, "value": "c1"},
                                 {"text": {"eng": "world"}, "value": "c2"}]
-        created_question = field.create_question_from(question_json)
+        created_question = field.create_question_from(question_json, self.dbm)
         self.assertIsInstance(created_question, SelectField)
         self.assertEqual(created_question.SINGLE_SELECT_FLAG, True)
         self.assertEqual(created_question.options, expected_option_list)
@@ -291,7 +292,7 @@ class TestQuestion(unittest.TestCase):
             "date_format": "%m.%Y",
             "ddtype":  self.DDTYPE_JSON,
         }
-        created_question = field.create_question_from(question_json)
+        created_question = field.create_question_from(question_json, self.dbm)
         self.assertIsInstance(created_question, DateField)
         self.assertEqual(created_question.date_format, "%m.%Y")
         self.assertEqual(created_question.ddtype, self.ddtype)
@@ -347,6 +348,32 @@ class TestQuestion(unittest.TestCase):
         question4 = DateField(name="Age", question_code="Q2", label="What is your birth date",
                              language="eng", date_format="%m.%d.%Y", ddtype=dateType)
         self.assertEqual(dateType,question4.ddtype)
+
+
+
+    def test_should_throw_exception_if_field_created_with_none_datadict_type(self):
+        with self.assertRaises(AssertionError):
+            question1 = TextField(name="Name", question_code="Q1", label="What is your Name",
+                                 language="eng", length=TextConstraint(min=4, max=15), ddtype = None)
+
+
+    def test_should_convert_ddtype_to_json(self):
+        expected_json = {
+            "defaultValue": "",
+            "label": {"eng": "What is your name"},
+            "name": "question1_Name",
+            "question_code": "Q1",
+            "length": {},
+            "type": "text",
+            "ddtype": self.DDTYPE_JSON,
+            "entity_question_flag": True
+        }
+        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+                             entity_question_flag=True,ddtype=self.ddtype)
+        actual_json = question._to_json()
+        self.assertEqual(actual_json, expected_json)
+        self.assertEqual(self.ddtype,question.ddtype)
+
 
 
 

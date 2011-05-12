@@ -64,7 +64,7 @@ class FormModel(DataObject):
 
         # make form_model level fields for any json fields in to
         for json_field in document.json_fields:
-            f = field.create_question_from(json_field)
+            f = field.create_question_from(json_field,self._dbm)
             self.form_fields.append(f)
 
     def save(self):

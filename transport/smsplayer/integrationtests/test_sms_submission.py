@@ -112,18 +112,26 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
     def test_should_create_new_entity_on_registration(self):
+        location_type =  DataDictType(self.dbm, name='Location Type', slug='location', primitive_type='string')
+        description_type =  DataDictType(self.dbm, name='description Type', slug='description', primitive_type='string')
+        mobile_number_type =  DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
+
+        location_type.save()
+        description_type.save()
+        mobile_number_type.save()
+
         question1 = TextField(name="entity_type", question_code="ET", label="What is associated entity type?",
-                          language="eng", entity_question_flag=False)
+                          language="eng", entity_question_flag=False,ddtype=self.entity_id_type)
         question2 = TextField(name="name", question_code="N", label="What is the entity's name?",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",ddtype=self.name_type)
         question3 = TextField(name="short_name", question_code="S", label="What is the entity's short name?",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",ddtype=self.name_type)
         question4 = TextField(name="location", question_code="L", label="What is the entity's location?",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",ddtype=location_type)
         question5 = TextField(name="description", question_code="D", label="Describe the entity",
-                              defaultValue="some default value", language="eng")
-        question6 = TextField(name="short_name", question_code="M", label="What is the associated mobile number?",
-                              defaultValue="some default value", language="eng")
+                              defaultValue="some default value", language="eng",ddtype=description_type)
+        question6 = TextField(name="mobile_number", question_code="M", label="What is the associated mobile number?",
+                              defaultValue="some default value", language="eng",ddtype=mobile_number_type)
 
         form_model = RegistrationFormModel(self.dbm, name="REG", form_code="REG", fields=[
                         question1, question2, question3, question4, question5, question6])

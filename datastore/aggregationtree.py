@@ -6,7 +6,7 @@ import networkx as nx
 
 from mangrove.utils.types import is_not_empty, is_sequence
 from documents import AggregationTreeDocument
-from database import DatabaseManager, DataObject
+from database import DataObject
 
 
 class AggregationTree(DataObject):

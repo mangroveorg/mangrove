@@ -92,4 +92,3 @@ class TestAggregationTrees(unittest.TestCase):
         # now try with get_or_create
         tree = self.dbm.get(name, ATree, get_or_create=True)
         self.assertEqual(tree.name, name)
-

@@ -6,8 +6,8 @@
 from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.datastore.entity import define_type
-from mangrove.datastore import datarecord, entity
+from mangrove.datastore.entity import define_type, Entity
+from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
@@ -125,6 +125,5 @@ class TestShouldSaveSMSSubmission(TestCase):
         print response.success
         assert response.success
         entity_id = response.datarecord_id
-        e = entity.get(self.dbm, entity_id)
+        e = self.dbm.get(entity_id, Entity)
         assert e
-

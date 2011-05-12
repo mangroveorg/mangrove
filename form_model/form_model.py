@@ -13,7 +13,7 @@ def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code)
-    if len(rows)==0:
+    if len(rows) == 0:
         raise FormModelDoesNotExistsException(code)
 
     # todo: this is screwy! This two types of forms, reg and otherwise, look like a bad idea...
@@ -24,6 +24,7 @@ def get_form_model_by_code(dbm, code):
     else:
         form = FormModel.new_from_db(dbm, doc)
     return form
+
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
@@ -36,7 +37,7 @@ class FormModel(DataObject):
         assert type is None or is_not_empty(type)
 
         DataObject.__init__(self, dbm)
-        
+
         self.form_fields = []
         self.errors = []
         self.answers = {}
@@ -57,7 +58,6 @@ class FormModel(DataObject):
         doc.type = type
         doc.active_languages = language
         self._set_document(doc)
-
 
     def _set_document(self, document):
         DataObject._set_document(self, document)
@@ -147,12 +147,12 @@ class FormModel(DataObject):
 
     @property
     def entity_question(self):
-        val = None
+        eq = None
         for f in self.form_fields:
             if isinstance(f, TextField) and f.is_entity_field:
-                val = f
+                eq = f
                 break
-        return f
+        return eq
 
     @property
     def form_code(self):
@@ -253,6 +253,7 @@ class FormSubmission(object):
     @property
     def errors(self):
         return self.form_model.errors
+
 
 class RegistrationFormSubmission(object):
 

@@ -53,15 +53,14 @@ class ChoiceConstraint(object):
         assert answer is not None
         answer_string = answer.lower().strip()
         if not answer_string:
-            raise AnswerHasNoValuesException(question_code=self.question_code, answer= answer)
+            raise AnswerHasNoValuesException(question_code=self.question_code, answer=answer)
         choices = []
-        if self.single_select_constraint and  len(answer_string)>1:
+        if self.single_select_constraint and  len(answer_string) > 1:
             raise AnswerHasTooManyValuesException(question_code=self.question_code, answer=answer)
         for character in answer_string:
             index_represented = ord(character) - ord('a')
-            if index_represented > len(self.list_of_valid_choices)-1:
+            if index_represented > len(self.list_of_valid_choices) - 1:
                 raise AnswerNotInListException(question_code=self.question_code, answer=character)
             else:
                 choices.append(self.list_of_valid_choices[index_represented])
         return choices
-

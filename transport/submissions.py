@@ -11,7 +11,7 @@ from mangrove.datastore import reporter
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model import form_model
-from mangrove.form_model.form_model import FormSubmission, get_form_model_by_code, RegistrationFormSubmission
+from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
 from mangrove.transport.smsplayer.smsplayer import SMSPlayer
 from mangrove.utils.types import is_string
 

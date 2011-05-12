@@ -3,8 +3,8 @@
 import csv
 import codecs
 
-class CsvReader(object):
 
+class CsvReader(object):
     def __init__(self, path):
         self.open(path)
 

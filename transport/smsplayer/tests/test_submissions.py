@@ -24,7 +24,7 @@ class TestSubmissions(TestCase):
         self.form_model_patcher.stop()
         self.entity_patcher.stop()
         self.reporter_patcher.stop()
-        
+
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_log_submission(self):

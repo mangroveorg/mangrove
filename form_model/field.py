@@ -155,6 +155,7 @@ class TextField(Field):
 
 class SelectField(Field):
     OPTIONS = "options"
+
     def __init__(self, name, question_code, label, options, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0
@@ -176,6 +177,7 @@ class SelectField(Field):
         self.constraint = ChoiceConstraint(list_of_valid_choices=[each.get('text').get(language) for each in valid_choices], single_select_constraint=single_select_flag, question_code=question_code)
 
     SINGLE_SELECT_FLAG = 'single_select_flag'
+
     def validate(self, value):
         return self.constraint.validate(answer=value)
 

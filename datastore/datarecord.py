@@ -4,7 +4,6 @@ from datetime import datetime
 
 from documents import SubmissionLogDocument
 from entity import Entity
-import entity
 from mangrove.utils.types import is_sequence
 from mangrove.utils.dates import utcnow
 
@@ -25,7 +24,7 @@ def submit(manager, entity_id, data, source):
     """
     assert entity_id is not None
     assert is_sequence(data) and len(data) > 0
-    e = entity.get(manager, entity_id)
+    e = manager.get(entity_id, Entity)
     submission_log = SubmissionLogDocument(source=source)
     submission_log = manager._save_document(submission_log)
     data_record_id = e.add_data(data=data, event_time=utcnow(), submission_id=submission_log.id)

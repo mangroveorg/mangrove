@@ -5,8 +5,8 @@ import os
 
 from mangrove.utils.spreadsheets import CsvReader
 
-class TestCsvReader(unittest.TestCase):
 
+class TestCsvReader(unittest.TestCase):
     def setUp(self):
         file_name = 'test.csv'
         dirname = os.path.dirname(__file__)

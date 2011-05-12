@@ -3,14 +3,13 @@
 import copy
 from datetime import datetime
 import random
-from string import upper
 from time import mktime
 from collections import defaultdict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined,  ObjectNotFound
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -22,6 +21,7 @@ ENTITY_TYPE_TREE = 'entity_type_tree'
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(ENTITY_TYPE_TREE, atree.AggregationTree, get_or_create=True)
+
 
 def get_all_entity_types(dbm):
     return _get_entity_type_tree(dbm).get_paths()
@@ -47,28 +47,20 @@ def get_by_short_code(dbm, short_code):
         Delegating to get by uuid for now.
 
     """
-    return get(dbm, short_code)
+    return dbm.get(short_code, Entity)
+
 
 def generate_entity_id(database_manager, entity_type):
-    list = map(chr, range(97,121)) + range(0,9)
+    list = map(chr, range(97, 121)) + range(0, 9)
     random.shuffle(list)
-    return (entity_type + reduce(lambda acc,i: str(acc) + str(i) , list[0:3], '')).upper()
-
-def get(dbm, id):
-    assert isinstance(dbm, DatabaseManager)
-    return dbm.get(id, Entity)
-
-
-def get_entities(dbm, ids):
-    assert isinstance(dbm, DatabaseManager)
-    return dbm.get_many(ids, Entity)
+    return (entity_type + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
 
 
 def get_entities_by_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(entity_type)
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
-    entities = [get(dbm, row['value']['_id']) for row in rows]
+    entities = [dbm.get(row['value']['_id'], Entity) for row in rows]
     return entities
 
 
@@ -91,12 +83,12 @@ def get_entities_in(dbm, geo_path, type_path=None):
         # if not, then this needs to perform a query for each type and then take the intersection
         # of the result sets
         rows = dbm.load_all_rows_in_view('mangrove_views/by_type_geo', key=(type_path + geo_path))
-        entities = [get(dbm, row.id) for row in rows]
+        entities = [dbm.get(row.id, Entity) for row in rows]
 
     # otherwise, filter by type
     if type_path is None:
         rows = dbm.load_all_rows_in_view('mangrove_views/by_geo', key=geo_path)
-        entities = [get(dbm, row.id) for row in rows]
+        entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
 
@@ -250,7 +242,7 @@ class Entity(DataObject):
         Mark the entity as invalid.
 
         This will also mark all associated data records as invalid.
-        
+
         '''
         self._doc.void = True
         self.save()
@@ -271,7 +263,7 @@ class Entity(DataObject):
         entity.
         """
         return self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
-        
+
     def get_all_data(self):
         """
         Return a dict where the first level of keys is the event time,
@@ -282,7 +274,7 @@ class Entity(DataObject):
         for row in self._get_rows():
             event_time = row['value'][u'event_time']
             data_keys = row['value']['data'].keys()
-            assert len(data_keys)==1
+            assert len(data_keys) == 1
             label = data_keys[0]
             value = row['value']['data'][label][u'value']
             data_type = row['value']['data'][label]['type']
@@ -346,5 +338,3 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
-
-

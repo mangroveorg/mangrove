@@ -168,7 +168,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "qc3",
             "type": "select",
             "options": [{"text":{"eng":"option 1"}, "value": "c1"},
-                        {"text":{"eng":"option 1"},"value": "c2"}],
+                        {"text":{"eng":"option 1"}, "value": "c2"}],
             "entity_question_flag": False}
         created_question = field.create_question_from(question_json)
         self.assertIsInstance(created_question, SelectField)
@@ -244,7 +244,6 @@ class TestQuestion(unittest.TestCase):
             valid_value = question.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
-
 
     def test_should_create_date_field(self):
         question_json = {

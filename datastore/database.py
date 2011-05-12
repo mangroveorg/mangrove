@@ -110,7 +110,6 @@ class DataObject(object):
         return (self._doc.id if self._doc is not None else None)
 
 
-
 class DatabaseManager(object):
     def __init__(self, server=None, database=None):
         """
@@ -151,7 +150,7 @@ class DatabaseManager(object):
         '''
         with self.cache_lock:
             self.doc_cache = {}
-            
+
     def load_all_rows_in_view(self, view_name, **values):
         return self.database.view(view_name, **values).rows
 
@@ -193,7 +192,7 @@ class DatabaseManager(object):
         Get many data objects at once.
 
         Returns a (possibly empty) list of retrieved objects
-        
+
         '''
         assert is_sequence(ids)
         objs = []
@@ -211,7 +210,6 @@ class DatabaseManager(object):
 
         '''
         assert issubclass(object_class, DataObject)
-
 
         obj = None
 

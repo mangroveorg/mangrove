@@ -102,22 +102,21 @@ class TestTextValidations(unittest.TestCase):
 class TestChoiceValidations(unittest.TestCase):
 
     def test_should_validate_multiple_choice(self):
-        constraint = ChoiceConstraint(single_select_constraint = False, list_of_valid_choices=["village", "urban"], question_code="Q1")
+        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban"], question_code="Q1")
         v_data = constraint.validate("ab")
-        self.assertEquals(v_data, ["village","urban"])
+        self.assertEquals(v_data, ["village", "urban"])
 
     def test_should_not_validate_wrong_choice(self):
         with self.assertRaises(AnswerNotInListException) as e:
-            constraint = ChoiceConstraint(single_select_constraint = True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
             v_data = constraint.validate("c")
 
     def test_should_not_validate_multiple_values_sent_for_single_choice(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:
-            constraint = ChoiceConstraint(single_select_constraint = True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
             v_data = constraint.validate("ab")
 
     def test_should_not_validate_no_values_sent_for_choice(self):
         with self.assertRaises(AnswerHasNoValuesException) as e:
-            constraint = ChoiceConstraint(single_select_constraint = True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
             v_data = constraint.validate("")
-        

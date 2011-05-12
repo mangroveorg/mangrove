@@ -77,7 +77,7 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(range_constraint.get("max"), 120)
 
     def test_should_add_select1_field(self):
-        select_question =self.dbm.get(self.form_model__id, FormModel).form_fields[3]
+        select_question = self.dbm.get(self.form_model__id, FormModel).form_fields[3]
         option_constraint = select_question.options
 
         self.assertEquals(len(option_constraint), 2)
@@ -252,4 +252,4 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_set_name(self):
         self.form_model.name = 'test_name'
-        self.assertEquals(self.form_model.name,'test_name')
+        self.assertEquals(self.form_model.name, 'test_name')

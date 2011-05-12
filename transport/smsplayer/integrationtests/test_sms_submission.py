@@ -17,17 +17,23 @@ from mangrove.datastore.datadict import DataDictType
 
 class TestShouldSaveSMSSubmission(TestCase):
     def setUp(self):
-        self.dbm = get_db_manager(database='mangrove-test1')
+        self.dbm = get_db_manager(database='mangrove-test')
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, self.entity_type)
         self.reporter_type = define_type(self.dbm, ["Reporter"])
 
         self.name_type = DataDictType(self.dbm, name='Name', slug='Name', primitive_type='string')
-        self.first_name_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
+        self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
                                             primitive_type='string')
-        self.telephone_number_type = DataDictType(self.dbm, name='first_name', slug='first_name',
-                                                  primitive_type='string')
-        self.ddtype =  DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
+        self.entity_id_type =  DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
+        self.stock_type =  DataDictType(self.dbm, name='Stock Type', slug='stock', primitive_type='integer')
+        self.color_type =  DataDictType(self.dbm, name='Color Type', slug='color', primitive_type='string')
+
+        self.name_type.save()
+        self.telephone_number_type.save()
+        self.entity_id_type.save()
+        self.stock_type.save()
+        self.color_type.save()
 
         self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                           data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
@@ -35,17 +41,17 @@ class TestShouldSaveSMSSubmission(TestCase):
 
         datarecord.register(self.dbm, entity_type=["Reporter"],
                             data=[("telephone_number", '1234', self.telephone_number_type),
-                                  ("first_name", "Test_reporter", self.first_name_type)], location=[],
+                                  ("first_name", "Test_reporter", self.name_type)], location=[],
                             source="sms")
 
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.ddtype)
+                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15), ddtype=self.ddtype)
+                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15), ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
-                                 range=IntegerConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 range=IntegerConstraint(min=15, max=120), ddtype=self.stock_type)
         question4 = SelectField(name="Color", question_code="COL", label="Color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype)
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="CLINIC", type='survey', fields=[question1, question2, question3])

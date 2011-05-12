@@ -62,7 +62,7 @@ def get_entities_by_type(dbm, entity_type):
     assert is_string(entity_type)
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
-    entities = [dbm.get(row['value']['_id'], Entity) for row in rows]
+    entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
 

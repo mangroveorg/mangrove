@@ -3,7 +3,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 import unittest
 from pytz import UTC
 from mangrove.datastore import views
-from mangrove.datastore.entity import Entity, get_all_entity_types, define_type
+from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 
@@ -446,3 +446,71 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds": 20})
         self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 20, "meds": 400})
         self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, "meds": 50})
+
+    def test_get_entities_by_value(self):
+        med_type = DataDictType(self.manager,
+                                name='Medicines',
+                                slug='meds',
+                                primitive_type='number',
+                                description='Number of medications',
+                                tags=['med'])
+        med_type.save()
+        doctor_type = DataDictType(self.manager,
+                                   name='Doctor',
+                                   slug='doc',
+                                   primitive_type='string',
+                                   description='Name of doctor',
+                                   tags=['doctor', 'med'])
+        doctor_type.save()
+        facility_type = DataDictType(self.manager,
+                                     name='Facility',
+                                     slug='facility',
+                                     primitive_type='string',
+                                     description='Name of facility')
+        facility_type.save()
+
+        jan = datetime.datetime(2011, 01, 01, tzinfo=UTC)
+        feb = datetime.datetime(2011, 02, 01, tzinfo=UTC)
+        march = datetime.datetime(2011, 03, 01, tzinfo=UTC)
+        april = datetime.datetime(2011, 04, 01, tzinfo=UTC)
+        may = datetime.datetime(2011, 05, 03, tzinfo=UTC)
+
+        e = Entity(self.manager, entity_type='foo')
+        e.save()
+        data_record = [('meds', 20, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type)]
+        e.add_data(data_record, event_time=feb)
+
+        f = Entity(self.manager, entity_type='bar')
+        f.save()
+        data_record = [('meds', 10, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type)]
+        f.add_data(data_record, event_time=jan)
+        data_record = [('foo', 20, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type)]
+        f.add_data(data_record, event_time=march)
+        data_record = [('bar', 30, med_type),
+                       ('doc', "aroj", doctor_type),
+                       ('facility', 'clinic', facility_type)]
+        f.add_data(data_record, event_time=april)
+
+        # no label, no as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 20)]
+        self.assertTrue(e.id in entity_ids)
+        self.assertTrue(f.id not in entity_ids)
+        # with label, no as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 20, label='foo')]
+        self.assertTrue(e.id not in entity_ids)
+        self.assertTrue(f.id in entity_ids)
+        # no label, with as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 10, as_of=feb)]
+        self.assertTrue(e.id not in entity_ids)
+        self.assertTrue(f.id in entity_ids)
+        # with label, with as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 30, label='bar', as_of=may)]
+        self.assertTrue(e.id not in entity_ids)
+        self.assertTrue(f.id in entity_ids)
+        # TODO: more tests for different types?

@@ -80,6 +80,18 @@ def get_entities_by_type(dbm, entity_type):
     return entities
 
 
+def get_entities_by_value(dbm, dd_type, value, label=None, as_of=None):
+    assert isinstance(dbm, DatabaseManager)
+    assert isinstance(dd_type, DataDictType)
+    assert label is None or is_string(label)
+    assert as_of is None or isinstance(as_of, datetime)
+    # do we need to assert value? i think not since it could be None/null/etc.
+    if label is None: label = dd_type.slug
+    rows = dbm.load_all_rows_in_view('mangrove_views/by_label_type_value', key=[label, dd_type.slug, value])
+    entities = [get(dbm, row['value']) for row in rows]
+    return [e for e in entities if e.values({label: 'latest'}, asof=as_of) == {label: value}]
+
+
 def entities_for_attributes(attrs):
     '''
     retrieve entities with datarecords with the given

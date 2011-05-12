@@ -12,7 +12,7 @@ from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
-from mangrove.transport.smsplayer.smsplayer import SMSPlayer
+from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.utils.types import is_string
 
 
@@ -71,7 +71,6 @@ class SubmissionHandler(object):
         submission_id = None
         try:
             errors = []
-            reporters = reporter.find_reporter(self.dbm, request.source)
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
             submission_id = self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
@@ -79,6 +78,7 @@ class SubmissionHandler(object):
                                                                 status=False, error_message="")).id
             form = form_model.get_form_model_by_code(self.dbm, form_code)
             if form.type == 'survey':
+                reporters = reporter.find_reporter(self.dbm, request.source)
                 form_submission = FormSubmission(form, values)
                 if form_submission.is_valid():
                     e = entity.get_by_short_code(self.dbm, form_submission.entity_id)
@@ -96,7 +96,8 @@ class SubmissionHandler(object):
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location, aggregation_paths=form.aggregation_paths, id=entity_id)
                     e.save()
                     self.update_submission_log(submission_id, True, errors=[])
-                    return Response(reporters, True, errors, submission_id, entity_id)
+#                   TODO: Get rid of the reporters from this
+                    return Response([{'first_name': 'User'}], True, errors, submission_id, entity_id)
                 else:
                     errors.extend(form_submission.errors)
                     self.update_submission_log(submission_id, False, errors)
@@ -110,6 +111,8 @@ class SubmissionHandler(object):
     def get_player_for_transport(self, request):
         if request.transport == "sms":
             return SMSPlayer()
+        elif request.transport == 'web':
+            return WebPlayer()
         else:
             raise UnknownTransportException(("No handler defined for transport %s") % request.transport)
 

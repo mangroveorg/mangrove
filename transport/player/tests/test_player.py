@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from unittest.case import TestCase
-from mangrove.transport.smsplayer.smsplayer import SMSPlayer
+from mangrove.transport.player.player import SMSPlayer, WebPlayer
 
 
 class TestSMSPlayer(TestCase):
@@ -44,3 +44,12 @@ class TestSMSPlayer(TestCase):
         form_code, values = smsplayer.parse("")
         self.assertEqual({}, values)
         self.assertEqual('', form_code)
+
+
+    def test_should_return_form_code_and_message_as_dict(self):
+        player = WebPlayer()
+        message = {'form_code':'X1', 'q1':'a1', 'q2':'a2'}
+        parsed_data = player.parse(message)
+        self.assertEquals(parsed_data[0], 'X1')
+        self.assertEquals(parsed_data[1], {'q1':'a1', 'q2':'a2'})
+

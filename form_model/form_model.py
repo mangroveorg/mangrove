@@ -191,7 +191,7 @@ class RegistrationFormModel(FormModel):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, form_code=None, fields=None, entity_type=None,
-                 language="eng", _document=None):
+                 language="eng"):
         FormModel.__init__(self, dbm, name=name, label=None, form_code=form_code, fields=fields, entity_type=entity_type, type='registration',
                  language=language)
 

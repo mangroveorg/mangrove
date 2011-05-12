@@ -198,7 +198,7 @@ class RegistrationFormModel(FormModel):
     def validate_existence_of_only_one_entity_type_field(self):
         """Validate only 1 entity type question is there
         """
-        ets = [f for f in self.form_fields if isinstance(f, TextField) and f.question_code.lower() == 'et']
+        ets = [f for f in self.form_fields if isinstance(f, TextField) and f.question_code.lower() == 't']
         if len(ets) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Type Question already exists")
 

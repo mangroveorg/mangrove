@@ -3,7 +3,7 @@ import urllib
 import json
 from mangrove.utils.types import is_string, is_number
 
-GEOREGISTRY_API_BASE_URL = 'http://ni-api.georegistry.org/api/1.0'
+GEOREGISTRY_API_BASE_URL = 'http://ng.georegistry.org/api/1.0'
 GEOREGISTRY_API_DEFAULT_LIMIT = 50
 GEOREGISTRY_NUM_HTTP_ATTEMPS = 5
 

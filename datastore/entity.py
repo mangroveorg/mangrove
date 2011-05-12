@@ -62,7 +62,7 @@ def get_entities_by_type(dbm, entity_type):
     assert is_string(entity_type)
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
-    entities = [dbm.get(row['value']['_id'], Entity) for row in rows]
+    entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
 
@@ -227,6 +227,14 @@ class Entity(DataObject):
     def location_string(self):
         p = self.location_path
         return ('' if p is None else '.'.join(p))
+
+    @property
+    def geometry(self):
+        return self._doc.geometry
+
+    @property
+    def centroid(self):
+        return self._doc.centroid
 
     def set_aggregation_path(self, name, path):
         assert self._doc is not None

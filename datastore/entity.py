@@ -326,21 +326,15 @@ class Entity(DataObject):
         the second level is the data dict type slug, and the third
         contains the value.
         """
-        # todo: get this working with new document structure and tests.
-        # this is what I used with the new document structure
-        # result = {}
-        # for row in self._get_rows():
-        #     result[row["value"]["event_time"]] = row["value"]["data"]
-        # return result
         result = defaultdict(dict)
         for row in self._get_rows():
             event_time = row['value'][u'event_time']
-            data_keys = row['value']['data'].keys()
-            assert len(data_keys) == 1
-            label = data_keys[0]
-            value = row['value']['data'][label][u'value']
-            data_type = row['value']['data'][label]['type']
-            result[event_time][data_type['slug']] = value
+            for key, d in row['value']['data'].items():
+                value = d[u'value']
+                type_slug = d['type']['slug']
+                if type_slug in result[event_time]:
+                    raise Exception("Slug already used for this time")
+                result[event_time][type_slug] = value
         return result
 
     def data_types(self, tags=None):

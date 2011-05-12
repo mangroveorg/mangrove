@@ -62,7 +62,7 @@ def get_entities_by_type(dbm, entity_type):
     assert is_string(entity_type)
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
-    entities = [dbm.get(row['value']['_id'], Entity) for row in rows]
+    entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
 
@@ -318,6 +318,12 @@ class Entity(DataObject):
         the second level is the data dict type slug, and the third
         contains the data type, value, and label of the data record.
         """
+        # todo: get this working with new document structure and tests.
+        # this is what I used with the new document structure
+        # result = {}
+        # for row in self._get_rows():
+        #     result[row["value"]["event_time"]] = row["value"]["data"]
+        # return result
         result = defaultdict(dict)
         for row in self._get_rows():
             event_time = row['value'][u'event_time']

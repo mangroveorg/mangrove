@@ -70,10 +70,13 @@ def get_entities(dbm, uuids):
 
 
 def get_entities_by_type(dbm, entity_type):
+    # TODO: change this?  for now it assumes _type is non-heirarchical
     assert isinstance(dbm, DatabaseManager)
     assert is_string(entity_type)
+
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
     entities = [get(dbm, row['value']['_id']) for row in rows]
+
     return entities
 
 

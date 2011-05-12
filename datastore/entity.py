@@ -316,7 +316,7 @@ class Entity(DataObject):
         """
         Return a dict where the first level of keys is the event time,
         the second level is the data dict type slug, and the third
-        contains the data type, value, and label of the data record.
+        contains the value.
         """
         # todo: get this working with new document structure and tests.
         # this is what I used with the new document structure

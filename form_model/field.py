@@ -119,7 +119,7 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, question_code, label, date_format, language=field_attributes.DEFAULT_LANGUAGE, ddtype=None):
+    def __init__(self, name, question_code, label, date_format, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
                        label=label, language=language, ddtype=ddtype)
 
@@ -141,7 +141,7 @@ class TextField(Field):
     LENGTH = "length"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, question_code, label, ddtype = None, length=None, defaultValue=None,
+    def __init__(self, name, question_code, label, ddtype, length=None, defaultValue=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, question_code=question_code,
                        label=label, language=language, ddtype=ddtype)
@@ -166,9 +166,8 @@ class TextField(Field):
 
 class SelectField(Field):
     OPTIONS = "options"
-
-    def __init__(self, name, question_code, label, options, language=field_attributes.DEFAULT_LANGUAGE,
-                 single_select_flag=True, ddtype = None):
+    def __init__(self, name, question_code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
+                 single_select_flag=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.SINGLE_SELECT_FLAG = single_select_flag

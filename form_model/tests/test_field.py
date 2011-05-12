@@ -256,9 +256,9 @@ class TestQuestion(unittest.TestCase):
 
     def test_successful_text_length_validation(self):
         question = TextField(name="Name", question_code="Q2", label="What is your Name",
-                             language="eng", length=TextConstraint(min=4, max=15))
+                             language="eng", length=TextConstraint(min=4, max=15), ddtype=self.ddtype)
         question1 = TextField(name="Name", question_code="Q2", label="What is your Name",
-                              language="eng")
+                              language="eng", ddtype=self.ddtype)
         valid_value = question.validate("valid")
         self.assertEqual(valid_value, "valid")
         valid_value = question1.validate("valid")
@@ -267,7 +267,7 @@ class TestQuestion(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_max_value(self):
         with self.assertRaises(AnswerTooLongException) as e:
             question = TextField(name="Age", question_code="Q2", label="What is your age",
-                                 language="eng", length=TextConstraint(min=1, max=4))
+                                 language="eng", length=TextConstraint(min=1, max=4), ddtype=self.ddtype)
             valid_value = question.validate("long_answer")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
@@ -275,7 +275,7 @@ class TestQuestion(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
             question = TextField(name="Age", question_code="Q2", label="What is your age",
-                                 language="eng", length=TextConstraint(min=15, max=120))
+                                 language="eng", length=TextConstraint(min=15, max=120), ddtype=self.ddtype)
             valid_value = question.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
@@ -299,43 +299,21 @@ class TestQuestion(unittest.TestCase):
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%Y")
+                                 language="eng", date_format="%m.%Y", ddtype=self.ddtype)
             valid_value = question.validate("13.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in %m.%Y format")
 
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%d.%m.%Y")
+                                 language="eng", date_format="%d.%m.%Y", ddtype=self.ddtype)
             valid_value = question.validate("33.12.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in %d.%m.%Y format")
 
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%d.%Y")
-            valid_value = question.validate("13.01.2010")
-            self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")
-
-    def test_should_accept_(self):
-        with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%Y")
-            valid_value = question.validate("13.2010")
-            self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in %m.%Y format")
-
-        with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%d.%m.%Y")
-            valid_value = question.validate("33.12.2010")
-            self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in %d.%m.%Y format")
-
-        with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%d.%Y")
+                                 language="eng", date_format="%m.%d.%Y", ddtype=self.ddtype)
             valid_value = question.validate("13.01.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")
@@ -343,7 +321,7 @@ class TestQuestion(unittest.TestCase):
     def test_should_validate_single_answer(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:
             clinic_question = SelectField(name="clinic type", question_code="Q1", label="What type of clinic is it?",
-                                           language="eng", options=["village", "urban"], single_select_flag=True)
+                                           language="eng", options=["village", "urban"], single_select_flag=True, ddtype=self.ddtype)
             clinic_question.validate("vu")
         self.assertEqual(e.exception.message, "Answer vu for question Q1 contains more than one value.")
 

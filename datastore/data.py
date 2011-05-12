@@ -8,6 +8,8 @@ class reduce_functions(object):
     LATEST = "latest"
     COUNT = "count"  # Returns number of records containing the field
 
+    SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT]
+
 
 def _get_result_key(aggregate_on, row):
     if aggregate_on.get('type'):

@@ -110,4 +110,6 @@ class NoDocumentError(MangroveException):
 
 
 class ObjectNotFound(MangroveException):
-    pass
+    def __init__(self, id):
+        MangroveException.__init__(self,
+                                   ("Entity %s doesnt exist.") % (id,))

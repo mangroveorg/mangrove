@@ -136,7 +136,7 @@ class TestShouldSaveSMSSubmission(TestCase):
                         question1, question2, question3, question4, question5, question6])
         qid = form_model.save()
 
-        text = "REG +T dog"
+        text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         print response.success

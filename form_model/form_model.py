@@ -207,11 +207,15 @@ class RegistrationFormModel(FormModel):
         self.validate_uniqueness_of_field_codes()
         return True
 
-#    TODO: Implement these
     @property
     def location(self):
-        return None
+        location_string = self.answers.get('location')
+        if location_string is None:
+            return location_string
+        location_list = location_string.split(",")
+        return [x for x in location_list if x != "" and x != " "]
 
+#    TODO: Implement these
     @property
     def aggregation_paths(self):
         return None

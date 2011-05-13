@@ -272,7 +272,6 @@ class Entity(DataObject):
         # records for an Entity that may never be saved? Should docs just be saved on init?
         if event_time is None:
             event_time = utcnow()
-
         data_list = []
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):

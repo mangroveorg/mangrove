@@ -4,6 +4,7 @@
 Common entry point for all submissions to Mangrove via multiple channels.
 Will log the submission and forward to the appropriate channel handler.
 """
+from mangrove.datastore.datadict import DataDictType
 
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
@@ -95,6 +96,15 @@ class SubmissionHandler(object):
                     entity_id = entity.generate_entity_id(self.dbm, entity_type)
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location, aggregation_paths=form.aggregation_paths, id=entity_id)
                     e.save()
+                    description_type = DataDictType(self.dbm, name='description Type', slug='description',
+                                                    primitive_type='string')
+                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
+                    description = form.answers.get("description")
+                    mobile_number = form.answers.get("mobile_number")
+                    data = [("description", description, description_type),
+                            ("mobile_number", mobile_number, mobile_number_type),
+                            ]
+                    e.add_data(data =data, submission_id=submission_id)
                     self.update_submission_log(submission_id, True, errors=[])
 #                   TODO: Get rid of the reporters from this
                     return Response([{'first_name': 'User'}], True, errors, submission_id, entity_id)

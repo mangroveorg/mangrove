@@ -5,6 +5,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager, get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
+from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTransportException
 
@@ -50,6 +51,9 @@ class TestSubmissions(TestCase):
         request = Request(transport="sms", message="hello world", source="1234", destination="5678")
         # dbm = Mock(spec=DatabaseManager)
         dbm = self.dbm
+        form = Mock()
+        form.type = "survey"
+        self.form_model_module.get_form_model_by_code.return_value = form
         self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
         s = SubmissionHandler(dbm)
         response = s.accept(request)

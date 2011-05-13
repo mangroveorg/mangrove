@@ -120,7 +120,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         description_type.save()
         mobile_number_type.save()
         question1 = TextField(name="entity_type", question_code="T", label="What is associated entity type?",
-                          language="eng", entity_question_flag=False)
+                          language="eng", entity_question_flag=False, ddtype=self.entity_id_type)
         question2 = TextField(name="name", question_code="N", label="What is the entity's name?",
                               defaultValue="some default value", language="eng",ddtype=self.name_type)
         question3 = TextField(name="short_name", question_code="S", label="What is the entity's short name?",

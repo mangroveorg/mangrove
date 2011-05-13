@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from xml.etree.ElementTree import parse
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException
 
 from validate import is_integer, is_string
@@ -58,9 +59,14 @@ class ChoiceConstraint(object):
         if self.single_select_constraint and  len(answer_string) > 1:
             raise AnswerHasTooManyValuesException(question_code=self.question_code, answer=answer)
         for character in answer_string:
-            index_represented = ord(character) - ord('a')
+            try:
+                index_represented = int(character) - 1
+            except ValueError:
+                index_represented = ord(character) - ord('a')
             if index_represented > len(self.list_of_valid_choices) - 1:
                 raise AnswerNotInListException(question_code=self.question_code, answer=character)
             else:
-                choices.append(self.list_of_valid_choices[index_represented])
+                choice_selected = self.list_of_valid_choices[index_represented]
+                if (choice_selected not in choices):
+                    choices.append(choice_selected)
         return choices

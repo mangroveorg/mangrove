@@ -120,3 +120,13 @@ class TestChoiceValidations(unittest.TestCase):
         with self.assertRaises(AnswerHasNoValuesException) as e:
             constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
             v_data = constraint.validate("")
+
+    def test_should_validate_alpha_numeric_values_sent_for_choice(self):
+        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
+        v_data = constraint.validate("1b")
+        self.assertEquals(v_data, ["village", "urban"])
+
+    def test_should_ignore_duplicate_values_sent_for_choice(self):
+        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
+        v_data = constraint.validate("1b1")
+        self.assertEquals(v_data, ["village", "urban"])

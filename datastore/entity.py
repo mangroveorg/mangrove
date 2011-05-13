@@ -53,7 +53,7 @@ def get_by_short_code(dbm, short_code):
 def generate_entity_id(database_manager, entity_type):
     list = map(chr, range(97, 121)) + range(0, 9)
     random.shuffle(list)
-    return (entity_type + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
+    return (entity_type[:3] + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
 
 
 def get_entities_by_type(dbm, entity_type):

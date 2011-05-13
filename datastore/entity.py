@@ -326,15 +326,13 @@ class Entity(DataObject):
         the second level is the data dict type slug, and the third
         contains the value.
         """
+        rows = self._dbm.load_all_rows_in_view(
+            'mangrove_views/id_time_slug_value', key=self.id
+            )
         result = defaultdict(dict)
-        for row in self._get_rows():
-            event_time = row['value'][u'event_time']
-            for key, d in row['value']['data'].items():
-                value = d[u'value']
-                type_slug = d['type']['slug']
-                if type_slug in result[event_time]:
-                    raise Exception("Slug already used for this time")
-                result[event_time][type_slug] = value
+        for row in rows:
+            row = row['value']
+            result[row['event_time']][row['slug']] = row['value']
         return result
 
     def data_types(self, tags=None):

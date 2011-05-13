@@ -497,20 +497,20 @@ class TestQueryApi(unittest.TestCase):
                        ('facility', 'clinic', facility_type)]
         f.add_data(data_record, event_time=april)
 
-        # no label, no as_of
+        # datadict_type, no as_of
         entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 20)]
         self.assertTrue(e.id in entity_ids)
         self.assertTrue(f.id not in entity_ids)
-        # with label, no as_of
-        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 20, label='foo')]
+        # label, no as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, 'foo', 20)]
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
-        # no label, with as_of
+        # datadict_type, with as_of
         entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 10, as_of=feb)]
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
-        # with label, with as_of
-        entity_ids = [x.id for x in get_entities_by_value(self.manager, med_type, 30, label='bar', as_of=may)]
+        # label, with as_of
+        entity_ids = [x.id for x in get_entities_by_value(self.manager, 'bar', 30, as_of=may)]
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?

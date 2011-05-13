@@ -191,14 +191,14 @@ class RegistrationFormModel(FormModel):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, form_code=None, fields=None, entity_type=None,
-                 language="eng", _document=None):
+                 language="eng"):
         FormModel.__init__(self, dbm, name=name, label=None, form_code=form_code, fields=fields, entity_type=entity_type, type='registration',
                  language=language)
 
     def validate_existence_of_only_one_entity_type_field(self):
         """Validate only 1 entity type question is there
         """
-        ets = [f for f in self.form_fields if isinstance(f, TextField) and f.question_code.lower() == 'et']
+        ets = [f for f in self.form_fields if isinstance(f, TextField) and f.question_code.lower() == 't']
         if len(ets) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Type Question already exists")
 
@@ -207,11 +207,15 @@ class RegistrationFormModel(FormModel):
         self.validate_uniqueness_of_field_codes()
         return True
 
-#    TODO: Implement these
     @property
     def location(self):
-        return None
+        location_string = self.answers.get('location')
+        if location_string is None:
+            return location_string
+        location_list = location_string.split(",")
+        return [x for x in location_list if x != "" and x != " "]
 
+#    TODO: Implement these
     @property
     def aggregation_paths(self):
         return None

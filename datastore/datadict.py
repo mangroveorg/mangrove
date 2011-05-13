@@ -20,6 +20,12 @@ def get_datadict_types(dbm, ids):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get_many(ids, DataDictType)
 
+def create_ddtype(dbm, name, slug, primitive_type, description=None, constraints = None):
+    ddtype = DataDictType(dbm=dbm, name=name, slug=slug, primitive_type=primitive_type, description=description,
+                          constraints=constraints, tags=[])
+    ddtype.save()
+    return ddtype
+
 
 class DataDictType(DataObject):
     '''DataDict is an abstraction that stores named data types and constraints .'''

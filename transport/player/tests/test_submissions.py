@@ -5,7 +5,9 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager, get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.transport.submissions import Request, SubmissionHandler
+from mangrove.form_model.form_model import FormModel
+from mangrove.transport.player.player import SMSPlayer, WebPlayer
+from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTransportException
 
 
 class TestSubmissions(TestCase):
@@ -49,6 +51,9 @@ class TestSubmissions(TestCase):
         request = Request(transport="sms", message="hello world", source="1234", destination="5678")
         # dbm = Mock(spec=DatabaseManager)
         dbm = self.dbm
+        form = Mock()
+        form.type = "survey"
+        self.form_model_module.get_form_model_by_code.return_value = form
         self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
         s = SubmissionHandler(dbm)
         response = s.accept(request)
@@ -65,6 +70,28 @@ class TestSubmissions(TestCase):
         self.assertEqual(1, len(response.errors))
         self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.errors[0])
         self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.message)
+
+
+    def test_should_return_SMSPlayer_for_sms_transport(self):
+        request = Request(transport='sms', message='blah', source='rep1', destination='HNI')
+        mock_dbm = Mock(spec=DatabaseManager)
+        sub_handler = SubmissionHandler(dbm=mock_dbm)
+        self.assertIsInstance(sub_handler.get_player_for_transport(request), SMSPlayer)
+
+    def test_should_return_WebPlayer_for_web_transport(self):
+        request = Request(transport='web', message='blah', source='rep1', destination='HNI')
+        mock_dbm = Mock(spec=DatabaseManager)
+        sub_handler = SubmissionHandler(dbm=mock_dbm)
+        self.assertIsInstance(sub_handler.get_player_for_transport(request), WebPlayer)
+    
+    def test_should_return_UnknownTransportException_for_unknown_transport(self):
+        with self.assertRaises(UnknownTransportException) :
+            request = Request(transport='garbage', message='blah', source='rep1', destination='HNI')
+            mock_dbm = Mock(spec=DatabaseManager)
+            sub_handler = SubmissionHandler(dbm=mock_dbm)
+            sub_handler.get_player_for_transport(request)
+
+
 
 #TODO : need to rewrite this test when Submission handler is broken in two part
 #    def test_should_return_success_message_with_reporter_name(self):

@@ -7,7 +7,7 @@ from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import IntegerConstraint, TextConstraint
 
@@ -282,3 +282,32 @@ class TestFormModel(unittest.TestCase):
     def test_should_set_name(self):
         self.form_model.name = 'test_name'
         self.assertEquals(self.form_model.name, 'test_name')
+
+    def test_should_set_entity_type_in_doc(self):
+        self.form_model.entity_type = ["WaterPoint", "Dam"]
+        self.assertEqual(self.form_model.entity_type, ["WaterPoint", "Dam"])
+
+    def test_should_return_location_from_answers(self):
+        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
+                   "entity_question_flag": False, "type": "text", "ddtype": self.string_ddtype.to_json(),
+                   "question_code": "L", }]
+        registration_form = RegistrationFormModel(self.dbm, fields=fields)
+        registration_form.answers = {"location" : "India,MH"}
+        self.assertEqual(registration_form.location, ['India', 'MH'])
+
+    def test_should_return_location_as_None_if_answers_not_present(self):
+        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
+                   "entity_question_flag": False, "type": "text", "ddtype": self.string_ddtype.to_json(),
+                   "question_code": "L", }]
+        registration_form = RegistrationFormModel(self.dbm, fields=fields)
+        self.assertEqual(registration_form.location, None)
+
+    def test_should_not_return_blank_in_location(self):
+        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
+                   "entity_question_flag": False, "type": "text", "ddtype": self.string_ddtype.to_json(),
+                   "question_code": "L", }]
+        registration_form = RegistrationFormModel(self.dbm, fields=fields)
+        registration_form.answers = {"location" : "India,MH, "}
+
+        self.assertEqual(registration_form.location, ['India', 'MH'])
+

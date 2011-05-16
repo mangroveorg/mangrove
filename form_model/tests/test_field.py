@@ -77,8 +77,8 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
             "name": "color",
-            "options": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
-                        {"text": {"eng": "green"}}],
+            "choices": [{"text": {"eng" : "RED"}, "val": 1}, {"text": {"eng" : "YELLOW"}, "val": 2},
+                        {"text": {'eng' : 'green'}}],
             "question_code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
@@ -92,8 +92,8 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
             "name": "color",
-            "options": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
-                        {"text": {"eng": "green"}}],
+            "choices": [{"text": {"eng" : "RED"}, "val": 1}, {"text": {"eng" : "YELLOW"}, "val": 2},
+                        {"text": {'eng' : 'green'}}],
             "question_code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select",
@@ -198,7 +198,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "qc3",
             "type": "select",
             "ddtype":  self.DDTYPE_JSON,
-            "options": [{"text":{"eng":"option 1"}, "value": "c1"},
+            "choices": [{"text":{"eng":"option 1"}, "value": "c1"},
                         {"text":{"eng":"option 1"}, "value": "c2"}],
             "entity_question_flag": False}
         created_question = field.create_question_from(question_json, self.dbm)
@@ -214,7 +214,7 @@ class TestQuestion(unittest.TestCase):
             "question_code": "qc3",
             "type": "select1",
             "ddtype":  self.DDTYPE_JSON,
-            "options": [{"text": {"eng": "hello", "fr": "bonjour"}, "value": "c1"},
+            "choices": [{"text": {"eng": "hello", "fr": "bonjour"}, "value": "c1"},
                         {"text": {"eng": "world"}, "value": "c2"}],
             "entity_question_flag": False}
 
@@ -358,7 +358,6 @@ class TestQuestion(unittest.TestCase):
             question1 = TextField(name="Name", question_code="Q1", label="What is your Name",
                                  language="eng", length=TextConstraint(min=4, max=15), ddtype = None)
 
-
     def test_should_convert_ddtype_to_json(self):
         expected_json = {
             "defaultValue": "",
@@ -376,6 +375,19 @@ class TestQuestion(unittest.TestCase):
         self.assertEqual(actual_json, expected_json)
         self.assertEqual(self.ddtype,question.ddtype)
 
-
-
+    def test_should_return_default_language_text(self):
+        expected_json = {
+            "choices": [{"text": "Lake", "val" : None}, {"text": "Dam", "val" : None}],
+            "name": "type",
+            "ddtype": self.DDTYPE_JSON,
+            "type": "select1",
+            "question_code": "T",
+            "label": {"eng": "What type?"}}
+        question = SelectField(name = "type", question_code = "T", label = "What type?",
+                               options = [{"text": {"fr":"lake", "eng": "Lake"}}, {"text": {"fr":"dam",  "eng": "Dam"}}],
+                               ddtype = self.ddtype,
+                               language="eng",
+                               single_select_flag=True)
+        actual_json = question._to_json_view()
+        self.assertEqual(actual_json, expected_json)
 

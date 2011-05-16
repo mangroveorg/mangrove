@@ -198,7 +198,7 @@ class TestFormModel(unittest.TestCase):
                         "question_code": "AGE"
                     },
                     {
-                        "options": [
+                        "choices": [
                                     {
                                     "text": {"eng": "Pune"}
                                 },

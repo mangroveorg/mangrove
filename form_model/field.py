@@ -11,7 +11,7 @@ from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLong
 
 def field_to_json(object):
     assert isinstance(object, Field)
-    return object._to_json()
+    return object._to_json_view()
 
 
 class field_attributes(object):
@@ -34,6 +34,7 @@ class Field(object):
     TYPE = "type"
     QUESTION_CODE = "question_code"
     DDTYPE = "ddtype"
+    LANGUAGE = "language"
 
     _DEFAULT_VALUES = {
         NAME: "",
@@ -81,10 +82,17 @@ class Field(object):
     def ddtype(self):
         return self._dict.get(self.DDTYPE)
 
+    @property
+    def language(self):
+        return self._dict.get(self.LANGUAGE)
+
     def _to_json(self):
         dict = self._dict.copy()
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
+
+    def _to_json_view(self):
+        return self._to_json()
 
     def add_or_edit_label(self, label, language=None):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
@@ -165,7 +173,7 @@ class TextField(Field):
 
 
 class SelectField(Field):
-    OPTIONS = "options"
+    OPTIONS = "choices"
     def __init__(self, name, question_code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0
@@ -195,6 +203,17 @@ class SelectField(Field):
     def options(self):
         return self._dict.get(self.OPTIONS)
 
+    def _to_json_view(self):
+        dict = self._dict.copy()
+        option_list = []
+        for option in self.options:
+            option_text = option["text"][field_attributes.DEFAULT_LANGUAGE]
+            option_list.append({"text":option_text, "val":option.get("val")})
+        print option_list
+        dict['choices'] = option_list
+        dict['ddtype'] = dict['ddtype'].to_json()
+        return dict
+
 
 def create_question_from(dictionary, dbm):
     """
@@ -222,7 +241,7 @@ def create_question_from(dictionary, dbm):
         date_format = dictionary.get("date_format")
         return DateField(name=name, question_code=code, label=label, date_format=date_format,ddtype = ddtype)
     elif type == "select" or type == "select1":
-        choices = dictionary.get("options")
+        choices = dictionary.get("choices")
         single_select = True if type == "select1" else False
         return SelectField(name=name, question_code=code, label=label, options=choices,
                            single_select_flag=single_select,ddtype = ddtype)

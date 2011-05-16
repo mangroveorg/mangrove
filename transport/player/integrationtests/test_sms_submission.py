@@ -10,7 +10,7 @@ from mangrove.datastore.entity import define_type, Entity
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
-from mangrove.form_model.validation import IntegerConstraint, TextConstraint
+from mangrove.form_model.validation import NumericConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
 
@@ -49,7 +49,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng", length=TextConstraint(4, 15), ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
-                                 range=IntegerConstraint(min=15, max=120), ddtype=self.stock_type)
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
         question4 = SelectField(name="Color", question_code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 

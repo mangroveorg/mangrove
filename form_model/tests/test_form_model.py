@@ -9,7 +9,7 @@ from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.validation import IntegerConstraint, TextConstraint
+from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
 
 class TestFormModel(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestFormModel(unittest.TestCase):
         question2 = TextField(name="question1_Name", question_code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng", length=TextConstraint(5, 10),ddtype=self.string_ddtype)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=IntegerConstraint(min=15, max=120),ddtype=self.int_ddtype)
+                                 range=NumericConstraint(min=15, max=120),ddtype=self.int_ddtype)
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)],ddtype=self.string_ddtype)
 
@@ -224,7 +224,7 @@ class TestFormModel(unittest.TestCase):
                             label={"eng": "Entity being reported on"}, entity_question_flag=True,
                             length=TextConstraint(min=1, max=10), ddtype=self.string_ddtype)
         ageQ = IntegerField(name="What is your age?", question_code="AGE", label={"eng": ""},
-                            range=IntegerConstraint(min=0, max=10), ddtype=self.int_ddtype)
+                            range=NumericConstraint(min=0, max=10), ddtype=self.int_ddtype)
         placeQ = SelectField(name="Where do you live?", question_code="PLC", label={"eng": ""},
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.string_ddtype)

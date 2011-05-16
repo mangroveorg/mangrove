@@ -2,7 +2,7 @@
 from xml.etree.ElementTree import parse
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException
 
-from validate import is_integer, is_string
+from validate import is_integer, is_string, is_float
 
 
 class ConstraintAttributes(object):
@@ -10,7 +10,7 @@ class ConstraintAttributes(object):
     MIN = "min"
 
 
-class IntegerConstraint(object):
+class NumericConstraint(object):
     def __init__(self, min=None, max=None):
         self.min = min
         self.max = max
@@ -24,7 +24,7 @@ class IntegerConstraint(object):
         return dict
 
     def validate(self, value):
-        return is_integer(value, min=self.min, max=self.max)
+        return is_float(value, min=self.min, max=self.max)
 
 
 class TextConstraint(object):

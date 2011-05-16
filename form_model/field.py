@@ -5,7 +5,7 @@ from datetime import datetime
 from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
-from mangrove.form_model.validation import IntegerConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
+from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -98,7 +98,7 @@ class IntegerField(Field):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, question_code=question_code,
                        label=label, language=language, ddtype = ddtype)
 
-        self.constraint = range if range is not None else IntegerConstraint()
+        self.constraint = range if range is not None else NumericConstraint()
         self._dict[self.RANGE] = self.constraint._to_json()
 
     def validate(self, value):
@@ -215,7 +215,7 @@ def create_question_from(dictionary, dbm):
                          length=length,ddtype = ddtype)
     elif type == "integer":
         range_dict = dictionary.get("range")
-        range = IntegerConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+        range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                                   max=range_dict.get(ConstraintAttributes.MAX))
         return IntegerField(name=name, question_code=code, label=label, range=range,ddtype = ddtype)
     elif type == "date":

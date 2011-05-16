@@ -300,24 +300,24 @@ class TestQuestion(unittest.TestCase):
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%Y", ddtype=self.ddtype)
+                                 language="eng", date_format="mm.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("13.2010")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in %m.%Y format")
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.2010, expected date in mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%d.%m.%Y", ddtype=self.ddtype)
+                                 language="eng", date_format="dd.mm.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("33.12.2010")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in %d.%m.%Y format")
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 33.12.2010, expected date in dd.mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             question = DateField(name="Age", question_code="Q2", label="What is your birth date",
-                                 language="eng", date_format="%m.%d.%Y", ddtype=self.ddtype)
+                                 language="eng", date_format="mm.dd.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("13.01.2010")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in %m.%d.%Y format")
+        self.assertEqual(e.exception.message, "Answer to question Q2 is invalid: 13.01.2010, expected date in mm.dd.yyyy format")
 
     def test_should_validate_single_answer(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:

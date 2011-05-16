@@ -14,7 +14,7 @@ class TestDataDict(unittest.TestCase):
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
 
-    def test_should_create_and_load_datadict(self):
+    def test_should_create_load_edit_datadict(self):
         FIRST_NAME_SLUG = 'first_name'
 
         name_type = create_ddtype(self.dbm, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
@@ -27,6 +27,14 @@ class TestDataDict(unittest.TestCase):
 
         self.assertEqual(name_type.id,ddtype.id)
         self.assertEqual(name_type.slug,ddtype.slug)
+
+        ddtype.description = "new desc"
+        ddtype.save()
+
+        saved = get_datadict_type_by_slug(self.dbm,slug=FIRST_NAME_SLUG)
+        self.assertEqual("new desc",saved.description)
+
+
 
     def test_should_create_datadict_only_if_slug_unique(self):
         FIRST_NAME_SLUG = 'first_name'

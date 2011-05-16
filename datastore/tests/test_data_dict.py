@@ -88,8 +88,9 @@ class TestDataDict(unittest.TestCase):
         with patch("mangrove.datastore.datadict.get_datadict_type_by_slug") as get_datadict_type_by_slug_mocked:
             get_datadict_type_by_slug_mocked.return_value = Mock(spec=DataDictType)
             try:
-                ddtype = create_ddtype(self.dbm, name=NAME,
+                ddtype = DataDictType(self.dbm, name=NAME,
                                           slug=SLUG, primitive_type=TYPE,constraints={}, description=DESC)
+                ddtype.save()
                 self.fail("Expected DataObjectAlreadyExists exception")
             except DataObjectAlreadyExists:
                 pass

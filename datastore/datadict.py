@@ -2,18 +2,29 @@
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import DataDictDocument
+from mangrove.errors.MangroveException import DataObjectAlreadyExists, DataObjectNotFound
 from mangrove.utils.types import is_string
 
 # TODO: Temporary stuff, till datadict is fully implemented in datawinners : Aroj
-
-
 def get_default_datadict_type():
     return DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
-
 
 def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(id, DataDictType)
+
+def get_datadict_type_by_slug(dbm,slug):
+    assert isinstance(dbm, DatabaseManager)
+    assert is_string(slug)
+
+    rows = dbm.load_all_rows_in_view('mangrove_views/by_datadict_type', key=slug,include_docs='true')
+    if not len(rows):
+        raise DataObjectNotFound("DataDictType","slug",slug)
+    assert len(rows) == 1, "More than one item found for slug %s" % (slug,)
+
+    #  include_docs = 'true' returns the doc as a dict, which has to be wrapped into a DataDictDocument, and then into a DataDictType
+    _doc = DataDictDocument.wrap(rows[0].doc)
+    return DataDictType.new_from_db(dbm,_doc)
 
 
 def get_datadict_types(dbm, ids):
@@ -21,6 +32,14 @@ def get_datadict_types(dbm, ids):
     return dbm.get_many(ids, DataDictType)
 
 def create_ddtype(dbm, name, slug, primitive_type, description=None, constraints = None):
+
+    #    Check if slug already exists
+    try:
+        get_datadict_type_by_slug(dbm,slug)
+        raise DataObjectAlreadyExists("DataDictType","slug",slug)
+    except DataObjectNotFound:
+        pass
+    
     ddtype = DataDictType(dbm=dbm, name=name, slug=slug, primitive_type=primitive_type, description=description,
                           constraints=constraints, tags=[])
     ddtype.save()

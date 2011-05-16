@@ -4,7 +4,7 @@ import unittest
 from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.database import _delete_db_and_remove_db_manager as trash_db
 from mangrove.datastore.aggregationtree import AggregationTree as ATree
-from mangrove.errors.MangroveException import ObjectNotFound
+from mangrove.errors.MangroveException import  DataObjectNotFound
 
 
 class TestAggregationTrees(unittest.TestCase):
@@ -86,7 +86,7 @@ class TestAggregationTrees(unittest.TestCase):
     def test_get_by_name(self):
         name = 'test_tree_name'
         # shouldn't be there
-        with self.assertRaises(ObjectNotFound):
+        with self.assertRaises(DataObjectNotFound):
             self.dbm.get(name, ATree)
 
         # now try with get_or_create

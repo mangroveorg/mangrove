@@ -10,6 +10,17 @@ class MangroveException(Exception):
         return self.message
 
 
+class DataObjectAlreadyExists(MangroveException):
+    def __init__(self, dataobject_name,param,value):
+        error_message = "%s with %s = %s already exists." % (dataobject_name,param,value)
+        MangroveException.__init__(self, error_message)
+
+class DataObjectNotFound(MangroveException):
+    def __init__(self, dataobject_name,param,value):
+        error_message = "%s with %s = %s not found." % (dataobject_name,param,value)
+        MangroveException.__init__(self, error_message)
+
+
 class EntityTypeAlreadyDefined(MangroveException):
     pass
 
@@ -108,8 +119,3 @@ class IncorrectDate(MangroveException):
 class NoDocumentError(MangroveException):
     pass
 
-
-class ObjectNotFound(MangroveException):
-    def __init__(self, id):
-        MangroveException.__init__(self,
-                                   ("Entity %s doesnt exist.") % (id,))

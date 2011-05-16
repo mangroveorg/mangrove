@@ -3,7 +3,8 @@ from datetime import datetime
 import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType, create_ddtype
+from mangrove.datastore.datadict import DataDictType, create_ddtype, get_datadict_type_by_slug
+from mangrove.errors.MangroveException import DataObjectNotFound, DataObjectAlreadyExists
 
 
 class TestDataDict(unittest.TestCase):
@@ -64,11 +65,49 @@ class TestDataDict(unittest.TestCase):
         SLUG = 'default'
         TYPE = 'string'
         DESC = 'description'
-        ddtype = create_ddtype(self.dbm, name=NAME,
-                                      slug=SLUG, primitive_type=TYPE,constraints={}, description=DESC)
 
-        self.assertEqual(NAME,ddtype.name)
-        self.assertEqual(DESC,ddtype.description)
-        self.assertEqual(SLUG,ddtype.slug)
-        self.assertEqual(TYPE,ddtype.primitive_type)
-        self.dbm.save.assert_called_once_with(ddtype)
+        with patch("mangrove.datastore.datadict.get_datadict_type_by_slug") as get_datadict_type_by_slug_mocked:
+            get_datadict_type_by_slug_mocked.side_effect = DataObjectNotFound("DataDictType","slug",SLUG)
+            ddtype = create_ddtype(self.dbm, name=NAME,
+                                          slug=SLUG, primitive_type=TYPE,constraints={}, description=DESC)
+
+            get_datadict_type_by_slug_mocked.assert_called_once_with(self.dbm,SLUG)
+            self.dbm.save.assert_called_once_with(ddtype)
+
+            self.assertEqual(NAME,ddtype.name)
+            self.assertEqual(DESC,ddtype.description)
+            self.assertEqual(SLUG,ddtype.slug)
+            self.assertEqual(TYPE,ddtype.primitive_type)
+
+    def test_should_not_create_ddtype_if_slug_exists(self):
+        NAME = 'Default Datadict Type'
+        SLUG = 'default'
+        TYPE = 'string'
+        DESC = 'description'
+
+        with patch("mangrove.datastore.datadict.get_datadict_type_by_slug") as get_datadict_type_by_slug_mocked:
+            get_datadict_type_by_slug_mocked.return_value = Mock(spec=DataDictType)
+            try:
+                ddtype = create_ddtype(self.dbm, name=NAME,
+                                          slug=SLUG, primitive_type=TYPE,constraints={}, description=DESC)
+                self.fail("Expected DataObjectAlreadyExists exception")
+            except DataObjectAlreadyExists:
+                pass
+            self.assertEqual(0,self.dbm.save.call_count)
+
+
+    def test_should_throw_exception_if_slug_not_found(self):
+        self.dbm.load_all_rows_in_view.return_value = []
+        self.assertRaises(DataObjectNotFound,get_datadict_type_by_slug,self.dbm,"SLUG")
+
+    def test_should_return_ddtype_by_slug(self):
+        expected = DataDictType(self.dbm,"name","slug",primitive_type="string")
+        db_row = Mock()
+        db_row.doc = expected._doc._data
+        self.dbm.load_all_rows_in_view.return_value = [ db_row ]
+
+        actual = get_datadict_type_by_slug(self.dbm, "slug")
+
+        self.assertIsInstance(actual,DataDictType)
+        self.assertEqual(expected.id, actual.id)
+

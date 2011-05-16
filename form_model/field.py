@@ -10,8 +10,11 @@ from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLong
 
 
 def field_to_json(object):
-    assert isinstance(object, Field)
-    return object._to_json_view()
+    #    assert isinstance(object, Field)
+    if isinstance(object,datetime):
+        return object.isoformat()
+    else:
+        return object._to_json_view()
 
 
 class field_attributes(object):

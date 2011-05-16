@@ -7,7 +7,12 @@ from mangrove.utils.types import is_string
 
 # TODO: Temporary stuff, till datadict is fully implemented in datawinners : Aroj
 def get_default_datadict_type():
-    return DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
+    try:
+        return get_datadict_type_by_slug(DatabaseManager(),"default")
+    except DataObjectNotFound:
+        d = DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
+        d.save()
+        return d
 
 def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)

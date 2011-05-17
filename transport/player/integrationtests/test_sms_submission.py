@@ -24,7 +24,7 @@ class TestShouldSaveSMSSubmission(TestCase):
 
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
-                                            primitive_type='string')
+                                                  primitive_type='string')
         self.entity_id_type = DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
         self.stock_type = DataDictType(self.dbm, name='Stock Type', slug='stock', primitive_type='integer')
         self.color_type = DataDictType(self.dbm, name='Color Type', slug='color', primitive_type='string')
@@ -47,7 +47,8 @@ class TestShouldSaveSMSSubmission(TestCase):
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15), ddtype=self.name_type)
+                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
+                              ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
         question4 = SelectField(name="Color", question_code="COL", label="Color",
@@ -69,8 +70,8 @@ class TestShouldSaveSMSSubmission(TestCase):
 
         self.assertTrue(response.success)
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-#        self.assertEquals(data["Name"], "CLINIC-MADA")
-#        self.assertEquals(data["Arv stock"], 50)
+        #        self.assertEquals(data["Name"], "CLINIC-MADA")
+        #        self.assertEquals(data["Arv stock"], 50)
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
@@ -96,14 +97,18 @@ class TestShouldSaveSMSSubmission(TestCase):
 
     def test_get_submissions_for_form(self):
         submission_id1 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                destination=12345, form_code="abc", values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                                status=False, error_message="")).id
+                                                                       destination=12345, form_code="abc",
+                                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
+                                                                       status=False, error_message="")).id
         submission_id2 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                destination=12345, form_code="abc", values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                                status=False, error_message="")).id
+                                                                       destination=12345, form_code="abc",
+                                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
+                                                                       status=False, error_message="")).id
         submission_id3 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                destination=12345, form_code="def", values={'defQ1': 'defans12', 'defQ2': 'defans22'},
-                                                                status=False, error_message="")).id
+                                                                       destination=12345, form_code="def",
+                                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'}
+                                                                       ,
+                                                                       status=False, error_message="")).id
 
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
@@ -121,26 +126,27 @@ class TestShouldSaveSMSSubmission(TestCase):
     def test_should_create_new_entity_on_registration(self):
         location_type = DataDictType(self.dbm, name='Location Type', slug='location', primitive_type='string')
         description_type = DataDictType(self.dbm, name='description Type', slug='description', primitive_type='string')
-        mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
+        mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
+                                          primitive_type='string')
 
         location_type.save()
         description_type.save()
         mobile_number_type.save()
         question1 = TextField(name="entity_type", question_code="T", label="What is associated entity type?",
-                          language="eng", entity_question_flag=False, ddtype=self.entity_id_type)
+                              language="eng", entity_question_flag=False, ddtype=self.entity_id_type)
         question2 = TextField(name="name", question_code="N", label="What is the entity's name?",
-                              defaultValue="some default value", language="eng",ddtype=self.name_type)
+                              defaultValue="some default value", language="eng", ddtype=self.name_type)
         question3 = TextField(name="short_name", question_code="S", label="What is the entity's short name?",
-                              defaultValue="some default value", language="eng",ddtype=self.name_type)
+                              defaultValue="some default value", language="eng", ddtype=self.name_type)
         question4 = TextField(name="location", question_code="L", label="What is the entity's location?",
-                              defaultValue="some default value", language="eng",ddtype=location_type)
+                              defaultValue="some default value", language="eng", ddtype=location_type)
         question5 = TextField(name="description", question_code="D", label="Describe the entity",
-                              defaultValue="some default value", language="eng",ddtype=description_type)
+                              defaultValue="some default value", language="eng", ddtype=description_type)
         question6 = TextField(name="mobile_number", question_code="M", label="What is the associated mobile number?",
-                              defaultValue="some default value", language="eng",ddtype=mobile_number_type)
+                              defaultValue="some default value", language="eng", ddtype=mobile_number_type)
 
         form_model = RegistrationFormModel(self.dbm, name="REG", form_code="REG", fields=[
-                        question1, question2, question3, question4, question5, question6])
+                question1, question2, question3, question4, question5, question6])
         qid = form_model.save()
 
         text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 123456"

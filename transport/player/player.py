@@ -31,6 +31,3 @@ class WebPlayer(object):
     def parse(self, message):
         form_code = message.pop('form_code')
         return form_code, message
-
-
-

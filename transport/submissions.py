@@ -74,9 +74,10 @@ class SubmissionHandler(object):
             errors = []
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
-            submission_id = self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
-                                                                destination=request.destination, form_code=form_code, values=values,
-                                                                status=False, error_message="")).id
+            submission_id = self.dbm._save_document(
+                SubmissionLogDocument(channel=request.transport, source=request.source,
+                                      destination=request.destination, form_code=form_code, values=values,
+                                      status=False, error_message="")).id
             form = form_model.get_form_model_by_code(self.dbm, form_code)
             if form.type == 'survey':
                 reporters = reporter.find_reporter(self.dbm, request.source)
@@ -94,19 +95,21 @@ class SubmissionHandler(object):
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
                     entity_id = entity.generate_entity_id(self.dbm, entity_type)
-                    e = Entity(self.dbm, entity_type=entity_type, location=form.location, aggregation_paths=form.aggregation_paths, id=entity_id)
+                    e = Entity(self.dbm, entity_type=entity_type, location=form.location,
+                               aggregation_paths=form.aggregation_paths, id=entity_id)
                     e.save()
                     description_type = DataDictType(self.dbm, name='description Type', slug='description',
                                                     primitive_type='string')
-                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
+                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
+                                                      primitive_type='string')
                     description = form.answers.get("description")
                     mobile_number = form.answers.get("mobile_number")
                     data = [("description", description, description_type),
                             ("mobile_number", mobile_number, mobile_number_type),
                             ]
-                    e.add_data(data =data, submission_id=submission_id)
+                    e.add_data(data=data, submission_id=submission_id)
                     self.update_submission_log(submission_id, True, errors=[])
-#                   TODO: Get rid of the reporters from this
+                    #                   TODO: Get rid of the reporters from this
                     return Response([{'first_name': 'User'}], True, errors, submission_id, entity_id)
                 else:
                     errors.extend(form_submission.errors)
@@ -130,7 +133,9 @@ class SubmissionHandler(object):
 def get_submissions_made_for_questionnaire(dbm, form_code, page_number=0, page_size=20, count_only=False):
     assert is_string(form_code)
     if count_only:
-        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', startkey=[form_code], endkey=[form_code, {}], group=True, group_level=1, reduce=True)
+        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', startkey=[form_code], endkey=[form_code, {}],
+                                         group=True, group_level=1, reduce=True)
     else:
-        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', reduce=False, startkey=[form_code], endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
+        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', reduce=False, startkey=[form_code],
+                                         endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
     return [each.value for each in rows]

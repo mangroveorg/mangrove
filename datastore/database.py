@@ -217,7 +217,7 @@ class DatabaseManager(object):
             doc = self._load_document(id, object_class.__document_class__)
 
             if doc is None and not get_or_create:
-                raise DataObjectNotFound(dataobject_name=object_class.__name__,param="id",value=id)
+                raise DataObjectNotFound(dataobject_name=object_class.__name__, param="id", value=id)
             elif doc is None:
                 # didn't find it, but get_or_create is True, so
                 # lets make it

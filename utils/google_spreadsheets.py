@@ -122,6 +122,8 @@ class GoogleSpreadsheetsClient(object):
         return self._spreadsheets[title]
 
 # TODO: move these out of Google-specific file
+
+
 def get_string(key, row):
     """Reads a string from a row."""
     if key in row and row[key]:

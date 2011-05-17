@@ -11,13 +11,14 @@ class MangroveException(Exception):
 
 
 class DataObjectAlreadyExists(MangroveException):
-    def __init__(self, dataobject_name,param,value):
-        error_message = "%s with %s = %s already exists." % (dataobject_name,param,value)
+    def __init__(self, dataobject_name, param, value):
+        error_message = "%s with %s = %s already exists." % (dataobject_name, param, value)
         MangroveException.__init__(self, error_message)
 
+
 class DataObjectNotFound(MangroveException):
-    def __init__(self, dataobject_name,param,value):
-        error_message = "%s with %s = %s not found." % (dataobject_name,param,value)
+    def __init__(self, dataobject_name, param, value):
+        error_message = "%s with %s = %s not found." % (dataobject_name, param, value)
         MangroveException.__init__(self, error_message)
 
 
@@ -90,19 +91,22 @@ class AnswerTooShortException(MangroveException):
 class AnswerHasTooManyValuesException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s contains more than one value.") % (answer, question_code,))
+                                   ("Answer %s for question %s contains more than one value.") % (
+                                   answer, question_code,))
 
 
 class AnswerHasNoValuesException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s contains more than one value.") % (answer, question_code,))
+                                   ("Answer %s for question %s contains more than one value.") % (
+                                   answer, question_code,))
 
 
 class AnswerNotInListException(MangroveException):
     def __init__(self, question_code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s is not present in the allowed options.") % (answer, question_code,))
+                                   ("Answer %s for question %s is not present in the allowed options.") % (
+                                   answer, question_code,))
 
 
 class AnswerWrongType(MangroveException):

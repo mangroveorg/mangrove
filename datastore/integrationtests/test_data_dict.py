@@ -19,20 +19,20 @@ class TestDataDict(unittest.TestCase):
 
         name_type = create_ddtype(self.dbm, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
 
-        saved_type = get_datadict_type(self.dbm,name_type.id)
-        self.assertEqual(name_type.id,saved_type.id)
-        self.assertEqual(name_type.slug,saved_type.slug)
+        saved_type = get_datadict_type(self.dbm, name_type.id)
+        self.assertEqual(name_type.id, saved_type.id)
+        self.assertEqual(name_type.slug, saved_type.slug)
 
-        ddtype = get_datadict_type_by_slug(self.dbm,slug=FIRST_NAME_SLUG)
+        ddtype = get_datadict_type_by_slug(self.dbm, slug=FIRST_NAME_SLUG)
 
-        self.assertEqual(name_type.id,ddtype.id)
-        self.assertEqual(name_type.slug,ddtype.slug)
+        self.assertEqual(name_type.id, ddtype.id)
+        self.assertEqual(name_type.slug, ddtype.slug)
 
         ddtype.description = "new desc"
         ddtype.save()
 
-        saved = get_datadict_type_by_slug(self.dbm,slug=FIRST_NAME_SLUG)
-        self.assertEqual("new desc",saved.description)
+        saved = get_datadict_type_by_slug(self.dbm, slug=FIRST_NAME_SLUG)
+        self.assertEqual("new desc", saved.description)
 
 
 
@@ -46,4 +46,4 @@ class TestDataDict(unittest.TestCase):
 
     def test_should_raise_exception_if_datadict_not_found(self):
         with self.assertRaises(DataObjectNotFound):
-            ddtype = get_datadict_type(self.dbm,"ID not in db")
+            ddtype = get_datadict_type(self.dbm, "ID not in db")

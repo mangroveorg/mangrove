@@ -64,7 +64,8 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertEqual(saved.type_path, ["health_facility"])
 
     def test_should_add_passed_in_hierarchy_path_on_create(self):
-        e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"], aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
+        e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"],
+                   aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
                                       "levels": ["Lead Consultant", "Sr. Consultant", "Consultant"]})
         uuid = e.save()
         saved = get(self.dbm, uuid)
@@ -126,10 +127,14 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_add_data_record_to_entity(self):
         clinic_entity, reporter = self._create_clinic_and_reporter()
-        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number', description='Number of medications')
-        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string', description='Name of doctor')
-        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string', description='Name of facility')
-        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime', description='Date of opening')
+        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',
+                                description='Number of medications')
+        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string',
+                                   description='Name of doctor')
+        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string',
+                                     description='Name of facility')
+        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime',
+                                   description='Date of opening')
         med_type.save()
         doctor_type.save()
         facility_type.save()
@@ -214,12 +219,12 @@ class TestDataStoreApi(unittest.TestCase):
     def test_should_disallow_redefining_the_same_entity_with_different_case(self):
         define_type(self.dbm, ["HealthFacility", "Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
-            define_type(self.dbm, ["healTHfaciLIty","clinic"])
+            define_type(self.dbm, ["healTHfaciLIty", "clinic"])
 
     def test_should_define_single_entity(self):
         define_type(self.dbm, ["Clinic"])
         entity_types = get_all_entity_types(self.dbm)
-        self.assertListEqual(entity_types,[["Clinic"]])
+        self.assertListEqual(entity_types, [["Clinic"]])
 
     def test_should_return_data_types(self):
         med_type = DataDictType(self.dbm,

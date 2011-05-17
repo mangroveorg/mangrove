@@ -48,8 +48,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_return_form_code_and_message_as_dict(self):
         player = WebPlayer()
-        message = {'form_code':'X1', 'q1':'a1', 'q2':'a2'}
+        message = {'form_code': 'X1', 'q1': 'a1', 'q2': 'a2'}
         parsed_data = player.parse(message)
         self.assertEquals(parsed_data[0], 'X1')
-        self.assertEquals(parsed_data[1], {'q1':'a1', 'q2':'a2'})
-
+        self.assertEquals(parsed_data[1], {'q1': 'a1', 'q2': 'a2'})

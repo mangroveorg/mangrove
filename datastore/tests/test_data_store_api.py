@@ -206,10 +206,15 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
 
-    def test_should_throw_back_proper_error_message(self):
+    def test_should_disallow_redefining_the_same_entity(self):
         define_type(self.dbm, ["HealthFacility", "Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
             define_type(self.dbm, ["HealthFacility", "Clinic"])
+
+    def test_should_disallow_redefining_the_same_entity_with_different_case(self):
+        define_type(self.dbm, ["HealthFacility", "Clinic"])
+        with self.assertRaises(EntityTypeAlreadyDefined):
+            define_type(self.dbm, ["healTHfaciLIty","clinic"])
 
     def test_should_define_single_entity(self):
         define_type(self.dbm, ["Clinic"])

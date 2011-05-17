@@ -32,10 +32,12 @@ def define_type(dbm, entity_type):
 
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
-
-    if type_path in get_all_entity_types(dbm):
-        raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
-
+    all_entities = get_all_entity_types(dbm)
+    if all_entities:
+        all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
+        type_path_lower_case = [each.lower() for each in type_path]
+        if type_path_lower_case in all_entities_lower_case:
+            raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
     # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)

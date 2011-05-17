@@ -5,7 +5,7 @@
 
 from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, Entity
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
@@ -22,7 +22,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         define_type(self.dbm, self.entity_type)
         self.reporter_type = define_type(self.dbm, ["Reporter"])
 
-        self.name_type = DataDictType(self.dbm, name='Name', slug='Name', primitive_type='string')
+        self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
                                             primitive_type='string')
         self.entity_id_type =  DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
@@ -69,8 +69,15 @@ class TestShouldSaveSMSSubmission(TestCase):
 
         self.assertTrue(response.success)
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-        self.assertEquals(data["Name"], "CLINIC-MADA")
-        self.assertEquals(data["Arv stock"], 50)
+#        self.assertEquals(data["Name"], "CLINIC-MADA")
+#        self.assertEquals(data["Arv stock"], 50)
+
+        data_record_id = response.datarecord_id
+        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
+        self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
+        self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
+        self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
+
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = "CLINIC +ID %s +ARV 150 " % self.entity.id

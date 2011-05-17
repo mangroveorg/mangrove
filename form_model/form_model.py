@@ -18,7 +18,6 @@ def get_form_model_by_code(dbm, code):
 
     # todo: this is screwy! This two types of forms, reg and otherwise, look like a bad idea...
     doc = dbm._load_document(rows[0]['value']['_id'], FormModelDocument)
-    form = None
     if doc.type == 'registration':
         form = RegistrationFormModel.new_from_db(dbm, doc)
     else:
@@ -80,6 +79,12 @@ class FormModel(DataObject):
         self.validate_existence_of_only_one_entity_field()
         self.validate_uniqueness_of_field_codes()
         return True
+
+    def get_field_by_name(self, name):
+        for field in self.form_fields:
+            if field.name == name:
+                return field
+        return None
 
     def validate_uniqueness_of_field_codes(self):
         """ Validate all question codes are unique
@@ -224,7 +229,7 @@ class RegistrationFormModel(FormModel):
 class FormSubmission(object):
 
     def _to_three_tuple(self):
-        return [(field, value, datadict.get_default_datadict_type())  for (field, value) in self.cleaned_data.items()]
+        return [(field, value, self.form_model.get_field_by_name(field).ddtype)  for (field, value) in self.cleaned_data.items()]
 
     def __init__(self, form_model, form_answers):
         self.form_model = form_model

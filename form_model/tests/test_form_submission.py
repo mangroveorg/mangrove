@@ -10,26 +10,28 @@ from mangrove.form_model.validation import NumericConstraint
 
 class TestFormSubmission(TestCase):
     def setUp(self):
-        self.datadict_patcher = patch("mangrove.form_model.form_model.datadict")
-        self.datadict_module = self.datadict_patcher.start()
+
         self.dbm = Mock(spec=DatabaseManager)
-        self.ddtype = Mock(spec=DataDictType)
+        self.ddtype1 = Mock(spec=DataDictType)
+        self.ddtype2 = Mock(spec=DataDictType)
+        self.ddtype3 = Mock(spec=DataDictType)
+        self.ddtype4 = Mock(spec=DataDictType)
 
         question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.ddtype)
+                              language="eng", entity_question_flag=True, ddtype=self.ddtype1)
         question2 = TextField(name="Name", question_code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", ddtype=self.ddtype)
+                              defaultValue="some default value", language="eng", ddtype=self.ddtype2)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype3)
         question4 = SelectField(name="Color", question_code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype)
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype4)
 
         self.form_model = FormModel(self.dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                     form_code="AIDS", type='survey',
                                     fields=[question1, question2, question3, question4])
 
     def tearDown(self):
-        self.datadict_patcher.stop()
+        pass
 
     def test_should_create_form_submission_with_entity_id(self):
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED"}
@@ -40,8 +42,6 @@ class TestFormSubmission(TestCase):
         self.assertEqual(form_submission.entity_id, "1")
 
     def test_should_create_form_submission_with_answer_values(self):
-        ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
-        self.datadict_module.get_default_datadict_type.return_value = ddtype
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a"}
 
         form_submission = FormSubmission(self.form_model, answers)
@@ -49,22 +49,20 @@ class TestFormSubmission(TestCase):
 
         self.assertEqual(form_submission.cleaned_data, {"Name": "My Name", "Father's age": 40, "Color": ["RED"]})
         self.assertEqual(3, len(form_submission.values))
-        self.assertIn(("Name", "My Name", ddtype), form_submission.values)
-        self.assertIn(("Father's age", 40, ddtype), form_submission.values)
-        self.assertIn(("Color", ["RED"], ddtype), form_submission.values)
+        self.assertIn(("Name", "My Name", self.ddtype2), form_submission.values)
+        self.assertIn(("Father's age", 40, self.ddtype3), form_submission.values)
+        self.assertIn(("Color", ["RED"], self.ddtype4), form_submission.values)
 
     def test_should_ignore_non_form_fields(self):
-        ddtype = DataDictType(self.dbm, name='Default Datadict Type', slug='default', primitive_type='string')
-        self.datadict_module.get_default_datadict_type.return_value = ddtype
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a", "EXTRA_FIELD": "X", "EXTRA_FIELD2": "Y"}
 
         f = FormSubmission(self.form_model, answers)
         f.is_valid()
         self.assertEqual({"Name": "My Name", "Father's age": 40, "Color": ["RED"]}, f.cleaned_data)
         self.assertEqual(3, len(f.values))
-        self.assertIn(("Name", "My Name", ddtype), f.values)
-        self.assertIn(("Father's age", 40, ddtype), f.values)
-        self.assertIn(("Color", ["RED"], ddtype), f.values)
+        self.assertIn(("Name", "My Name", self.ddtype2), f.values)
+        self.assertIn(("Father's age", 40, self.ddtype3), f.values)
+        self.assertIn(("Color", ["RED"], self.ddtype4), f.values)
 
     def test_should_ignore_fields_without_values(self):
         answers = {"ID": "1", "Q1": "My Name", "Q2": "", "Q3": "   "}
@@ -86,9 +84,9 @@ class TestFormSubmission(TestCase):
     #        Write is_valid scenarios
     def test_give_error_for_wrong_integer_answers(self):
         dbm = Mock(spec=DatabaseManager)
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype)
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype2)
         question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype3)
 
         form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
                                form_code="AIDS", type='survey',

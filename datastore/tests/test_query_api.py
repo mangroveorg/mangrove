@@ -34,7 +34,6 @@ class TestQueryApi(unittest.TestCase):
 
     def test_can_create_views(self):
         self.assertTrue(views.exists_view("by_values", self.manager))
-        self.assertTrue(views.exists_view("entity_types", self.manager))
 
     def test_should_get_current_values_for_entity(self):
         dd_types = self.create_datadict_types()

@@ -52,7 +52,7 @@ def get_by_short_code(dbm, short_code):
     return dbm.get(short_code, Entity)
 
 
-def generate_entity_id(database_manager, entity_type):
+def generate_entity_id(entity_type):
     list = map(chr, range(97, 121)) + range(0, 9)
     random.shuffle(list)
     return (entity_type[:3] + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
@@ -340,7 +340,6 @@ class Entity(DataObject):
     def data_types(self, tags=None):
         '''Returns a list of each type of data that is stored on this entity.'''
         assert tags is None or isinstance(tags, list) or is_string(tags)
-        result = []
         if tags is None or is_empty(tags):
             rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
             result = get_datadict_types(self._dbm, [row['value'] for row in rows])

@@ -6,7 +6,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate
-from mangrove.form_model.field import DateField, IntegerField
+from mangrove.form_model.field import DateField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -358,7 +358,7 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_throw_exception_if_field_created_with_none_datadict_type(self):
         with self.assertRaises(AssertionError):
-            question1 = TextField(name="Name", question_code="Q1", label="What is your Name",
+            TextField(name="Name", question_code="Q1", label="What is your Name",
                                   language="eng", length=TextConstraint(min=4, max=15), ddtype=None)
 
     def test_should_convert_ddtype_to_json(self):

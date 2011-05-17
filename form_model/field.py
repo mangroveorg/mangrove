@@ -2,7 +2,6 @@
 
 from _collections import defaultdict
 from datetime import datetime
-from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
 from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint

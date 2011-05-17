@@ -107,26 +107,26 @@ class TestChoiceValidations(unittest.TestCase):
         self.assertEquals(v_data, ["village", "urban"])
 
     def test_should_not_validate_wrong_choice(self):
-        with self.assertRaises(AnswerNotInListException) as e:
+        with self.assertRaises(AnswerNotInListException):
             constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
-            v_data = constraint.validate("c")
+            constraint.validate("c")
 
     def test_should_not_validate_multiple_values_sent_for_single_choice(self):
-        with self.assertRaises(AnswerHasTooManyValuesException) as e:
+        with self.assertRaises(AnswerHasTooManyValuesException):
             constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
-            v_data = constraint.validate("ab")
+            constraint.validate("ab")
 
     def test_should_not_validate_no_values_sent_for_choice(self):
-        with self.assertRaises(AnswerHasNoValuesException) as e:
+        with self.assertRaises(AnswerHasNoValuesException):
             constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
-            v_data = constraint.validate("")
+            constraint.validate("")
 
     def test_should_not_validate_numeric_values_sent_for_choice(self):
-        with self.assertRaises(AnswerNotInListException) as e:
+        with self.assertRaises(AnswerNotInListException):
             constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
-            v_data = constraint.validate("1b")
+            constraint.validate("1b")
 
     def test_should_invalidate_special_characters_sent_for_choice(self):
-        with self.assertRaises(AnswerNotInListException) as e:
+        with self.assertRaises(AnswerNotInListException):
             constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
-            valid_data = constraint.validate("a!b")
+            constraint.validate("a!b")

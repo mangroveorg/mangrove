@@ -43,8 +43,10 @@ def _get_key_strategy(aggregate_on):
         return _aggregate_by_entity
 
 
-def fetch(dbm, entity_type, aggregates={}, aggregate_on={}, starttime=None, endtime=None, filter=None):
+def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
     result = {}
+    aggregates = {} if aggregates is None else aggregates
+    aggregate_on = {} if aggregate_on is None else aggregate_on
     if aggregate_on:
         values = _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on)
     else:

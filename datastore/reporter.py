@@ -10,6 +10,6 @@ def find_reporter(dbm, from_number):
                                         "first_name": data.reduce_functions.LATEST}
                           )
     from_reporter_list = [reporters[x] for x in reporters if reporters[x]["telephone_number"] == from_number]
-    if len(from_reporter_list) == 0:
+    if not len(from_reporter_list):
         raise NumberNotRegisteredException(from_number)
     return from_reporter_list

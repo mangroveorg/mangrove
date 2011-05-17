@@ -1,7 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from datetime import datetime
-
 from documents import SubmissionLogDocument
 from entity import Entity
 from mangrove.utils.types import is_sequence
@@ -30,14 +28,3 @@ def submit(manager, entity_id, data, source):
     data_record_id = e.add_data(data=data, event_time=utcnow(), submission_id=submission_log.id)
     return data_record_id, submission_log.id
 
-
-def get_datarecords_submitted_for_questionnaire(manager, questionnaire_code, page_size=20, page_number=1, date_from=None, date_to=None):
-    """
-        fetch data records submitted for an entity
-    """
-    assert questionnaire_code is not None
-    assert isinstance(page_size, int)
-    assert isinstance(page_number, int)
-    assert date_from is None or  isinstance(date_from, datetime)
-    assert date_to is None or  isinstance(date_to, datetime)
-    pass

@@ -5,7 +5,6 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager, get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTransportException
 

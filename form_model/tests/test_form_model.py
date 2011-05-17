@@ -242,7 +242,6 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
-        expected_cleaned_data = {"entity_question": "1", "Father's age": 16}
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_error_for_invalid_integer_value(self):

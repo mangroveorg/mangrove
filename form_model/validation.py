@@ -1,8 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from xml.etree.ElementTree import parse
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException
 
-from validate import is_integer, is_string, is_float
+from validate import is_string, is_float
 
 
 class ConstraintAttributes(object):

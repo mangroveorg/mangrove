@@ -94,7 +94,7 @@ class SubmissionHandler(object):
                 form_submission = RegistrationFormSubmission(form, values)
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
-                    entity_id = entity.generate_entity_id(self.dbm, entity_type)
+                    entity_id = entity.generate_entity_id(entity_type)
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location,
                                aggregation_paths=form.aggregation_paths, id=entity_id)
                     e.save()

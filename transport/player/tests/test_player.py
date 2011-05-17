@@ -5,18 +5,6 @@ from mangrove.transport.player.player import SMSPlayer, WebPlayer
 
 
 class TestSMSPlayer(TestCase):
-    def test_should_create_sms_player(self):
-        s = SMSPlayer()
-
-    def test_should_parse_form_code_from_sms(self):
-        pass
-
-    def test_should_parse_answer_dict_from_sms(self):
-        pass
-
-    def test_should_parse_answer_list_from_sms(self):
-        pass
-
     def test_should_parse_incomplete_messages_with_no_answer_values(self):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +BC ")

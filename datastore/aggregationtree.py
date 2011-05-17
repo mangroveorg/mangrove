@@ -178,7 +178,6 @@ class AggregationTree(DataObject):
         def build_dicts(dicts, parent, node_dict):
             for n in node_dict:
                 # if we haven't seen it yet, build a dict for it
-                d = None
                 if n not in dicts:
                     d = dict(self.graph.node[n])
                     dicts[n] = d  # hang onto them until they are connected up so don't get garbage collected!

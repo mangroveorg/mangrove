@@ -13,7 +13,7 @@ def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
     rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code)
-    if len(rows) == 0:
+    if not len(rows):
         raise FormModelDoesNotExistsException(code)
 
     # todo: this is screwy! This two types of forms, reg and otherwise, look like a bad idea...

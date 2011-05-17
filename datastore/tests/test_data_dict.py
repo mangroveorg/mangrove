@@ -105,10 +105,9 @@ class TestDataDict(unittest.TestCase):
         expected = DataDictType(self.dbm,"name","slug",primitive_type="string")
         db_row = Mock()
         db_row.doc = expected._doc._data
-        self.dbm.load_all_rows_in_view.return_value = [ db_row ]
+        self.dbm.load_all_rows_in_view.return_value = [db_row]
 
         actual = get_datadict_type_by_slug(self.dbm, "slug")
 
         self.assertIsInstance(actual,DataDictType)
         self.assertEqual(expected.id, actual.id)
-

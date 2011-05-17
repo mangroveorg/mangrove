@@ -118,4 +118,3 @@ class IncorrectDate(MangroveException):
 
 class NoDocumentError(MangroveException):
     pass
-

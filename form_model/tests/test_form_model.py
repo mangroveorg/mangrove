@@ -19,8 +19,8 @@ class TestFormModel(unittest.TestCase):
         define_type(self.dbm, ["HealthFacility", "Clinic"])
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.name_type.save()
-        self.string_ddtype =  DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default', primitive_type='string')
-        self.int_ddtype =  DataDictType(self.dbm, name='Default Int Datadict Type', slug='int_default', primitive_type='integer')
+        self.string_ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default', primitive_type='string')
+        self.int_ddtype = DataDictType(self.dbm, name='Default Int Datadict Type', slug='int_default', primitive_type='integer')
 
         self.string_ddtype.save()
         self.int_ddtype.save()
@@ -310,4 +310,3 @@ class TestFormModel(unittest.TestCase):
         registration_form.answers = {"location" : "India,MH, "}
 
         self.assertEqual(registration_form.location, ['India', 'MH'])
-

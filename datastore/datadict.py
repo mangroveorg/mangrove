@@ -6,6 +6,8 @@ from mangrove.errors.MangroveException import DataObjectAlreadyExists, DataObjec
 from mangrove.utils.types import is_string
 
 # TODO: Temporary stuff, till datadict is fully implemented in datawinners : Aroj
+
+
 def get_default_datadict_type():
     try:
         return get_datadict_type_by_slug(DatabaseManager(),"default")
@@ -14,9 +16,11 @@ def get_default_datadict_type():
         d.save()
         return d
 
+
 def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(id, DataDictType)
+
 
 def get_datadict_type_by_slug(dbm,slug):
     assert isinstance(dbm, DatabaseManager)
@@ -36,7 +40,8 @@ def get_datadict_types(dbm, ids):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get_many(ids, DataDictType)
 
-def create_ddtype(dbm, name, slug, primitive_type, description=None, constraints = None):
+
+def create_ddtype(dbm, name, slug, primitive_type, description=None, constraints=None):
     ddtype = DataDictType(dbm=dbm, name=name, slug=slug, primitive_type=primitive_type, description=description,
                           constraints=constraints, tags=[])
     ddtype.save()
@@ -118,4 +123,3 @@ class DataDictType(DataObject):
     def create_from_json(cls, json,dbm):
         doc = DataDictDocument.wrap(json)
         return DataDictType.new_from_db(dbm,doc)
-

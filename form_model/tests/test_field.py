@@ -40,8 +40,7 @@ class TestQuestion(unittest.TestCase):
             "ddtype": self.DDTYPE_JSON,
         }
         question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
-                             defaultValue="some default value", length=TextConstraint(1, 20), language="eng",ddtype=self.ddtype )
-
+                             defaultValue="some default value", length=TextConstraint(1, 20), language="eng", ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -390,4 +389,3 @@ class TestQuestion(unittest.TestCase):
                                single_select_flag=True)
         actual_json = question._to_json_view()
         self.assertEqual(actual_json, expected_json)
-

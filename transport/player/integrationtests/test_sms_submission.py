@@ -25,9 +25,9 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
                                             primitive_type='string')
-        self.entity_id_type =  DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
-        self.stock_type =  DataDictType(self.dbm, name='Stock Type', slug='stock', primitive_type='integer')
-        self.color_type =  DataDictType(self.dbm, name='Color Type', slug='color', primitive_type='string')
+        self.entity_id_type = DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
+        self.stock_type = DataDictType(self.dbm, name='Stock Type', slug='stock', primitive_type='integer')
+        self.color_type = DataDictType(self.dbm, name='Color Type', slug='color', primitive_type='string')
 
         self.name_type.save()
         self.telephone_number_type.save()
@@ -119,9 +119,9 @@ class TestShouldSaveSMSSubmission(TestCase):
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
     def test_should_create_new_entity_on_registration(self):
-        location_type =  DataDictType(self.dbm, name='Location Type', slug='location', primitive_type='string')
-        description_type =  DataDictType(self.dbm, name='description Type', slug='description', primitive_type='string')
-        mobile_number_type =  DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
+        location_type = DataDictType(self.dbm, name='Location Type', slug='location', primitive_type='string')
+        description_type = DataDictType(self.dbm, name='description Type', slug='description', primitive_type='string')
+        mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
 
         location_type.save()
         description_type.save()

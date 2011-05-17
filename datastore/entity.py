@@ -73,7 +73,8 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     assert isinstance(dbm, DatabaseManager)
     assert isinstance(label, DataDictType) or is_string(label)
     assert as_of is None or isinstance(as_of, datetime)
-    if isinstance(label, DataDictType): label = label.slug
+    if isinstance(label, DataDictType):
+        label = label.slug
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_label_value', key=[label, value])
     entities = [dbm.get(row['value'], Entity) for row in rows]
@@ -365,7 +366,8 @@ class Entity(DataObject):
     def value(self, label):
         '''Returns the latest value for the given label.'''
         assert isinstance(label, DataDictType) or is_string(label)
-        if isinstance(label, DataDictType): label = label.slug
+        if isinstance(label, DataDictType):
+            label = label.slug
 
         return self.values({label: 'latest'})[label]
 

@@ -135,8 +135,9 @@ class DateField(Field):
                        label=label, language=language, ddtype=ddtype)
 
         self._dict[self.DATE_FORMAT] = date_format
+
     def validate(self, value):
-        DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y','mm.dd.yyyy': '%m.%d.%Y' }
+        DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y','mm.dd.yyyy': '%m.%d.%Y'}
         try:
             return datetime.strptime(value, DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
         except ValueError:
@@ -177,6 +178,7 @@ class TextField(Field):
 
 class SelectField(Field):
     OPTIONS = "choices"
+
     def __init__(self, name, question_code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0

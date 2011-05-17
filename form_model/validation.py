@@ -59,11 +59,8 @@ class ChoiceConstraint(object):
         if self.single_select_constraint and  len(answer_string) > 1:
             raise AnswerHasTooManyValuesException(question_code=self.question_code, answer=answer)
         for character in answer_string:
-            try:
-                index_represented = int(character) - 1
-            except ValueError:
-                index_represented = ord(character) - ord('a')
-            if index_represented > len(self.list_of_valid_choices) - 1:
+            index_represented = ord(character) - ord('a')
+            if index_represented > len(self.list_of_valid_choices) - 1 or index_represented < 0:
                 raise AnswerNotInListException(question_code=self.question_code, answer=character)
             else:
                 choice_selected = self.list_of_valid_choices[index_represented]

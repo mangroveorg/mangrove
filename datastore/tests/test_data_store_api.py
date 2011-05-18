@@ -305,3 +305,17 @@ class TestDataStoreApi(unittest.TestCase):
         id = generate_entity_short_code(manager, entity_type="Reporter", suggested_id="REP2")
         assert manager.load_all_rows_in_view.called
         self.assertEqual(id, "REP3")
+
+    def test_should_generate_short_id_and_return_if_suggested_id_is_blank(self):
+        manager = Mock(spec=DatabaseManager)
+        manager.load_all_rows_in_view = Mock(return_value=[{"key": "Reporter", "value":["REP0", "REP1", "REP2"]}])
+        id = generate_entity_short_code(manager, entity_type="Reporter", suggested_id="")
+        assert manager.load_all_rows_in_view.called
+        self.assertEqual(id, "REP3")
+
+    def test_should_generate_short_id_and_return_if_suggested_id_is_not_supplied(self):
+        manager = Mock(spec=DatabaseManager)
+        manager.load_all_rows_in_view = Mock(return_value=[{"key": "Reporter", "value":["REP0", "REP1", "REP2"]}])
+        id = generate_entity_short_code(manager, entity_type="Reporter")
+        assert manager.load_all_rows_in_view.called
+        self.assertEqual(id, "REP3")

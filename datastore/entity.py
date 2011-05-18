@@ -48,16 +48,15 @@ def _get_used_entity_ids(dbm, entity_type):
     return rows
 
 def get_by_short_code(dbm, short_code):
-    """
-        Delegating to get by uuid for now.
+    assert is_string(short_code)
+    rows = dbm.load_all_rows_in_view('mangrove_views/entity_by_short_code', key=short_code, include_docs=True)
+    _doc = EntityDocument.wrap(rows[0].doc)
+    return Entity.new_from_db(dbm = dbm, doc = _doc)
 
-    """
-    return dbm.get(short_code, Entity)
-
-def generate_entity_short_code(database_manager, entity_type, suggested_id):
+def generate_entity_short_code(database_manager, entity_type, suggested_id=None):
     used_ids = _get_used_entity_ids(database_manager, entity_type=entity_type)
     used_id_list = used_ids[0].get("value")
-    if suggested_id not in used_id_list:
+    if suggested_id is not None and suggested_id != "" and suggested_id not in used_id_list:
         return suggested_id
     else:
         used_id_list.sort()

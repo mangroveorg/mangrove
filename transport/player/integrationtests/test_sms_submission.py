@@ -2,11 +2,11 @@
 
 #  This is an integration test.
 # Send sms, parse and save.
+import unittest
 
-from unittest.case import TestCase
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
-from mangrove.datastore.entity import define_type, Entity
+from mangrove.datastore.entity import define_type, Entity, get_by_short_code
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
@@ -15,7 +15,7 @@ from mangrove.transport.submissions import SubmissionHandler, Request, get_submi
 from mangrove.datastore.datadict import DataDictType
 
 
-class TestShouldSaveSMSSubmission(TestCase):
+class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
         self.entity_type = ["HealthFacility", "Clinic"]
@@ -37,7 +37,7 @@ class TestShouldSaveSMSSubmission(TestCase):
 
         self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                           data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
-                                          source="sms")
+                                          source="sms", short_code= "CLI1")
 
         datarecord.register(self.dbm, entity_type=["Reporter"],
                             data=[("telephone_number", '1234', self.telephone_number_type),
@@ -63,7 +63,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.id
+        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -152,8 +152,7 @@ class TestShouldSaveSMSSubmission(TestCase):
         text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
-        print response.success
-        assert response.success
-        entity_id = response.datarecord_id
-        e = self.dbm.get(entity_id, Entity)
-        assert e
+        self.assertTrue(response.success)
+        self.assertEqual(response.datarecord_id,"bud")
+        a=get_by_short_code(self.dbm,"bud")
+        self.assertEqual(a.short_code,"bud")

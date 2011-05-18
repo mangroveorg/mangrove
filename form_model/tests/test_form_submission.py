@@ -3,6 +3,7 @@ from unittest.case import TestCase
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
+from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.form_model.validation import NumericConstraint
@@ -39,7 +40,7 @@ class TestFormSubmission(TestCase):
         form_submission = FormSubmission(self.form_model, answers)
 
         self.assertEqual(form_submission.form_code, "AIDS")
-        self.assertEqual(form_submission.entity_id, "1")
+        self.assertEqual(form_submission.short_code, "1")
 
     def test_should_create_form_submission_with_answer_values(self):
         answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a"}
@@ -97,3 +98,31 @@ class TestFormSubmission(TestCase):
         form_submission = FormSubmission(form_model, answers)
         self.assertFalse(form_submission.is_valid())
         self.assertEqual(len(form_submission.errors), 1)
+
+    def test_give_error_for_no_entity_short_code(self):
+        with self.assertRaises(EntityQuestionCodeNotSubmitted):
+            dbm = Mock(spec=DatabaseManager)
+            question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype2)
+            question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age", ddtype=self.ddtype3)
+
+            form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
+                                   form_code="AIDS", type='survey',
+                                   fields=[question1, question3])
+            answers = {"Q2": "10"}
+            form_submission = FormSubmission(form_model, answers)
+            form_submission.is_valid()
+
+
+    def test_give_error_for_no_entity_short_code_while_registration(self):
+        with self.assertRaises(EntityQuestionCodeNotSubmitted):
+            dbm = Mock(spec=DatabaseManager)
+            question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype2)
+            question3 = IntegerField(name="Father's age", question_code="Q2", label="What is your Father's Age", ddtype=self.ddtype3)
+
+            form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
+                                   form_code="AIDS", type='survey',
+                                   fields=[question1, question3])
+            answers = {"Q2": "10"}
+            form_submission = FormSubmission(form_model, answers)
+            form_submission.is_valid()
+

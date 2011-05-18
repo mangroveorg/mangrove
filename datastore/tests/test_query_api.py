@@ -3,7 +3,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 import unittest
 from pytz import UTC
 from mangrove.datastore import views
-from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value
+from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value, get_by_short_code
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 
@@ -516,3 +516,13 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
+
+    def test_get_entities_by_type(self):
+        e = Entity(self.manager, entity_type='foo',short_code="WAR")
+        e.save()
+        loaded_entity = get_by_short_code(self.manager, e.short_code)
+        print loaded_entity
+        self.assertTrue(loaded_entity)
+        self.assertEqual(loaded_entity.aggregation_paths.get('_type'),['foo'])
+        self.assertEqual(loaded_entity.short_code,'WAR')
+

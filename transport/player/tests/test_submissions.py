@@ -90,8 +90,6 @@ class TestSubmissions(TestCase):
             sub_handler = SubmissionHandler(dbm=mock_dbm)
             sub_handler.get_player_for_transport(request)
 
-    def test_should_ (self):
-        pass
 
 
 

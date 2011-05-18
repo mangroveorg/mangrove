@@ -3,7 +3,7 @@
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException, EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, field_attributes
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -237,8 +237,8 @@ class FormSubmission(object):
         self.form_model = form_model
         self.form_answers = form_answers
         entity_question = self.form_model.entity_question
-        self.entity_id = self.form_answers.get(entity_question.question_code)
-        if(self.entity_id is not None):
+        self.short_code = self.form_answers.get(entity_question.question_code)
+        if(self.short_code is not None):
             del form_answers[entity_question.question_code]
         self.form_code = self.form_model.form_code
         self.answers = form_model
@@ -252,6 +252,8 @@ class FormSubmission(object):
         return self.form_model.cleaned_data
 
     def is_valid(self):
+        if self.short_code is None or self.short_code == "":
+            raise EntityQuestionCodeNotSubmitted()
         return self.form_model.is_valid(self.form_answers)
 
     def _parse_field(self, form_field, answer):

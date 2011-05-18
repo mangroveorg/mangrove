@@ -26,7 +26,7 @@ class Request(object):
 
 
 class Response(object):
-    SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
+    SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission. The record id is - %s"
     ERROR_RESPONSE_TEMPLATE = "%s"
 
     def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None):
@@ -35,12 +35,12 @@ class Response(object):
         self.errors = errors
         self.datarecord_id = datarecord_id
         if success:
-            self.message = self._templatize_success_response_with_reporter_name(reporters)
+            self.message = self._templatize_success_response_with_reporter_name_and_ids(reporters)
         else:
             self.message = self._templatize_error_response()
 
-    def _templatize_success_response_with_reporter_name(self, reporters):
-        return Response.SUCCESS_RESPONSE_TEMPLATE % (reporters[0]["first_name"] if len(reporters) == 1 else "",)
+    def _templatize_success_response_with_reporter_name_and_ids(self, reporters):
+        return Response.SUCCESS_RESPONSE_TEMPLATE % (reporters[0]["first_name"] if len(reporters) == 1 else "", self.datarecord_id)
 
     def _templatize_error_response(self):
         return Response.ERROR_RESPONSE_TEMPLATE % (", ".join(self.errors),)
@@ -94,9 +94,8 @@ class SubmissionHandler(object):
                 form_submission = RegistrationFormSubmission(form, values)
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
-                    entity_id = entity.generate_entity_id(entity_type)
-                    e = Entity(self.dbm, entity_type=entity_type, location=form.location,
-                               aggregation_paths=form.aggregation_paths, id=entity_id)
+                    entity_id = entity.generate_entity_short_code(self.dbm, entity_type, suggested_id= form.answers.get("short_name"))
+                    e = Entity(self.dbm, entity_type=entity_type, location=form.location, aggregation_paths=form.aggregation_paths, id=entity_id)
                     e.save()
                     description_type = DataDictType(self.dbm, name='description Type', slug='description',
                                                     primitive_type='string')

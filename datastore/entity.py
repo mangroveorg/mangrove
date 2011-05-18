@@ -43,6 +43,9 @@ def define_type(dbm, entity_type):
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
     entity_tree.save()
 
+def _get_used_entity_ids(dbm, entity_type):
+    rows = dbm.load_all_rows_in_view("mangrove_views/used_entity_short_id", startkey=[entity_type])
+    return rows
 
 def get_by_short_code(dbm, short_code):
     """
@@ -51,12 +54,17 @@ def get_by_short_code(dbm, short_code):
     """
     return dbm.get(short_code, Entity)
 
-
-def generate_entity_id(entity_type):
-    list = map(chr, range(97, 121)) + range(0, 9)
-    random.shuffle(list)
-    return (entity_type[:3] + reduce(lambda acc, i: str(acc) + str(i), list[0:3], '')).upper()
-
+def generate_entity_short_code(database_manager, entity_type, suggested_id):
+    used_ids = _get_used_entity_ids(database_manager, entity_type=entity_type)
+    used_id_list = used_ids[0].get("value")
+    if suggested_id not in used_id_list:
+        return suggested_id
+    else:
+        used_id_list.sort()
+        last_used_id = used_id_list[len(used_id_list) - 1:]
+        sr_id = int(last_used_id[0][3:])
+        sr_id += 1
+        return entity_type.upper()[:3]+str(sr_id)
 
 def get_entities_by_type(dbm, entity_type):
     # TODO: change this?  for now it assumes _type is non-heirarchical
@@ -153,7 +161,7 @@ class Entity(DataObject):
     __document_class__ = EntityDocument
 
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
-                 geometry=None, centroid=None, gr_id=None, id=None):
+                 geometry=None, centroid=None, gr_id=None, id=None, short_code = None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -199,6 +207,9 @@ class Entity(DataObject):
         if gr_id is not None:
             doc.gr_id = gr_id
 
+        if short_code is not None:
+            doc.short_code = short_code
+
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
             for name in aggregation_paths.keys():
@@ -238,6 +249,10 @@ class Entity(DataObject):
     @property
     def centroid(self):
         return self._doc.centroid
+
+    @property
+    def short_code(self):
+        return self._doc.short_code
 
     def set_aggregation_path(self, name, path):
         assert self._doc is not None

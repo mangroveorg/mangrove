@@ -76,14 +76,14 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
             "name": "color",
-            "choices": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
-                        {"text": {'eng': 'green'}}],
+            "choices": [{"text": {"eng" : "RED"}, "val": 1}, {"text": {"eng" : "YELLOW"}, "val": 2},
+                        {"text": {'eng' : 'green'}, "val": 3}],
             "question_code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
             }
         question = SelectField(name="color", question_code="Q3", label="What is your favorite color",
-                               language="eng", options=[("RED", 1), ("YELLOW", 2), ('green')], ddtype=self.ddtype)
+                               language="eng", options=[("RED", 1), ("YELLOW", 2), ('green',3)],ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
 

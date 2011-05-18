@@ -90,6 +90,9 @@ class TestSubmissions(TestCase):
             sub_handler = SubmissionHandler(dbm=mock_dbm)
             sub_handler.get_player_for_transport(request)
 
+    def test_should_ (self):
+        pass
+
 
 
 #TODO : need to rewrite this test when Submission handler is broken in two part

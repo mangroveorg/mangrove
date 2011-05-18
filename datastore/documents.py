@@ -68,13 +68,15 @@ class EntityDocument(DocumentBase):
     geometry = DictField()
     centroid = ListField(FloatField())
     gr_id = TextField()
+    short_code = TextField()
 
-    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None):
+    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code = None):
         DocumentBase.__init__(self, id=id, document_type='Entity')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
         self._geometry = geometry
         self._centroid = centroid
         self._gr_id = gr_id
+        self.short_code = short_code
 
     @property
     def entity_type(self):
@@ -97,7 +99,6 @@ class EntityDocument(DocumentBase):
     @location.setter
     def location(self, loc):
         self.aggregation_paths[attributes.GEO_PATH] = loc
-
 
 class DataRecordDocument(DocumentBase):
     """

@@ -122,3 +122,8 @@ class IncorrectDate(MangroveException):
 
 class NoDocumentError(MangroveException):
     pass
+
+class UnknownOrganization(MangroveException):
+    def __init__(self, tel_number):
+            MangroveException.__init__(self, ('No organization found for telephone number %s') %
+                                             (tel_number,))

@@ -40,10 +40,9 @@ def get_datadict_types(dbm, ids):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get_many(ids, DataDictType)
 
-
-def create_ddtype(dbm, name, slug, primitive_type, description=None, constraints=None):
+def create_datadict_type(dbm, name, slug, primitive_type, description=None, constraints=None, tags=None):
     ddtype = DataDictType(dbm=dbm, name=name, slug=slug, primitive_type=primitive_type, description=description,
-                          constraints=constraints, tags=[])
+                          constraints=constraints, tags=tags)
     ddtype.save()
     return ddtype
 

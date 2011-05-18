@@ -3,7 +3,7 @@
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore import datadict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException, EntityQuestionCodeNotSubmitted
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, field_attributes
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -67,8 +67,18 @@ class FormModel(DataObject):
             f = field.create_question_from(json_field, self._dbm)
             self.form_fields.append(f)
 
+
+    def _check_if_form_code_is_unique(self, value):
+        try:
+            get_form_model_by_code(self._dbm, value)
+            raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
+        except FormModelDoesNotExistsException:
+            pass
+
     def save(self):
         # convert fields to json fields before save
+        if self._doc.rev is None:
+            self._check_if_form_code_is_unique(self.form_code)
         self._doc.json_fields = [f._to_json() for f in self.form_fields]
         return DataObject.save(self)
 
@@ -166,6 +176,7 @@ class FormModel(DataObject):
 
     @form_code.setter
     def form_code(self, value):
+        self._check_if_form_code_is_unique(value)
         self._doc.form_code = value
 
     @property
@@ -238,7 +249,7 @@ class FormSubmission(object):
         self.form_answers = form_answers
         entity_question = self.form_model.entity_question
         self.short_code = self.form_answers.get(entity_question.question_code)
-        if(self.short_code is not None):
+        if self.short_code is not None:
             del form_answers[entity_question.question_code]
         self.form_code = self.form_model.form_code
         self.answers = form_model

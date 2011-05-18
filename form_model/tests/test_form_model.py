@@ -6,10 +6,11 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException
+from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
+from mangrove.form_model.form_model import get_form_model_by_code
 
 
 class TestFormModel(unittest.TestCase):
@@ -312,3 +313,20 @@ class TestFormModel(unittest.TestCase):
         registration_form.answers = {"location": "India,MH, "}
 
         self.assertEqual(registration_form.location, ['India', 'MH'])
+
+    def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.string_ddtype)
+        form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
+                                    form_code="1", type='survey', fields=[question1])
+        with self.assertRaises(DataObjectAlreadyExists):
+            form_model.save()
+
+    def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.string_ddtype)
+        form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
+                                    form_code="2", type='survey', fields=[question1])
+        form_model2.save()
+        with self.assertRaises(DataObjectAlreadyExists):
+            form_model2.form_code = "1"

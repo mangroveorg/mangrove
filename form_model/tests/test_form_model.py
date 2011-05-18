@@ -330,3 +330,12 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
         with self.assertRaises(DataObjectAlreadyExists):
             form_model2.form_code = "1"
+
+    def test_should_not_raise_exception_if_form_code_is_updated(self):
+        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.string_ddtype)
+        form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
+                                    form_code="2", type='survey', fields=[question1])
+        form_model2.save()
+        form_model2.form_code = "2"
+        form_model2.save()

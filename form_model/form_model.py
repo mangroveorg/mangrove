@@ -176,7 +176,8 @@ class FormModel(DataObject):
 
     @form_code.setter
     def form_code(self, value):
-        self._check_if_form_code_is_unique(value)
+        if value != self._doc.form_code:
+            self._check_if_form_code_is_unique(value)
         self._doc.form_code = value
 
     @property

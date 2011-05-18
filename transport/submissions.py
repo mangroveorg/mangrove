@@ -100,8 +100,9 @@ class SubmissionHandler(object):
                 form_submission = RegistrationFormSubmission(form, values)
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
-                    short_code = entity.generate_entity_short_code(self.dbm, entity_type,
-                                                                   suggested_id=form.answers.get("short_name"))
+#                    short_code = entity.generate_entity_short_code(self.dbm, entity_type,
+#                                                                   suggested_id=form.answers.get("short_name"))
+                    short_code = form.answers.get("short_name")
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location,
                                aggregation_paths=form.aggregation_paths, short_code=short_code)
                     e.save()

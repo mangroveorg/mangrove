@@ -10,7 +10,6 @@ from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
-from mangrove.form_model.form_model import get_form_model_by_code
 
 
 class TestFormModel(unittest.TestCase):

@@ -2,7 +2,6 @@ import datetime
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
-from mangrove.datastore import views
 from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value, get_by_short_code
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType

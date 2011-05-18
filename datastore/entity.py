@@ -2,7 +2,6 @@
 
 import copy
 from datetime import datetime
-import random
 from time import mktime
 from collections import defaultdict
 

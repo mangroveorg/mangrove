@@ -6,7 +6,7 @@ import unittest
 
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
-from mangrove.datastore.entity import define_type, Entity, get_by_short_code
+from mangrove.datastore.entity import define_type, get_by_short_code
 from mangrove.datastore import datarecord
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, RegistrationFormModel

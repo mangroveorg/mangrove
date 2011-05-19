@@ -16,6 +16,7 @@ class SMSPlayer(object):
         submission = {}
         for token in tokens:
             field_code, answer = self._parse_token(token)
+            field_code = field_code.lower()
             submission[field_code] = answer.strip()
         return form_code, submission
 

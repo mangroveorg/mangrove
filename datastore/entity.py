@@ -42,8 +42,8 @@ def define_type(dbm, entity_type):
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
     entity_tree.save()
 
-def _get_used_entity_ids(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("mangrove_views/used_entity_short_id", startkey=[entity_type])
+def _get_used_short_codes(dbm, entity_type):
+    rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True, startkey=[[entity_type], {}], endkey=[[entity_type]])
     return rows
 
 def get_by_short_code(dbm, short_code):
@@ -53,7 +53,7 @@ def get_by_short_code(dbm, short_code):
     return Entity.new_from_db(dbm = dbm, doc = _doc)
 
 def generate_entity_short_code(database_manager, entity_type, suggested_id=None):
-    used_ids = _get_used_entity_ids(database_manager, entity_type=entity_type)
+    used_ids = _get_used_short_codes(database_manager, entity_type=entity_type)
     used_id_list = used_ids[0].get("value")
     if suggested_id is not None and suggested_id != "" and suggested_id not in used_id_list:
         return suggested_id

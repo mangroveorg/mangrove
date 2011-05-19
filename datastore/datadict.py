@@ -46,6 +46,13 @@ def create_datadict_type(dbm, name, slug, primitive_type, description=None, cons
     ddtype.save()
     return ddtype
 
+def get_or_create_data_dict(dbm, name, slug, primitive_type, description=None,constraints=None, tags=None):
+    try:
+        return get_datadict_type_by_slug(dbm, slug)
+    except DataObjectNotFound:
+        pass
+    return create_datadict_type(dbm,name,slug,primitive_type,description,constraints,tags)
+
 
 class DataDictType(DataObject):
     '''DataDict is an abstraction that stores named data types and constraints .'''

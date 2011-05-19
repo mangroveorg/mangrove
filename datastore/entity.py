@@ -79,6 +79,8 @@ def generate_entity_short_code(database_manager, entity_type, suggested_id=None)
     used_ids = _get_used_short_codes(database_manager, entity_type=entity_type)
     used_id_list = used_ids[entity_type]
     if suggested_id is None or suggested_id == "":
+        if is_empty(used_id_list):
+            return entity_type.upper()[:3]+str(1)
         used_id_list.sort()
         last_used_id = used_id_list[len(used_id_list) - 1:]
         sr_id = int(last_used_id[0][3:])

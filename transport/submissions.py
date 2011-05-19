@@ -10,7 +10,7 @@ from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
 from mangrove.datastore.entity import Entity
-from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, EntityQuestionCodeNotSubmitted
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, EntityQuestionCodeNotSubmitted, ShortCodeAlreadyInUseException
 from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
@@ -100,9 +100,9 @@ class SubmissionHandler(object):
                 form_submission = RegistrationFormSubmission(form, values)
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
-#                    short_code = entity.generate_entity_short_code(self.dbm, entity_type,
-#                                                                   suggested_id=form.answers.get("short_name"))
-                    short_code = form.answers.get("short_name")
+                    short_code = entity.generate_entity_short_code(self.dbm, entity_type,
+                                                                   suggested_id=form.answers.get("short_name"))
+#                    short_code = form.answers.get("short_name")
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location,
                                aggregation_paths=form.aggregation_paths, short_code=short_code)
                     e.save()
@@ -118,7 +118,7 @@ class SubmissionHandler(object):
                     e.add_data(data=data, submission_id=submission_id)
                     self.update_submission_log(submission_id, True, errors=[])
                     #                   TODO: Get rid of the reporters from this
-                    return Response([{'first_name': 'User'}], True, errors, submission_id, short_code,include_id_in_message=True)
+                    return Response([{'first_name': 'User'}], True, errors, submission_id, short_code, include_id_in_message=True)
                 else:
                     errors.extend(form_submission.errors)
                     self.update_submission_log(submission_id, False, errors)
@@ -128,6 +128,8 @@ class SubmissionHandler(object):
         except NumberNotRegisteredException as e:
             errors.append(e.message)
         except EntityQuestionCodeNotSubmitted as e:
+            errors.append(e.message)
+        except ShortCodeAlreadyInUseException as e:
             errors.append(e.message)
         return Response(reporters, False, errors, submission_id)
 

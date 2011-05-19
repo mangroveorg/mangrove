@@ -15,4 +15,4 @@ def create_entity_types(manager, entity_types):
 
 def run(manager):
     create_views(manager)
-    create_entity_types(manager,[REPORTER_ENTITY_TYPE])
+    create_entity_types(manager, [REPORTER_ENTITY_TYPE])

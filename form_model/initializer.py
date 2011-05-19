@@ -3,6 +3,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import RegistrationFormModel
 
+
 def run(manager):
     create_default_reg_form_model(manager)
 

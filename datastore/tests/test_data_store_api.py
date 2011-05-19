@@ -14,6 +14,7 @@ from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, ShortCod
 # Adaptor methods to old api
 from mangrove.utils.types import is_empty
 
+
 def get(dbm, id):
     return dbm.get(id, Entity)
 
@@ -278,59 +279,59 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertTrue(facility_type.slug in types)
 
     def test_should_create_entity_with_short_code(self):
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP999")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP999")
         self.assertEqual(reporter.short_code, "REP999")
 
 
     def test_should_return_all_short_ids_for_given_entity_type(self):
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP0")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP0")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP1")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP1")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP2")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP2")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"])
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"])
         reporter.save()
-        used_id_dict = _get_used_short_codes(self.dbm, entity_type = "Reporter")
+        used_id_dict = _get_used_short_codes(self.dbm, entity_type="Reporter")
         self.assertTrue("REP2" in used_id_dict["Reporter"])
         self.assertTrue(len(used_id_dict["Reporter"]), 4)
 
     def test_should_return_only_short_code_specified(self):
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP0")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP0")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP1")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP1")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP2")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP2")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"])
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"])
         reporter.save()
-        used_id_dict = _get_used_short_codes(self.dbm, entity_type = "Reporter", short_code ='REP2')
+        used_id_dict = _get_used_short_codes(self.dbm, entity_type="Reporter", short_code='REP2')
         self.assertTrue("REP2" in used_id_dict["Reporter"])
         self.assertEqual(len(used_id_dict.values()), 1)
 
     def test_should_return_none_if_no_entity_of_type_exists(self):
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP0")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP0")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP1")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP1")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP2")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP2")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"])
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"])
         reporter.save()
-        used_id_dict = _get_used_short_codes(self.dbm, entity_type = "Clinic", short_code ='CLI1')
+        used_id_dict = _get_used_short_codes(self.dbm, entity_type="Clinic", short_code='CLI1')
         self.assertTrue('CLI1' not in used_id_dict["Clinic"])
         self.assertTrue(is_empty(used_id_dict["Clinic"]))
 
     def test_should_return_short_codes_for_all_entities_if_entity_not_specified(self):
         _delete_db_and_remove_db_manager(self.dbm)
         self.dbm = get_db_manager(database='mangrove-test')
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP0")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP0")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune","India"], short_code="REP1")
+        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP1")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="Clinic", location=["Pune","India"], short_code="CLI0")
+        reporter = Entity(self.dbm, entity_type="Clinic", location=["Pune", "India"], short_code="CLI0")
         reporter.save()
-        reporter = Entity(self.dbm, entity_type="School", location=["Pune","India"], short_code="SCH1")
+        reporter = Entity(self.dbm, entity_type="School", location=["Pune", "India"], short_code="SCH1")
         reporter.save()
         used_id_dict = _get_used_short_codes(self.dbm)
         self.assertEqual(len(used_id_dict.keys()), 3)
@@ -340,35 +341,35 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_return_short_name_if_not_in_list(self):
         manager = Mock(spec=DatabaseManager)
-        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value":1},
-                                                           {"key": [["Reporter"], "REP1"], "value":1},
-                                                           {"key": [["Reporter"], "REP0"], "value":1}])
+        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value": 1},
+                                                           {"key": [["Reporter"], "REP1"], "value": 1},
+                                                           {"key": [["Reporter"], "REP0"], "value": 1}])
         id = generate_entity_short_code(manager, entity_type="Reporter", suggested_id="REP4")
         assert manager.load_all_rows_in_view.called
         self.assertEqual(id, "REP4")
 
     def test_should_raise_IdAlreadyInUse_if_suggested_id_used(self):
-        with self.assertRaises(ShortCodeAlreadyInUseException) as e:
+        with self.assertRaises(ShortCodeAlreadyInUseException):
             manager = Mock(spec=DatabaseManager)
-            manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value":1},
-                                                               {"key": [["Reporter"], "REP1"], "value":1},
-                                                               {"key": [["Reporter"], "REP0"], "value":1}])
-            id = generate_entity_short_code(manager, entity_type="Reporter", suggested_id="REP2")
+            manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value": 1},
+                                                               {"key": [["Reporter"], "REP1"], "value": 1},
+                                                               {"key": [["Reporter"], "REP0"], "value": 1}])
+            generate_entity_short_code(manager, entity_type="Reporter", suggested_id="REP2")
 
     def test_should_generate_short_id_and_return_if_suggested_id_is_blank(self):
         manager = Mock(spec=DatabaseManager)
-        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value":1},
-                                                           {"key": [["Reporter"], "REP1"], "value":1},
-                                                           {"key": [["Reporter"], "REP0"], "value":1}])
+        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value": 1},
+                                                           {"key": [["Reporter"], "REP1"], "value": 1},
+                                                           {"key": [["Reporter"], "REP0"], "value": 1}])
         id = generate_entity_short_code(manager, entity_type="Reporter", suggested_id="")
         assert manager.load_all_rows_in_view.called
         self.assertEqual(id, "REP3")
 
     def test_should_generate_short_id_and_return_if_suggested_id_is_not_supplied(self):
         manager = Mock(spec=DatabaseManager)
-        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value":1},
-                                                           {"key": [["Reporter"], "REP1"], "value":1},
-                                                           {"key": [["Reporter"], "REP0"], "value":1}])
+        manager.load_all_rows_in_view = Mock(return_value=[{"key": [["Reporter"], "REP2"], "value": 1},
+                                                           {"key": [["Reporter"], "REP1"], "value": 1},
+                                                           {"key": [["Reporter"], "REP0"], "value": 1}])
         id = generate_entity_short_code(manager, entity_type="Reporter")
         assert manager.load_all_rows_in_view.called
         self.assertEqual(id, "REP3")
@@ -379,8 +380,3 @@ class TestDataStoreApi(unittest.TestCase):
         id = generate_entity_short_code(manager, entity_type="Clinic")
         assert manager.load_all_rows_in_view.called
         self.assertEqual(id, "CLI1")
-
-
-
-
-

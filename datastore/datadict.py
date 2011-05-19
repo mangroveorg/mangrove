@@ -40,18 +40,20 @@ def get_datadict_types(dbm, ids):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get_many(ids, DataDictType)
 
+
 def create_datadict_type(dbm, name, slug, primitive_type, description=None, constraints=None, tags=None):
     ddtype = DataDictType(dbm=dbm, name=name, slug=slug, primitive_type=primitive_type, description=description,
                           constraints=constraints, tags=tags)
     ddtype.save()
     return ddtype
 
-def get_or_create_data_dict(dbm, name, slug, primitive_type, description=None,constraints=None, tags=None):
+
+def get_or_create_data_dict(dbm, name, slug, primitive_type, description=None, constraints=None, tags=None):
     try:
         return get_datadict_type_by_slug(dbm, slug)
     except DataObjectNotFound:
         pass
-    return create_datadict_type(dbm,name,slug,primitive_type,description,constraints,tags)
+    return create_datadict_type(dbm, name, slug, primitive_type, description, constraints, tags)
 
 
 class DataDictType(DataObject):
@@ -59,7 +61,7 @@ class DataDictType(DataObject):
 
     __document_class__ = DataDictDocument
 
-    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
+    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None,\
                  constraints=None, tags=None, id=None, **kwargs):
         '''Create a new DataDictType.
 

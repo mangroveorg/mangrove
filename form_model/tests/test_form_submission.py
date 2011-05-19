@@ -125,4 +125,3 @@ class TestFormSubmission(TestCase):
             answers = {"Q2": "10"}
             form_submission = FormSubmission(form_model, answers)
             form_submission.is_valid()
-

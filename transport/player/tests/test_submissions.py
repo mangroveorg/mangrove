@@ -84,7 +84,7 @@ class TestSubmissions(TestCase):
         self.assertIsInstance(sub_handler.get_player_for_transport(request), WebPlayer)
     
     def test_should_return_UnknownTransportException_for_unknown_transport(self):
-        with self.assertRaises(UnknownTransportException) :
+        with self.assertRaises(UnknownTransportException):
             request = Request(transport='garbage', message='blah', source='rep1', destination='HNI')
             mock_dbm = Mock(spec=DatabaseManager)
             sub_handler = SubmissionHandler(dbm=mock_dbm)

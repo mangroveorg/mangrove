@@ -37,7 +37,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
                                           data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
-                                          source="sms", short_code= "CLI1")
+                                          source="sms", short_code="CLI1")
 
         datarecord.register(self.dbm, entity_type=["Reporter"],
                             data=[("telephone_number", '1234', self.telephone_number_type),
@@ -97,18 +97,17 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_get_submissions_for_form(self):
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="abc",
-                                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans1', 'Q2': 'ans2'},
+                                                      status=False, error_message=""))
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="abc",
-                                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans12', 'Q2': 'ans22'},
+                                                      status=False, error_message=""))
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="def",
-                                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'}
-                                                                       ,
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="def",
+                                                      values={'defQ1': 'defans12', 'defQ2': 'defans22'},
+                                                      status=False, error_message=""))
 
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
@@ -153,6 +152,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
-        self.assertEqual(response.datarecord_id,"bud")
-        a=get_by_short_code(self.dbm,"bud")
-        self.assertEqual(a.short_code,"bud")
+        self.assertEqual(response.datarecord_id, "bud")
+        a = get_by_short_code(self.dbm, "bud")
+        self.assertEqual(a.short_code, "bud")

@@ -210,8 +210,9 @@ class RegistrationFormModel(FormModel):
 
     def __init__(self, dbm, name=None, form_code=None, fields=None, entity_type=None,
                  language="eng"):
-        FormModel.__init__(self, dbm, name=name, label=None, form_code=form_code, fields=fields, entity_type=entity_type
-                           , type='registration',
+        FormModel.__init__(self, dbm, name=name, label=None, form_code=form_code, fields=fields,
+                           entity_type=entity_type,
+                           type='registration',
                            language=language)
 
     def validate_existence_of_only_one_entity_type_field(self):

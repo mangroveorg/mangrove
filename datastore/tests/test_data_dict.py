@@ -67,9 +67,9 @@ class TestDataDict(unittest.TestCase):
         DESC = 'description'
 
         with patch("mangrove.datastore.datadict.get_datadict_type_by_slug") as get_datadict_type_by_slug_mocked:
-            get_datadict_type_by_slug_mocked.side_effect = DataObjectNotFound("DataDictType","slug",SLUG)
+            get_datadict_type_by_slug_mocked.side_effect = DataObjectNotFound("DataDictType", "slug", SLUG)
             ddtype = create_datadict_type(self.dbm, name=NAME,
-                                          slug=SLUG, primitive_type=TYPE,constraints={}, description=DESC)
+                                          slug=SLUG, primitive_type=TYPE, constraints={}, description=DESC)
 
             get_datadict_type_by_slug_mocked.assert_called_once_with(self.dbm, SLUG)
             self.dbm.save.assert_called_once_with(ddtype)

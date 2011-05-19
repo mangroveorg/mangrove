@@ -245,12 +245,12 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_error_for_invalid_integer_value(self):
-        answers = {"ID": "1", "Q2": "200"}
+        answers = {"id": "1", "q2": "200"}
         self.assertFalse(self.form_model.is_valid(answers))
         self.assertEqual(len(self.form_model.errors), 1)
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
-        answers = {"ID": "1", "Q1": "Asif Momin", "Q2": "20"}
+        answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
         expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
         valid = self.form_model.is_valid(answers)
         self.assertTrue(valid)
@@ -261,12 +261,12 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(self.form_model.is_valid(answers))
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
-        answers = {"ID": "1", "Q1": "Asif", "Q2": "200", "Q3": "a"}
+        answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
         self.assertFalse(self.form_model.is_valid(answers))
         self.assertEqual(len(self.form_model.errors), 2)
 
     def test_should_strip_whitespaces(self):
-        answers = {"Q1": "   My Name", "Q2": "  40 ", "Q3": "a     "}
+        answers = {"q1": "   My Name", "q2": "  40 ", "q3": "a     "}
         expected_cleaned_data = {"question1_Name": "My Name", "Father's age": 40, "Color": ["RED"]}
         valid = self.form_model.is_valid(answers)
         self.assertTrue(valid)
@@ -274,7 +274,7 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
 
     def test_should_ignore_fields_without_values(self):
-        answers = {"Q1": "My Name", "Q2": "", "Q3": "   "}
+        answers = {"q1": "My Name", "q2": "", "q3": "   "}
         expected_cleaned_data = {"question1_Name": "My Name"}
         valid = self.form_model.is_valid(answers)
         self.assertTrue(valid)

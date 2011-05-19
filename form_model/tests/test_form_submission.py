@@ -35,7 +35,7 @@ class TestFormSubmission(TestCase):
         pass
 
     def test_should_create_form_submission_with_entity_id(self):
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "RED"}
+        answers = {"id": "1", "q1": "My Name", "q2": "40", "q3": "RED"}
 
         form_submission = FormSubmission(self.form_model, answers)
 
@@ -43,7 +43,7 @@ class TestFormSubmission(TestCase):
         self.assertEqual(form_submission.short_code, "1")
 
     def test_should_create_form_submission_with_answer_values(self):
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a"}
+        answers = {"id": "1", "q1": "My Name", "q2": "40", "q3": "a"}
 
         form_submission = FormSubmission(self.form_model, answers)
         form_submission.is_valid()
@@ -55,7 +55,7 @@ class TestFormSubmission(TestCase):
         self.assertIn(("Color", ["RED"], self.ddtype4), form_submission.values)
 
     def test_should_ignore_non_form_fields(self):
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "40", "Q3": "a", "EXTRA_FIELD": "X", "EXTRA_FIELD2": "Y"}
+        answers = {"id": "1", "q1": "My Name", "q2": "40", "q3": "a", "EXTRA_FIELD": "X", "EXTRA_FIELD2": "Y"}
 
         f = FormSubmission(self.form_model, answers)
         f.is_valid()
@@ -66,7 +66,7 @@ class TestFormSubmission(TestCase):
         self.assertIn(("Color", ["RED"], self.ddtype4), f.values)
 
     def test_should_ignore_fields_without_values(self):
-        answers = {"ID": "1", "Q1": "My Name", "Q2": "", "Q3": "   "}
+        answers = {"id": "1", "q1": "My Name", "q2": "", "q3": "   "}
         f = FormSubmission(self.form_model, answers)
         self.assertTrue(f.is_valid())
         self.assertEqual(0, len(f.errors))
@@ -93,7 +93,7 @@ class TestFormSubmission(TestCase):
                                form_code="AIDS", type='survey',
                                fields=[question1, question3])
 
-        answers = {"ID": "1", "Q2": "10"}
+        answers = {"id": "1", "q2": "10"}
 
         form_submission = FormSubmission(form_model, answers)
         self.assertFalse(form_submission.is_valid())

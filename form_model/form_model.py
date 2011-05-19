@@ -142,7 +142,7 @@ class FormModel(DataObject):
     def is_valid(self, answers):
         success = True
         for field in self.form_fields:
-            answer = answers.get(field.question_code)
+            answer = answers.get(field.question_code.lower())
             if not is_empty(answer):  # ignore empty answers
                 is_valid = self._validate_answer_for_field(answer, field)
                 if success is True:
@@ -249,9 +249,9 @@ class FormSubmission(object):
         self.form_model = form_model
         self.form_answers = form_answers
         entity_question = self.form_model.entity_question
-        self.short_code = self.form_answers.get(entity_question.question_code)
+        self.short_code = self.form_answers.get(entity_question.question_code.lower())
         if self.short_code is not None:
-            del form_answers[entity_question.question_code]
+            del form_answers[entity_question.question_code.lower()]
         self.form_code = self.form_model.form_code
         self.answers = form_model
 

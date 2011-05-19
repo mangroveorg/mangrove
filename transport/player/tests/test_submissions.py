@@ -43,7 +43,7 @@ class TestSubmissions(TestCase):
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(False, submission_log. status)
         self.assertEquals("QR1", submission_log.form_code)
-        self.assertEquals({'Q1': '20', 'EID': '100'}, submission_log.values)
+        self.assertEquals({'q1': '20', 'eid': '100'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
     def test_should_check_if_submission_by_registered_reporter(self):

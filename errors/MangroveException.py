@@ -127,3 +127,9 @@ class UnknownOrganization(MangroveException):
     def __init__(self, tel_number):
             MangroveException.__init__(self, ('No organization found for telephone number %s') %
                                              (tel_number,))
+
+
+class ShortCodeAlreadyInUseException(MangroveException):
+    def __init__(self, short_code):
+            MangroveException.__init__(self, ('The ID %s is already in use. Please specify another') %
+                                             (short_code,))

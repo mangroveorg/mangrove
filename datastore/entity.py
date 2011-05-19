@@ -8,7 +8,7 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, ShortCodeAlreadyInUseException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -42,9 +42,32 @@ def define_type(dbm, entity_type):
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
     entity_tree.save()
 
-def _get_used_short_codes(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True, startkey=[[entity_type], {}], endkey=[[entity_type]])
-    return rows
+def _get_used_short_codes(dbm, entity_type = None, short_code = None):
+    used_id_dict = {}
+    if entity_type is None:
+        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=False)
+    elif short_code is None:
+        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True, startkey=[[entity_type], {}], endkey=[[entity_type]])
+    else:
+        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True, startkey=[[entity_type], short_code], endkey=[[entity_type],short_code])
+    if entity_type is not None:
+        used_id_list = []
+        for row in rows:
+            used_id_list.append(row["key"][1])
+        used_id_dict = {entity_type:used_id_list}
+    else:
+        type = ""
+        for row in rows:
+            if type != row["key"][0][0]:
+                type = row["key"][0][0]
+            print type
+            used_id_list = used_id_dict.get(type)
+            if used_id_list is None:
+                used_id_list = []
+            print used_id_list
+            used_id_list.append(row["key"][1])
+            used_id_dict[type] = used_id_list
+    return used_id_dict
 
 def get_by_short_code(dbm, short_code):
     assert is_string(short_code)
@@ -54,15 +77,18 @@ def get_by_short_code(dbm, short_code):
 
 def generate_entity_short_code(database_manager, entity_type, suggested_id=None):
     used_ids = _get_used_short_codes(database_manager, entity_type=entity_type)
-    used_id_list = used_ids[0].get("value")
-    if suggested_id is not None and suggested_id != "" and suggested_id not in used_id_list:
-        return suggested_id
-    else:
+    used_id_list = used_ids[entity_type]
+    if suggested_id is None or suggested_id == "":
         used_id_list.sort()
         last_used_id = used_id_list[len(used_id_list) - 1:]
         sr_id = int(last_used_id[0][3:])
         sr_id += 1
         return entity_type.upper()[:3]+str(sr_id)
+    elif suggested_id not in used_id_list:
+        return suggested_id
+    else:
+        raise ShortCodeAlreadyInUseException(short_code = suggested_id)
+
 
 def get_entities_by_type(dbm, entity_type):
     # TODO: change this?  for now it assumes _type is non-heirarchical

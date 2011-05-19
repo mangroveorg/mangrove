@@ -140,7 +140,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_raise_exception_if_question_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
             form_model = self.dbm.get(self.form_model__id, FormModel)
-            question = TextField(name="added_question", question_code="Q1", label="How are you",
+            question = TextField(name="added_question", question_code="q1", label="How are you",
                                  ddtype=self.string_ddtype)
             form_model.add_field(question)
             form_model.save()

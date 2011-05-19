@@ -100,7 +100,7 @@ class FormModel(DataObject):
     def validate_uniqueness_of_field_codes(self):
         """ Validate all question codes are unique
         """
-        code_list = [f.question_code for f in self.form_fields]
+        code_list = [f.question_code.lower() for f in self.form_fields]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")

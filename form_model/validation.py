@@ -1,12 +1,16 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException
+from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange
 
-from validate import is_string, is_float
+from validate import is_string, is_float, VdtTypeError, VdtValueError
 
 
 class ConstraintAttributes(object):
     MAX = "max"
     MIN = "min"
+    MIN_LONG = -180
+    MAX_LONG = 180
+    MIN_LAT = -90
+    MAX_LAT = 90
 
 
 class NumericConstraint(object):
@@ -63,6 +67,23 @@ class ChoiceConstraint(object):
                 raise AnswerNotInListException(question_code=self.question_code, answer=character)
             else:
                 choice_selected = self.list_of_valid_choices[index_represented]
-                if (choice_selected not in choices):
+                if choice_selected not in choices:
                     choices.append(choice_selected)
         return choices
+
+
+class LocationConstraint(object):
+    def validate(self, latitude, longitude):
+        try:
+            lat = is_float(latitude, min=ConstraintAttributes.MIN_LAT, max=ConstraintAttributes.MAX_LAT)
+        except VdtTypeError:
+            raise LatitudeNotFloat(latitude)
+        except VdtValueError:
+            raise LatitudeNotInRange(latitude)
+        try:
+            long = is_float(longitude, min=ConstraintAttributes.MIN_LONG, max=ConstraintAttributes.MAX_LONG)
+        except VdtTypeError:
+            raise LongitudeNotFloat(longitude)
+        except VdtValueError:
+            raise LongitudeNotInRange(longitude)
+        return (lat, long)

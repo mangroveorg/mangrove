@@ -134,3 +134,22 @@ class ShortCodeAlreadyInUseException(MangroveException):
     def __init__(self, short_code):
             MangroveException.__init__(self, ('The ID %s is already in use. Please specify another') %
                                              (short_code,))
+
+class LatitudeNotFloat(MangroveException):
+    def __init__(self,lat):
+        MangroveException.__init__(self, ('The value for Latitude %s should be float') %
+                                         (lat,))
+
+class LongitudeNotFloat(MangroveException):
+    def __init__(self,long):
+        MangroveException.__init__(self, ('The value for Longitude %s should be float') %
+                                         (long,))
+class LongitudeNotInRange(MangroveException):
+    def __init__(self,long):
+        MangroveException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
+                                         (long,))
+class LatitudeNotInRange(MangroveException):
+    def __init__(self,lat):
+        MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
+                                         (lat,))
+

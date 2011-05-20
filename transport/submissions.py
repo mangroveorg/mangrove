@@ -27,27 +27,28 @@ class Request(object):
 
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
-    RECORD_ID_TEMPLATE = "The record id is - %s"
+
     ERROR_RESPONSE_TEMPLATE = "%s"
 
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, include_id_in_message=False,short_code = None):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None,short_code = None,additional_text = None):
+        self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
         self.datarecord_id = datarecord_id
         if success:
-            self.message = self._templatize_success_response_with_reporter_name_and_ids(reporters,
-                                                                                        include_id_in_message)
+            self.message = self._templatize_success_response(additional_text)
         else:
             self.message = self._templatize_error_response()
         self.short_code = short_code
 
-    def _templatize_success_response_with_reporter_name_and_ids(self, reporters, include_id_in_message):
-        success_message = Response.SUCCESS_RESPONSE_TEMPLATE % (
-        reporters[0]["first_name"] if len(reporters) == 1 else "")
-        if include_id_in_message:
-            record_id_message = Response.RECORD_ID_TEMPLATE % self.datarecord_id
-            success_message += " " + record_id_message
+    def _get_reporter_name(self):
+        return self.reporters[0]["first_name"] if len(self.reporters) == 1 else ""
+
+    def _templatize_success_response(self, additional_text):
+        success_message = Response.SUCCESS_RESPONSE_TEMPLATE % (self._get_reporter_name())
+        if additional_text:
+            success_message += " " + additional_text
         return success_message
 
     def _templatize_error_response(self):
@@ -122,8 +123,8 @@ class SubmissionHandler(object):
                     data_record_id = e.add_data(data=data, submission_id=submission_id)
                     self.update_submission_log(submission_id, True, errors=[])
                     #                   TODO: Get rid of the reporters from this
-                    return Response([{'first_name': 'User'}], True, errors, submission_id, data_record_id,
-                                    include_id_in_message=True,short_code = short_code)
+                    return Response(None, True, errors, submission_id,
+                                    datarecord_id = data_record_id,short_code = short_code,additional_text=self._get_registration_text(short_code))
                 else:
                     errors.extend(form_submission.errors)
                     self.update_submission_log(submission_id, False, errors)
@@ -145,6 +146,10 @@ class SubmissionHandler(object):
             return WebPlayer()
         else:
             raise UnknownTransportException(("No handler defined for transport %s") % request.transport)
+
+    def _get_registration_text(self,short_code):
+        RECORD_ID_TEMPLATE = "The short code is - %s"
+        return RECORD_ID_TEMPLATE % (short_code,)
 
 
 def get_submissions_made_for_questionnaire(dbm, form_code, page_number=0, page_size=20, count_only=False):

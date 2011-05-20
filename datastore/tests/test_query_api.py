@@ -519,11 +519,3 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
 
-    def test_get_entities_by_type(self):
-        e = Entity(self.manager, entity_type='foo', short_code="WAR")
-        e.save()
-        loaded_entity = get_by_short_code(self.manager, e.short_code)
-        print loaded_entity
-        self.assertTrue(loaded_entity)
-        self.assertEqual(loaded_entity.aggregation_paths.get('_type'), ['foo'])
-        self.assertEqual(loaded_entity.short_code, 'WAR')

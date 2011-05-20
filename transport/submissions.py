@@ -14,7 +14,7 @@ from mangrove.errors.MangroveException import MangroveException, FormModelDoesNo
 from mangrove.form_model import form_model
 from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
-from mangrove.utils.types import is_string
+from mangrove.utils.types import is_string, is_empty
 
 
 class Request(object):
@@ -30,7 +30,7 @@ class Response(object):
     RECORD_ID_TEMPLATE = "The record id is - %s"
     ERROR_RESPONSE_TEMPLATE = "%s"
 
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, include_id_in_message=False):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, include_id_in_message=False,short_code = None):
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
@@ -40,11 +40,12 @@ class Response(object):
                                                                                         include_id_in_message)
         else:
             self.message = self._templatize_error_response()
+        self.short_code = short_code
 
     def _templatize_success_response_with_reporter_name_and_ids(self, reporters, include_id_in_message):
         success_message = Response.SUCCESS_RESPONSE_TEMPLATE % (
         reporters[0]["first_name"] if len(reporters) == 1 else "")
-        if include_id_in_message is True:
+        if include_id_in_message:
             record_id_message = Response.RECORD_ID_TEMPLATE % self.datarecord_id
             success_message += " " + record_id_message
         return success_message
@@ -101,9 +102,11 @@ class SubmissionHandler(object):
                 form_submission = RegistrationFormSubmission(form, values)
                 if form_submission.is_valid():
                     entity_type = form.answers.get('entity_type')
-                    short_code = entity.generate_entity_short_code(self.dbm, entity_type,
-                                                                   suggested_id=form.answers.get("short_name"))
-                    #                    short_code = form.answers.get("short_name")
+                    suggested_id=form.answers.get("short_name")
+                    if is_empty(suggested_id):
+                        short_code = entity.generate_short_code(self.dbm, entity_type)
+                    else:
+                        short_code = suggested_id.strip()
                     e = Entity(self.dbm, entity_type=entity_type, location=form.location,
                                aggregation_paths=form.aggregation_paths, short_code=short_code)
                     e.save()
@@ -116,11 +119,11 @@ class SubmissionHandler(object):
                     data = [("description", description, description_type),
                             ("mobile_number", mobile_number, mobile_number_type),
                             ]
-                    e.add_data(data=data, submission_id=submission_id)
+                    data_record_id = e.add_data(data=data, submission_id=submission_id)
                     self.update_submission_log(submission_id, True, errors=[])
                     #                   TODO: Get rid of the reporters from this
-                    return Response([{'first_name': 'User'}], True, errors, submission_id, short_code,
-                                    include_id_in_message=True)
+                    return Response([{'first_name': 'User'}], True, errors, submission_id, data_record_id,
+                                    include_id_in_message=True,short_code = short_code)
                 else:
                     errors.extend(form_submission.errors)
                     self.update_submission_log(submission_id, False, errors)

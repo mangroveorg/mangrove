@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+# vim: ai ts=4 sts=4 et sw= encoding=utf-8
 
 import copy
 from datetime import datetime
@@ -8,7 +8,7 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, ShortCodeAlreadyInUseException
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -43,34 +43,17 @@ def define_type(dbm, entity_type):
     entity_tree.save()
 
 
-def _get_used_short_codes(dbm, entity_type=None, short_code=None):
-    used_id_dict = {}
-    if entity_type is None:
-        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=False)
-    elif short_code is None:
-        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True,
-                                         startkey=[[entity_type], {}], endkey=[[entity_type]])
-    else:
-        rows = dbm.load_all_rows_in_view("mangrove_views/used_short_codes", descending=True,
-                                         startkey=[[entity_type], short_code], endkey=[[entity_type], short_code])
-    if entity_type is not None:
-        used_id_list = []
-        for row in rows:
-            used_id_list.append(row["key"][1])
-        used_id_dict = {entity_type: used_id_list}
-    else:
-        type = ""
-        for row in rows:
-            if type != row["key"][0][0]:
-                type = row["key"][0][0]
-            print type
-            used_id_list = used_id_dict.get(type)
-            if used_id_list is None:
-                used_id_list = []
-            print used_id_list
-            used_id_list.append(row["key"][1])
-            used_id_dict[type] = used_id_list
-    return used_id_dict
+def generate_short_code(dbm, entity_type):
+    count = _get_entity_count_for_type(dbm, entity_type=entity_type)
+    assert count >=0
+    return _generate_new_code(entity_type, count )
+
+
+def _get_entity_count_for_type(dbm, entity_type):
+    rows = dbm.load_all_rows_in_view("mangrove_views/by_short_codes",descending = True,
+                                     startkey=[[entity_type], {}], endkey=[[entity_type]], group_level = 1)
+    
+    return rows[0]["value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code):
@@ -80,21 +63,10 @@ def get_by_short_code(dbm, short_code):
     return Entity.new_from_db(dbm=dbm, doc=_doc)
 
 
-def generate_entity_short_code(database_manager, entity_type, suggested_id=None):
-    used_ids = _get_used_short_codes(database_manager, entity_type=entity_type)
-    used_id_list = used_ids[entity_type]
-    if suggested_id is None or suggested_id == "":
-        if is_empty(used_id_list):
-            return entity_type.upper()[:3] + str(1)
-        used_id_list.sort()
-        last_used_id = used_id_list[len(used_id_list) - 1:]
-        sr_id = int(last_used_id[0][3:])
-        sr_id += 1
-        return entity_type.upper()[:3] + str(sr_id)
-    elif suggested_id not in used_id_list:
-        return suggested_id
-    else:
-        raise ShortCodeAlreadyInUseException(short_code=suggested_id)
+def _generate_new_code(entity_type, count):
+    SHORT_CODE_FORMAT = "%s%s"
+    ENTITY_PREFIX = entity_type.upper()[:3]
+    return   SHORT_CODE_FORMAT % (ENTITY_PREFIX,count + 1)
 
 
 def get_entities_by_type(dbm, entity_type):

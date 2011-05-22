@@ -4,17 +4,18 @@
 Common entry point for all submissions to Mangrove via multiple channels.
 Will log the submission and forward to the appropriate channel handler.
 """
+from mangrove.datastore.database import DataObject
 from mangrove.datastore.datadict import DataDictType
 
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.documents import SubmissionLogDocument, AggregationTreeDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, EntityQuestionCodeNotSubmitted, ShortCodeAlreadyInUseException
 from mangrove.form_model import form_model
-from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission
+from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission, get_form_model_by_code
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
-from mangrove.utils.types import is_string, is_empty
+from mangrove.utils.types import is_string, is_empty, is_not_empty
 
 
 class Request(object):
@@ -59,8 +60,9 @@ class UnknownTransportException(MangroveException):
     pass
 
 
-class SubmissionHandler(object):
-    def __init__(self, dbm):
+class SubmissionLogger(object):
+
+    def __init__(self,dbm):
         self.dbm = dbm
 
     def update_submission_log(self, submission_id, status, errors):
@@ -72,6 +74,20 @@ class SubmissionHandler(object):
         log.error_message = log.error_message + (error_message or "")
         self.dbm._save_document(log)
 
+    def create_submission_log(self,channel, source, destination, form_code, values):
+        return self.log(channel, source, destination, form_code, values,False,"")
+
+    def log(self, channel, source, destination, form_code, values, status, error_message):
+        return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
+                                      destination=destination, form_code=form_code, values=values,
+                                      status=status, error_message=error_message)).id
+
+
+
+class SubmissionHandler(object):
+    def __init__(self, dbm):
+        self.dbm = dbm
+
     def accept(self, request):
         assert request is not None
         assert request.source is not None
@@ -80,64 +96,63 @@ class SubmissionHandler(object):
         reporters = []
         submission_id = None
         try:
-            errors = []
+            _errors = []
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
-            submission_id = self.dbm._save_document(
-                SubmissionLogDocument(channel=request.transport, source=request.source,
-                                      destination=request.destination, form_code=form_code, values=values,
-                                      status=False, error_message="")).id
-            form = form_model.get_form_model_by_code(self.dbm, form_code)
-            if form.type == 'survey':
-                reporters = reporter.find_reporter(self.dbm, request.source)
-                form_submission = FormSubmission(form, values)
-                if form_submission.is_valid():
-                    e = entity.get_by_short_code(self.dbm, form_submission.short_code)
-                    data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
-                    self.update_submission_log(submission_id, True, errors=[])
-                    return Response(reporters, True, errors, submission_id, data_record_id)
-                else:
-                    errors.extend(form_submission.errors)
-                    self.update_submission_log(submission_id, False, errors)
-            elif form.type == 'registration':
-                form_submission = RegistrationFormSubmission(form, values)
-                if form_submission.is_valid():
-                    entity_type = form.answers.get('entity_type')
-                    suggested_id=form.answers.get("short_name")
-                    if is_empty(suggested_id):
-                        short_code = entity.generate_short_code(self.dbm, entity_type)
-                    else:
-                        short_code = suggested_id.strip()
-                    e = Entity(self.dbm, entity_type=entity_type, location=form.location,
-                               aggregation_paths=form.aggregation_paths, short_code=short_code)
-                    e.save()
-                    description_type = DataDictType(self.dbm, name='description Type', slug='description',
-                                                    primitive_type='string')
-                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
-                                                      primitive_type='string')
-                    description = form.answers.get("description")
-                    mobile_number = form.answers.get("mobile_number")
-                    data = [("description", description, description_type),
-                            ("mobile_number", mobile_number, mobile_number_type),
-                            ]
-                    data_record_id = e.add_data(data=data, submission_id=submission_id)
-                    self.update_submission_log(submission_id, True, errors=[])
-                    #                   TODO: Get rid of the reporters from this
-                    return Response(None, True, errors, submission_id,
-                                    datarecord_id = data_record_id,short_code = short_code,additional_text=self._get_registration_text(short_code))
-                else:
-                    errors.extend(form_submission.errors)
-                    self.update_submission_log(submission_id, False, errors)
+            logger = SubmissionLogger(self.dbm)
+            submission_id = logger.create_submission_log(channel=request.transport,source=request.source,
+                                                         destination=request.destination, form_code=form_code, values=values)
+            form = get_form_model_by_code(self.dbm, form_code)
+            reporters = reporter.find_reporter(self.dbm, request.source)
+            form_submission = form.validate_submission(values)
+            if form_submission.is_valid:
+                data_record_id = entity.add_data(dbm = self.dbm,short_code = form_submission.short_code,
+                                                 data=form_submission.values,submission_id=submission_id)
+
+                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                return Response(reporters, True, [], submission_id, data_record_id)
+            else:
+                _errors.extend(form_submission.errors.values())
+                logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors)
+#            else:
+#                form_submission = RegistrationFormSubmission(form, values)
+#                if form_submission.is_valid():
+#                    entity_type = form.answers.get('entity_type')
+#                    suggested_id=form.answers.get("short_name")
+#                    if is_empty(suggested_id):
+#                        short_code = entity.generate_short_code(self.dbm, entity_type)
+#                    else:
+#                        short_code = suggested_id.strip()
+#                    e = Entity(self.dbm, entity_type=entity_type, location=form.location,
+#                               aggregation_paths=form.aggregation_paths, short_code=short_code)
+#                    e.save()
+#                    description_type = DataDictType(self.dbm, name='description Type', slug='description',
+#                                                    primitive_type='string')
+#                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
+#                                                      primitive_type='string')
+#                    description = form.answers.get("description")
+#                    mobile_number = form.answers.get("mobile_number")
+#                    data = [("description", description, description_type),
+#                            ("mobile_number", mobile_number, mobile_number_type),
+#                            ]
+#                    data_record_id = e.add_data(data=data, submission_id=submission_id)
+#                    self.update_submission_log(submission_id, True, errors=[])
+#                    #                   TODO: Get rid of the reporters from this
+#                    return Response(None, True, errors, submission_id,
+#                                    datarecord_id = data_record_id,short_code = short_code,additional_text=self._get_registration_text(short_code))
+#                else:
+#                    errors.extend(form_submission.errors)
+#                    self.update_submission_log(submission_id, False, errors)
 
         except FormModelDoesNotExistsException as e:
-            errors.append(e.message)
+            _errors.append(e.message)
         except NumberNotRegisteredException as e:
-            errors.append(e.message)
+            _errors.append(e.message)
         except EntityQuestionCodeNotSubmitted as e:
-            errors.append(e.message)
+            _errors.append(e.message)
         except ShortCodeAlreadyInUseException as e:
-            errors.append(e.message)
-        return Response(reporters, False, errors, submission_id)
+            _errors.append(e.message)
+        return Response(reporters, False, _errors, submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

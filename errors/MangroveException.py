@@ -98,7 +98,7 @@ class AnswerHasTooManyValuesException(MangroveException):
 class AnswerHasNoValuesException(MangroveException):
     def __init__(self, code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s contains more than one value.") % (
+                                   ("Answer %s for question %s has no value.") % (
                                    answer, code,))
 
 

@@ -7,7 +7,7 @@ from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
-from mangrove.form_model.form_model import FormModel, RegistrationFormModel
+from mangrove.form_model.form_model import FormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -235,46 +235,6 @@ class TestFormModel(unittest.TestCase):
         for i in range(len(questions)):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
 
-    def test_should_validate_for_valid_integer_value(self):
-        answers = {"ID": "1", "Q2": "16"}
-        self.assertTrue(self.form_model.is_valid(answers))
-
-    def test_should_return_error_for_invalid_integer_value(self):
-        answers = {"id": "1", "q2": "200"}
-        self.assertFalse(self.form_model.is_valid(answers))
-        self.assertEqual(len(self.form_model.errors), 1)
-
-    def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
-        answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
-        expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
-        valid = self.form_model.is_valid(answers)
-        self.assertTrue(valid)
-        self.assertEqual(self.form_model.cleaned_data, expected_result)
-
-    def test_should_validate_for_valid_text_value(self):
-        answers = {"ID": "1", "Q1": "Asif Momin"}
-        self.assertTrue(self.form_model.is_valid(answers))
-
-    def test_should_return_errors_for_invalid_text_and_integer(self):
-        answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
-        self.assertFalse(self.form_model.is_valid(answers))
-        self.assertEqual(len(self.form_model.errors), 2)
-
-    def test_should_strip_whitespaces(self):
-        answers = {"q1": "   My Name", "q2": "  40 ", "q3": "a     "}
-        expected_cleaned_data = {"question1_Name": "My Name", "Father's age": 40, "Color": ["RED"]}
-        valid = self.form_model.is_valid(answers)
-        self.assertTrue(valid)
-        self.assertEqual(0, len(self.form_model.errors))
-        self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
-
-    def test_should_ignore_fields_without_values(self):
-        answers = {"q1": "My Name", "q2": "", "q3": "   "}
-        expected_cleaned_data = {"question1_Name": "My Name"}
-        valid = self.form_model.is_valid(answers)
-        self.assertTrue(valid)
-        self.assertEqual(0, len(self.form_model.errors))
-        self.assertEqual(self.form_model.cleaned_data, expected_cleaned_data)
 
     def test_should_set_name(self):
         self.form_model.name = 'test_name'
@@ -284,30 +244,7 @@ class TestFormModel(unittest.TestCase):
         self.form_model.entity_type = ["WaterPoint", "Dam"]
         self.assertEqual(self.form_model.entity_type, ["WaterPoint", "Dam"])
 
-    def test_should_return_location_from_answers(self):
-        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
-                   "entity_question_flag": False, "type": "text", "ddtype": self.default_ddtype.to_json(),
-                   "code": "L", }]
-        registration_form = RegistrationFormModel(self.dbm, fields=fields)
-        registration_form.answers = {"location": "India,MH"}
-        self.assertEqual(registration_form.location, ['India', 'MH'])
-
-    def test_should_return_location_as_None_if_answers_not_present(self):
-        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
-                   "entity_question_flag": False, "type": "text", "ddtype": self.default_ddtype.to_json(),
-                   "code": "L", }]
-        registration_form = RegistrationFormModel(self.dbm, fields=fields)
-        self.assertEqual(registration_form.location, None)
-
-    def test_should_not_return_blank_in_location(self):
-        fields = [{"name": "location", "defaultValue": "", "label": {"eng": "locatin of entity"},
-                   "entity_question_flag": False, "type": "text", "ddtype": self.default_ddtype.to_json(),
-                   "code": "L", }]
-        registration_form = RegistrationFormModel(self.dbm, fields=fields)
-        registration_form.answers = {"location": "India,MH, "}
-
-        self.assertEqual(registration_form.location, ['India', 'MH'])
-
+    
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)

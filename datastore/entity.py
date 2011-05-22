@@ -154,6 +154,10 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     return entities
 
+def add_data(dbm, short_code, data, submission_id):
+    e = get_by_short_code(dbm, short_code)
+    data_record_id = e.add_data(data=data, submission_id=submission_id)
+    return data_record_id
 
 class Entity(DataObject):
     """
@@ -420,3 +424,5 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
+
+

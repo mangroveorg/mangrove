@@ -37,10 +37,10 @@ class TestSubmissions(TestCase):
         self.reporter_patcher.stop()
 
     def _valid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {}, "1", True, {})
+        return FormSubmission(self.form_model_mock, {}, "1", True, {},["EntityType"])
 
     def _invalid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {}, "1", False, {"field" :"Invalid"})
+        return FormSubmission(self.form_model_mock, {}, "1", False, {"field" :"Invalid"},["EntityType"])
 
     def test_should_return_true_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()

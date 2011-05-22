@@ -16,6 +16,15 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
+def create_entity(dbm, entity_type, location, aggregation_paths, short_code):
+    if is_empty(short_code):
+        short_code = generate_short_code(dbm, entity_type)
+    else:
+        short_code = short_code.strip()
+    e = Entity(dbm, entity_type=entity_type, location=location,
+               aggregation_paths=aggregation_paths, short_code=short_code)
+    e.save()
+    return e
 
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)

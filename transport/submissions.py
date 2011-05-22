@@ -4,18 +4,15 @@
 Common entry point for all submissions to Mangrove via multiple channels.
 Will log the submission and forward to the appropriate channel handler.
 """
-from mangrove.datastore.database import DataObject
-from mangrove.datastore.datadict import DataDictType
 
-from mangrove.datastore.documents import SubmissionLogDocument, AggregationTreeDocument
+from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
-from mangrove.datastore.entity import Entity
-from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, EntityQuestionCodeNotSubmitted, ShortCodeAlreadyInUseException
-from mangrove.form_model import form_model
-from mangrove.form_model.form_model import FormSubmission, RegistrationFormSubmission, get_form_model_by_code
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, \
+    NumberNotRegisteredException, EntityQuestionCodeNotSubmitted, ShortCodeAlreadyInUseException
+from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
-from mangrove.utils.types import is_string, is_empty, is_not_empty
+from mangrove.utils.types import is_string
 
 
 class Request(object):
@@ -82,8 +79,6 @@ class SubmissionLogger(object):
                                       destination=destination, form_code=form_code, values=values,
                                       status=status, error_message=error_message)).id
 
-
-
 class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
@@ -103,47 +98,35 @@ class SubmissionHandler(object):
             submission_id = logger.create_submission_log(channel=request.transport,source=request.source,
                                                          destination=request.destination, form_code=form_code, values=values)
             form = get_form_model_by_code(self.dbm, form_code)
-            reporters = reporter.find_reporter(self.dbm, request.source)
+#                                             TODO: Fix reporter authorization based on channel.
+            if request.transport.lower() == "web":
+                reporters = None
+            else:
+                reporters = reporter.find_reporter(self.dbm, request.source)
             form_submission = form.validate_submission(values)
             if form_submission.is_valid:
-                data_record_id = entity.add_data(dbm = self.dbm,short_code = form_submission.short_code,
-                                                 data=form_submission.values,submission_id=submission_id)
+                if form._is_registration_form():
+                    e = entity.create_entity(dbm = self.dbm,
+                                             entity_type=form_submission.entity_type,
+#                                             TODO: Fix location values passed in after location story is played.
+                                             location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
+                                             aggregation_paths=None,
+                                             short_code=form_submission.short_code
+                    )
+                    data_record_id = entity.add_data(dbm = self.dbm,short_code = e.short_code,
+                                                     data=form_submission.values,submission_id=submission_id)
+                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                    return Response(reporters, True, [], submission_id, data_record_id, e.short_code,
+                                    additional_text=self._get_registration_text(e.short_code))
+                else:
+                    data_record_id = entity.add_data(dbm = self.dbm,short_code = form_submission.short_code,
+                                                     data=form_submission.values,submission_id=submission_id)
 
-                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
-                return Response(reporters, True, [], submission_id, data_record_id)
+                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                    return Response(reporters, True, [], submission_id, data_record_id)
             else:
                 _errors.extend(form_submission.errors.values())
                 logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors)
-#            else:
-#                form_submission = RegistrationFormSubmission(form, values)
-#                if form_submission.is_valid():
-#                    entity_type = form.answers.get('entity_type')
-#                    suggested_id=form.answers.get("short_name")
-#                    if is_empty(suggested_id):
-#                        short_code = entity.generate_short_code(self.dbm, entity_type)
-#                    else:
-#                        short_code = suggested_id.strip()
-#                    e = Entity(self.dbm, entity_type=entity_type, location=form.location,
-#                               aggregation_paths=form.aggregation_paths, short_code=short_code)
-#                    e.save()
-#                    description_type = DataDictType(self.dbm, name='description Type', slug='description',
-#                                                    primitive_type='string')
-#                    mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
-#                                                      primitive_type='string')
-#                    description = form.answers.get("description")
-#                    mobile_number = form.answers.get("mobile_number")
-#                    data = [("description", description, description_type),
-#                            ("mobile_number", mobile_number, mobile_number_type),
-#                            ]
-#                    data_record_id = e.add_data(data=data, submission_id=submission_id)
-#                    self.update_submission_log(submission_id, True, errors=[])
-#                    #                   TODO: Get rid of the reporters from this
-#                    return Response(None, True, errors, submission_id,
-#                                    datarecord_id = data_record_id,short_code = short_code,additional_text=self._get_registration_text(short_code))
-#                else:
-#                    errors.extend(form_submission.errors)
-#                    self.update_submission_log(submission_id, False, errors)
-
         except FormModelDoesNotExistsException as e:
             _errors.append(e.message)
         except NumberNotRegisteredException as e:

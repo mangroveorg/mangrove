@@ -41,6 +41,10 @@ class EntityQuestionCodeNotSubmitted(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "The submission does not contain entity question code.")
 
+class EntityTypeCodeNotSubmitted(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, "The submission does not contain entity type code.")
+
 
 class EntityQuestionAlreadyExistsException(MangroveException):
     pass

@@ -33,12 +33,12 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "some default value",
             "label": {"eng": "What is your name"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "length": {"min": 1, "max": 20},
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
             }
-        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextField(name="question1_Name", code="Q1", label="What is your name",
                              defaultValue="some default value", length=TextConstraint(1, 20), language="eng",
                              ddtype=self.ddtype)
         actual_json = question._to_json()
@@ -48,12 +48,12 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your age"},
             "name": "Age",
-            "question_code": "Q2",
+            "code": "Q2",
             "range": {},
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
             }
-        question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+        question = IntegerField(name="Age", code="Q2", label="What is your age",
                                 language="eng", ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -62,12 +62,12 @@ class TestQuestion(unittest.TestCase):
         expected_json = {
             "label": {"eng": "What is your age"},
             "name": "Age",
-            "question_code": "Q2",
+            "code": "Q2",
             "range": {"min": 15, "max": 120},
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
             }
-        question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+        question = IntegerField(name="Age", code="Q2", label="What is your age",
                                 language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -78,11 +78,11 @@ class TestQuestion(unittest.TestCase):
             "name": "color",
             "choices": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
                         {"text": {'eng': 'green'}, "val": 3}],
-            "question_code": "Q3",
+            "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
             }
-        question = SelectField(name="color", question_code="Q3", label="What is your favorite color",
+        question = SelectField(name="color", code="Q3", label="What is your favorite color",
                                language="eng", options=[("RED", 1), ("YELLOW", 2), ('green', 3)], ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -93,11 +93,11 @@ class TestQuestion(unittest.TestCase):
             "name": "color",
             "choices": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
                         {"text": {'eng': 'green'}}],
-            "question_code": "Q3",
+            "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select",
             }
-        question = SelectField(name="color", question_code="Q3", label="What is your favorite color",
+        question = SelectField(name="color", code="Q3", label="What is your favorite color",
                                language="eng", options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
                                ddtype=self.ddtype)
         actual_json = question._to_json()
@@ -108,12 +108,12 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "some default value",
             "label": {"eng": "What is your name", "fra": "french label"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "length": {},
             "ddtype": self.DDTYPE_JSON,
             "type": "text"
         }
-        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextField(name="question1_Name", code="Q1", label="What is your name",
                              defaultValue="some default value", ddtype=self.ddtype)
         question.add_or_edit_label(language="fra", label="french label")
         actual_json = question._to_json()
@@ -124,12 +124,12 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "some default value",
             "label": {"eng": "english label", "fra": "french label"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "length": {},
             "ddtype": self.DDTYPE_JSON,
             "type": "text"
         }
-        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextField(name="question1_Name", code="Q1", label="What is your name",
                              defaultValue="some default value", ddtype=self.ddtype)
         question.add_or_edit_label(language="fra", label="french label")
         question.add_or_edit_label(label="english label")
@@ -141,13 +141,13 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "",
             "label": {"eng": "What is your name"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "length": {},
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
             "entity_question_flag": True
         }
-        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextField(name="question1_Name", code="Q1", label="What is your name",
                              entity_question_flag=True, ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -158,7 +158,7 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "",
             "label": {"eng": "What is your name"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "type": "text",
             "length": {"min": 1, "max": 10},
             "entity_question_flag": True,
@@ -177,7 +177,7 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "",
             "label": {"eng": "What is your age"},
             "name": "question1_age",
-            "question_code": "Q1",
+            "code": "Q1",
             "type": "integer",
             "ddtype": self.DDTYPE_JSON,
             "range": {"min": 0, "max": 100},
@@ -195,7 +195,7 @@ class TestQuestion(unittest.TestCase):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         question_json = {
             "name": "q3",
-            "question_code": "qc3",
+            "code": "qc3",
             "type": "select",
             "ddtype": self.DDTYPE_JSON,
             "choices": [{"text": {"eng": "option 1"}, "value": "c1"},
@@ -211,7 +211,7 @@ class TestQuestion(unittest.TestCase):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         question_json = {
             "name": "q3",
-            "question_code": "qc3",
+            "code": "qc3",
             "type": "select1",
             "ddtype": self.DDTYPE_JSON,
             "choices": [{"text": {"eng": "hello", "fr": "bonjour"}, "value": "c1"},
@@ -227,7 +227,7 @@ class TestQuestion(unittest.TestCase):
         self.assertEqual(created_question.ddtype, self.ddtype)
 
     def test_should_return_error_for_integer_range_validation(self):
-        question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+        question = IntegerField(name="Age", code="Q2", label="What is your age",
                                 language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
         valid_value = question.validate("120")
         self.assertEqual(valid_value, 120)
@@ -236,14 +236,14 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_return_error_for_wrong_type_for_integer(self):
         with self.assertRaises(AnswerWrongType) as e:
-            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+            question = IntegerField(name="Age", code="Q2", label="What is your age",
                                     language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
             question.validate("asas")
         self.assertEqual(e.exception.message, "Answer to question Q2 is of wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
-            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+            question = IntegerField(name="Age", code="Q2", label="What is your age",
                                     language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
             valid_value = question.validate(150)
             self.assertFalse(valid_value)
@@ -251,16 +251,16 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
-            question = IntegerField(name="Age", question_code="Q2", label="What is your age",
+            question = IntegerField(name="Age", code="Q2", label="What is your age",
                                     language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
             valid_value = question.validate(11)
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer 11 for question Q2 is smaller than allowed.")
 
     def test_successful_text_length_validation(self):
-        question = TextField(name="Name", question_code="Q2", label="What is your Name",
+        question = TextField(name="Name", code="Q2", label="What is your Name",
                              language="eng", length=TextConstraint(min=4, max=15), ddtype=self.ddtype)
-        question1 = TextField(name="Name", question_code="Q2", label="What is your Name",
+        question1 = TextField(name="Name", code="Q2", label="What is your Name",
                               language="eng", ddtype=self.ddtype)
         valid_value = question.validate("valid")
         self.assertEqual(valid_value, "valid")
@@ -269,7 +269,7 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_return_error_for_text_length_validation_for_max_value(self):
         with self.assertRaises(AnswerTooLongException) as e:
-            question = TextField(name="Age", question_code="Q2", label="What is your age",
+            question = TextField(name="Age", code="Q2", label="What is your age",
                                  language="eng", length=TextConstraint(min=1, max=4), ddtype=self.ddtype)
             valid_value = question.validate("long_answer")
             self.assertFalse(valid_value)
@@ -277,7 +277,7 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
-            question = TextField(name="Age", question_code="Q2", label="What is your age",
+            question = TextField(name="Age", code="Q2", label="What is your age",
                                  language="eng", length=TextConstraint(min=15, max=120), ddtype=self.ddtype)
             valid_value = question.validate("short")
             self.assertFalse(valid_value)
@@ -289,7 +289,7 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "",
             "label": {"eng": "What is your birth date"},
             "name": "Birth_date",
-            "question_code": "Q1",
+            "code": "Q1",
             "type": "date",
             "date_format": "%m.%Y",
             "ddtype": self.DDTYPE_JSON,
@@ -301,7 +301,7 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
         with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+            question = DateField(name="Age", code="Q2", label="What is your birth date",
                                  language="eng", date_format="mm.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("13.2010")
             self.assertFalse(valid_value)
@@ -309,7 +309,7 @@ class TestQuestion(unittest.TestCase):
                          "Answer to question Q2 is invalid: 13.2010, expected date in mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+            question = DateField(name="Age", code="Q2", label="What is your birth date",
                                  language="eng", date_format="dd.mm.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("33.12.2010")
             self.assertFalse(valid_value)
@@ -317,7 +317,7 @@ class TestQuestion(unittest.TestCase):
                          "Answer to question Q2 is invalid: 33.12.2010, expected date in dd.mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
-            question = DateField(name="Age", question_code="Q2", label="What is your birth date",
+            question = DateField(name="Age", code="Q2", label="What is your birth date",
                                  language="eng", date_format="mm.dd.yyyy", ddtype=self.ddtype)
             valid_value = question.validate("13.01.2010")
             self.assertFalse(valid_value)
@@ -326,7 +326,7 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_validate_single_answer(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:
-            clinic_question = SelectField(name="clinic type", question_code="Q1", label="What type of clinic is it?",
+            clinic_question = SelectField(name="clinic type", code="Q1", label="What type of clinic is it?",
                                           language="eng", options=["village", "urban"], single_select_flag=True,
                                           ddtype=self.ddtype)
             clinic_question.validate("vu")
@@ -335,30 +335,30 @@ class TestQuestion(unittest.TestCase):
 
     def test_should_create_field_with_datadict_type(self):
         nameType = Mock(spec=DataDictType)
-        question1 = TextField(name="Name", question_code="Q1", label="What is your Name",
+        question1 = TextField(name="Name", code="Q1", label="What is your Name",
                               language="eng", length=TextConstraint(min=4, max=15), ddtype=nameType)
         self.assertEqual(nameType, question1.ddtype)
 
         ageType = Mock(spec=DataDictType)
-        question2 = IntegerField(name="Age", question_code="Q2", label="What is your age",
+        question2 = IntegerField(name="Age", code="Q2", label="What is your age",
                                  language="eng", range=NumericConstraint(min=4, max=15), ddtype=ageType)
         self.assertEqual(ageType, question2.ddtype)
 
         selectType = Mock(spec=DataDictType)
-        question3 = SelectField(name="clinic type", question_code="Q1", label="What type of clinic is it?",
+        question3 = SelectField(name="clinic type", code="Q1", label="What type of clinic is it?",
                                 language="eng", options=["village", "urban"], ddtype=selectType)
 
         self.assertEqual(selectType, question3.ddtype)
 
         dateType = Mock(spec=DataDictType)
-        question4 = DateField(name="Age", question_code="Q2", label="What is your birth date",
+        question4 = DateField(name="Age", code="Q2", label="What is your birth date",
                               language="eng", date_format="%m.%d.%Y", ddtype=dateType)
         self.assertEqual(dateType, question4.ddtype)
 
 
     def test_should_throw_exception_if_field_created_with_none_datadict_type(self):
         with self.assertRaises(AssertionError):
-            TextField(name="Name", question_code="Q1", label="What is your Name",
+            TextField(name="Name", code="Q1", label="What is your Name",
                       language="eng", length=TextConstraint(min=4, max=15), ddtype=None)
 
     def test_should_convert_ddtype_to_json(self):
@@ -366,13 +366,13 @@ class TestQuestion(unittest.TestCase):
             "defaultValue": "",
             "label": {"eng": "What is your name"},
             "name": "question1_Name",
-            "question_code": "Q1",
+            "code": "Q1",
             "length": {},
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
             "entity_question_flag": True
         }
-        question = TextField(name="question1_Name", question_code="Q1", label="What is your name",
+        question = TextField(name="question1_Name", code="Q1", label="What is your name",
                              entity_question_flag=True, ddtype=self.ddtype)
         actual_json = question._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -384,9 +384,9 @@ class TestQuestion(unittest.TestCase):
             "name": "type",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
-            "question_code": "T",
+            "code": "T",
             "label": {"eng": "What type?"}}
-        question = SelectField(name="type", question_code="T", label="What type?",
+        question = SelectField(name="type", code="T", label="What type?",
                                options=[{"text": {"fr": "lake", "eng": "Lake"}}, {"text": {"fr": "dam", "eng": "Dam"}}],
                                ddtype=self.ddtype,
                                language="eng",

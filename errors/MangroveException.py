@@ -65,59 +65,59 @@ class EntityInstanceDoesNotExistsException(MangroveException):
 
 
 class AnswerTooBigException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s is greater than allowed.") % (answer, question_code,))
+                                   ("Answer %s for question %s is greater than allowed.") % (answer, code,))
 
 
 class AnswerTooSmallException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s is smaller than allowed.") % (answer, question_code,))
+                                   ("Answer %s for question %s is smaller than allowed.") % (answer, code,))
 
 
 class AnswerTooLongException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s is longer than allowed.") % (answer, question_code,))
+                                   ("Answer %s for question %s is longer than allowed.") % (answer, code,))
 
 
 class AnswerTooShortException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
-                                   ("Answer %s for question %s is shorter than allowed.") % (answer, question_code,))
+                                   ("Answer %s for question %s is shorter than allowed.") % (answer, code,))
 
 
 class AnswerHasTooManyValuesException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
                                    ("Answer %s for question %s contains more than one value.") % (
-                                   answer, question_code,))
+                                   answer, code,))
 
 
 class AnswerHasNoValuesException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
                                    ("Answer %s for question %s contains more than one value.") % (
-                                   answer, question_code,))
+                                   answer, code,))
 
 
 class AnswerNotInListException(MangroveException):
-    def __init__(self, question_code, answer):
+    def __init__(self, code, answer):
         MangroveException.__init__(self,
                                    ("Answer %s for question %s is not present in the allowed options.") % (
-                                   answer, question_code,))
+                                   answer, code,))
 
 
 class AnswerWrongType(MangroveException):
-    def __init__(self, question_code):
-        MangroveException.__init__(self, ("Answer to question %s is of wrong type.") % (question_code,))
+    def __init__(self, code):
+        MangroveException.__init__(self, ("Answer to question %s is of wrong type.") % (code,))
 
 
 class IncorrectDate(MangroveException):
-    def __init__(self, question_code, answer, date_format):
+    def __init__(self, code, answer, date_format):
         MangroveException.__init__(self, ('Answer to question %s is invalid: %s, expected date in %s format') %
-                                         (question_code, answer, date_format))
+                                         (code, answer, date_format))
 
 
 class NoDocumentError(MangroveException):

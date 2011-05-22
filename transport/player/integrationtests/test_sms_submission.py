@@ -43,14 +43,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                   ("first_name", "Test_reporter", self.name_type)], location=[],
                             source="sms")
 
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
-        question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
+        question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
                               ddtype=self.name_type)
-        question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
+        question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
-        question4 = SelectField(name="Color", question_code="COL", label="Color",
+        question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",

@@ -48,23 +48,23 @@ class TextConstraint(object):
 
 
 class ChoiceConstraint(object):
-    def __init__(self, single_select_constraint, list_of_valid_choices, question_code):
+    def __init__(self, single_select_constraint, list_of_valid_choices, code):
         self.single_select_constraint = single_select_constraint
         self.list_of_valid_choices = list_of_valid_choices
-        self.question_code = question_code
+        self.code = code
 
     def validate(self, answer):
         assert answer is not None
         answer_string = answer.lower().strip()
         if not answer_string:
-            raise AnswerHasNoValuesException(question_code=self.question_code, answer=answer)
+            raise AnswerHasNoValuesException(code=self.code, answer=answer)
         choices = []
         if self.single_select_constraint and  len(answer_string) > 1:
-            raise AnswerHasTooManyValuesException(question_code=self.question_code, answer=answer)
+            raise AnswerHasTooManyValuesException(code=self.code, answer=answer)
         for character in answer_string:
             index_represented = ord(character) - ord('a')
             if index_represented > len(self.list_of_valid_choices) - 1 or index_represented < 0:
-                raise AnswerNotInListException(question_code=self.question_code, answer=character)
+                raise AnswerNotInListException(code=self.code, answer=character)
             else:
                 choice_selected = self.list_of_valid_choices[index_represented]
                 if choice_selected not in choices:

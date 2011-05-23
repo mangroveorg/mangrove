@@ -157,3 +157,6 @@ class LatitudeNotInRange(MangroveException):
         MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
                                          (lat,))
 
+class GeoCodeFormatException(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, "GPS coordinates must be in the format 'lat long'.")

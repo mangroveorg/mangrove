@@ -5,7 +5,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
-from mangrove.errors.MangroveException import IncorrectDate
+from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException
 from mangrove.form_model.field import DateField, GeoCodeField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
@@ -424,5 +424,11 @@ class TestField(unittest.TestCase):
         expect_lat_long=(89.1,100.1)
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
                                  language="eng")
-        actual_lat_long = field.validate(latitude="89.1", longitude="100.1")
+        actual_lat_long = field.validate(lat_long_string="89.1 100.1")
         self.assertEqual(expect_lat_long, actual_lat_long)
+
+    def test_should_give_error_for_invalid_location(self):
+        field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+                                 language="eng")
+        with self.assertRaises(GeoCodeFormatException):
+            field.validate(lat_long_string="89.1")

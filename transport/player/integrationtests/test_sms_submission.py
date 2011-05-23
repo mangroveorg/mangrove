@@ -76,6 +76,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         self.assertTrue(response.success)
 
+
+
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])

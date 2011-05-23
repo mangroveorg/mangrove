@@ -302,5 +302,5 @@ def _construct_registration_form(manager):
     question6 = TextField(name="mobile_number", code="M", label="What is the associated mobile number?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
     form_model = FormModel(manager, name="REG", form_code=REGISTRATION_FORM_CODE, fields=[
-            question1, question2, question3, question4, question5, question6])
+            question1, question2, question3, question4, question5, question6],entity_type=["Registration"])
     return form_model

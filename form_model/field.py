@@ -4,7 +4,7 @@ from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
-from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
+from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, LocationConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -226,6 +226,9 @@ class LocationField(Field):
     def __init__(self, name, code, label, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)
+
+    def validate(self, latitude, longitude):
+        return LocationConstraint().validate(latitude=latitude,longitude=longitude)
 
 
 def create_question_from(dictionary, dbm):

@@ -406,3 +406,10 @@ class TestField(unittest.TestCase):
                                  language="eng")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+
+    def test_should_validate_location(self):
+        expect_lat_long=(89.1,100.1)
+        field = LocationField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+                                 language="eng")
+        actual_lat_long = field.validate(latitude="89.1", longitude="100.1")
+        self.assertEqual(expect_lat_long, actual_lat_long)

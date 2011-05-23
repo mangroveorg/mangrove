@@ -19,7 +19,7 @@ def is_empty(arg):
         arg = arg.strip()
 
     try:
-        if len(arg) == 0:
+        if not len(arg):
             return True
     except TypeError:
         # wasn't a sequence

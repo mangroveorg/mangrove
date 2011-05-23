@@ -7,9 +7,8 @@ from  mangrove import initializer
 
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
-from mangrove.datastore.entity import define_type, get_by_short_code
-from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import ShortCodeAlreadyInUseException
+from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
@@ -35,14 +34,21 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                          data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
-                                          source="sms", short_code="CLI1")
+        self.entity  = create_entity(self.dbm, entity_type="HealthFacility.Clinic",
+                                          location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
+                                          )
 
-        datarecord.register(self.dbm, entity_type=["Reporter"],
-                            data=[("telephone_number", '1234', self.telephone_number_type),
-                                  ("first_name", "Test_reporter", self.name_type)], location=[],
-                            source="sms")
+
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],submission_id="1")
+
+
+        reporter = create_entity(self.dbm, entity_type=["Reporter"],
+                        location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
+                            )
+
+        reporter.add_data(data=[("telephone_number", '1234', self.telephone_number_type),
+                                  ("first_name", "Test_reporter", self.name_type)], submission_id="2")
+
 
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
@@ -133,7 +139,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "DOG1"
         self.assertEqual(response.short_code, expected_short_code)
-        a = get_by_short_code(self.dbm, expected_short_code)
+        a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
 
         text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 45557"
@@ -141,8 +147,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        self.assertEqual(response.short_code, "bud")
-        a = get_by_short_code(self.dbm, "bud")
+        self.assertEqual(response.short_code, "bud", ["dog"])
+        a = get_by_short_code(self.dbm, "bud", ["dog"])
         self.assertEqual(a.short_code, "bud")
 
         text = "REG +N buddy2 +T dog +L new_home +D its another dog! +M 78541"
@@ -152,7 +158,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "DOG3"
         self.assertEqual(response.short_code, expected_short_code)
-        b = get_by_short_code(self.dbm, expected_short_code)
+        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(b.short_code, expected_short_code)
 
     def test_should_log_submission(self):
@@ -174,7 +180,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "REG +N buddy +S DOG3 +T dog +L home +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
-        expected_error = ShortCodeAlreadyInUseException("DOG3")
+        expected_error = DataObjectAlreadyExists("Entity", "Id", "dog/DOG3")
         text = "REG +N buddy1 +S DOG3 +T dog +L home +D its another dog! +M 1234567"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))

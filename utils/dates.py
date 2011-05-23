@@ -17,7 +17,7 @@ def parse_iso_date_str(s):
 
 def is_naive_datetime(d):
     assert isinstance(d, datetime)
-    return (d.tzinfo is None)
+    return d.tzinfo is None
 
 
 def to_aware_utc(d):

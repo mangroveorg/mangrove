@@ -9,8 +9,8 @@ from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
 from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME
-from mangrove.datastore.entity import Entity, get_by_short_code
-from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, EntityQuestionCodeNotSubmitted, ShortCodeAlreadyInUseException
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, \
+    EntityQuestionCodeNotSubmitted, DataObjectAlreadyExists
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.utils.types import is_string
 
@@ -106,21 +106,17 @@ class SubmissionHandler(object):
             form_submission = form.validate_submission(values)
             if form_submission.is_valid:
                 if form._is_registration_form():
-                    e = entity.create_entity(dbm = self.dbm,
-                                             entity_type=form_submission.entity_type,
-#                                             TODO: Fix location values passed in after location story is played.
-                                             location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
-                                             aggregation_paths=None,
-                                             short_code=form_submission.short_code
-                    )
-                    data_record_id = entity.add_data(dbm = self.dbm,short_code = e.short_code,
-                                                     data=form_submission.values,submission_id=submission_id)
-                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                    e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
+                                                        location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
+                                                        aggregation_paths=None, short_code=form_submission.short_code)
+
+                    data_record_id = e.add_data(data = form_submission.values,submission_id=submission_id)
+
                     return Response(reporters, True, [], submission_id, data_record_id, e.short_code,
                                     additional_text=self._get_registration_text(e.short_code))
                 else:
                     data_record_id = entity.add_data(dbm = self.dbm,short_code = form_submission.short_code,
-                                                     data=form_submission.values,submission_id=submission_id)
+                                                     data=form_submission.values,submission_id=submission_id, entity_type=form.entity_type)
 
                     logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
                     return Response(reporters, True, [], submission_id, data_record_id)
@@ -133,7 +129,7 @@ class SubmissionHandler(object):
             _errors.append(e.message)
         except EntityQuestionCodeNotSubmitted as e:
             _errors.append(e.message)
-        except ShortCodeAlreadyInUseException as e:
+        except DataObjectAlreadyExists as e:
             _errors.append(e.message)
         return Response(reporters, False, _errors, submission_id)
 

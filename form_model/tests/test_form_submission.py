@@ -3,7 +3,6 @@ from unittest.case import TestCase
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.form_model.validation import NumericConstraint

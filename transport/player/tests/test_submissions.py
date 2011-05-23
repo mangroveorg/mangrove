@@ -2,8 +2,7 @@
 
 from unittest.case import TestCase
 from mock import Mock, patch
-from mangrove.datastore.database import DatabaseManager, get_db_manager, _delete_db_and_remove_db_manager
-from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
@@ -29,6 +28,7 @@ class TestSubmissions(TestCase):
 
         self.reporter_module.find_reporter.return_value = [{"first_name": "1234"}]
         self.form_model_mock = Mock(spec=FormModel)
+        self.form_model_mock._is_registration_form.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock
 
     def tearDown(self):
@@ -73,7 +73,6 @@ class TestSubmissions(TestCase):
 
 
     def test_should_create_new_submission_log(self):
-
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         s = SubmissionHandler(self.dbm)
         response = s.accept(request)

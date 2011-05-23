@@ -23,6 +23,7 @@ class field_attributes(object):
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
     SELECT_FIELD = 'select1'
+    LOCATION_FIELD = "location"
     DATE_FIELD = 'date'
     MULTISELECT_FIELD = 'select'
     DEFAULT_LANGUAGE = "eng"
@@ -219,6 +220,12 @@ class SelectField(Field):
         dict['choices'] = option_list
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
+
+
+class LocationField(Field):
+    def __init__(self, name, code, label, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
+                       label=label, language=language, ddtype=ddtype)
 
 
 def create_question_from(dictionary, dbm):

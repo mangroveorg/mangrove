@@ -158,4 +158,7 @@ def get_submissions_made_for_questionnaire(dbm, form_code, page_number=0, page_s
     else:
         rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', reduce=False, startkey=[form_code],
                                          endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
-    return [each.value for each in rows]
+
+    answer = [each.value for each in rows]
+    answer.reverse()
+    return answer

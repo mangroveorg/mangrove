@@ -113,8 +113,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[0]['values'])
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[1]['values'])
+        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
+        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
 
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "CLINIC +ID %s +ARV 150 " % self.entity.id

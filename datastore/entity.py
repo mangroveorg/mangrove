@@ -8,7 +8,7 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, ShortCodeAlreadyInUseException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -16,11 +16,13 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
-def create_entity(dbm, entity_type, location, aggregation_paths, short_code):
+def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None):
     if is_empty(short_code):
         short_code = generate_short_code(dbm, entity_type)
     else:
         short_code = short_code.strip()
+    if get_by_short_code(dbm, short_code) is not None:
+        raise ShortCodeAlreadyInUseException(short_code)
     e = Entity(dbm, entity_type=entity_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code)
     e.save()
@@ -68,6 +70,8 @@ def _get_entity_count_for_type(dbm, entity_type):
 def get_by_short_code(dbm, short_code):
     assert is_string(short_code)
     rows = dbm.load_all_rows_in_view('mangrove_views/entity_by_short_code', key=short_code, include_docs=True)
+    if is_empty(rows):
+        return None
     _doc = EntityDocument.wrap(rows[0].doc)
     return Entity.new_from_db(dbm=dbm, doc=_doc)
 

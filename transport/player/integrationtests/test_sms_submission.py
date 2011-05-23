@@ -9,7 +9,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code
 from mangrove.datastore import datarecord
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import ShortCodeAlreadyInUseException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
@@ -168,7 +168,16 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals("QR1", submission_log.form_code)
         self.assertEquals({'q1': '20', 'eid': '100'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
-#
 
 
-
+    def test_should_throw_error_if_entity_with_same_short_code_exists(self):
+        text = "REG +N buddy +S DOG3 +T dog +L home +D its a dog! +M 123456"
+        s = SubmissionHandler(self.dbm)
+        s.accept(Request("sms", text, "1234", "5678"))
+        expected_error = ShortCodeAlreadyInUseException("DOG3")
+        text = "REG +N buddy1 +S DOG3 +T dog +L home +D its another dog! +M 1234567"
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertTrue(expected_error.message in response.errors)
+        self.assertEqual(len(response.errors), 1)

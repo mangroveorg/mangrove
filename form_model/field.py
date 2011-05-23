@@ -8,6 +8,29 @@ from mangrove.form_model.validation import NumericConstraint, ConstraintAttribut
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
+def create_question_from(dictionary, dbm):
+    """
+     Given a dictionary that defines a question, this would create a field with all the validations that are
+     defined on it.
+    """
+    type = dictionary.get("type")
+    name = dictionary.get("name")
+    code = dictionary.get("code")
+    is_entity_question = dictionary.get("entity_question_flag")
+    label = dictionary.get("label")
+    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
+    if type == field_attributes.TEXT_FIELD:
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name)
+    elif type == field_attributes.INTEGER_FIELD:
+        return _get_integer_field(code, ddtype, dictionary, label, name)
+    elif type == field_attributes.DATE_FIELD:
+        return _get_date_field(code, ddtype, dictionary, label, name)
+    elif type == field_attributes.LOCATION_FIELD:
+        return LocationField(name=name, code=code, label=label, ddtype=ddtype)
+    elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
+        return _get_select_field(code, ddtype, dictionary, label, name, type)
+    return None
+
 def field_to_json(object):
     #    assert isinstance(object, Field)
     if isinstance(object, datetime):
@@ -228,37 +251,33 @@ class LocationField(Field):
                        label=label, language=language, ddtype=ddtype)
 
     def validate(self, latitude, longitude):
-        return LocationConstraint().validate(latitude=latitude,longitude=longitude)
+        return LocationConstraint().validate(latitude=latitude, longitude=longitude)
 
 
-def create_question_from(dictionary, dbm):
-    """
-     Given a dictionary that defines a question, this would create a field with all the validations that are
-     defined on it.
-    """
-    type = dictionary.get("type")
-    name = dictionary.get("name")
-    code = dictionary.get("code")
-    is_entity_question = dictionary.get("entity_question_flag")
-    label = dictionary.get("label")
-    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
-    if type == "text":
-        length_dict = dictionary.get("length")
-        length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
-                                max=length_dict.get(ConstraintAttributes.MAX))
-        return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                         length=length, ddtype=ddtype)
-    elif type == "integer":
-        range_dict = dictionary.get("range")
-        range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
-                                  max=range_dict.get(ConstraintAttributes.MAX))
-        return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype)
-    elif type == "date":
-        date_format = dictionary.get("date_format")
-        return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype)
-    elif type == "select" or type == "select1":
-        choices = dictionary.get("choices")
-        single_select = True if type == "select1" else False
-        return SelectField(name=name, code=code, label=label, options=choices,
-                           single_select_flag=single_select, ddtype=ddtype)
-    return None
+
+
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name):
+    length_dict = dictionary.get("length")
+    length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
+                            max=length_dict.get(ConstraintAttributes.MAX))
+    return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+                     length=length, ddtype=ddtype)
+
+
+def _get_integer_field(code, ddtype, dictionary, label, name):
+    range_dict = dictionary.get("range")
+    range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+                              max=range_dict.get(ConstraintAttributes.MAX))
+    return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype)
+
+
+def _get_date_field(code, ddtype, dictionary, label, name):
+    date_format = dictionary.get("date_format")
+    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype)
+
+
+def _get_select_field(code, ddtype, dictionary, label, name, type):
+    choices = dictionary.get("choices")
+    single_select = True if type == field_attributes.SELECT_FIELD else False
+    return SelectField(name=name, code=code, label=label, options=choices,
+                       single_select_flag=single_select, ddtype=ddtype)

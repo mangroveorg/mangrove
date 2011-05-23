@@ -59,7 +59,7 @@ class FormModel(DataObject):
         doc.entity_type = entity_type
         doc.type = type
         doc.active_languages = language
-        self._set_document(doc)
+        DataObject._set_document(self, doc)
 
     def _set_document(self, document):
         DataObject._set_document(self, document)

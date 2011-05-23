@@ -299,6 +299,19 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.date_format, "%m.%Y")
         self.assertEqual(created_field.ddtype, self.ddtype)
 
+    def test_should_create_location_field(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        field_json = {
+            "label": {"eng": "What is your location"},
+            "name": "Birth_place",
+            "code": "LOC",
+            "type": "location",
+            "ddtype": self.DDTYPE_JSON,
+            }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, LocationField)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",

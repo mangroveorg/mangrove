@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import  _construct_registration_form, FormModel
+from mangrove.form_model.form_model import _construct_registration_form, FormModel
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
 class TestFormModel(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestFormModel(unittest.TestCase):
     def test_give_error_for_no_entity_short_code(self):
         with self.assertRaises(EntityQuestionCodeNotSubmitted):
             answers = {"Q2": "10"}
-            valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+            self.form_model._is_valid(answers)
 
     def test_should_return_valid_form_submission(self):
         answers = {"ID": "1", "Q2": "16"}

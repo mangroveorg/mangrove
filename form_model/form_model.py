@@ -6,7 +6,7 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted, \
     EntityTypeCodeNotSubmitted
-from mangrove.form_model.field import TextField
+from mangrove.form_model.field import TextField, GeoCodeField
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
@@ -276,7 +276,7 @@ def create_default_reg_form_model(manager):
 
 
 def _construct_registration_form(manager):
-    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='location')
+    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='geocode')
     description_type = get_or_create_data_dict(manager, name='description Type', slug='description',
                                                primitive_type='string')
     mobile_number_type = get_or_create_data_dict(manager, name='Mobile Number Type', slug='mobile_number',
@@ -295,7 +295,7 @@ def _construct_registration_form(manager):
     question3 = TextField(name="short_name", code="S", label="What is the entity's short name?",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
-    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
+    question4 = GeoCodeField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
                              language="eng", ddtype=location_type)
     question5 = TextField(name="description", code="D", label="Describe the entity",
                           defaultValue="some default value", language="eng", ddtype=description_type)

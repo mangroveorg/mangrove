@@ -50,7 +50,7 @@ class TestFormModel(unittest.TestCase):
         form = create_default_reg_form_model(self.dbm)
         self.assertEqual(6, len(form.fields))
         self.assertEqual("REG",form.form_code)
-        self.assertEqual(unicode('location'),form.fields[3].ddtype.primitive_type)
+        self.assertEqual('geocode',form.fields[3].ddtype.primitive_type)
 
 
     def test_get_form_model(self):

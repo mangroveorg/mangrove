@@ -132,7 +132,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     
     def test_should_register_new_entity(self):
-        text = "REG +N buddy +T dog +L home +D its a dog! +M 123456"
+        text = "REG +N buddy +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -142,7 +142,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
 
-        text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 45557"
+        text = "REG +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -151,7 +151,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         a = get_by_short_code(self.dbm, "bud", ["dog"])
         self.assertEqual(a.short_code, "bud")
 
-        text = "REG +N buddy2 +T dog +L new_home +D its another dog! +M 78541"
+        text = "REG +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -177,11 +177,11 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
-        text = "REG +N buddy +S DOG3 +T dog +L home +D its a dog! +M 123456"
+        text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
         expected_error = DataObjectAlreadyExists("Entity", "Id", "dog/DOG3")
-        text = "REG +N buddy1 +S DOG3 +T dog +L home +D its another dog! +M 1234567"
+        text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)

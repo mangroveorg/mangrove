@@ -10,6 +10,9 @@ from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTr
 
 
 class TestSubmissions(TestCase):
+
+    ENTITY_TYPE = ["EntityType"]
+
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.form_model_patcher = patch('mangrove.transport.submissions.get_form_model_by_code')
@@ -37,10 +40,10 @@ class TestSubmissions(TestCase):
         self.reporter_patcher.stop()
 
     def _valid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {}, "1", True, {},["EntityType"])
+        return FormSubmission(self.form_model_mock, {"location":"Pune"}, "1", True, {}, self.ENTITY_TYPE)
 
     def _invalid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {}, "1", False, {"field" :"Invalid"},["EntityType"])
+        return FormSubmission(self.form_model_mock, {}, "1", False, {"field" :"Invalid"}, self.ENTITY_TYPE)
 
     def test_should_return_true_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
@@ -151,6 +154,42 @@ class TestSubmissions(TestCase):
             mock_dbm = Mock(spec=DatabaseManager)
             sub_handler = SubmissionHandler(dbm=mock_dbm)
             sub_handler.get_player_for_transport(request)
+
+    def test_should_register_entity_if_form_submission_valid(self):
+        self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
+        self.form_model_mock._is_registration_form.return_value = True
+
+        request = Request(transport="sms", message="CODE +name xyz +age 10",
+                          source="1234", destination="5678")
+        handler = SubmissionHandler(self.dbm)
+        response = handler.accept(request)
+        self.assertTrue(response.success)
+        self.entity_module.create_entity.assert_called_once_with(dbm=self.dbm,entity_type=self.ENTITY_TYPE,
+                                                                 location=["Pune"],
+                                                                 aggregation_paths=None, short_code="1")
+        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id = self.SUBMISSION_ID,
+                                                                            status = True, errors = [])
+
+
+    def test_should_not_register_entity_if_form_submission_invalid(self):
+        form_submission = self._invalid_form_submission()
+        self.form_model_mock.validate_submission.return_value = form_submission
+        self.form_model_mock._is_registration_form.return_value = True
+
+        request = Request(transport="sms", message="CODE +name xyz +age 10",
+                          source="1234", destination="5678")
+        handler = SubmissionHandler(self.dbm)
+        response = handler.accept(request)
+        self.assertFalse(response.success)
+        
+        self.assertFalse(self.entity_module.create_entity.called)
+        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id = self.SUBMISSION_ID,
+                                                                            status = False, errors = form_submission.errors.values() )
+
+
+
+
+
 
 #TODO : need to rewrite this test when Submission handler is broken in two part
 #    def test_should_return_success_message_with_reporter_name(self):

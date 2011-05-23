@@ -111,6 +111,8 @@ class SubmissionHandler(object):
                                                         aggregation_paths=None, short_code=form_submission.short_code)
 
                     data_record_id = e.add_data(data = form_submission.values,submission_id=submission_id)
+                    
+                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
 
                     return Response(reporters, True, [], submission_id, data_record_id, e.short_code,
                                     additional_text=self._get_registration_text(e.short_code))

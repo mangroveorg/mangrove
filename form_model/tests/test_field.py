@@ -6,7 +6,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate
-from mangrove.form_model.field import DateField, LocationField
+from mangrove.form_model.field import DateField, GeoCodeField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -305,11 +305,11 @@ class TestField(unittest.TestCase):
             "label": {"eng": "What is your location"},
             "name": "Birth_place",
             "code": "LOC",
-            "type": "location",
+            "type": "geocode",
             "ddtype": self.DDTYPE_JSON,
             }
         created_field = field.create_question_from(field_json, self.dbm)
-        self.assertIsInstance(created_field, LocationField)
+        self.assertIsInstance(created_field, GeoCodeField)
         self.assertEqual(created_field.ddtype, self.ddtype)
 
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
@@ -412,17 +412,17 @@ class TestField(unittest.TestCase):
             "label": {"eng": "Where do you stay?"},
             "name": "field1_Loc",
             "code": "Q1",
-            "type": "location",
+            "type": "geocode",
             "ddtype": self.DDTYPE_JSON,
             }
-        field = LocationField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+        field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
                                  language="eng")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
     def test_should_validate_location(self):
         expect_lat_long=(89.1,100.1)
-        field = LocationField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+        field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
                                  language="eng")
         actual_lat_long = field.validate(latitude="89.1", longitude="100.1")
         self.assertEqual(expect_lat_long, actual_lat_long)

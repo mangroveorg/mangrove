@@ -26,7 +26,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.DATE_FIELD:
         return _get_date_field(code, ddtype, dictionary, label, name)
     elif type == field_attributes.LOCATION_FIELD:
-        return LocationField(name=name, code=code, label=label, ddtype=ddtype)
+        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
         return _get_select_field(code, ddtype, dictionary, label, name, type)
     return None
@@ -46,7 +46,7 @@ class field_attributes(object):
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
     SELECT_FIELD = 'select1'
-    LOCATION_FIELD = "location"
+    LOCATION_FIELD = "geocode"
     DATE_FIELD = 'date'
     MULTISELECT_FIELD = 'select'
     DEFAULT_LANGUAGE = "eng"
@@ -245,7 +245,7 @@ class SelectField(Field):
         return dict
 
 
-class LocationField(Field):
+class GeoCodeField(Field):
     def __init__(self, name, code, label, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)

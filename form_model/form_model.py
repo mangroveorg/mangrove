@@ -274,7 +274,7 @@ def create_default_reg_form_model(manager):
     return form_model
 
 def _construct_registration_form(manager):
-    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='string')
+    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='location')
     description_type = get_or_create_data_dict(manager, name='description Type', slug='description', primitive_type='string')
     mobile_number_type = get_or_create_data_dict(manager, name='Mobile Number Type', slug='mobile_number', primitive_type='string')
     name_type = get_or_create_data_dict(manager, name='Name', slug='Name', primitive_type='string')

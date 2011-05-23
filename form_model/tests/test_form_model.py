@@ -7,7 +7,7 @@ from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, create_default_reg_form_model
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -45,6 +45,13 @@ class TestFormModel(unittest.TestCase):
 
     def test_create_form_model(self):
         self.assertTrue(self.form_model__id)
+
+    def test_should_create_registration_form_mode(self):
+        form = create_default_reg_form_model(self.dbm)
+        self.assertEqual(6, len(form.fields))
+        self.assertEqual("REG",form.form_code)
+        self.assertEqual(unicode('location'),form.fields[3].ddtype.primitive_type)
+
 
     def test_get_form_model(self):
         e = self.dbm.get(self.form_model__id, FormModel)

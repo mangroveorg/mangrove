@@ -6,7 +6,13 @@ from mangrove.datastore import data
 REPORTER_ENTITY_TYPE = ["Reporter"]
 
 
-def find_reporter(dbm, from_number):
+def find_reporter(dbm, from_number,entity_type,transport):
+    if transport == 'web':
+        return None
+
+    if entity_type == 'Reporter':
+        return None
+
     reporters = data.fetch(dbm, entity_type=["Reporter"],
                             aggregates={"telephone_number": data.reduce_functions.LATEST,
                                         "first_name": data.reduce_functions.LATEST}

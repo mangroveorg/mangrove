@@ -103,11 +103,8 @@ class SubmissionHandler(object):
                                                          values=values)
             form = get_form_model_by_code(self.dbm, form_code)
             #                                             TODO: Fix reporter authorization based on channel.
-            if request.transport.lower() == "web":
-                reporters = None
-            else:
-                reporters = reporter.find_reporter(self.dbm, request.source)
             form_submission = form.validate_submission(values)
+            reporters = reporter.find_reporter(self.dbm, request.source,form_submission.entity_type,request.transport.lower())
             if form_submission.is_valid:
                 if form._is_registration_form():
                     e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,

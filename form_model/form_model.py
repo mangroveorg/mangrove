@@ -167,7 +167,9 @@ class FormModel(DataObject):
         for key in answers:
             field = self.get_field_by_code(key)
             if field is None: continue
-            is_valid, result = self._validate_answer_for_field(answers[key], field)
+            answer = answers[key]
+            if is_empty(answer): continue
+            is_valid, result = self._validate_answer_for_field(answer, field)
             if is_valid:
                 cleaned_answers[field.name] = result
             else:

@@ -9,7 +9,7 @@ from couchdb.http import ResourceConflict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -25,6 +25,8 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
 
     doc_id = _make_doc_id(entity_type, short_code.strip())
     try:
+        if entity_type not in get_all_entity_types(dbm):
+            raise EntityTypeDoesNotExistsException(".".join(entity_type))
         e = Entity(dbm, entity_type=entity_type, location=location,
                    aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code)
         e.save()
@@ -43,7 +45,7 @@ def get_all_entity_types(dbm):
 
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
-
+    assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
     all_entities = get_all_entity_types(dbm)
@@ -98,7 +100,7 @@ def _make_short_code(entity_type,num):
 def get_entities_by_type(dbm, entity_type):
     # TODO: change this?  for now it assumes _type is non-heirarchical
     assert isinstance(dbm, DatabaseManager)
-    assert is_string(entity_type)
+    assert is_sequence(entity_type)
 
     rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
     entities = [dbm.get(row.id, Entity) for row in rows]

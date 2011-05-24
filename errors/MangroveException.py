@@ -64,8 +64,10 @@ class MultipleReportersForANumberException(MangroveException):
         MangroveException.__init__(self, ("Sorry, more than one reporter found for %s.") % (from_number,))
 
 
-class EntityInstanceDoesNotExistsException(MangroveException):
-    pass
+class EntityTypeDoesNotExistsException(MangroveException):
+    def __init__(self, entity_type):
+        MangroveException.__init__(self,
+                                   ("Entity type %s doesnt exist.") % (entity_type,))
 
 
 class AnswerTooBigException(MangroveException):

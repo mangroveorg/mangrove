@@ -38,6 +38,7 @@ class FormModel(DataObject):
         assert fields is None or is_sequence(fields)
         assert form_code is None or (is_string(form_code) and is_not_empty(form_code))
         assert type is None or is_not_empty(type)
+        assert entity_type is None or is_sequence(entity_type)
 
         DataObject.__init__(self, dbm)
 

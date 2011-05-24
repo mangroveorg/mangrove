@@ -8,7 +8,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
@@ -20,6 +20,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
         initializer.run(self.dbm)
+        define_type(self.dbm, ["dog"])
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, self.entity_type)
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
@@ -34,7 +35,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity  = create_entity(self.dbm, entity_type="HealthFacility.Clinic",
+        self.entity  = create_entity(self.dbm, entity_type=["HealthFacility","Clinic"],
                                           location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
                                           )
 
@@ -183,6 +184,15 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
         expected_error = DataObjectAlreadyExists("Entity", "Id", "dog/DOG3")
+        text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertTrue(expected_error.message in response.errors)
+        self.assertEqual(len(response.errors), 1)
+
+    def test_should_throw_error_if_entityType_doesnt_exist(self):
+        expected_error = EntityTypeDoesNotExistsException("cat")
         text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))

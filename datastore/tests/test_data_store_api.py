@@ -211,6 +211,11 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
 
+    def test_should_throw_assertionError_if_entity_type_is_not_list(self):
+        with self.assertRaises(AssertionError):
+            entity_type = "HealthFacility"
+            define_type(self.dbm, entity_type)
+
     def test_should_disallow_redefining_the_same_entity(self):
         define_type(self.dbm, ["HealthFacility", "Clinic"])
         with self.assertRaises(EntityTypeAlreadyDefined):
@@ -225,7 +230,7 @@ class TestDataStoreApi(unittest.TestCase):
         define_type(self.dbm, ["Clinic"])
         entity_types = get_all_entity_types(self.dbm)
         self.assertListEqual(entity_types, [["Clinic"]])
-
+    
     def test_should_return_data_types(self):
         med_type = DataDictType(self.dbm,
                                 name='Medicines',

@@ -8,10 +8,11 @@ Will log the submission and forward to the appropriate channel handler.
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
-from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME
-from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException, \
+from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException,\
     EntityQuestionCodeNotSubmitted, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
+from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
 
 
@@ -28,7 +29,8 @@ class Response(object):
 
     ERROR_RESPONSE_TEMPLATE = "%s"
 
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None,short_code = None,additional_text = None):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None,
+                 additional_text=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
@@ -58,8 +60,7 @@ class UnknownTransportException(MangroveException):
 
 
 class SubmissionLogger(object):
-
-    def __init__(self,dbm):
+    def __init__(self, dbm):
         self.dbm = dbm
 
     def update_submission_log(self, submission_id, status, errors):
@@ -71,13 +72,15 @@ class SubmissionLogger(object):
         log.error_message = log.error_message + (error_message or "")
         self.dbm._save_document(log)
 
-    def create_submission_log(self,channel, source, destination, form_code, values):
-        return self.log(channel, source, destination, form_code, values,False,"")
+    def create_submission_log(self, channel, source, destination, form_code, values):
+        return self.log(channel, source, destination, form_code, values, False, "")
 
     def log(self, channel, source, destination, form_code, values, status, error_message):
         return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
-                                      destination=destination, form_code=form_code, values=values,
-                                      status=status, error_message=error_message)).id
+                                                             destination=destination, form_code=form_code,
+                                                             values=values, status=status,
+                                                             error_message=error_message)).id
+
 
 class SubmissionHandler(object):
     def __init__(self, dbm):
@@ -95,10 +98,11 @@ class SubmissionHandler(object):
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
             logger = SubmissionLogger(self.dbm)
-            submission_id = logger.create_submission_log(channel=request.transport,source=request.source,
-                                                         destination=request.destination, form_code=form_code, values=values)
+            submission_id = logger.create_submission_log(channel=request.transport, source=request.source,
+                                                         destination=request.destination, form_code=form_code,
+                                                         values=values)
             form = get_form_model_by_code(self.dbm, form_code)
-#                                             TODO: Fix reporter authorization based on channel.
+            #                                             TODO: Fix reporter authorization based on channel.
             if request.transport.lower() == "web":
                 reporters = None
             else:
@@ -107,18 +111,20 @@ class SubmissionHandler(object):
             if form_submission.is_valid:
                 if form._is_registration_form():
                     e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
-                                                        location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
-                                                        aggregation_paths=None, short_code=form_submission.short_code)
+                                             location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
+                                             aggregation_paths=None, short_code=form_submission.short_code,
+                                             geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
 
-                    data_record_id = e.add_data(data = form_submission.values,submission_id=submission_id)
-                    
+                    data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+
                     logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
 
                     return Response(reporters, True, [], submission_id, data_record_id, e.short_code,
                                     additional_text=self._get_registration_text(e.short_code))
                 else:
-                    data_record_id = entity.add_data(dbm = self.dbm,short_code = form_submission.short_code,
-                                                     data=form_submission.values,submission_id=submission_id, entity_type=form.entity_type)
+                    data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
+                                                     data=form_submission.values, submission_id=submission_id,
+                                                     entity_type=form.entity_type)
 
                     logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
                     return Response(reporters, True, [], submission_id, data_record_id)
@@ -145,7 +151,7 @@ class SubmissionHandler(object):
         else:
             raise UnknownTransportException(("No handler defined for transport %s") % request.transport)
 
-    def _get_registration_text(self,short_code):
+    def _get_registration_text(self, short_code):
         RECORD_ID_TEMPLATE = "The short code is - %s"
         return RECORD_ID_TEMPLATE % (short_code,)
 

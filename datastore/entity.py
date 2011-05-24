@@ -17,7 +17,7 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
-def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None):
+def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None,geometry=None):
     if is_string(entity_type):
             entity_type = [entity_type]
     if is_empty(short_code):
@@ -28,7 +28,7 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
         if entity_type not in get_all_entity_types(dbm):
             raise EntityTypeDoesNotExistsException(entity_type)
         e = Entity(dbm, entity_type=entity_type, location=location,
-                   aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code)
+                   aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code,geometry=geometry)
         e.save()
         return e
     except ResourceConflict:

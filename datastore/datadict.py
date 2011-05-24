@@ -6,34 +6,30 @@ from mangrove.errors.MangroveException import DataObjectAlreadyExists, DataObjec
 from mangrove.utils.types import is_string
 
 # TODO: Temporary stuff, till datadict is fully implemented in datawinners : Aroj
-
-
 def get_default_datadict_type():
     try:
-        return get_datadict_type_by_slug(DatabaseManager(), "default")
+        return get_datadict_type_by_slug(DatabaseManager(),"default")
     except DataObjectNotFound:
         d = DataDictType(DatabaseManager(), name='Default Datadict Type', slug='default', primitive_type='string')
         d.save()
         return d
 
-
 def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(id, DataDictType)
 
-
-def get_datadict_type_by_slug(dbm, slug):
+def get_datadict_type_by_slug(dbm,slug):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(slug)
 
-    rows = dbm.load_all_rows_in_view('mangrove_views/by_datadict_type', key=slug, include_docs='true')
+    rows = dbm.load_all_rows_in_view('mangrove_views/by_datadict_type', key=slug,include_docs='true')
     if not len(rows):
-        raise DataObjectNotFound("DataDictType", "slug", slug)
+        raise DataObjectNotFound("DataDictType","slug",slug)
     assert len(rows) == 1, "More than one item found for slug %s" % (slug,)
 
     #  include_docs = 'true' returns the doc as a dict, which has to be wrapped into a DataDictDocument, and then into a DataDictType
     _doc = DataDictDocument.wrap(rows[0].doc)
-    return DataDictType.new_from_db(dbm, _doc)
+    return DataDictType.new_from_db(dbm,_doc)
 
 
 def get_datadict_types(dbm, ids):
@@ -76,16 +72,16 @@ class DataDictType(DataObject):
         doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
         self._set_document(doc)
 
-    def save(self):
-        #  if we are creating new DataDict
-        if self._doc.rev is None:
-            try:
-                #  Check if slug already exists,
-                get_datadict_type_by_slug(self._dbm, self.slug)
-                raise DataObjectAlreadyExists("DataDictType", "slug", self.slug)
-            except DataObjectNotFound:
-                pass
-        super(DataDictType, self).save()
+#    def save(self):
+#        #  if we are creating new DataDict
+#        if self._doc.rev is None:
+#            try:
+#                #  Check if slug already exists,
+#                get_datadict_type_by_slug(self._dbm,self.slug)
+#                raise DataObjectAlreadyExists("DataDictType","slug",self.slug)
+#            except DataObjectNotFound:
+#                pass
+#        super(DataDictType,self).save()
 
     @property
     def name(self):
@@ -100,7 +96,7 @@ class DataDictType(DataObject):
         return self._doc.description
 
     @description.setter
-    def description(self, value):
+    def description(self,value):
         self._doc.description = value
 
     @property
@@ -119,6 +115,7 @@ class DataDictType(DataObject):
         return self._doc.unwrap()
 
     @classmethod
-    def create_from_json(cls, json, dbm):
+    def create_from_json(cls, json,dbm):
         doc = DataDictDocument.wrap(json)
-        return DataDictType.new_from_db(dbm, doc)
+        return DataDictType.new_from_db(dbm,doc)
+

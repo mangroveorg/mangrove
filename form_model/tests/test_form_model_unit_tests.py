@@ -37,7 +37,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_create_registration_form_mode(self):
         form = _construct_registration_form(self.dbm)
-        self.assertEqual(6, len(form.fields))
+        self.assertEqual(7, len(form.fields))
         self.assertEqual("REG",form.form_code)
 
     def test_registration_form_should_have_entity_type_field(self):

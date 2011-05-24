@@ -67,7 +67,7 @@ class MultipleReportersForANumberException(MangroveException):
 class EntityTypeDoesNotExistsException(MangroveException):
     def __init__(self, entity_type):
         MangroveException.__init__(self,
-                                   ("Entity type %s doesnt exist.") % (entity_type,))
+                                   ("Entity type %s doesnt exist.") % (".".join(entity_type),))
 
 
 class AnswerTooBigException(MangroveException):

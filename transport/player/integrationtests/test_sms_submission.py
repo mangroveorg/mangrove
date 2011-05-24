@@ -183,7 +183,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
-        expected_error = DataObjectAlreadyExists("Entity", "Id", "dog/DOG3")
+        expected_error = DataObjectAlreadyExists("Entity", "short code", "DOG3")
         text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -192,8 +192,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
-        expected_error = EntityTypeDoesNotExistsException("cat")
-        text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
+        expected_error = EntityTypeDoesNotExistsException(["cat"])
+        text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)

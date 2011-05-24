@@ -14,6 +14,7 @@ REGISTRATION_FORM_CODE = "REG"
 ENTITY_TYPE_FIELD_CODE = "T"
 ENTITY_TYPE_FIELD_NAME = "entity_type"
 LOCATION_TYPE_FIELD_NAME = "location"
+GEO_CODE = "geo_code"
 
 
 def get_form_model_by_code(dbm, code):
@@ -277,7 +278,8 @@ def create_default_reg_form_model(manager):
 
 
 def _construct_registration_form(manager):
-    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='geocode')
+    location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='string')
+    geo_code_type = get_or_create_data_dict(manager, name='GeoCode Type', slug='geo_code', primitive_type='geocode')
     description_type = get_or_create_data_dict(manager, name='description Type', slug='description',
                                                primitive_type='string')
     mobile_number_type = get_or_create_data_dict(manager, name='Mobile Number Type', slug='mobile_number',
@@ -296,12 +298,14 @@ def _construct_registration_form(manager):
     question3 = TextField(name="short_name", code="S", label="What is the entity's short name?",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
-    question4 = GeoCodeField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
+    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
                              language="eng", ddtype=location_type)
-    question5 = TextField(name="description", code="D", label="Describe the entity",
+    question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the entity's geo code?",
+                             language="eng", ddtype=location_type)
+    question6 = TextField(name="description", code="D", label="Describe the entity",
                           defaultValue="some default value", language="eng", ddtype=description_type)
-    question6 = TextField(name="mobile_number", code="M", label="What is the associated mobile number?",
+    question7 = TextField(name="mobile_number", code="M", label="What is the associated mobile number?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
     form_model = FormModel(manager, name="REG", form_code=REGISTRATION_FORM_CODE, fields=[
-            question1, question2, question3, question4, question5, question6],entity_type=["Registration"])
+            question1, question2, question3, question4, question5, question6, question7],entity_type=["Registration"])
     return form_model

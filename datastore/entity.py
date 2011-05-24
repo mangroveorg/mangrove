@@ -26,13 +26,13 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
     doc_id = _make_doc_id(entity_type, short_code.strip())
     try:
         if entity_type not in get_all_entity_types(dbm):
-            raise EntityTypeDoesNotExistsException(".".join(entity_type))
+            raise EntityTypeDoesNotExistsException(entity_type)
         e = Entity(dbm, entity_type=entity_type, location=location,
                    aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code)
         e.save()
         return e
     except ResourceConflict:
-         raise DataObjectAlreadyExists("Entity","Id",doc_id)
+         raise DataObjectAlreadyExists("Entity","short code",short_code)
 
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)

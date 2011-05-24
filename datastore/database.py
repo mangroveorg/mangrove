@@ -128,6 +128,7 @@ class DatabaseManager(object):
         if self.database is not None:
             self.create_default_views()
 
+
     def __unicode__(self):
         return u"Connected on %s - working on %s" % (self.url, self.database_name)
 
@@ -152,11 +153,37 @@ class DatabaseManager(object):
             self.doc_cache = {}
 
     def load_all_rows_in_view(self, view_name, **values):
-        return self.database.view(view_name, **values).rows
+        print '[DEBUG] loading view: %s' % view_name
+        start = datetime.now()
+        rows = self.database.view(view_name, **values).rows
+        end = datetime.now()
+        delta_t = (end - start)
+        print "[DEBUG] --- took %s\t%s.%s\t%s seconds" % \
+              (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
+        return rows
 
     def create_view(self, view_name, map, reduce, view_document='mangrove_views'):
+        #view_document = view_name
         view = ViewDefinition(view_document, view_name, map, reduce)
+        start = datetime.now()
+        full_view_name = view_document + '/' + view_name
         view.sync(self.database)
+        rows = len(self.database.view(full_view_name).rows)
+        end = datetime.now()
+        delta_t = (end - start)
+        print "%s\t%s.%s\t%s" % \
+              (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
+
+    def test_views(self):
+        self._delete_design_docs()
+        self.create_default_views()
+
+    def _get_design_docs(self):
+        return [self._load_document(row['id'])
+                for row in self.database.view('_all_docs', startkey='_design', endkey='_design0')]
+
+    def _delete_design_docs(self):
+        for doc in self._get_design_docs(): del self.database[doc.id]
 
     def create_default_views(self):
         views.create_views(self)

@@ -133,8 +133,8 @@ class TestSubmissions(TestCase):
         s = SubmissionHandler(dbm)
         response = s.accept(request)
         self.assertEqual(1, len(response.errors))
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.errors[0])
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.message)
+        self.assertEqual("Error with Questionnaire ID INVALID_CODE. Find the Questionnaire ID on the printed questionnaire and resend SMS.", response.errors[0])
+        self.assertEqual("Error with Questionnaire ID INVALID_CODE. Find the Questionnaire ID on the printed questionnaire and resend SMS.", response.message)
 
     def test_should_return_SMSPlayer_for_sms_transport(self):
         request = Request(transport='sms', message='blah', source='rep1', destination='HNI')
@@ -185,10 +185,6 @@ class TestSubmissions(TestCase):
         self.assertFalse(self.entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id = self.SUBMISSION_ID,
                                                                             status = False, errors = form_submission.errors.values() )
-
-
-
-
 
 
 #TODO : need to rewrite this test when Submission handler is broken in two part

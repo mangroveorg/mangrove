@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 #TODO: Please Read Readme.rst of errors before defining any new exception
+from mangrove.utils.types import is_empty
 
 
 class MangroveException(Exception):
@@ -28,7 +29,7 @@ class EntityTypeAlreadyDefined(MangroveException):
 
 class FormModelDoesNotExistsException(MangroveException):
     def __init__(self, questionnaire_code):
-        error_message = "The questionnaire with code %s does not exist." % questionnaire_code if questionnaire_code else "The questionnaire does not exist."
+        error_message = "Error with Questionnaire ID %s. Find the Questionnaire ID on the printed questionnaire and resend SMS." % questionnaire_code if not is_empty(questionnaire_code) else ""
         MangroveException.__init__(self, error_message)
 
 

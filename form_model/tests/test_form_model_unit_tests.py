@@ -92,7 +92,7 @@ class TestFormModel(unittest.TestCase):
         expected_cleaned_data = {  'entity_question': '1',"question1_Name": "My Name", "Father's age": 40, "Color": ["RED"]}
         valid,cleaned_answers,errors = self.form_model._is_valid(answers)
         self.assertTrue(valid)
-        self.assertEqual(0, len(errors))
+        self.assertEqual(1, len(errors))
         self.assertEqual(cleaned_answers, expected_cleaned_data)
 
     def test_give_error_for_no_entity_short_code(self):
@@ -115,6 +115,17 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual("1",form_submission.short_code)
         self.assertEqual({'entity_question': '1'},form_submission.cleaned_data)
         self.assertEqual(1,len(form_submission.errors))
+
+    def test_should_return_answers_not_submitted(self):
+        answers = {"ID": "1", "Q2": "20", "q3":"", "q4":""}
+        form_submission = self.form_model.validate_submission(answers)
+        self.assertTrue(form_submission.is_valid)
+        self.assertEqual("1",form_submission.short_code)
+        self.assertEqual({'entity_question': '1', "Father's age": 20.0},form_submission.cleaned_data)
+        self.assertEqual(1,len(form_submission.errors))
+        self.assertEqual(["q3", "q4"], form_submission.errors["NotAnswered"])
+
+    
 
 
 #

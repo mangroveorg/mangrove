@@ -153,11 +153,9 @@ class FormModel(DataObject):
         return None
 
     def _is_valid(self, answers):
-        NOT_ANSWERED = "NotAnswered"
         success = True
         cleaned_answers = {}
         errors = {}
-        not_answered = []
         short_code = self._find_code(answers, self.entity_question.code)
         if self._is_registration_form():
             entity_type = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
@@ -170,10 +168,7 @@ class FormModel(DataObject):
             field = self.get_field_by_code(key)
             if field is None: continue
             answer = answers[key]
-            if is_empty(answer):
-                not_answered.append(key)
-                errors[NOT_ANSWERED] = not_answered
-                continue
+            if is_empty(answer): continue
             is_valid, result = self._validate_answer_for_field(answer, field)
             if is_valid:
                 cleaned_answers[field.name] = result

@@ -1,13 +1,13 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, define_type, get_all_entity_types, add_data, create_entity
+from mangrove.datastore.entity import Entity, define_type, get_all_entity_types
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
 from pytz import UTC
 import unittest
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectNotFound
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 
 
 # Adaptor methods to old api
@@ -118,12 +118,10 @@ class TestDataStoreApi(unittest.TestCase):
         self.dbm.delete(e2)
 
     def _create_clinic_and_reporter(self):
-        define_type(self.dbm, entity_type=["clinic"])
-        define_type(self.dbm, entity_type=["reporter"])
-        clinic_entity = create_entity(self.dbm, entity_type="clinic",
-                               location=["India", "MH", "Pune"], short_code="CLI1")
+        clinic_entity = Entity(self.dbm, entity_type="clinic",
+                               location=["India", "MH", "Pune"])
         clinic_entity.save()
-        reporter_entity = create_entity(self.dbm, entity_type="reporter", short_code="REP1")
+        reporter_entity = Entity(self.dbm, entity_type="reporter")
         reporter_entity.save()
         return clinic_entity, reporter_entity
 
@@ -162,40 +160,6 @@ class TestDataStoreApi(unittest.TestCase):
             #self.assertTrue(dd_type._doc.unwrap() == DataDictDocument(saved.data[label]['type']))
         self.assertEqual(saved.event_time, datetime(2011, 01, 02, tzinfo=UTC))
         self.assertEqual(saved.submission_id, "123456")
-
-
-    def test_should_add_data_record_on_entity_given_short_code(self):
-        self._create_clinic_and_reporter()
-        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',
-                                description='Number of medications')
-        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string',
-                                   description='Name of doctor')
-        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string',
-                                     description='Name of facility')
-        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime',
-                                   description='Date of opening')
-        med_type.save()
-        doctor_type.save()
-        facility_type.save()
-        opened_type.save()
-        with self.assertRaises(DataObjectNotFound):
-            add_data(self.dbm, short_code="CLI2", data = {"data1":"hello"}, submission_id="", entity_type="Clinic")
-
-        data_record = [('meds', 20, med_type), ('doc', "aroj", doctor_type), ('facility', 'clinic', facility_type),
-                       ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
-        data_record_id = add_data(self.dbm, short_code="CLI1",
-                                  data=data_record,
-                                  submission_id="123", entity_type="clinic")
-        self.assertTrue(data_record_id is not None)
-        saved = self.dbm._load_document(data_record_id, document_class=DataRecordDocument)
-        for (label, value, dd_type) in data_record:
-            self.assertTrue(label in saved.data)
-            self.assertTrue('value' in saved.data[label])
-            self.assertTrue('type' in saved.data[label])
-            self.assertTrue(value == saved.data[label]['value'])
-        self.assertEqual(saved.submission_id, "123")
-
-
 
     def test_should_create_entity_from_document(self):
         existing = self.dbm.get(self.uuid, Entity)

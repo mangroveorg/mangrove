@@ -71,59 +71,65 @@ class EntityTypeDoesNotExistsException(MangroveException):
                                    ("Entity type %s doesnt exist.") % (".".join(entity_type),), (entity_type, ))
 
 
-class AnswerTooBigException(MangroveException):
+class InvalidAnswerSubmissionException(MangroveException):
+    def __init__(self, message, data):
+        MangroveException.__init__(self, message, data)
+
+
+
+class AnswerTooBigException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is greater than allowed.") % (answer, code,), (answer, code,))
 
 
-class AnswerTooSmallException(MangroveException):
+class AnswerTooSmallException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is smaller than allowed.") % (answer, code,), (answer, code,))
 
 
-class AnswerTooLongException(MangroveException):
+class AnswerTooLongException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is longer than allowed.") % (answer, code,), (answer, code,))
 
 
-class AnswerTooShortException(MangroveException):
+class AnswerTooShortException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is shorter than allowed.") % (answer, code,), (answer, code,))
 
 
-class AnswerHasTooManyValuesException(MangroveException):
+class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s contains more than one value.") % (
                                    answer, code,), (answer, code,))
 
 
-class AnswerHasNoValuesException(MangroveException):
+class AnswerHasNoValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s has no value.") % (
                                    answer, code,), (answer, code,))
 
 
-class AnswerNotInListException(MangroveException):
+class AnswerNotInListException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        MangroveException.__init__(self,
+        InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is not present in the allowed options.") % (
                                    answer, code,), (answer, code,))
 
 
-class AnswerWrongType(MangroveException):
+class AnswerWrongType(InvalidAnswerSubmissionException):
     def __init__(self, code):
-        MangroveException.__init__(self, ("Answer to question %s is of wrong type.") % (code,), (code,))
+        InvalidAnswerSubmissionException.__init__(self, ("Answer to question %s is of wrong type.") % (code,), (code,))
 
 
-class IncorrectDate(MangroveException):
+class IncorrectDate(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, date_format):
-        MangroveException.__init__(self, ('Answer to question %s is invalid: %s, expected date in %s format') %
+        InvalidAnswerSubmissionException.__init__(self, ('Answer to question %s is invalid: %s, expected date in %s format') %
                                          (code, answer, date_format), (code, answer, date_format))
 
 
@@ -142,24 +148,24 @@ class ShortCodeAlreadyInUseException(MangroveException):
             MangroveException.__init__(self, ('The ID %s is already in use. Please specify another') %
                                              (short_code,), (short_code,))
 
-class LatitudeNotFloat(MangroveException):
+class LatitudeNotFloat(InvalidAnswerSubmissionException):
     def __init__(self,lat):
-        MangroveException.__init__(self, ('The value for Latitude %s should be float') %
+        InvalidAnswerSubmissionException.__init__(self, ('The value for Latitude %s should be float') %
                                          (lat,), (lat,))
 
-class LongitudeNotFloat(MangroveException):
+class LongitudeNotFloat(InvalidAnswerSubmissionException):
     def __init__(self,long):
-        MangroveException.__init__(self, ('The value for Longitude %s should be float') %
+        InvalidAnswerSubmissionException.__init__(self, ('The value for Longitude %s should be float') %
                                          (long,), (long,))
-class LongitudeNotInRange(MangroveException):
+class LongitudeNotInRange(InvalidAnswerSubmissionException):
     def __init__(self,long):
-        MangroveException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
+        InvalidAnswerSubmissionException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
                                          (long,), (long,))
-class LatitudeNotInRange(MangroveException):
+class LatitudeNotInRange(InvalidAnswerSubmissionException):
     def __init__(self,lat):
         MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
                                          (lat,), (lat,))
 
-class GeoCodeFormatException(MangroveException):
-    def __init__(self):
-        MangroveException.__init__(self, "GPS coordinates must be in the format 'lat long'.")
+class GeoCodeFormatException(InvalidAnswerSubmissionException):
+    def __init__(self, code):
+        InvalidAnswerSubmissionException.__init__(self, "GPS coordinates must be in the format 'lat long'.", (code,))

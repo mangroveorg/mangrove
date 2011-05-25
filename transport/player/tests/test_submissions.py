@@ -113,29 +113,26 @@ class TestSubmissions(TestCase):
 
 
     def test_should_check_if_submission_by_registered_reporter(self):
-        request = Request(transport="sms", message="hello world", source="1234", destination="5678")
-        # dbm = Mock(spec=DatabaseManager)
-        dbm = self.dbm
-        form = Mock()
-        form.type = "survey"
-        self.get_form_model_mock.return_value = form
-        self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
-        s = SubmissionHandler(dbm)
-        response = s.accept(request)
-        self.assertEqual(1, len(response.errors))
-        self.assertEqual("Sorry, this number 1234 is not registered with us.", response.errors[0])
+        with self.assertRaises(NumberNotRegisteredException):
+            request = Request(transport="sms", message="hello world", source="1234", destination="5678")
+            dbm = self.dbm
+            form = Mock()
+            form.type = "survey"
+            self.get_form_model_mock.return_value = form
+            self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
+            s = SubmissionHandler(dbm)
+            s.accept(request)
+
 
     def test_should_fail_submission_if_invalid_form_code(self):
-        request = Request(transport="sms", message="INVALID_CODE +name xyz +age 10",
-                          source="1234", destination="5678")
-        dbm = Mock(spec=DatabaseManager)
-        self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
-        s = SubmissionHandler(dbm)
-        response = s.accept(request)
-        self.assertEqual(1, len(response.errors))
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.errors[0])
-        self.assertEqual("The questionnaire with code INVALID_CODE does not exist.", response.message)
-
+        with self.assertRaises(FormModelDoesNotExistsException):
+            request = Request(transport="sms", message="INVALID_CODE +name xyz +age 10",
+                              source="1234", destination="5678")
+            dbm = Mock(spec=DatabaseManager)
+            self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
+            s = SubmissionHandler(dbm)
+            s.accept(request)
+        
     def test_should_return_SMSPlayer_for_sms_transport(self):
         request = Request(transport='sms', message='blah', source='rep1', destination='HNI')
         mock_dbm = Mock(spec=DatabaseManager)

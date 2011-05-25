@@ -51,7 +51,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                   ("first_name", "Test_reporter", self.name_type)], submission_id="2")
 
 
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
@@ -70,7 +70,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        text = "CLINIC +EID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -92,7 +92,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_give_error_for_wrong_integer_value(self):
-        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
+        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -100,7 +100,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_should_give_error_for_wrong_text_value(self):
-        text = "CLINIC +ID CID001 +NAME ABC"
+        text = "CLINIC +EID CID001 +NAME ABC"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
@@ -126,7 +126,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
 
     def test_error_messages_are_being_logged_in_submissions(self):
-        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
+        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
@@ -165,7 +165,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(b.short_code, expected_short_code)
 
     def test_should_log_submission(self):
-        request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
+        request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
         s = SubmissionHandler(self.dbm)
         response = s.accept(request)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
@@ -173,29 +173,23 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.transport, submission_log.channel)
         self.assertEquals(request.source, submission_log.source)
         self.assertEquals(request.destination, submission_log.destination)
-        self.assertEquals(False, submission_log. status)
-        self.assertEquals("QR1", submission_log.form_code)
-        self.assertEquals({'q1': '20', 'eid': '100'}, submission_log.values)
+        self.assertEquals(True, submission_log. status)
+        self.assertEquals("REG", submission_log.form_code)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't':'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
-        text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
-        s = SubmissionHandler(self.dbm)
-        s.accept(Request("sms", text, "1234", "5678"))
-        expected_error = DataObjectAlreadyExists("Entity", "short code", "DOG3")
-        text = "REG +N buddy1 +S DOG3 +T dog +L 80 80 +D its another dog! +M 1234567"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
-        self.assertFalse(response.success)
-        self.assertTrue(expected_error.message in response.errors)
-        self.assertEqual(len(response.errors), 1)
+        with self.assertRaises(DataObjectAlreadyExists):
+            text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))
+            text = "REG +N buddy2 +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
-        expected_error = EntityTypeDoesNotExistsException(["cat"])
-        text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
-        self.assertFalse(response.success)
-        self.assertTrue(expected_error.message in response.errors)
-        self.assertEqual(len(response.errors), 1)
+        with self.assertRaises(EntityTypeDoesNotExistsException):
+            text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))

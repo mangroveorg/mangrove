@@ -128,16 +128,18 @@ class SubmissionHandler(object):
             else:
                 _errors.extend(form_submission.errors.values())
                 logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors)
-        except FormModelDoesNotExistsException as e:
-            _errors.append(e.message)
-        except NumberNotRegisteredException as e:
-            _errors.append(e.message)
-        except EntityQuestionCodeNotSubmitted as e:
-            _errors.append(e.message)
-        except DataObjectAlreadyExists as e:
-            _errors.append(e.message)
-        except EntityTypeDoesNotExistsException as e:
-            _errors.append(e.message)
+        except MangroveException as e:
+            raise e
+#        except FormModelDoesNotExistsException as e:
+#            _errors.append(e.message)
+#        except NumberNotRegisteredException as e:
+#            _errors.append(e.message)
+#        except EntityQuestionCodeNotSubmitted as e:
+#            _errors.append(e.message)
+#        except DataObjectAlreadyExists as e:
+#            _errors.append(e.message)
+#        except EntityTypeDoesNotExistsException as e:
+#            _errors.append(e.message)
         return Response(reporters, False, _errors, submission_id)
 
     def get_player_for_transport(self, request):

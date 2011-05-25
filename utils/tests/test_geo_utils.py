@@ -7,7 +7,7 @@ class TestGeoUtils(unittest.TestCase):
         lat = 19
         long = 91
         geometry = convert_to_geometry((lat, long))
-        self.assertEqual(geometry['Type'],'Point')
+        self.assertEqual(geometry['type'],'Point')
         self.assertEqual(geometry['coordinates'],[lat,long])
 
     def test_should_return_none_for_empty_values(self):

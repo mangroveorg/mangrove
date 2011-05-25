@@ -293,11 +293,10 @@ class Entity(DataObject):
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):
                 raise ValueError('Data must be of the form (label, value, DataDictType).')
-            data_list.append((label, dd_type, value))
+            data_list.append(DataRecordDocument(entity_doc=self._doc, event_time=event_time,
+                                             data=[(label, dd_type, value)], submission_id=submission_id))
 
-        data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
-                                             data=data_list, submission_id=submission_id)
-        return self._dbm._save_document(data_record_doc).id
+        return self._dbm._save_documents(data_list)
 
     def invalidate_data(self, uid):
         '''Mark datarecord identified by uid as 'invalid'.

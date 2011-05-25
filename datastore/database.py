@@ -162,7 +162,7 @@ class DatabaseManager(object):
         rows = self.database.view(full_view_name, **values).rows
         end = datetime.now()
         delta_t = (end - start)
-        print "[DEBUG] --- took %s\t%s.%s\t%s seconds" % \
+        print "[DEBUG] --- took %s\t%s.%s seconds (%s rows)" % \
               (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
         return rows
 
@@ -197,6 +197,19 @@ class DatabaseManager(object):
         document.modified = (modified if modified is not None else dates.utcnow())
         document.store(self.database)
         return document
+
+    def _save_documents(self, documents):
+        assert is_sequence(documents)
+        for doc in documents:
+            assert isinstance(doc, DocumentBase)
+        # TODO: what should we return here? this is what is avaliable from db.update()...
+        # The return value of this method is a list containing a tuple for every
+        # element in the `documents` sequence. Each tuple is of the form
+        # ``(success, docid, rev_or_exc)``, where ``success`` is a boolean
+        # indicating whether the update succeeded, ``docid`` is the ID of the
+        # document, and ``rev_or_exc`` is either the new document revision, or
+        # an exception instance (e.g. `ResourceConflict`) if the update failed.
+        return self.database.update(documents)
 
     def invalidate(self, uid):
         doc = self._load_document(uid)

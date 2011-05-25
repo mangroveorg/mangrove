@@ -10,7 +10,7 @@ from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocume
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
@@ -47,8 +47,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                         location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
                             )
 
-        reporter.add_data(data=[("telephone_number", '1234', self.telephone_number_type),
-                                  ("first_name", "Test_reporter", self.name_type)], submission_id="2")
+        reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
+                                  (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
 
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",

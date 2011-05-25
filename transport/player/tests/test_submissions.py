@@ -4,7 +4,7 @@ from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
-from mangrove.form_model.form_model import FormModel, FormSubmission
+from mangrove.form_model.form_model import FormModel, FormSubmission, NAME_FIELD
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTransportException, SubmissionLogger
 
@@ -29,7 +29,7 @@ class TestSubmissions(TestCase):
         self.SUBMISSION_ID = "SUBMISSION_ID"
         self.submissionLogger.create_submission_log.return_value = self.SUBMISSION_ID
 
-        self.reporter_module.find_reporter.return_value = [{"first_name": "1234"}]
+        self.reporter_module.find_reporter.return_value = [{NAME_FIELD: "1234"}]
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock._is_registration_form.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock

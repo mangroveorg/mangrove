@@ -8,7 +8,7 @@ Will log the submission and forward to the appropriate channel handler.
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
-from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE
+from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE, NAME_FIELD
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException,\
     EntityQuestionCodeNotSubmitted, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
@@ -43,7 +43,7 @@ class Response(object):
         self.short_code = short_code
 
     def _get_reporter_name(self):
-        return self.reporters[0]["first_name"] if len(self.reporters) == 1 else ""
+        return self.reporters[0][NAME_FIELD] if len(self.reporters) == 1 else ""
 
     def _templatize_success_response(self, additional_text):
         success_message = Response.SUCCESS_RESPONSE_TEMPLATE % (self._get_reporter_name())

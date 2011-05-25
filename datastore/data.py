@@ -25,23 +25,21 @@ def _get_result_key(aggregate_on, row):
 
 def _get_key_strategy(aggregate_on):
     if aggregate_on.get('type'):
-        def _aggregate_by_path(row):
-            if aggregate_on.get('type') == 'location':
-                path = row['aggregation_paths']['_geo']
-
-            else:
-                path = row['aggregation_paths'][aggregate_on.get('type')]
-            key = tuple(path[:aggregate_on['level']])
-            return key
+        def _aggregate_by_path(db_key):
+#            [['Health_Facility', 'Clinic'], '_geo', 'beds', 'India', 'Karnataka']
+            entity_type,aggregation_type,field = db_key[:3]
+            path = db_key[3:]
+            key = tuple(path)
+            return key,field
 
         return _aggregate_by_path
     else:
-        def _aggregate_by_entity(row):
-            key = row["entity_id"]
-            return key
+        def _aggregate_by_entity(db_key):
+            key = db_key[1]
+            field = db_key[2]
+            return key, field
 
         return _aggregate_by_entity
-
 
 def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
     result = {}
@@ -54,11 +52,10 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
 
     values = _apply_filter(values, filter)
 
-    key_strategy = _get_key_strategy(aggregate_on)
+    _parse_key = _get_key_strategy(aggregate_on)
 
-    for val in values:
-        key = key_strategy(val)
-        field = val["field"]
+    for key,val in values:
+        result_key,field = _parse_key(key)
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)
@@ -66,7 +63,7 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
         if "*" in aggregates:
             interested_aggregate = aggregates.get("*")
         if interested_aggregate:
-            result.setdefault(key, {})[field] = val[interested_aggregate]
+            result.setdefault(result_key, {})[field] = val[interested_aggregate]
     return result
 
 
@@ -82,7 +79,7 @@ def _load_all_fields_aggregated(dbm, type_path):
                                      endkey=[type_path, {}])
     values = []
     for row in rows:
-        values.append(row['value'])
+        values.append((row.key,row.value))
     return values
 
 
@@ -94,7 +91,7 @@ def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
                                      endkey=[entity_type, aggregation_type, {}])
     values = []
     for row in rows:
-        values.append(row['value'])
+        values.append((row.key,row.value))
     return values
 
 
@@ -115,4 +112,4 @@ def _interested(filter, d):
 def _apply_filter(values, filter):
     if filter is None:
         return values
-    return [d for d in values if _interested(filter, d)]
+    return [(k,d) for (k, d) in values if _interested(filter, d)]

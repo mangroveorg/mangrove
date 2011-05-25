@@ -7,7 +7,6 @@ function(doc) {
              doc.entity_backing_field._id,k, date];
       value["timestamp"] = date;
       value["value"] = doc.data[k].value;
-      value["location"] = doc.entity_backing_field.aggregation_paths['_geo'];
       emit(key, value);
     }
   }

@@ -14,7 +14,6 @@ function(key, values, rereduce) {
 		result.timestamp = current.timestamp;
 		result.sum = total;
         result.count = count;
-        result.location = values[0].location;
 		return result;
 	}
 	else{
@@ -32,7 +31,6 @@ function(key, values, rereduce) {
         result.timestamp = current.timestamp;
         result.sum = total;
         result.count = count;
-        result.location = values[0].location;
         return result;
 	}
 

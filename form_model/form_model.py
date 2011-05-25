@@ -12,7 +12,7 @@ from mangrove.form_model import field
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
-    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code)
+    rows = dbm.load_all_rows_in_view('questionnaire', key=code)
     if not len(rows):
         raise FormModelDoesNotExistsException(code)
 

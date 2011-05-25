@@ -3,7 +3,7 @@
 from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
 import datetime
 import calendar
-from uuid import uuid4
+from uuid import uuid1
 from time import struct_time
 from mangrove.utils.types import is_string
 from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
@@ -52,7 +52,7 @@ class DocumentBase(Document):
 
     def __init__(self, id=None, document_type=None, **values):
         if id is None:
-            id = uuid4().hex
+            id = uuid1().hex
         Document.__init__(self, id=id, **values)
         self.created = utcnow()
         self.document_type = document_type

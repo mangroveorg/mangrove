@@ -143,9 +143,9 @@ class SubmissionHandler(object):
 def get_submissions_made_for_questionnaire(dbm, form_code, page_number=0, page_size=20, count_only=False):
     assert is_string(form_code)
     if count_only:
-        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', startkey=[form_code], endkey=[form_code, {}],
+        rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code], endkey=[form_code, {}],
                                          group=True, group_level=1, reduce=True)
     else:
-        rows = dbm.load_all_rows_in_view('mangrove_views/submissionlog', reduce=False, startkey=[form_code],
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, startkey=[form_code],
                                          endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
     return [each.value for each in rows]

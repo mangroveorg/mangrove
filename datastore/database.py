@@ -109,6 +109,9 @@ class DataObject(object):
     def id(self):
         return (self._doc.id if self._doc is not None else None)
 
+    def update_cache(self):
+        pass
+
 
 class DatabaseManager(object):
     def __init__(self, server=None, database=None):
@@ -153,17 +156,18 @@ class DatabaseManager(object):
             self.doc_cache = {}
 
     def load_all_rows_in_view(self, view_name, **values):
-        print '[DEBUG] loading view: %s' % view_name
+        full_view_name = view_name + '/' + view_name
+        print '[DEBUG] loading view: %s' % full_view_name
         start = datetime.now()
-        rows = self.database.view(view_name, **values).rows
+        rows = self.database.view(full_view_name, **values).rows
         end = datetime.now()
         delta_t = (end - start)
         print "[DEBUG] --- took %s\t%s.%s\t%s seconds" % \
               (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
         return rows
 
-    def create_view(self, view_name, map, reduce, view_document='mangrove_views'):
-        #view_document = view_name
+    def create_view(self, view_name, map, reduce):
+        view_document = view_name
         view = ViewDefinition(view_document, view_name, map, reduce)
         start = datetime.now()
         full_view_name = view_document + '/' + view_name

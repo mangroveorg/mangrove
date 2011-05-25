@@ -22,7 +22,7 @@ def get_datadict_type_by_slug(dbm,slug):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(slug)
 
-    rows = dbm.load_all_rows_in_view('mangrove_views/by_datadict_type', key=slug,include_docs='true')
+    rows = dbm.load_all_rows_in_view('by_datadict_type', key=slug,include_docs='true')
     if not len(rows):
         raise DataObjectNotFound("DataDictType","slug",slug)
     assert len(rows) == 1, "More than one item found for slug %s" % (slug,)
@@ -119,3 +119,9 @@ class DataDictType(DataObject):
         doc = DataDictDocument.wrap(json)
         return DataDictType.new_from_db(dbm,doc)
 
+    def update_record_caches(self):
+        '''This function will update the cached version of this type in all assosciated datarecords.'''
+        rows = self._dbm.load_all_rows_in_view('datarecords_by_datatype_and_label', key=[self.id])
+        records_to_update = [{'id': row.id, 'label': row['key'][1]} for row in rows]
+        for record in records_to_update:
+            doc = dbm.get(record['id'], DataRecord)

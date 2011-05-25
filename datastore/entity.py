@@ -44,12 +44,12 @@ def define_type(dbm, entity_type):
     entity_tree.save()
 
 def _get_used_entity_ids(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("mangrove_views/used_entity_short_id", startkey=[entity_type])
+    rows = dbm.load_all_rows_in_view("used_entity_short_id", startkey=[entity_type])
     return rows
 
 def get_by_short_code(dbm, short_code):
     assert is_string(short_code)
-    rows = dbm.load_all_rows_in_view('mangrove_views/entity_by_short_code', key=short_code, include_docs=True)
+    rows = dbm.load_all_rows_in_view('entity_by_short_code', key=short_code, include_docs=True)
     _doc = EntityDocument.wrap(rows[0].doc)
     return Entity.new_from_db(dbm = dbm, doc = _doc)
 
@@ -70,7 +70,7 @@ def get_entities_by_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(entity_type)
 
-    rows = dbm.load_all_rows_in_view('mangrove_views/by_type', key=entity_type)
+    rows = dbm.load_all_rows_in_view('by_type', key=entity_type)
     entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
@@ -83,7 +83,7 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     if isinstance(label, DataDictType):
         label = label.slug
 
-    rows = dbm.load_all_rows_in_view('mangrove_views/by_label_value', key=[label, value])
+    rows = dbm.load_all_rows_in_view('by_label_value', key=[label, value])
     entities = [dbm.get(row['value'], Entity) for row in rows]
 
     return [e for e in entities if e.values({label: 'latest'}, asof=as_of) == {label: value}]
@@ -140,12 +140,12 @@ def get_entities_in(dbm, geo_path, type_path=None):
         # TODO: is the type field necessarily a heirarchy?
         # if not, then this needs to perform a query for each type and then take the intersection
         # of the result sets
-        rows = dbm.load_all_rows_in_view('mangrove_views/by_type_geo', key=(type_path + geo_path))
+        rows = dbm.load_all_rows_in_view('by_type_geo', key=(type_path + geo_path))
         entities = [dbm.get(row.id, Entity) for row in rows]
 
     # otherwise, filter by type
     if type_path is None:
-        rows = dbm.load_all_rows_in_view('mangrove_views/by_geo', key=geo_path)
+        rows = dbm.load_all_rows_in_view('by_geo', key=geo_path)
         entities = [dbm.get(row.id, Entity) for row in rows]
 
     return entities
@@ -327,14 +327,14 @@ class Entity(DataObject):
         This should only be used internally to perform update actions on data records as necessary.
         '''
         rows = self._get_rows()
-        return [row['value']['_id'] for row in rows]
+        return [row.id for row in rows]
 
     def _get_rows(self):
         """
         Return a list of all the data records associated with this
         entity.
         """
-        return self._dbm.load_all_rows_in_view('mangrove_views/entity_data', key=self.id)
+        return self._dbm.load_all_rows_in_view('entity_data', key=self.id)
 
     def get_all_data(self):
         """
@@ -343,7 +343,7 @@ class Entity(DataObject):
         contains the value.
         """
         rows = self._dbm.load_all_rows_in_view(
-            'mangrove_views/id_time_slug_value', key=self.id
+            'id_time_slug_value', key=self.id
             )
         result = defaultdict(dict)
         for row in rows:
@@ -355,14 +355,14 @@ class Entity(DataObject):
         '''Returns a list of each type of data that is stored on this entity.'''
         assert tags is None or isinstance(tags, list) or is_string(tags)
         if tags is None or is_empty(tags):
-            rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes', key=self.id)
+            rows = self._dbm.load_all_rows_in_view('entity_datatypes', key=self.id)
             result = get_datadict_types(self._dbm, [row['value'] for row in rows])
         else:
             if is_string(tags):
                 tags = [tags]
             keys = []
             for tag in tags:
-                rows = self._dbm.load_all_rows_in_view('mangrove_views/entity_datatypes_by_tag', key=[self.id, tag])
+                rows = self._dbm.load_all_rows_in_view('entity_datatypes_by_tag', key=[self.id, tag])
                 keys.append([row['value'] for row in rows])
             ids_with_all_tags = list(set.intersection(*map(set, keys)))
             result = get_datadict_types(self._dbm, ids_with_all_tags)
@@ -399,7 +399,7 @@ class Entity(DataObject):
     def _get_aggregate_value(self, field, aggregate_fn, date):
         entity_id = self._doc.id
         time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
-        rows = self._dbm.load_all_rows_in_view('mangrove_views/' + aggregate_fn, group_level=3, descending=False,
+        rows = self._dbm.load_all_rows_in_view(aggregate_fn, group_level=3, descending=False,
                                                      startkey=[self.type_path, entity_id, field],
                                                      endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
         # The above will return rows in the format described:

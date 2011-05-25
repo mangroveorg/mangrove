@@ -77,7 +77,7 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
 
 def _load_all_fields_aggregated(dbm, type_path):
     view_name = "by_values"
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=3,
+    rows = dbm.load_all_rows_in_view(view_name, group_level=3,
                                      startkey=[type_path],
                                      endkey=[type_path, {}])
     values = []
@@ -89,7 +89,7 @@ def _load_all_fields_aggregated(dbm, type_path):
 def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
     view_name = "by_aggregation_path"
     aggregation_type = _translate_aggregation_type(aggregate_on)
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=aggregate_on['level'] + 3,
+    rows = dbm.load_all_rows_in_view(view_name, group_level=aggregate_on['level'] + 3,
                                      startkey=[entity_type, aggregation_type],
                                      endkey=[entity_type, aggregation_type, {}])
     values = []

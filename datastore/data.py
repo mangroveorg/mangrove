@@ -102,7 +102,12 @@ def _load_all_fields_aggregated(dbm, type_path):
     for k,v in values:
         v["latest"] = _find_in(latest_values,k)["latest"]
 
-    return values
+    for k,v in latest_values:
+        v_dict = _find_in(values,k)
+        if v_dict is not None:
+            v.update(v_dict)
+
+    return latest_values
 
 
 def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):

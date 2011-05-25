@@ -1,6 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
+from mangrove.utils.types import is_sequence
 
+BY_VALUES_ENTITY_ID_INDEX = 1
+BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
 
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
@@ -35,8 +38,8 @@ def _get_key_strategy(aggregate_on):
         return _aggregate_by_path
     else:
         def _aggregate_by_entity(db_key):
-            key = db_key[1]
-            field = db_key[2]
+            key = db_key[BY_VALUES_ENTITY_ID_INDEX]
+            field = db_key[BY_VALUES_FIELD_INDEX]
             return key, field
 
         return _aggregate_by_entity
@@ -48,9 +51,9 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
     if aggregate_on:
         values = _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on)
     else:
-        values = _load_all_fields_aggregated(dbm, entity_type)
+        values = _load_all_fields_aggregated(dbm, entity_type,filter)
 
-    values = _apply_filter(values, filter)
+    values = _apply_client_side_filter(values, filter)
 
     _parse_key = _get_key_strategy(aggregate_on)
 
@@ -72,11 +75,14 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
 #           {'count': 1, 'entity_id': 'a5ab88e9131947f9a44b392a30e5ce64', 'timestamp': 1296518400000L, 'sum': '0Dr. A', 'field': 'director', 'latest': 'Dr. A'},
 #           {'count': 2, 'entity_id': 'a5ab88e9131947f9a44b392a30e5ce64', 'timestamp': 1298937600000L, 'sum': 30, 'field': 'patients', 'latest': 20},
 
-def _load_all_fields_aggregated(dbm, type_path):
+def _load_all_fields_aggregated(dbm, type_path,filter):
     view_name = "by_values"
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=3,
-                                     startkey=[type_path],
-                                     endkey=[type_path, {}])
+    startkey = [type_path]
+    endkey = [type_path, {}]
+    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=view_group_level,
+                                     startkey=startkey,
+                                     endkey=endkey)
     values = []
     for row in rows:
         values.append((row.key,row.value))
@@ -109,7 +115,7 @@ def _interested(filter, d):
         return interested_location == d.get('location')[:len(interested_location)]
 
 
-def _apply_filter(values, filter):
+def _apply_client_side_filter(values, filter):
     if filter is None:
         return values
     return [(k,d) for (k, d) in values if _interested(filter, d)]

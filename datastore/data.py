@@ -63,6 +63,28 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
             result.setdefault(result_key, {})[field] = val[interested_aggregate]
     return result
 
+
+def _load_all_fields_latest_values(dbm, type_path):
+    view_name = "by_values_latest"
+    startkey = [type_path]
+    endkey = [type_path, {}]
+    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=view_group_level,
+                                     startkey=startkey,
+                                     endkey=endkey)
+    values = []
+    for row in rows:
+        values.append((row.key,row.value))
+    return values
+
+
+def _find_in(values,key):
+    for k,v in values:
+        if k == key:
+            return v
+    return None
+
+
 def _load_all_fields_aggregated(dbm, type_path):
     view_name = "by_values"
     startkey = [type_path]
@@ -74,7 +96,14 @@ def _load_all_fields_aggregated(dbm, type_path):
     values = []
     for row in rows:
         values.append((row.key,row.value))
+
+    latest_values = _load_all_fields_latest_values(dbm,type_path)
+
+    for k,v in values:
+        v["latest"] = _find_in(latest_values,k)["latest"]
+
     return values
+
 
 def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
     view_name = "by_aggregation_path"

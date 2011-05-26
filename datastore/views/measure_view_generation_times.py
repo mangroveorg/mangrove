@@ -2,22 +2,14 @@ import datetime
 from mangrove.datastore.database import get_db_manager, \
     _delete_db_and_remove_db_manager
 from mangrove.datastore.views import find_views
-import unittest
 from pytz import UTC
 import random
-import sys
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.datadict import DataDictType
 from collections import defaultdict
 
 
-class TestViewGenerationTimes(unittest.TestCase):
-
-    # Change CALCULATE_TIMES to True to print timing info to the
-    # screen, it takes about five minutes right now to do all the
-    # timing stuff. It might not make sense to put this in a test, but
-    # we can change that later.
-    CALCULATE_TIMES = False
+class ViewGenerationTimer(object):
 
     def _set_db_manager(self):
         self.manager = get_db_manager('http://localhost:5984/',
@@ -37,12 +29,6 @@ class TestViewGenerationTimes(unittest.TestCase):
         self._setup_entities()
         self._setup_datadict_types()
         self._add_data_to_entities(number_of_data_records_per_entity)
-
-    def setUp(self):
-        self._reset()
-
-    def tearDown(self):
-        self._delete_db_and_remove_db_manager()
 
     def _setup_entities(self):
         ENTITY_TYPE = ["Health_Facility", "Clinic"]
@@ -116,30 +102,24 @@ class TestViewGenerationTimes(unittest.TestCase):
                         event_time=event_time
                         )
 
-    def test_print_csv_of_view_generation_times(self):
-        if not self.CALCULATE_TIMES:
-            return
-        sys.stderr.write("----------------------------------------------------------------------\n")
+    def print_csv_of_view_generation_times(self):
         iterations = [20, 40, 60, 80, 100]
         times_by_view_name = defaultdict(dict)
         for number_of_entities in iterations:
             times = self._calculate_view_generation_time(number_of_entities, 8)
             for k, v in times.items():
                 times_by_view_name[k][number_of_entities] = str(v)
-        sys.stderr.write(",".join(["number of entities"] + [str(i) for i in iterations]) + "\n")
+        print ",".join(["number of entities"] + [str(i) for i in iterations])
         for name, times in times_by_view_name.items():
             row = [name] + [times_by_view_name[name][number_of_entities] for number_of_entities in iterations]
-            sys.stderr.write(",".join(row) + "\n")
+            print ",".join(row)
 
-    def test_print_view_generation_times(self):
-        if not self.CALCULATE_TIMES:
-            return
-        sys.stderr.write("----------------------------------------------------------------------\n")
+    def print_view_generation_times(self):
         times = self._calculate_view_generation_time(100, 8)
         import operator
         sorted_times = sorted(times.iteritems(), key=operator.itemgetter(1))
         for view_name, generation_time in sorted_times:
-            sys.stderr.write(view_name + ": " + str(generation_time) + "\n")
+            print view_name + ": " + str(generation_time)
 
     def _calculate_view_generation_time(self, number_of_entities, number_of_data_records_per_entity):
         self._reset(number_of_entities, number_of_data_records_per_entity)
@@ -158,3 +138,13 @@ class TestViewGenerationTimes(unittest.TestCase):
             end = datetime.datetime.now()
             times[v] = (end - start).total_seconds()
         return times
+
+
+if __name__ == "__main__":
+    divider = "-" * 70
+    timer = ViewGenerationTimer()
+    print divider
+    timer.print_view_generation_times()
+    print divider
+    timer.print_csv_of_view_generation_times()
+    print divider

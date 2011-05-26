@@ -163,7 +163,7 @@ class DatabaseManager(object):
         end = datetime.now()
         delta_t = (end - start)
         print "[DEBUG] --- took %s\t%s.%s seconds (%s rows)" % \
-              (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
+              (full_view_name, delta_t.seconds, delta_t.microseconds, len(rows))
         return rows
 
     def create_view(self, view_name, map, reduce):

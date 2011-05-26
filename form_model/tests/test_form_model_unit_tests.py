@@ -48,12 +48,12 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
 
     def test_should_return_error_for_invalid_integer_value(self):
         answers = {"id": "1", "q2": "200"}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertFalse(valid)
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'},errors)
@@ -62,25 +62,25 @@ class TestFormModel(unittest.TestCase):
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
         expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_ignore_field_validation_if_the_answer_blank(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
         expected_result = {"entity_question": "1", "question1_Name": "Asif Momin"}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
         answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertFalse(valid)
         self.assertEqual(len(errors), 2)
         self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
@@ -90,7 +90,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_strip_whitespaces(self):
         answers = { "id" : "1" , "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4" : "    "}
         expected_cleaned_data = {  'entity_question': '1',"question1_Name": "My Name", "Father's age": 40, "Color": ["RED"]}
-        valid,cleaned_answers,errors = self.form_model._is_valid(answers)
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(0, len(errors))
         self.assertEqual(cleaned_answers, expected_cleaned_data)

@@ -72,7 +72,12 @@ class EntityTypeDoesNotExistsException(MangroveException):
 
 
 class InvalidAnswerSubmissionException(MangroveException):
-    def __init__(self, message, data):
+    def __init__(self, message, code, data=None):
+        final_data = [code]
+        if data is not None:
+            data = [a for a in data]
+            final_data.extend(data)
+        data = tuple(final_data)
         MangroveException.__init__(self, message, data)
 
 
@@ -80,57 +85,57 @@ class InvalidAnswerSubmissionException(MangroveException):
 class AnswerTooBigException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                   ("Answer %s for question %s is greater than allowed.") % (answer, code,), (answer, code,))
+                                   ("Answer %s for question %s is greater than allowed.") % (answer, code,), code, (answer,))
 
 
 class AnswerTooSmallException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                   ("Answer %s for question %s is smaller than allowed.") % (answer, code,), (answer, code,))
+                                   ("Answer %s for question %s is smaller than allowed.") % (answer, code,), code, (answer,))
 
 
 class AnswerTooLongException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                   ("Answer %s for question %s is longer than allowed.") % (answer, code,), (answer, code,))
+                                   ("Answer %s for question %s is longer than allowed.") % (answer, code,), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                   ("Answer %s for question %s is shorter than allowed.") % (answer, code,), (answer, code,))
+                                   ("Answer %s for question %s is shorter than allowed.") % (answer, code,), code, (answer,))
 
 
 class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s contains more than one value.") % (
-                                   answer, code,), (answer, code,))
+                                   answer, code,), code, (answer,))
 
 
 class AnswerHasNoValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s has no value.") % (
-                                   answer, code,), (answer, code,))
+                                   answer, code,), code, (answer,))
 
 
 class AnswerNotInListException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                    ("Answer %s for question %s is not present in the allowed options.") % (
-                                   answer, code,), (answer, code,))
+                                   answer, code,), code, (answer,))
 
 
 class AnswerWrongType(InvalidAnswerSubmissionException):
     def __init__(self, code):
-        InvalidAnswerSubmissionException.__init__(self, ("Answer to question %s is of wrong type.") % (code,), (code,))
+        InvalidAnswerSubmissionException.__init__(self, ("Answer to question %s is of wrong type.") % (code,), code)
 
 
 class IncorrectDate(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, date_format):
         InvalidAnswerSubmissionException.__init__(self, ('Answer to question %s is invalid: %s, expected date in %s format') %
-                                         (code, answer, date_format), (code, answer, date_format))
+                                         (code, answer, date_format), code, (answer, date_format))
 
 
 class NoDocumentError(MangroveException):
@@ -168,4 +173,4 @@ class LatitudeNotInRange(InvalidAnswerSubmissionException):
 
 class GeoCodeFormatException(InvalidAnswerSubmissionException):
     def __init__(self, code):
-        InvalidAnswerSubmissionException.__init__(self, "GPS coordinates must be in the format 'lat long'.", (code,))
+        InvalidAnswerSubmissionException.__init__(self, "GPS coordinates must be in the format 'lat long'.", code)

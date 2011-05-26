@@ -147,9 +147,9 @@ class FormModel(DataObject):
     def _validate_answer_for_field(self, answer, field):
         try:
             value = field.validate(answer)
-            return True, value
+            return True, value, None
         except MangroveException as e:
-            return False, e.message
+            return False, e.message, e.data
 
     def _find_code(self, answers, code):
         for key in answers:
@@ -161,6 +161,7 @@ class FormModel(DataObject):
         success = True
         cleaned_answers = {}
         errors = {}
+        data = {}
         short_code = self._find_code(answers, self.entity_question.code)
         if self._is_registration_form():
             entity_type = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
@@ -174,22 +175,23 @@ class FormModel(DataObject):
             if field is None: continue
             answer = answers[key]
             if is_empty(answer): continue
-            is_valid, result = self._validate_answer_for_field(answer, field)
+            is_valid, result, error_data = self._validate_answer_for_field(answer, field)
             if is_valid:
                 cleaned_answers[field.name] = result
             else:
                 success = False
                 errors[key] = result
-        return success, cleaned_answers, errors
+                data[key] = error_data
+        return success, cleaned_answers, errors, data
 
     def validate_submission(self, values):
-        success, cleaned_answers, errors = self._is_valid(values)
+        success, cleaned_answers, errors, data= self._is_valid(values)
         short_code = cleaned_answers.get(self.entity_question.name)
         if self._is_registration_form():
             entity_type = cleaned_answers.get(ENTITY_TYPE_FIELD_NAME)
         else:
             entity_type = self.entity_type
-        return FormSubmission(self, cleaned_answers, short_code, success, errors, entity_type)
+        return FormSubmission(self, cleaned_answers, short_code, success, errors, entity_type, data)
 
     @property
     def cleaned_data(self):
@@ -255,8 +257,9 @@ class FormSubmission(object):
         return [(field, value, self.form_model.get_field_by_name(field).ddtype)  for (field, value) in
                 self.cleaned_data.items()]
 
-    def __init__(self, form_model, form_answers, short_code, success, errors, entity_type):
+    def __init__(self, form_model, form_answers, short_code, success, errors, entity_type, data):
         assert errors is None or type(errors) == dict
+        assert data is None or type(data) == dict
         assert success is not None and type(success) == bool
         assert form_answers is not None and type(form_answers) == dict
         assert form_model is not None and isinstance(form_model, FormModel)
@@ -268,6 +271,7 @@ class FormSubmission(object):
         self.is_valid = success
         self.errors = errors
         self.entity_type = entity_type
+        self.error_data = data
 
     @property
     def values(self):

@@ -24,23 +24,34 @@ class Request(object):
         self.destination = destination
 
 
+
+
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
 
     ERROR_RESPONSE_TEMPLATE = "%s"
+    
+    ERROR_DATA_TEMPLATE = "Error. Invalid Submission. Refer to printed Questionnaire. Resend the question ID and answer for %s"
 
     def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None,
-                 additional_text=None):
+                 additional_text=None, error_data=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
+        self.error_data = error_data
         self.datarecord_id = datarecord_id
+        self.short_code = short_code
         if success:
             self.message = self._templatize_success_response(additional_text)
         else:
-            self.message = self._templatize_error_response()
-        self.short_code = short_code
+            self.message = self._templatize_error_data_response()
+
+
+    def _get_codes(self):
+
+        code_list = [each[0] for each in self.error_data]
+        return ", ".join(code_list)
 
     def _get_reporter_name(self):
         return self.reporters[0][NAME_FIELD] if len(self.reporters) == 1 else ""
@@ -53,6 +64,11 @@ class Response(object):
 
     def _templatize_error_response(self):
         return Response.ERROR_RESPONSE_TEMPLATE % (", ".join(self.errors),)
+
+    def _templatize_error_data_response(self):
+        if self.error_data is None:
+            return self._templatize_error_response()
+        return Response.ERROR_DATA_TEMPLATE % self._get_codes()
 
 
 class UnknownTransportException(MangroveException):
@@ -95,6 +111,7 @@ class SubmissionHandler(object):
         submission_id = None
         try:
             _errors = []
+            _error_data = []
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
             logger = SubmissionLogger(self.dbm)
@@ -127,10 +144,11 @@ class SubmissionHandler(object):
                     return Response(reporters, True, [], submission_id, data_record_id)
             else:
                 _errors.extend(form_submission.errors.values())
+                _error_data.extend(form_submission.error_data.values())
                 logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors)
         except MangroveException as e:
             raise e
-        return Response(reporters, False, _errors, submission_id)
+        return Response(reporters, False, _errors, submission_id=submission_id, error_data=_error_data)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted, \
-    EntityTypeCodeNotSubmitted
+    EntityTypeCodeNotSubmitted, ShortCodeTooLongException
 from mangrove.form_model.field import TextField, GeoCodeField
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -164,9 +164,11 @@ class FormModel(DataObject):
         data = {}
         short_code = self._find_code(answers, self.entity_question.code)
         if self._is_registration_form():
-            entity_type = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
-            if is_empty(entity_type):
+            entity_code = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
+            if is_empty(entity_code):
                 raise EntityTypeCodeNotSubmitted()
+            if short_code is not None and len(short_code)>12:
+                raise ShortCodeTooLongException()
         else:
             if is_empty(short_code):
                 raise EntityQuestionCodeNotSubmitted()

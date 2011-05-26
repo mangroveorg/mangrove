@@ -153,6 +153,10 @@ class ShortCodeAlreadyInUseException(MangroveException):
             MangroveException.__init__(self, ('The ID %s is already in use. Please specify another') %
                                              (short_code,), (short_code,))
 
+class ShortCodeTooLongException(MangroveException):
+    def __init__(self):
+            MangroveException.__init__(self, "The short code is longer than 12 characters")
+
 class LatitudeNotFloat(InvalidAnswerSubmissionException):
     def __init__(self,lat):
         InvalidAnswerSubmissionException.__init__(self, ('The value for Latitude %s should be float') %

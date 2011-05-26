@@ -128,8 +128,7 @@ def _translate_aggregation_type(aggregate_on):
 
 def _get_entities_for_location(dbm,entity_type,location):
     view_name = "by_location"
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, reduce = False,
-                                         startkey=[entity_type, location],
+    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, startkey=[entity_type, location],
                                          endkey=[entity_type, location, {}])
     values = []
     for row in rows:

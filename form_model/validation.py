@@ -73,17 +73,21 @@ class ChoiceConstraint(object):
 
 
 class LocationConstraint(object):
+
+    def __init__(self, code):
+        self.code = code
+
     def validate(self, latitude, longitude):
         try:
             lat = is_float(latitude, min=ConstraintAttributes.MIN_LAT, max=ConstraintAttributes.MAX_LAT)
         except VdtTypeError:
-            raise LatitudeNotFloat(latitude)
+            raise LatitudeNotFloat(self.code, latitude)
         except VdtValueError:
-            raise LatitudeNotInRange(latitude)
+            raise LatitudeNotInRange(self.code, latitude)
         try:
             long = is_float(longitude, min=ConstraintAttributes.MIN_LONG, max=ConstraintAttributes.MAX_LONG)
         except VdtTypeError:
-            raise LongitudeNotFloat(longitude)
+            raise LongitudeNotFloat(self.code, longitude)
         except VdtValueError:
-            raise LongitudeNotInRange(longitude)
+            raise LongitudeNotInRange(self.code, longitude)
         return lat, long

@@ -162,8 +162,8 @@ class DatabaseManager(object):
         rows = self.database.view(full_view_name, **values).rows
         end = datetime.now()
         delta_t = (end - start)
-        print "[DEBUG] --- took %s\t%s.%s seconds (%s rows)" % \
-              (full_view_name, delta_t.seconds, delta_t.microseconds, len(rows))
+        print "[DEBUG] --- took %s.%s seconds (%s rows)" % \
+              (delta_t.seconds, delta_t.microseconds, len(rows))
         return rows
 
     def create_view(self, view_name, map, reduce):
@@ -230,6 +230,16 @@ class DatabaseManager(object):
             return None
         else:
             return document_class.load(self.database, id=id)
+
+    def get_many_by_ids(self, obj_class, ids):
+        docs = [row.doc for row in self.database.view('_all_docs', keys=ids, include_docs='true')]
+        objs = []
+        for doc in docs:
+            print obj_class, doc
+            obj = obj_class(self)
+            obj._set_document(doc)
+            objs.append(obj)
+        return objs
 
     def get_many(self, ids, object_class, get_or_create=False, force_reload=False):
         '''

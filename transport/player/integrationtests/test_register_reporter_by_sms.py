@@ -7,7 +7,7 @@ from mangrove.datastore.entity import get_by_short_code
 from mangrove.errors.MangroveException import ShortCodeTooLongException
 from mangrove.transport.submissions import SubmissionHandler, Request
 
-@SkipTest("To be implemented after register reporter by sms story is played.")
+@SkipTest
 class TestRegisterReporterViaSMS(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')

@@ -23,9 +23,6 @@ class Request(object):
         self.source = source
         self.destination = destination
 
-
-
-
 class Response(object):
     SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
 
@@ -46,7 +43,6 @@ class Response(object):
             self.message = self._templatize_success_response(additional_text)
         else:
             self.message = self._templatize_error_data_response()
-
 
     def _get_codes(self):
 
@@ -73,7 +69,6 @@ class Response(object):
 
 class UnknownTransportException(MangroveException):
     pass
-
 
 class SubmissionLogger(object):
     def __init__(self, dbm):
@@ -112,6 +107,8 @@ class SubmissionHandler(object):
         try:
             _errors = []
             _error_data = []
+            if request.transport.lower() == "sms":
+                reporters = reporter.find_reporter(self.dbm, request.source)
             player = self.get_player_for_transport(request)
             form_code, values = player.parse(request.message)
             logger = SubmissionLogger(self.dbm)
@@ -119,9 +116,7 @@ class SubmissionHandler(object):
                                                          destination=request.destination, form_code=form_code,
                                                          values=values)
             form = get_form_model_by_code(self.dbm, form_code)
-            #                                             TODO: Fix reporter authorization based on channel.
             form_submission = form.validate_submission(values)
-            reporters = reporter.find_reporter(self.dbm, request.source,form_submission.entity_type,request.transport.lower())
             if form_submission.is_valid:
                 if form._is_registration_form():
                     e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,

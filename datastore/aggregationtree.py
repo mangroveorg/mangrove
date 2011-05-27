@@ -4,7 +4,7 @@ from threading import Lock
 
 import networkx as nx
 
-from mangrove.utils.types import is_not_empty, is_sequence
+from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from documents import AggregationTreeDocument
 from database import DataObject
 
@@ -44,6 +44,8 @@ class AggregationTree(DataObject):
                           }
                 }
         }
+
+    NOTE: Node names must be STRINGS because of JSON encoding issues for couch
     '''
     __document_class__ = AggregationTreeDocument
     root_id = '__root'
@@ -81,6 +83,21 @@ class AggregationTree(DataObject):
     def name(self):
         return self.id
 
+    def get_data_for(self, node):
+        assert is_string(node)
+        return self.graph.node[node]
+
+    def set_data_for(self, node, dikt):
+        '''
+        Note: all keys in the data dictionary 'dikt' must be strings
+
+        If not, this raises a value error
+        '''
+        assert is_string(node)
+        if not self._verify_dict_keys_are_strings(dikt):
+            raise ValueError('Keys in a nodes data-dictionary must be strings')
+        self.graph.node[node] = dikt
+
     def get_paths(self):
         '''
         Returns a list of lists, each one a path from root to every node, with root removed.
@@ -106,6 +123,73 @@ class AggregationTree(DataObject):
         return [nx.shortest_path(self.graph, AggregationTree.root_id, n)[1:] for n in
                 [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n) == 1]]
 
+    def _verify_dict_keys_are_strings(self, dikt):
+        '''
+        Returns True if all keys are strings, false otherwise
+
+        if 'None' is passed, returns True 'cause there are no keys to NOT be strings!
+        '''
+        if dikt is not None:
+            for k in dikt.keys():
+                if not is_string(k):
+                    return False
+        return True
+
+    def _add_node(self, name, data=None):
+        '''
+        Adds a node and data the tree.
+
+        NOTE: Because of JSON encoding issues, the node Names and all data dict keys must be strings.
+        If not a ValueError is raised!
+
+        '''
+        assert data is None or isinstance(data, dict)
+        if not is_string(name):
+            raise ValueError('Node names must be strings')
+
+        if not self._verify_dict_keys_are_strings(data):
+            raise ValueError('Keys in a nodes data-dictionary must be strings')
+            
+        self.graph.add_node(name, data)
+
+    def add_child(self, parent, child, data=None):
+        '''raises value error if parent not in tree'''
+        if parent not in self.graph:
+            raise ValueError('"%s" not found in graph' % parent)
+
+        self._add_node(child, data)
+        self.graph.add_edge(parent, child)
+
+    def remove_node(self, node):
+        if node not in self.graph:
+            raise ValueError("Node named: '%s' not in graph" % node)
+
+        self.graph.remove_node(node)
+
+    def children_of(self, node):
+        if node not in self.graph:
+            raise ValueError("Node named: '%s' not in graph" % node)
+
+        return self.graph.successors(node)
+
+    def parent_of(self, node):
+        if node not in self.graph:
+            raise ValueError("Node named: '%s' not in graph" % node)
+
+        p = self.graph.predecessors(node)
+        return (None if len(p)==0 else p[0])
+
+    def ancestors_of(self, node):
+        a = []
+        while True:
+            p = self.parent_of(node)
+            if p == self.root_id:
+                break
+            a.append(p)
+            node = p
+        a.reverse()
+        return a
+
     def add_path(self, nodes):
         '''Adds a path to the tree.
 
@@ -130,14 +214,23 @@ class AggregationTree(DataObject):
         # iterate, add nodes, and pull out path
         path = []
         for n in nodes:
+            data = None
+            name = None
             if is_sequence(n):
-                self.graph.add_node(n)
-                path.append(n[0])
+                name = n[0]
+                data = n[1]
             else:
-                path.append(n)
+                name = n
+
+            self._add_node(name, data)
+            path.append(name)
 
         # add the path
         self.graph.add_path(path)
+
+    def add_root_path(self, path):
+        '''Convenience function for adding this path starting at "root"'''
+        self.add_path([self.root_id]+path)
 
     def _sync_doc_to_graph(self):
         '''Converts internal CouchDB document dict into tree graph'''

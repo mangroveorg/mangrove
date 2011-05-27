@@ -90,12 +90,11 @@ class TestQueryApi(unittest.TestCase):
                          ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": data.reduce_functions.LATEST,
-                                        "beds": data.reduce_functions.COUNT,
+                            aggregates={"beds": data.reduce_functions.COUNT,
                                         "patients": data.reduce_functions.COUNT},
                             aggregate_on={'type': 'location', "level": 2})
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[("India", "MH")], {"director": "Dr. A", "beds": 1, "patients": 2})
+        self.assertEqual(values[("India", "MH")], {"beds": 1, "patients": 2})
 
     def test_should_fetch_aggregate_per_entity(self):
         # Aggregate across all data records for each entity
@@ -279,6 +278,16 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("India", "MH")], {"patients": 200})
         self.assertEqual(values[("India", "Karnataka")], {"patients": 140})
         self.assertEqual(values[("India", "Kerala")], {"patients": 12})
+
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+                            aggregates={"patients": data.reduce_functions.SUM},
+                            aggregate_on={'type': 'location', "level": 2},
+                            filter={'location': ['India', 'MH']}
+                            )
+
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[("India", "MH")], {"patients": 200})
+
 
     def test_should_fetch_aggregate_grouped_by_hierarchy_path_for_any(self):
         dd_types = self.create_datadict_types()

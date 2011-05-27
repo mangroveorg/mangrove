@@ -67,8 +67,10 @@ class MultipleReportersForANumberException(MangroveException):
 
 class EntityTypeDoesNotExistsException(MangroveException):
     def __init__(self, entity_type):
+        entity_type_full_name = ".".join(entity_type)
+        entity_type_short_name = entity_type[-1]
         MangroveException.__init__(self,
-                                   ("Entity type %s doesnt exist.") % (".".join(entity_type),), (entity_type, ))
+                                   ("Entity type %s doesnt exist.") % (entity_type_full_name,), (entity_type_short_name,))
 
 
 class InvalidAnswerSubmissionException(MangroveException):

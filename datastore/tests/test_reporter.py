@@ -35,7 +35,7 @@ class TestReporter(TestCase):
         _delete_db_and_remove_db_manager(self.manager)
 
     def test_should_load_reporter_list_given_tel_number(self):
-        saved_r2 = find_reporter(self.manager, "8888567890","something","sms")
+        saved_r2 = find_reporter(self.manager, "8888567890")
         self.assertIsNotNone(saved_r2)
         self.assertEqual(1, len(saved_r2))
         self.assertEquals(saved_r2[0]["name"], "B")
@@ -43,18 +43,12 @@ class TestReporter(TestCase):
 
     def test_should_raise_exception_if_no_reporter_for_tel_number(self):
         with self.assertRaises(NumberNotRegisteredException):
-            find_reporter(self.manager, "X","something","sms")
+            find_reporter(self.manager, "X")
 
     def test_should_not_raise_exception_if_multiple_reporters_for_a_number(self):
-        reporter_list = find_reporter(self.manager, "1234567890","something","sms")
+        reporter_list = find_reporter(self.manager, "1234567890")
         self.assertEqual(2, len(reporter_list))
         self.assertTrue({NAME_FIELD: "A", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
 
-    def test_should_return_none_for_web_transport_layer(self):
-        reporter_list = find_reporter(self.manager, "1234567890","something","web")
-        self.assertEqual(None, reporter_list)
 
-    def test_should_return_none_for_Report_Entity(self):
-        reporter_list = find_reporter(self.manager, "1234567890","Reporter","web")
-        self.assertEqual(None, reporter_list)

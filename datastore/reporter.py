@@ -7,13 +7,7 @@ from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 REPORTER_ENTITY_TYPE = ["Reporter"]
 
 
-def find_reporter(dbm, from_number,entity_type,transport):
-    if transport == 'web':
-        return None
-
-    if entity_type == 'Reporter':
-        return None
-
+def find_reporter(dbm, from_number):
     reporters = data.fetch(dbm, entity_type=["Reporter"],
                             aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST,
                                         NAME_FIELD: data.reduce_functions.LATEST}

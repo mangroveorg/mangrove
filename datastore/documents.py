@@ -136,9 +136,10 @@ class DataDictDocument(DocumentBase):
     name = TextField()
     description = TextField()
     tags = ListField(TextField())
+    map = BooleanField()
 
     def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None,
-                 description=None, tags=None, **kwargs):
+                 description=None, tags=None, map=False, **kwargs):
         '''Create a new CouchDB document that represents a DataDictType'''
         DocumentBase.__init__(self, id, 'DataDict')
 
@@ -148,6 +149,7 @@ class DataDictDocument(DocumentBase):
         assert name is None or is_string(name)
         assert description is None or is_string(description)
         assert tags is None or isinstance(tags, list)  # do we want to check that they are strings?
+        map = True if map else False
         # how to assert any kwargs?
 
         self.primitive_type = primitive_type
@@ -162,6 +164,7 @@ class DataDictDocument(DocumentBase):
         self.slug = slug
         self.name = name
         self.description = description
+        self.map = map
         for arg, value in kwargs.items():
             self[arg] = value
 

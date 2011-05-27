@@ -49,7 +49,7 @@ class DataDictType(DataObject):
     __document_class__ = DataDictDocument
 
     def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
-                 constraints=None, tags=None, id=None, **kwargs):
+                 constraints=None, tags=None, id=None, map=False, **kwargs):
         '''Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
@@ -60,6 +60,7 @@ class DataDictType(DataObject):
         assert primitive_type is None or is_string(primitive_type)
         assert description is None or is_string(description)
         assert constraints is None or isinstance(constraints, dict)
+        map = True if map else False
         # how to assert any kwargs?
 
         DataObject.__init__(self, dbm)
@@ -69,7 +70,7 @@ class DataDictType(DataObject):
             return
 
         # Not made from existing doc, so create a new one
-        doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
+        doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, map, **kwargs)
         self._set_document(doc)
 
 #    def save(self):

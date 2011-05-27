@@ -3,13 +3,14 @@
 #  This is an integration test.
 # Send sms, parse and save.
 import unittest
+from  mangrove import initializer
 
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
-from mangrove.datastore.entity import define_type, Entity, get_by_short_code
-from mangrove.datastore import datarecord
+from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, RegistrationFormModel
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
 from mangrove.datastore.datadict import DataDictType
@@ -18,10 +19,10 @@ from mangrove.datastore.datadict import DataDictType
 class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
+        initializer.run(self.dbm)
+        define_type(self.dbm, ["dog"])
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, self.entity_type)
-        self.reporter_type = define_type(self.dbm, ["Reporter"])
-
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
                                                   primitive_type='string')
@@ -31,27 +32,33 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         self.name_type.save()
         self.telephone_number_type.save()
-        self.entity_id_type.save()
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                          data=[("Name", "Ruby", self.name_type)], location=["India", "Pune"],
-                                          source="sms", short_code= "CLI1")
+        self.entity  = create_entity(self.dbm, entity_type=["HealthFacility","Clinic"],
+                                          location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
+                                          )
 
-        datarecord.register(self.dbm, entity_type=["Reporter"],
-                            data=[("telephone_number", '1234', self.telephone_number_type),
-                                  ("first_name", "Test_reporter", self.name_type)], location=[],
-                            source="sms")
 
-        question1 = TextField(name="entity_question", question_code="ID", label="What is associated entity",
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],submission_id="1")
+
+
+        reporter = create_entity(self.dbm, entity_type=["Reporter"],
+                        location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
+                            )
+
+        reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
+                                  (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
+
+
+        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
-        question2 = TextField(name="Name", question_code="NAME", label="Clinic Name",
+        question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
                               ddtype=self.name_type)
-        question3 = IntegerField(name="Arv stock", question_code="ARV", label="ARV Stock",
+        question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
-        question4 = SelectField(name="Color", question_code="COL", label="Color",
+        question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
@@ -63,15 +70,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +ID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        text = "CLINIC +EID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
 
         self.assertTrue(response.success)
-        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-        self.assertEquals(data["Name"], "CLINIC-MADA")
-        self.assertEquals(data["Arv stock"], 50)
+
+
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
@@ -79,9 +85,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
 
+        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
+        self.assertEquals(data["Arv stock"], 50)
+        self.assertEquals(data["Name"], "CLINIC-MADA")
+
+
 
     def test_should_give_error_for_wrong_integer_value(self):
-        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
+        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -89,7 +100,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_should_give_error_for_wrong_text_value(self):
-        text = "CLINIC +ID CID001 +NAME ABC"
+        text = "CLINIC +EID CID001 +NAME ABC"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
@@ -97,62 +108,88 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_get_submissions_for_form(self):
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="abc",
-                                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans1', 'Q2': 'ans2'},
+                                                      status=False, error_message=""))
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="abc",
-                                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans12', 'Q2': 'ans22'},
+                                                      status=False, error_message=""))
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                                       destination=12345, form_code="def",
-                                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'}
-                                                                       ,
-                                                                       status=False, error_message=""))
+                                                      destination=12345, form_code="def",
+                                                      values={'defQ1': 'defans12', 'defQ2': 'defans22'},
+                                                      status=False, error_message=""))
 
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[0]['values'])
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[1]['values'])
+        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
+        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
 
     def test_error_messages_are_being_logged_in_submissions(self):
-        text = "CLINIC +ID %s +ARV 150 " % self.entity.id
+        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
         submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
-    def test_should_create_new_entity_on_registration(self):
-        location_type = DataDictType(self.dbm, name='Location Type', slug='location', primitive_type='string')
-        description_type = DataDictType(self.dbm, name='description Type', slug='description', primitive_type='string')
-        mobile_number_type = DataDictType(self.dbm, name='Mobile Number Type', slug='mobile_number',
-                                          primitive_type='string')
-
-        location_type.save()
-        description_type.save()
-        mobile_number_type.save()
-        question1 = TextField(name="entity_type", question_code="T", label="What is associated entity type?",
-                              language="eng", entity_question_flag=False, ddtype=self.entity_id_type)
-        question2 = TextField(name="name", question_code="N", label="What is the entity's name?",
-                              defaultValue="some default value", language="eng", ddtype=self.name_type)
-        question3 = TextField(name="short_name", question_code="S", label="What is the entity's short name?",
-                              defaultValue="some default value", language="eng", ddtype=self.name_type)
-        question4 = TextField(name="location", question_code="L", label="What is the entity's location?",
-                              defaultValue="some default value", language="eng", ddtype=location_type)
-        question5 = TextField(name="description", question_code="D", label="Describe the entity",
-                              defaultValue="some default value", language="eng", ddtype=description_type)
-        question6 = TextField(name="mobile_number", question_code="M", label="What is the associated mobile number?",
-                              defaultValue="some default value", language="eng", ddtype=mobile_number_type)
-
-        form_model = RegistrationFormModel(self.dbm, name="REG", form_code="REG", fields=[
-                question1, question2, question3, question4, question5, question6])
-        form_model.save()
-
-        text = "REG +N buddy +S bud +T dog +L home +D its a dog! +M 123456"
+    
+    def test_should_register_new_entity(self):
+        text = "REG +N buddy +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
-        self.assertEqual(response.datarecord_id,"bud")
-        a=get_by_short_code(self.dbm,"bud")
-        self.assertEqual(a.short_code,"bud")
+        self.assertIsNotNone(response.datarecord_id)
+        expected_short_code = "DOG1"
+        self.assertEqual(response.short_code, expected_short_code)
+        a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual(a.short_code, expected_short_code)
+
+        text = "REG +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertTrue(response.success)
+        self.assertIsNotNone(response.datarecord_id)
+        self.assertEqual(response.short_code, "bud", ["dog"])
+        a = get_by_short_code(self.dbm, "bud", ["dog"])
+        self.assertEqual(a.short_code, "bud")
+
+        text = "REG +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertTrue(response.success)
+        self.assertIsNotNone(response.datarecord_id)
+        expected_short_code = "DOG3"
+        self.assertEqual(response.short_code, expected_short_code)
+        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual(b.short_code, expected_short_code)
+
+    def test_should_log_submission(self):
+        request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(request)
+        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
+        self.assertIsInstance(submission_log, SubmissionLogDocument)
+        self.assertEquals(request.transport, submission_log.channel)
+        self.assertEquals(request.source, submission_log.source)
+        self.assertEquals(request.destination, submission_log.destination)
+        self.assertEquals(True, submission_log. status)
+        self.assertEquals("REG", submission_log.form_code)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't':'dog'}, submission_log.values)
+        self.assertEquals(request.destination, submission_log.destination)
+
+
+    def test_should_throw_error_if_entity_with_same_short_code_exists(self):
+        with self.assertRaises(DataObjectAlreadyExists):
+            text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))
+            text = "REG +N buddy2 +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))
+
+    def test_should_throw_error_if_entityType_doesnt_exist(self):
+        with self.assertRaises(EntityTypeDoesNotExistsException):
+            text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
+            s = SubmissionHandler(self.dbm)
+            s.accept(Request("sms", text, "1234", "5678"))

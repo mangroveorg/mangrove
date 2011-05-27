@@ -6,9 +6,10 @@ from mangrove.utils.types import is_sequence
 from mangrove.utils.dates import utcnow
 
 
-def register(manager, entity_type, data, location, source, aggregation_paths=None, short_code = None):
+def register(manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
 #    manager = get_db_manager()
-    e = Entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths, short_code = short_code)
+    e = Entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
+               short_code=short_code)
     saved_entity_id = e.save()
     submit(manager, entity_id=saved_entity_id, data=data, source=source)
     return e
@@ -27,4 +28,3 @@ def submit(manager, entity_id, data, source):
     submission_log = manager._save_document(submission_log)
     data_record_id = e.add_data(data=data, event_time=utcnow(), submission_id=submission_log.id)
     return data_record_id, submission_log.id
-

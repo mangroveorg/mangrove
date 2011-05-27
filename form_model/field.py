@@ -3,10 +3,33 @@
 from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate
-from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate, GeoCodeFormatException
+from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, LocationConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
+
+def create_question_from(dictionary, dbm):
+    """
+     Given a dictionary that defines a question, this would create a field with all the validations that are
+     defined on it.
+    """
+    type = dictionary.get("type")
+    name = dictionary.get("name")
+    code = dictionary.get("code")
+    is_entity_question = dictionary.get("entity_question_flag")
+    label = dictionary.get("label")
+    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
+    if type == field_attributes.TEXT_FIELD:
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name)
+    elif type == field_attributes.INTEGER_FIELD:
+        return _get_integer_field(code, ddtype, dictionary, label, name)
+    elif type == field_attributes.DATE_FIELD:
+        return _get_date_field(code, ddtype, dictionary, label, name)
+    elif type == field_attributes.LOCATION_FIELD:
+        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype)
+    elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
+        return _get_select_field(code, ddtype, dictionary, label, name, type)
+    return None
 
 def field_to_json(object):
     #    assert isinstance(object, Field)
@@ -19,10 +42,11 @@ def field_to_json(object):
 class field_attributes(object):
     '''Constants for referencing standard attributes in questionnaire.'''
     LANGUAGE = "language"
-    FIELD_CODE = "question_code"
+    FIELD_CODE = "code"
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
     SELECT_FIELD = 'select1'
+    LOCATION_FIELD = "geocode"
     DATE_FIELD = 'date'
     MULTISELECT_FIELD = 'select'
     DEFAULT_LANGUAGE = "eng"
@@ -34,14 +58,14 @@ class Field(object):
     NAME = "name"
     LABEL = "label"
     TYPE = "type"
-    QUESTION_CODE = "question_code"
+    CODE = "code"
     DDTYPE = "ddtype"
     LANGUAGE = "language"
 
     _DEFAULT_VALUES = {
         NAME: "",
         TYPE: "",
-        QUESTION_CODE: "",
+        CODE: "",
         DDTYPE: None
     }
 
@@ -73,8 +97,8 @@ class Field(object):
         return self._dict.get(self.TYPE)
 
     @property
-    def question_code(self):
-        return self._dict.get(self.QUESTION_CODE)
+    def code(self):
+        return self._dict.get(self.CODE)
 
     @property
     def is_entity_field(self):
@@ -104,8 +128,8 @@ class Field(object):
 class IntegerField(Field):
     RANGE = "range"
 
-    def __init__(self, name, question_code, label, ddtype, range=None, language=field_attributes.DEFAULT_LANGUAGE):
-        Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, question_code=question_code,
+    def __init__(self, name, code, label, ddtype, range=None, language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)
 
         self.constraint = range if range is not None else NumericConstraint()
@@ -129,8 +153,8 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, question_code, label, date_format, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
-        Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, question_code=question_code,
+    def __init__(self, name, code, label, date_format, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)
 
         self._dict[self.DATE_FORMAT] = date_format
@@ -152,9 +176,9 @@ class TextField(Field):
     LENGTH = "length"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, question_code, label, ddtype, length=None, defaultValue=None,
+    def __init__(self, name, code, label, ddtype, length=None, defaultValue=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
-        Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, question_code=question_code,
+        Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         self.constraint = length if length is not None else TextConstraint()
@@ -178,12 +202,12 @@ class TextField(Field):
 class SelectField(Field):
     OPTIONS = "choices"
 
-    def __init__(self, name, question_code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
+    def __init__(self, name, code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.SINGLE_SELECT_FLAG = single_select_flag
-        Field.__init__(self, type=type, name=name, question_code=question_code,
+        Field.__init__(self, type=type, name=name, code=code,
                        label=label, language=language, ddtype=ddtype)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
@@ -198,7 +222,7 @@ class SelectField(Field):
                 valid_choices.append(single_language_specific_option)
         self.constraint = ChoiceConstraint(
             list_of_valid_choices=[each.get('text').get(language) for each in valid_choices],
-            single_select_constraint=single_select_flag, question_code=question_code)
+            single_select_constraint=single_select_flag, code=code)
 
     SINGLE_SELECT_FLAG = 'single_select_flag'
 
@@ -221,34 +245,42 @@ class SelectField(Field):
         return dict
 
 
-def create_question_from(dictionary, dbm):
-    """
-     Given a dictionary that defines a question, this would create a field with all the validations that are
-     defined on it.
-    """
-    type = dictionary.get("type")
-    name = dictionary.get("name")
-    code = dictionary.get("question_code")
-    is_entity_question = dictionary.get("entity_question_flag")
-    label = dictionary.get("label")
-    ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
-    if type == "text":
-        length_dict = dictionary.get("length")
-        length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
-                                max=length_dict.get(ConstraintAttributes.MAX))
-        return TextField(name=name, question_code=code, label=label, entity_question_flag=is_entity_question,
-                         length=length, ddtype=ddtype)
-    elif type == "integer":
-        range_dict = dictionary.get("range")
-        range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
-                                  max=range_dict.get(ConstraintAttributes.MAX))
-        return IntegerField(name=name, question_code=code, label=label, range=range, ddtype=ddtype)
-    elif type == "date":
-        date_format = dictionary.get("date_format")
-        return DateField(name=name, question_code=code, label=label, date_format=date_format, ddtype=ddtype)
-    elif type == "select" or type == "select1":
-        choices = dictionary.get("choices")
-        single_select = True if type == "select1" else False
-        return SelectField(name=name, question_code=code, label=label, options=choices,
-                           single_select_flag=single_select, ddtype=ddtype)
-    return None
+class GeoCodeField(Field):
+    def __init__(self, name, code, label, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
+                       label=label, language=language, ddtype=ddtype)
+
+    def validate(self, lat_long_string):
+        lat_long = lat_long_string.split(" ")
+        if(len(lat_long)<2):
+            raise GeoCodeFormatException(self.code)
+        return LocationConstraint(code=self.code).validate(latitude=lat_long[0], longitude=lat_long[1])
+
+
+
+
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name):
+    length_dict = dictionary.get("length")
+    length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
+                            max=length_dict.get(ConstraintAttributes.MAX))
+    return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+                     length=length, ddtype=ddtype)
+
+
+def _get_integer_field(code, ddtype, dictionary, label, name):
+    range_dict = dictionary.get("range")
+    range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+                              max=range_dict.get(ConstraintAttributes.MAX))
+    return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype)
+
+
+def _get_date_field(code, ddtype, dictionary, label, name):
+    date_format = dictionary.get("date_format")
+    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype)
+
+
+def _get_select_field(code, ddtype, dictionary, label, name, type):
+    choices = dictionary.get("choices")
+    single_select = True if type == field_attributes.SELECT_FIELD else False
+    return SelectField(name=name, code=code, label=label, options=choices,
+                       single_select_flag=single_select, ddtype=ddtype)

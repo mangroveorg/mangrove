@@ -107,7 +107,7 @@ class DataObject(object):
 
     @property
     def id(self):
-        return (self._doc.id if self._doc is not None else None)
+        return self._doc.id if self._doc is not None else None
 
     def update_cache(self):
         pass

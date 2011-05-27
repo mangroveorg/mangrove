@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint
+from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, LocationConstraint
 from mangrove.utils.types import is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -100,33 +100,74 @@ class TestTextValidations(unittest.TestCase):
 
 
 class TestChoiceValidations(unittest.TestCase):
-
     def test_should_validate_multiple_choice(self):
-        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban"], question_code="Q1")
+        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban"],
+                                      code="Q1")
         v_data = constraint.validate("ab")
         self.assertEquals(v_data, ["village", "urban"])
 
     def test_should_not_validate_wrong_choice(self):
         with self.assertRaises(AnswerNotInListException):
-            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"],
+                                          code="Q1")
             constraint.validate("c")
 
     def test_should_not_validate_multiple_values_sent_for_single_choice(self):
         with self.assertRaises(AnswerHasTooManyValuesException):
-            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"],
+                                          code="Q1")
             constraint.validate("ab")
 
     def test_should_not_validate_no_values_sent_for_choice(self):
         with self.assertRaises(AnswerHasNoValuesException):
-            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"],
+                                          code="Q1")
             constraint.validate("")
 
     def test_should_not_validate_numeric_values_sent_for_choice(self):
         with self.assertRaises(AnswerNotInListException):
-            constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=False,
+                                          list_of_valid_choices=["village", "urban", "city", "country"],
+                                          code="Q1")
             constraint.validate("1b")
 
     def test_should_invalidate_special_characters_sent_for_choice(self):
         with self.assertRaises(AnswerNotInListException):
-            constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban", "city", "country"], question_code="Q1")
+            constraint = ChoiceConstraint(single_select_constraint=False,
+                                          list_of_valid_choices=["village", "urban", "city", "country"],
+                                          code="Q1")
             constraint.validate("a!b")
+
+
+class TestLocationValidations(unittest.TestCase):
+    def test_latitude_and_longitude_is_float(self):
+        constraint = LocationConstraint(code="q1")
+        expected_response = (90, 130)
+        actual_response = constraint.validate("90", "130")
+        self.assertEqual(expected_response, actual_response)
+
+    def test_should_invalidate_non_float_latitude(self):
+        with self.assertRaises(LatitudeNotFloat):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("a", "1.2")
+
+    def test_should_invalidate_non_float_longitude(self):
+        with self.assertRaises(LongitudeNotFloat):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("1.2", "asasasas")
+
+    def test_latitude_should_be_between_minus_90_and_90(self):
+        with self.assertRaises(LatitudeNotInRange):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("100", "90")
+        with self.assertRaises(LatitudeNotInRange):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("-100", "90")
+
+    def test_longitude_should_be_between_minus_180_and_180(self):
+        with self.assertRaises(LongitudeNotInRange):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("-10", "190")
+        with self.assertRaises(LongitudeNotInRange):
+            constraint = LocationConstraint(code="q1")
+            constraint.validate("90", "-190")

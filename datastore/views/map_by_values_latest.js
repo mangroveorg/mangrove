@@ -5,11 +5,11 @@ function(doc) {
     var entity_type = entity.aggregation_paths['_type'];
     var entity_id = entity._id;
     for (k in doc.data){
-        value = doc.data[k].value;
-        if (typeof(value)=='number') {
-            key = [entity_type,entity_id,k, date];
-            emit(key, value);
-      }
+      value = {};
+      key = [entity_type,entity_id,k, date];
+      value["timestamp"] = date;
+      value["value"] = doc.data[k].value;
+      emit(key, value);
     }
   }
 }

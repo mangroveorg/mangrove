@@ -1,15 +1,15 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+# vim: ai ts=4 sts=4 et sw= encoding=utf-8
 
 import copy
 from datetime import datetime
-import random
 from time import mktime
 from collections import defaultdict
+from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -17,6 +17,22 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
+def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None,geometry=None):
+    if is_string(entity_type):
+            entity_type = [entity_type]
+    if is_empty(short_code):
+        short_code = generate_short_code(dbm, entity_type)
+
+    doc_id = _make_doc_id(entity_type, short_code.strip())
+    try:
+        if entity_type not in get_all_entity_types(dbm):
+            raise EntityTypeDoesNotExistsException(entity_type)
+        e = Entity(dbm, entity_type=entity_type, location=location,
+                   aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code,geometry=geometry)
+        e.save()
+        return e
+    except ResourceConflict:
+         raise DataObjectAlreadyExists("Entity","short code",short_code)
 
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)
@@ -29,7 +45,7 @@ def get_all_entity_types(dbm):
 
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
-
+    assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
     all_entities = get_all_entity_types(dbm)
@@ -38,32 +54,49 @@ def define_type(dbm, entity_type):
         type_path_lower_case = [each.lower() for each in type_path]
         if type_path_lower_case in all_entities_lower_case:
             raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
-    # now make the new one
+        # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
     entity_tree.save()
 
-def _get_used_entity_ids(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("used_entity_short_id", startkey=[entity_type])
-    return rows
 
-def get_by_short_code(dbm, short_code):
+def generate_short_code(dbm, entity_type):
+    assert is_sequence(entity_type)
+    count = _get_entity_count_for_type(dbm, entity_type=entity_type)
+    assert count >=0
+    return _make_short_code(entity_type, count + 1)
+
+
+def _get_entity_count_for_type(dbm, entity_type):
+    rows = dbm.load_all_rows_in_view("mangrove_views/by_short_codes",descending = True,
+                                     startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
+    
+    return rows[0]["value"] if len(rows) else 0
+
+
+def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
-    rows = dbm.load_all_rows_in_view('entity_by_short_code', key=short_code, include_docs=True)
-    _doc = EntityDocument.wrap(rows[0].doc)
-    return Entity.new_from_db(dbm = dbm, doc = _doc)
+    assert is_sequence(entity_type)
+    doc_id = _make_doc_id(entity_type,short_code)
+    return Entity.get(dbm,doc_id)
 
-def generate_entity_short_code(database_manager, entity_type, suggested_id=None):
-    used_ids = _get_used_entity_ids(database_manager, entity_type=entity_type)
-    used_id_list = used_ids[0].get("value")
-    if suggested_id is not None and suggested_id != "" and suggested_id not in used_id_list:
-        return suggested_id
-    else:
-        used_id_list.sort()
-        last_used_id = used_id_list[len(used_id_list) - 1:]
-        sr_id = int(last_used_id[0][3:])
-        sr_id += 1
-        return entity_type.upper()[:3]+str(sr_id)
+
+def _generate_new_code(entity_type, count):
+    short_code = _make_short_code(entity_type,count + 1)
+    return _make_doc_id(entity_type,short_code)
+
+
+def _make_doc_id(entity_type,short_code):
+    ENTITY_ID_FORMAT = "%s/%s"
+    _entity_type = ".".join(entity_type)
+    return ENTITY_ID_FORMAT % (_entity_type,short_code)
+
+
+def _make_short_code(entity_type,num):
+    SHORT_CODE_FORMAT = "%s%s"
+    entity_prefix = entity_type[-1].upper()[:3]
+    return   SHORT_CODE_FORMAT % (entity_prefix,num)
+
 
 def get_entities_by_type(dbm, entity_type):
     # TODO: change this?  for now it assumes _type is non-heirarchical
@@ -150,6 +183,12 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     return entities
 
+def add_data(dbm, short_code, data, submission_id, entity_type):
+    if is_string(entity_type):
+            entity_type = [entity_type]
+    e = get_by_short_code(dbm, short_code, entity_type)
+    data_record_id = e.add_data(data=data, submission_id=submission_id)
+    return data_record_id
 
 class Entity(DataObject):
     """
@@ -160,7 +199,7 @@ class Entity(DataObject):
     __document_class__ = EntityDocument
 
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
-                 geometry=None, centroid=None, gr_id=None, id=None, short_code = None):
+                 geometry=None, centroid=None, gr_id=None, id=None, short_code=None):
         '''Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
@@ -234,12 +273,12 @@ class Entity(DataObject):
     @property
     def type_string(self):
         p = self.type_path
-        return ('' if p is None else '.'.join(p))
+        return '' if p is None else '.'.join(p)
 
     @property
     def location_string(self):
         p = self.location_path
-        return ('' if p is None else '.'.join(p))
+        return '' if p is None else '.'.join(p)
 
     @property
     def geometry(self):
@@ -341,9 +380,7 @@ class Entity(DataObject):
         the second level is the data dict type slug, and the third
         contains the value.
         """
-        rows = self._dbm.load_all_rows_in_view(
-            'id_time_slug_value', key=self.id
-            )
+        rows = self._dbm.load_all_rows_in_view('id_time_slug_value', key=self.id)
         result = defaultdict(dict)
         for row in rows:
             row = row['value']
@@ -399,8 +436,8 @@ class Entity(DataObject):
         entity_id = self._doc.id
         time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
         rows = self._dbm.load_all_rows_in_view(aggregate_fn, group_level=3, descending=False,
-                                                     startkey=[self.type_path, entity_id, field],
-                                                     endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
+                                               startkey=[self.type_path, entity_id, field],
+                                               endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
         # The above will return rows in the format described:
         # Row key=['clinic', 'e4540e0ae93042f4b583b54b6fa7d77a'],
         #   value={'beds': {'timestamp_for_view': 1420070400000, 'value': '15'},
@@ -413,5 +450,6 @@ class Entity(DataObject):
         return rows[0]['value']['latest'] if len(rows) else None
 
     def _translate(self, aggregate_fn):
-        view_names = {"latest": "by_values"}
-        return (view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn)
+        view_names = {"latest": "by_values_latest"}
+        return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
+

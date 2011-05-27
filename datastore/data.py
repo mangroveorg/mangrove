@@ -1,6 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
 
+BY_VALUES_ENTITY_ID_INDEX = 1
+BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
 
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
@@ -10,38 +12,22 @@ class reduce_functions(object):
 
     SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT]
 
-
-def _get_result_key(aggregate_on, row):
-    if aggregate_on.get('type'):
-        if aggregate_on.get('type') == 'location':
-            path = row['aggregation_paths']['_geo']
-        else:
-            path = row['aggregation_paths'][aggregate_on.get('type')]
-        key = tuple(path[:aggregate_on['level']])
-    else:
-        key = row["entity_id"]
-    return key
-
-
 def _get_key_strategy(aggregate_on):
     if aggregate_on.get('type'):
-        def _aggregate_by_path(row):
-            if aggregate_on.get('type') == 'location':
-                path = row['aggregation_paths']['_geo']
-
-            else:
-                path = row['aggregation_paths'][aggregate_on.get('type')]
-            key = tuple(path[:aggregate_on['level']])
-            return key
+        def _aggregate_by_path(db_key):
+            entity_type,aggregation_type,field = db_key[:3]
+            path = db_key[3:]
+            key = tuple(path)
+            return key,field
 
         return _aggregate_by_path
     else:
-        def _aggregate_by_entity(row):
-            key = row["entity_id"]
-            return key
+        def _aggregate_by_entity(db_key):
+            key = db_key[BY_VALUES_ENTITY_ID_INDEX]
+            field = db_key[BY_VALUES_FIELD_INDEX]
+            return key, field
 
         return _aggregate_by_entity
-
 
 def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
     result = {}
@@ -52,13 +38,21 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
     else:
         values = _load_all_fields_aggregated(dbm, entity_type)
 
-    values = _apply_filter(values, filter)
+    interested_keys = None
+    if filter:
+        location = filter.get("location")
+        assert location, "Only filter by location supported"
+        if aggregate_on:
+            interested_keys = [tuple(location)]
+        else:
+            interested_keys = _get_entities_for_location(dbm,entity_type, location)
 
-    key_strategy = _get_key_strategy(aggregate_on)
+    _parse_key = _get_key_strategy(aggregate_on)
 
-    for val in values:
-        key = key_strategy(val)
-        field = val["field"]
+    for key,val in values:
+        result_key,field = _parse_key(key)
+        if filter and result_key not in interested_keys:
+            continue
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)
@@ -66,24 +60,54 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
         if "*" in aggregates:
             interested_aggregate = aggregates.get("*")
         if interested_aggregate:
-            result.setdefault(key, {})[field] = val[interested_aggregate]
+            result.setdefault(result_key, {})[field] = val[interested_aggregate]
     return result
 
 
-# Returns list of dicts
-#           {'count': 2, 'entity_id': 'a5ab88e9131947f9a44b392a30e5ce64', 'timestamp': 1298937600000L, 'sum': 800, 'field': 'beds', 'latest': 500},
-#           {'count': 1, 'entity_id': 'a5ab88e9131947f9a44b392a30e5ce64', 'timestamp': 1296518400000L, 'sum': '0Dr. A', 'field': 'director', 'latest': 'Dr. A'},
-#           {'count': 2, 'entity_id': 'a5ab88e9131947f9a44b392a30e5ce64', 'timestamp': 1298937600000L, 'sum': 30, 'field': 'patients', 'latest': 20},
+def _load_all_fields_latest_values(dbm, type_path):
+    view_name = "by_values_latest"
+    startkey = [type_path]
+    endkey = [type_path, {}]
+    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=view_group_level,
+                                     startkey=startkey,
+                                     endkey=endkey)
+    values = []
+    for row in rows:
+        values.append((row.key,row.value))
+    return values
+
+
+def _find_in(values,key):
+    for k,v in values:
+        if k == key:
+            return v
+    return None
+
 
 def _load_all_fields_aggregated(dbm, type_path):
     view_name = "by_values"
-    rows = dbm.load_all_rows_in_view(view_name, group_level=3,
-                                     startkey=[type_path],
-                                     endkey=[type_path, {}])
+    startkey = [type_path]
+    endkey = [type_path, {}]
+    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    rows = dbm.load_all_rows_in_view(view_name, group_level=view_group_level,
+                                     startkey=startkey,
+                                     endkey=endkey)
     values = []
     for row in rows:
-        values.append(row['value'])
-    return values
+        values.append((row.key,row.value))
+
+    latest_values = _load_all_fields_latest_values(dbm,type_path)
+
+    for k,v in values:
+        v["latest"] = _find_in(latest_values,k)["latest"]
+
+    for k,v in latest_values:
+        v_dict = _find_in(values,k)
+        if v_dict is not None:
+            v.update(v_dict)
+
+    return latest_values
 
 
 def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
@@ -94,25 +118,19 @@ def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
                                      endkey=[entity_type, aggregation_type, {}])
     values = []
     for row in rows:
-        values.append(row['value'])
+        values.append((row.key,row.value))
     return values
-
 
 def _translate_aggregation_type(aggregate_on):
     AGGREGATE_ON_MAP = {'location': attributes.GEO_PATH}
     aggregate_on_type = aggregate_on['type']
     return AGGREGATE_ON_MAP[aggregate_on_type] if aggregate_on_type in AGGREGATE_ON_MAP else aggregate_on_type
 
-
-def _interested(filter, d):
-    if filter is None:
-        return True
-    interested_location = filter.get("location")
-    if interested_location:
-        return interested_location == d.get('location')[:len(interested_location)]
-
-
-def _apply_filter(values, filter):
-    if filter is None:
-        return values
-    return [d for d in values if _interested(filter, d)]
+def _get_entities_for_location(dbm,entity_type,location):
+    view_name = "by_location"
+    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, startkey=[entity_type, location],
+                                         endkey=[entity_type, location, {}])
+    values = []
+    for row in rows:
+        values.append(row.value)
+    return values

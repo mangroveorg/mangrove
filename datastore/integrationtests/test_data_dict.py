@@ -34,10 +34,10 @@ class TestDataDict(unittest.TestCase):
 
     def test_should_create_datadict_only_if_slug_unique(self):
         FIRST_NAME_SLUG = 'first_name'
-        name_type = create_datadict_type(self.dbm, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
+        create_datadict_type(self.dbm, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
 
         with self.assertRaises(DataObjectAlreadyExists):
-            name_type_duplicate = create_datadict_type(self.dbm, name='First name2', slug=FIRST_NAME_SLUG, primitive_type='string')
+            create_datadict_type(self.dbm, name='First name2', slug=FIRST_NAME_SLUG, primitive_type='string')
 
     def test_should_raise_exception_if_datadict_not_found(self):
         with self.assertRaises(DataObjectNotFound):

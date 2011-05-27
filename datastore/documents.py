@@ -28,6 +28,7 @@ class TZAwareDateTimeField(DateTimeField):
     Interprets date strings in ISO format with timezones properly.
 
     """
+
     def _to_python(self, value):
         if isinstance(value, basestring):
             try:
@@ -70,7 +71,7 @@ class EntityDocument(DocumentBase):
     gr_id = TextField()
     short_code = TextField()
 
-    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code = None):
+    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None):
         DocumentBase.__init__(self, id=id, document_type='Entity')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
         self._geometry = geometry
@@ -99,6 +100,7 @@ class EntityDocument(DocumentBase):
     @location.setter
     def location(self, loc):
         self.aggregation_paths[attributes.GEO_PATH] = loc
+
 
 class DataRecordDocument(DocumentBase):
     """
@@ -232,7 +234,8 @@ class SubmissionLogDocument(DocumentBase):
     error_message = TextField()
     form_code = TextField()
 
-    def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None, error_message=None, form_code=None):
+    def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
+                 error_message=None, form_code=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()

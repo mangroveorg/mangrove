@@ -31,4 +31,3 @@ class TestDataRecord(unittest.TestCase):
         assert entity
         current_values = entity.values({"first_Name": "latest"})
         self.assertEquals("Jeff", current_values["first_Name"])
-

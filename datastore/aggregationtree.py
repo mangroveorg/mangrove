@@ -13,36 +13,37 @@ class AggregationTree(DataObject):
     '''
     Representation of an aggregation tree.
 
-    In memory this utilizes the NetworkX graph library with each node being a dict
+    In memory this utilizes the NetworkX graph library with each node
+    being a dict
 
-    The tree is represented in Couch as dicts of dicts under the attribute '_root'
+    The tree is represented in Couch as dicts of dicts under the
+    attribute '_root'
 
-    Each tree has a unique _id which should be a memorable name like 'geographic_boundaries'
+    Each tree has a unique _id which should be a memorable name like
+    'geographic_boundaries'
 
+    Each node in the tree is a dict of arbitrary attributes a special
+    '_children' attribute that holds the child nodes.
 
-    Each node in the tree is a dict of arbitrary attributes a special '_children' attribute that holds the child nodes.
+    The node's name is the node's key in the parent dict or '__root'
+    for the root node
 
-    The node's name is the node's key in the parent dict or '__root' for the root node
-
-    So a tree with a partial list of countries and states/provinces of this form (in pseudo-lisp-code):
+    So a tree with a partial list of countries and states/provinces of
+    this form (in pseudo-lisp-code):
 
     ((India(Maharashtra, Kerala, Karnataka)), (US(California(SF), Ohio)))
 
+    would look like this::
 
-
-    would look like this
-
-    {
-    _id: _geo
-    _root: {
-            children: {
-                        India: { _children: { Maharashtra: {}}, {Kerala: {}}, {Karnataka: {}}},,
-                        US: {_children: { {California: {_children: {SF: {}}}}, {Ohio: {}}},
-                      }
-            }
-    }
-
-
+        {
+        _id: _geo
+        _root: {
+                children: {
+                            India: { _children: { Maharashtra: {}}, {Kerala: {}}, {Karnataka: {}}},,
+                            US: {_children: { {California: {_children: {SF: {}}}}, {Ohio: {}}},
+                          }
+                }
+        }
     '''
     __document_class__ = AggregationTreeDocument
     root_id = '__root'

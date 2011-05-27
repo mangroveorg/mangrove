@@ -189,8 +189,8 @@ def add_data(dbm, short_code, data, submission_id, entity_type):
 
 class Entity(DataObject):
     """
-    Entity class is main way of interacting with Entities AND datarecords.
-    Datarecords are always submitted/retrieved from an Entity.
+    The Entity class is the primary way for a developer to add save
+    data to the database.
     """
 
     __document_class__ = EntityDocument
@@ -269,11 +269,21 @@ class Entity(DataObject):
 
     @property
     def type_string(self):
+        '''
+        An Entity's type is a list of strings. Return this Entity's
+        type list joined with a period. If there are no types in the
+        list return an empty string.
+        '''
         p = self.type_path
         return '' if p is None else '.'.join(p)
 
     @property
     def location_string(self):
+        '''
+        An Entity's location is a list of strings. Return this
+        Entity's location list joined with a period. If the location
+        list is empty return the empty string.
+        '''
         p = self.location_path
         return '' if p is None else '.'.join(p)
 
@@ -297,26 +307,22 @@ class Entity(DataObject):
         assert isinstance(self._doc[attributes.AGG_PATHS], dict)
         self._doc[attributes.AGG_PATHS][name] = list(path)
 
-        # TODO: Depending on implementation we will need to update aggregation paths
-        # on data records--in which case we need to set a dirty flag and handle this
-        # in save
+        # TODO: Depending on implementation we will need to update
+        # aggregation paths on data records, in which case we need to
+        # set a dirty flag and handle this in save.
 
     def add_data(self, data=(), event_time=None, submission_id=None):
-        '''Add a new datarecord to this Entity and return a UUID for the datarecord.
+        '''
+        Add a new datarecord to this Entity and return a UUID for the
+        datarecord.
 
         Arguments:
-        data -- a sequence of ordered tuples, (label, value, type) where type is a DataDictType
-        submission_id -- an id to a 'submission' document in the submission log from which
-                        this data came
-        event_time -- the time at which the event occured rather than when it was reported
-
-        This is stored in couch as:
-            submission_id = "..."
-            event_time = "..."
-            data: [
-                            { 'type': <DataDictDocument>,'value': x},
-                            ...
-                        ]
+            data: a sequence of ordered tuples, (label, value, type)
+                where type is a DataDictType
+            event_time: the time at which the event occured rather than
+                when it was reported
+            submission_id: an id to a 'submission' document in the
+                submission log from which this data came
         '''
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
@@ -452,4 +458,3 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
-

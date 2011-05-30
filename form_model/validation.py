@@ -86,4 +86,4 @@ class LocationConstraint(object):
             raise LongitudeNotFloat(longitude)
         except VdtValueError:
             raise LongitudeNotInRange(longitude)
-        return lat, long
+        return long, lat

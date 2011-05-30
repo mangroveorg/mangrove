@@ -9,8 +9,7 @@ from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
 from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE, NAME_FIELD
-from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException, NumberNotRegisteredException,\
-    EntityQuestionCodeNotSubmitted, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
+from mangrove.errors.MangroveException import MangroveException, NoQuestionsSubmittedException
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
@@ -118,6 +117,8 @@ class SubmissionHandler(object):
             form = get_form_model_by_code(self.dbm, form_code)
             form_submission = form.validate_submission(values)
             if form_submission.is_valid:
+                if len(form_submission.values)==1:
+                    raise NoQuestionsSubmittedException()
                 if form._is_registration_form():
                     e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
                                              location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],

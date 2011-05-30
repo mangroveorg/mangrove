@@ -3,7 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NumberNotRegisteredException, NoQuestionsSubmittedException
 from mangrove.form_model.form_model import FormModel, FormSubmission, NAME_FIELD
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.transport.submissions import Request, SubmissionHandler, UnknownTransportException, SubmissionLogger
@@ -40,7 +40,11 @@ class TestSubmissions(TestCase):
         self.reporter_patcher.stop()
 
     def _valid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {"location":"Pune"}, "1", True, {}, self.ENTITY_TYPE,data={})
+        return FormSubmission(self.form_model_mock, {'What is associated entity?':'CID001', "location":"Pune"}, "1", True, {}, self.ENTITY_TYPE,data={})
+
+    def _empty_form_submission(self):
+        return FormSubmission(self.form_model_mock, {'What is associated entity?':'CID001'}, "1", True, {}, self.ENTITY_TYPE,data={})
+
 
     def _invalid_form_submission(self):
         return FormSubmission(self.form_model_mock, {}, "1", False, {"field" :"Invalid"}, self.ENTITY_TYPE, data={})
@@ -66,16 +70,22 @@ class TestSubmissions(TestCase):
 
     def test_should_not_save_data_record_if_in_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._invalid_form_submission()
-
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         s = SubmissionHandler(self.dbm)
         response = s.accept(request)
-
         self.assertFalse(self.entity_module.add_data.called)
         self.assertFalse(response.success)
 
+    def test_should_not_save_data_record_if_no_valid_questions_present(self):
+        self.form_model_mock.validate_submission.return_value = self._empty_form_submission()
+        request = Request(transport="sms", message="QR1 +EID 100", source="1234", destination="5678")
+        s = SubmissionHandler(self.dbm)
+        with self.assertRaises(NoQuestionsSubmittedException):
+            response = s.accept(request)
 
     def test_should_create_new_submission_log(self):
+        form_submission = self._valid_form_submission()
+        self.form_model_mock.validate_submission.return_value = form_submission
         request = Request(transport="sms", message="QR1 +EID 100 +Q1 20", source="1234", destination="5678")
         s = SubmissionHandler(self.dbm)
         response = s.accept(request)

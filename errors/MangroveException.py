@@ -54,6 +54,10 @@ class EntityQuestionAlreadyExistsException(MangroveException):
 class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 
+class NoQuestionsSubmittedException(MangroveException):
+    def __init__(self):
+            MangroveException.__init__(self, "The submission contains no valid questions.")
+
 
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):

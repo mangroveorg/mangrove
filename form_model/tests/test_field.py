@@ -421,7 +421,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(actual_json, expected_json)
 
     def test_should_validate_location(self):
-        expect_lat_long=(89.1,100.1)
+        expect_lat_long=(100.1, 89.1)
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
                                  language="eng")
         actual_lat_long = field.validate(lat_long_string="89.1 100.1")

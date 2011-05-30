@@ -160,22 +160,22 @@ class ShortCodeTooLongException(MangroveException):
             MangroveException.__init__(self, "The short code is longer than 12 characters")
 
 class LatitudeNotFloat(InvalidAnswerSubmissionException):
-    def __init__(self,code,lat):
-        InvalidAnswerSubmissionException.__init__(self, message=('The value for Latitude %s should be float') %
-                                         (lat,), code=code, data=(lat,))
+    def __init__(self,lat):
+        InvalidAnswerSubmissionException.__init__(self, ('The value for Latitude %s should be float') %
+                                         (lat,), (lat,))
 
 class LongitudeNotFloat(InvalidAnswerSubmissionException):
-    def __init__(self,code,long):
-        InvalidAnswerSubmissionException.__init__(self, message=('The value for Longitude %s should be float') %
-                                         (long,), code=code, data=(long,))
+    def __init__(self,long):
+        InvalidAnswerSubmissionException.__init__(self, ('The value for Longitude %s should be float') %
+                                         (long,), (long,))
 class LongitudeNotInRange(InvalidAnswerSubmissionException):
-    def __init__(self,code,long):
-        InvalidAnswerSubmissionException.__init__(self, message=('%s is an invalid longitude, must be between -180 and 180') %
-                                         (long,), code=code, data=(long,))
+    def __init__(self,long):
+        InvalidAnswerSubmissionException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
+                                         (long,), (long,))
 class LatitudeNotInRange(InvalidAnswerSubmissionException):
-    def __init__(self,code,lat):
-        InvalidAnswerSubmissionException.__init__(self, message=('%s is an invalid latitude, must be between -90 and 90') %
-                                         (lat,), code=code, data=(lat,))
+    def __init__(self,lat):
+        MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
+                                         (lat,), (lat,))
 
 class GeoCodeFormatException(InvalidAnswerSubmissionException):
     def __init__(self, code):

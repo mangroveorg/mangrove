@@ -141,33 +141,33 @@ class TestChoiceValidations(unittest.TestCase):
 
 class TestLocationValidations(unittest.TestCase):
     def test_latitude_and_longitude_is_float(self):
-        constraint = LocationConstraint(code="q1")
+        constraint = LocationConstraint()
         expected_response = (90, 130)
         actual_response = constraint.validate("90", "130")
         self.assertEqual(expected_response, actual_response)
 
     def test_should_invalidate_non_float_latitude(self):
         with self.assertRaises(LatitudeNotFloat):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("a", "1.2")
 
     def test_should_invalidate_non_float_longitude(self):
         with self.assertRaises(LongitudeNotFloat):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("1.2", "asasasas")
 
     def test_latitude_should_be_between_minus_90_and_90(self):
         with self.assertRaises(LatitudeNotInRange):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("100", "90")
         with self.assertRaises(LatitudeNotInRange):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("-100", "90")
 
     def test_longitude_should_be_between_minus_180_and_180(self):
         with self.assertRaises(LongitudeNotInRange):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("-10", "190")
         with self.assertRaises(LongitudeNotInRange):
-            constraint = LocationConstraint(code="q1")
+            constraint = LocationConstraint()
             constraint.validate("90", "-190")

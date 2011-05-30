@@ -254,7 +254,7 @@ class GeoCodeField(Field):
         lat_long = lat_long_string.split(" ")
         if(len(lat_long)<2):
             raise GeoCodeFormatException(self.code)
-        return LocationConstraint(code=self.code).validate(latitude=lat_long[0], longitude=lat_long[1])
+        return LocationConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
 
 

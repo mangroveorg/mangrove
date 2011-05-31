@@ -100,6 +100,13 @@ class TestFormModel(unittest.TestCase):
             answers = {"Q2": "10"}
             self.form_model._is_valid(answers)
 
+    def test_should_validate_field_case_insensitive(self):
+        answers = {"Id": "1", "Q1": "Asif Momin", "q2": "40"}
+        valid,cleaned_answers,errors, data = self.form_model._is_valid(answers)
+        self.assertTrue(valid)
+        self.assertEqual({},errors)
+
+
     def test_should_return_valid_form_submission(self):
         answers = {"ID": "1", "Q2": "16"}
         form_submission = self.form_model.validate_submission(answers)

@@ -57,6 +57,8 @@ class TestSubmissions(TestCase):
         response = s.accept(request)
 
         self.assertTrue(response.success)
+        self.assertEqual({}, response.errors)
+
 
     def test_should_save_data_record_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
@@ -74,6 +76,7 @@ class TestSubmissions(TestCase):
         s = SubmissionHandler(self.dbm)
         response = s.accept(request)
         self.assertFalse(self.entity_module.add_data.called)
+        self.assertEqual({"field" :"Invalid"}, response.errors)
         self.assertFalse(response.success)
 
     def test_should_not_save_data_record_if_no_valid_questions_present(self):
@@ -94,7 +97,7 @@ class TestSubmissions(TestCase):
                                                                             source = "1234",
                                                                             destination = "5678",
                                                                             form_code = "QR1",
-                                                                            values = { "eid" : "100", "q1" : "20" }
+                                                                            values = { "EID" : "100", "Q1" : "20" }
         )
 
 
@@ -171,6 +174,7 @@ class TestSubmissions(TestCase):
         handler = SubmissionHandler(self.dbm)
         response = handler.accept(request)
         self.assertTrue(response.success)
+        self.assertEqual({}, response.errors)
         self.entity_module.create_entity.assert_called_once_with(dbm=self.dbm,entity_type=self.ENTITY_TYPE,
                                                                  location=["Pune"],
                                                                  aggregation_paths=None, short_code="1",geometry=None)
@@ -188,14 +192,10 @@ class TestSubmissions(TestCase):
         handler = SubmissionHandler(self.dbm)
         response = handler.accept(request)
         self.assertFalse(response.success)
-        
+        self.assertEqual({"field" :"Invalid"}, response.errors)
         self.assertFalse(self.entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id = self.SUBMISSION_ID,
                                                                             status = False, errors = form_submission.errors.values() )
-
-
-
-
 
 
 #TODO : need to rewrite this test when Submission handler is broken in two part

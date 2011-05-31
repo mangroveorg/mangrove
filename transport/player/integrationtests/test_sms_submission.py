@@ -70,7 +70,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +EID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
@@ -135,7 +135,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     
     def test_should_register_new_entity(self):
-        text = "REG +N buddy +T dog +L 80 80 +D its a dog! +M 123456"
+        text = "REG +n buddy +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -164,6 +164,21 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(b.short_code, expected_short_code)
 
+    def test_should_return_error_for_registration_having_invalid_geo_data(self):
+        INVALID_LATITUDE = 380
+        text = "REG +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertEqual({'G': '380 is an invalid latitude, must be between -90 and 90'},response.errors)
+
+        INVALID_LONGITUDE = -184
+        text = "REG +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertEqual({'G': '-184 is an invalid longitude, must be between -180 and 180'},response.errors)
+
     def test_should_log_submission(self):
         request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
         s = SubmissionHandler(self.dbm)
@@ -175,7 +190,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("REG", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't':'dog'}, submission_log.values)
+        self.assertEquals({'N': 'buddy', 'S': 'DOG3', 'T':'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
 

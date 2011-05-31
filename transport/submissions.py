@@ -8,8 +8,9 @@ Will log the submission and forward to the appropriate channel handler.
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.datastore import reporter
-from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE, NAME_FIELD
-from mangrove.errors.MangroveException import MangroveException, NoQuestionsSubmittedException
+from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE
+from mangrove.errors.MangroveException import  NoQuestionsSubmittedException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
@@ -23,47 +24,13 @@ class Request(object):
         self.destination = destination
 
 class Response(object):
-    SUCCESS_RESPONSE_TEMPLATE = "Thank You %s for your submission."
-
-    ERROR_RESPONSE_TEMPLATE = "%s"
-    
-    ERROR_DATA_TEMPLATE = "Error. Invalid Submission. Refer to printed Questionnaire. Resend the question ID and answer for %s"
-
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None,
-                 additional_text=None, error_data=None):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
-        self.error_data = error_data
         self.datarecord_id = datarecord_id
         self.short_code = short_code
-        if success:
-            self.message = self._templatize_success_response(additional_text)
-        else:
-            self.message = self._templatize_error_data_response()
-
-    def _get_codes(self):
-
-        code_list = [each[0] for each in self.error_data]
-        return ", ".join(code_list)
-
-    def _get_reporter_name(self):
-        return self.reporters[0][NAME_FIELD] if len(self.reporters) == 1 else ""
-
-    def _templatize_success_response(self, additional_text):
-        success_message = Response.SUCCESS_RESPONSE_TEMPLATE % (self._get_reporter_name())
-        if additional_text:
-            success_message += " " + additional_text
-        return success_message
-
-    def _templatize_error_response(self):
-        return Response.ERROR_RESPONSE_TEMPLATE % (", ".join(self.errors),)
-
-    def _templatize_error_data_response(self):
-        if self.error_data is None:
-            return self._templatize_error_response()
-        return Response.ERROR_DATA_TEMPLATE % self._get_codes()
 
 
 class UnknownTransportException(MangroveException):
@@ -102,49 +69,41 @@ class SubmissionHandler(object):
         assert request.destination is not None
         assert request.message is not None
         reporters = []
-        submission_id = None
-        try:
-            _errors = []
-            _error_data = []
-            if request.transport.lower() == "sms":
-                reporters = reporter.find_reporter(self.dbm, request.source)
-            player = self.get_player_for_transport(request)
-            form_code, values = player.parse(request.message)
-            logger = SubmissionLogger(self.dbm)
-            submission_id = logger.create_submission_log(channel=request.transport, source=request.source,
-                                                         destination=request.destination, form_code=form_code,
-                                                         values=values)
-            form = get_form_model_by_code(self.dbm, form_code)
-            form_submission = form.validate_submission(values)
-            if form_submission.is_valid:
-                if len(form_submission.values)==1:
+        if request.transport.lower() == "sms":
+            reporters = reporter.find_reporter(self.dbm, request.source)
+        player = self.get_player_for_transport(request)
+        form_code, values = player.parse(request.message)
+        logger = SubmissionLogger(self.dbm)
+        submission_id = logger.create_submission_log(channel=request.transport, source=request.source,
+                                                     destination=request.destination, form_code=form_code,
+                                                     values=values)
+        form = get_form_model_by_code(self.dbm, form_code)
+        form_submission = form.validate_submission(values)
+        if form_submission.is_valid:
+            if len(form_submission.values)==1:
                     raise NoQuestionsSubmittedException()
-                if form._is_registration_form():
-                    e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
-                                             location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
-                                             aggregation_paths=None, short_code=form_submission.short_code,
-                                             geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
+            if form._is_registration_form():
+                e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
+                                         location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
+                                         aggregation_paths=None, short_code=form_submission.short_code,
+                                         geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
 
-                    data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+                data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
 
-                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
 
-                    return Response(reporters, True, [], submission_id, data_record_id, e.short_code,
-                                    additional_text=self._get_registration_text(e.short_code))
-                else:
-                    data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
-                                                     data=form_submission.values, submission_id=submission_id,
-                                                     entity_type=form.entity_type)
-
-                    logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
-                    return Response(reporters, True, [], submission_id, data_record_id)
+                return Response(reporters, True, {}, submission_id, data_record_id, e.short_code)
             else:
-                _errors.extend(form_submission.errors.values())
-                _error_data.extend(form_submission.error_data.values())
-                logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors)
-        except MangroveException as e:
-            raise e
-        return Response(reporters, False, _errors, submission_id=submission_id, error_data=_error_data)
+                data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
+                                                 data=form_submission.values, submission_id=submission_id,
+                                                 entity_type=form.entity_type)
+
+                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                return Response(reporters, True, {}, submission_id, data_record_id)
+        else:
+            _errors = form_submission.errors
+            logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())
+            return Response(reporters, False, _errors, submission_id=submission_id)
 
     def get_player_for_transport(self, request):
         if request.transport == "sms":

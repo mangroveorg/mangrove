@@ -8,10 +8,10 @@ class TestSMSPlayer(TestCase):
     def test_should_parse_incomplete_messages_with_no_answer_values(self):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +BC ")
-        self.assertEqual({"id": "1", "bc": ""}, values)
+        self.assertEqual({"ID": "1", "BC": ""}, values)
 
         form_code, values = smsplayer.parse("WP +ID")
-        self.assertEqual({"id": ""}, values)
+        self.assertEqual({"ID": ""}, values)
 
         form_code, values = smsplayer.parse("WP")
         self.assertEqual({}, values)
@@ -20,12 +20,12 @@ class TestSMSPlayer(TestCase):
     def test_should_preserve_non_leading_white_spaces_in_answer(self):
         smsplayer = SMSPlayer()
         form_code, values = smsplayer.parse("WP +ID 1 +NAME FirstName LastName +AGE 10")
-        self.assertEqual({"id": "1", "name": "FirstName LastName", "age": "10"}, values)
+        self.assertEqual({"ID": "1", "NAME": "FirstName LastName", "AGE": "10"}, values)
 
-    def test_should_return_all_field_codes_in_lower_case(self):
+    def test_should_preserve_all_field_code_case(self):
         smsplayer = SMSPlayer()
-        form_code, values = smsplayer.parse("WP +id 1 +Name FirstName +aGe 10")
-        self.assertEqual({"id": "1", "name": "FirstName", "age": "10"}, values)
+        form_code, values = smsplayer.parse("WP +ID 1 +Name FirstName +age 10")
+        self.assertEqual({"ID": "1", "Name": "FirstName", "age": "10"}, values)
 
     def test_should_handle_submission_of_seperator(self):
         smsplayer = SMSPlayer()

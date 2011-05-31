@@ -430,5 +430,6 @@ class TestField(unittest.TestCase):
     def test_should_give_error_for_invalid_location(self):
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
                                  language="eng")
-        with self.assertRaises(GeoCodeFormatException):
+        with self.assertRaises(GeoCodeFormatException) as e:
             field.validate(lat_long_string="89.1")
+        self.assertEquals(("89.1",), e.exception.data)

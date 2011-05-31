@@ -4,6 +4,7 @@
 
 class MangroveException(Exception):
     def __init__(self, message, data=None):
+        assert data is None or type(data) is tuple
         self.message = message
         self.data = data
 
@@ -163,24 +164,24 @@ class ShortCodeTooLongException(MangroveException):
     def __init__(self):
             MangroveException.__init__(self, "The short code is longer than 12 characters")
 
-class LatitudeNotFloat(InvalidAnswerSubmissionException):
+class LatitudeNotFloat(MangroveException):
     def __init__(self,lat):
-        InvalidAnswerSubmissionException.__init__(self, ('The value for Latitude %s should be float') %
-                                         (lat,), (lat,))
+        MangroveException.__init__(self, ('The value for Latitude %s should be float') %
+                                         (lat,),data = (lat,))
 
-class LongitudeNotFloat(InvalidAnswerSubmissionException):
+class LongitudeNotFloat(MangroveException):
     def __init__(self,long):
-        InvalidAnswerSubmissionException.__init__(self, ('The value for Longitude %s should be float') %
-                                         (long,), (long,))
-class LongitudeNotInRange(InvalidAnswerSubmissionException):
+        MangroveException.__init__(self, ('The value for Longitude %s should be float') %
+                                         (long,), data=(long,))
+class LongitudeNotInRange(MangroveException):
     def __init__(self,long):
-        InvalidAnswerSubmissionException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
-                                         (long,), (long,))
-class LatitudeNotInRange(InvalidAnswerSubmissionException):
+        MangroveException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
+                                         (long,), data=(long,))
+class LatitudeNotInRange(MangroveException):
     def __init__(self,lat):
         MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
                                          (lat,), (lat,))
 
-class GeoCodeFormatException(InvalidAnswerSubmissionException):
-    def __init__(self, code):
-        InvalidAnswerSubmissionException.__init__(self, "GPS coordinates must be in the format 'lat long'.", code)
+class GeoCodeFormatException(MangroveException):
+    def __init__(self, data):
+        MangroveException.__init__(self, "GPS coordinates must be in the format 'lat long'.", (data,))

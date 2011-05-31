@@ -50,5 +50,3 @@ class TestReporter(TestCase):
         self.assertEqual(2, len(reporter_list))
         self.assertTrue({NAME_FIELD: "A", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
-
-

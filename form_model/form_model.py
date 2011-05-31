@@ -3,8 +3,8 @@
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted, \
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException
 from mangrove.form_model.field import TextField, GeoCodeField
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -167,16 +167,18 @@ class FormModel(DataObject):
             entity_code = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
             if is_empty(entity_code):
                 raise EntityTypeCodeNotSubmitted()
-            if short_code is not None and len(short_code)>12:
+            if short_code is not None and len(short_code) > 12:
                 raise ShortCodeTooLongException()
         else:
             if is_empty(short_code):
                 raise EntityQuestionCodeNotSubmitted()
         for key in answers:
             field = self.get_field_by_code(key)
-            if field is None: continue
+            if field is None:
+                continue
             answer = answers[key]
-            if is_empty(answer): continue
+            if is_empty(answer):
+                continue
             is_valid, result, error_data = self._validate_answer_for_field(answer, field)
             if is_valid:
                 cleaned_answers[field.name] = result
@@ -187,7 +189,7 @@ class FormModel(DataObject):
         return success, cleaned_answers, errors, data
 
     def validate_submission(self, values):
-        success, cleaned_answers, errors, data= self._is_valid(values)
+        success, cleaned_answers, errors, data = self._is_valid(values)
         short_code = cleaned_answers.get(self.entity_question.name)
         if self._is_registration_form():
             entity_type = cleaned_answers.get(ENTITY_TYPE_FIELD_NAME)
@@ -312,7 +314,7 @@ def _construct_registration_form(manager):
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
     question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
-                             language="eng", ddtype=location_type)
+                          language="eng", ddtype=location_type)
     question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the entity's geo code?",
                              language="eng", ddtype=geo_code_type)
     question6 = TextField(name=DESCRIPTION_FIELD, code="D", label="Describe the entity",
@@ -320,5 +322,5 @@ def _construct_registration_form(manager):
     question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the associated mobile number?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
     form_model = FormModel(manager, name="REG", form_code=REGISTRATION_FORM_CODE, fields=[
-            question1, question2, question3, question4, question5, question6, question7],entity_type=["Registration"])
+            question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model

@@ -4,6 +4,7 @@ from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db
 from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, generate_short_code, define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
+
 class TestShortCode(unittest.TestCase):
 
 
@@ -64,4 +65,3 @@ class TestShortCode(unittest.TestCase):
         entity = get_by_short_code(self.dbm, short_code="REPX", entity_type=["Reporter"])
         self.assertTrue(entity is not None)
         self.assertEqual("Reporter/repx", entity.id)
-

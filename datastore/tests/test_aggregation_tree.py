@@ -54,7 +54,7 @@ class TestAggregationTrees(unittest.TestCase):
     def test_add_node_data(self):
         t1 = ATree(self.dbm, 'data_test_tree')
         t1.add_root_path(['1', '2', '3'])
-        ddict =  {'1':1, '2':2}
+        ddict = {'1': 1, '2': 2}
         t1.set_data_for('1', ddict)
         id = t1.save()
 
@@ -66,15 +66,15 @@ class TestAggregationTrees(unittest.TestCase):
         t.add_root_pat('a')
 
         with self.assertRaises(ValueError):
-            t.set_data_for('a', {1:1})
+            t.set_data_for('a', {1: 1})
 
         with self.assertRaises(ValueError):
-            t.set_data_for('a', {'1':1, 1:1})
+            t.set_data_for('a', {'1': 1, 1: 1})
 
     def test_get_node_data(self):
         t1 = ATree(self.dbm, 'data_test_tree')
         t1.add_root_path(['1', '2', '3'])
-        ddict =  {'1':1, '2':2}
+        ddict = {'1': 1, '2': 2}
         t1.set_data_for('1', ddict)
         id = t1.save()
 
@@ -87,17 +87,17 @@ class TestAggregationTrees(unittest.TestCase):
             t.add_root_path([1])
 
         with self.assertRaises(ValueError):
-            t.add_root_path([{1:1}])
+            t.add_root_path([{1: 1}])
 
         with self.assertRaises(ValueError):
             t.add_root_path([None])
 
         with self.assertRaises(ValueError):
-            t.add_root_path(['a',1,'c'])
+            t.add_root_path(['a', 1, 'c'])
 
     def test_add_path_with_data(self):
         t = ATree(self.dbm, 'data_paths_test')
-        path = [('a', {'a':1}), ('b', {'b':2}), ('c', {'c':3, 'c1': 4})]
+        path = [('a', {'a': 1}), ('b', {'b': 2}), ('c', {'c': 3, 'c1': 4})]
         t.add_root_path(path)
         id = t.save()
         t2 = self.dbm.get(id, ATree, force_reload=True)
@@ -156,7 +156,7 @@ class TestAggregationTrees(unittest.TestCase):
         id = t.save()
         t2 = self.dbm.get(id, ATree, force_reload=True)
 
-        expected = [['foo'], ['foo','bar'],['foo','baz'],['foo','bar','bunk']]
+        expected = [['foo'], ['foo', 'bar'], ['foo', 'baz'], ['foo', 'bar', 'bunk']]
         expected.sort()
         paths = t2.get_paths()
         self.assertEqual(sorted(paths), expected)
@@ -184,7 +184,7 @@ class TestAggregationTrees(unittest.TestCase):
         t2 = self.dbm.get(id, ATree, force_reload=True)
         self.assertIsNone(t2.parent_of(t2.root_id))
         self.assertEqual(t2.parent_of('a'), t2.root_id)
-        self.assertEqual(t2.parent_of('c'),'b')
+        self.assertEqual(t2.parent_of('c'), 'b')
         with self.assertRaises(ValueError):
             t2.parent_of('not-in-tree')
 
@@ -195,6 +195,6 @@ class TestAggregationTrees(unittest.TestCase):
         t2 = self.dbm.get(id, ATree, force_reload=True)
         self.assertEqual(t2.ancestors_of('a'), [])
         self.assertEqual(t2.ancestors_of('b'), ['a'])
-        self.assertEqual(t2.ancestors_of('c'), ['a','b'])
+        self.assertEqual(t2.ancestors_of('c'), ['a', 'b'])
         with self.assertRaises(ValueError):
             t2.ancestors_of('not-in-tree')

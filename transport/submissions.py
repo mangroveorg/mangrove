@@ -23,6 +23,7 @@ class Request(object):
         self.source = source
         self.destination = destination
 
+
 class Response(object):
     def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None):
         self.reporters = reporters if reporters is not None else []
@@ -35,6 +36,7 @@ class Response(object):
 
 class UnknownTransportException(MangroveException):
     pass
+
 
 class SubmissionLogger(object):
     def __init__(self, dbm):
@@ -80,8 +82,8 @@ class SubmissionHandler(object):
         form = get_form_model_by_code(self.dbm, form_code)
         form_submission = form.validate_submission(values)
         if form_submission.is_valid:
-            if len(form_submission.values)==1:
-                    raise NoQuestionsSubmittedException()
+            if len(form_submission.values) == 1:
+                raise NoQuestionsSubmittedException()
             if form._is_registration_form():
                 e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
                                          location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],

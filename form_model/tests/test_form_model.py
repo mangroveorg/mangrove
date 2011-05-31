@@ -18,12 +18,13 @@ class TestFormModel(unittest.TestCase):
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, ["HealthFacility", "Clinic"])
         self.default_ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-                                          primitive_type='string')
+                                           primitive_type='string')
 
         self.default_ddtype.save()
 
         self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                                   data=[("Name", "Ruby", self.default_ddtype)], location=["India", "Pune"],
+                                                   data=[("Name", "Ruby", self.default_ddtype)],
+                                                   location=["India", "Pune"],
                                                    source="sms")
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
@@ -49,8 +50,8 @@ class TestFormModel(unittest.TestCase):
     def test_should_create_registration_form_mode(self):
         form = create_default_reg_form_model(self.dbm)
         self.assertEqual(7, len(form.fields))
-        self.assertEqual("reg",form.form_code)
-        self.assertEqual('string',form.fields[3].ddtype.primitive_type)
+        self.assertEqual("reg", form.form_code)
+        self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
 
     def test_get_form_model(self):
@@ -251,12 +252,12 @@ class TestFormModel(unittest.TestCase):
         self.form_model.entity_type = ["WaterPoint", "Dam"]
         self.assertEqual(self.form_model.entity_type, ["WaterPoint", "Dam"])
 
-    
+
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[question1])
+                               form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
             form_model.save()
 
@@ -264,7 +265,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="2", type='survey', fields=[question1])
+                                form_code="2", type='survey', fields=[question1])
         form_model2.save()
         with self.assertRaises(DataObjectAlreadyExists):
             form_model2.form_code = "1"
@@ -273,7 +274,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="2", type='survey', fields=[question1])
+                                form_code="2", type='survey', fields=[question1])
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()

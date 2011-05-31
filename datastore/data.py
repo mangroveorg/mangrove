@@ -4,6 +4,7 @@ from documents import attributes
 BY_VALUES_ENTITY_ID_INDEX = 1
 BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
 
+
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
     SUM = "sum"
@@ -12,13 +13,14 @@ class reduce_functions(object):
 
     SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT]
 
+
 def _get_key_strategy(aggregate_on):
     if aggregate_on.get('type'):
         def _aggregate_by_path(db_key):
-            entity_type,aggregation_type,field = db_key[:3]
+            entity_type, aggregation_type, field = db_key[:3]
             path = db_key[3:]
             key = tuple(path)
-            return key,field
+            return key, field
 
         return _aggregate_by_path
     else:
@@ -28,6 +30,7 @@ def _get_key_strategy(aggregate_on):
             return key, field
 
         return _aggregate_by_entity
+
 
 def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
     result = {}
@@ -45,18 +48,18 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
         if aggregate_on:
             interested_keys = [tuple(location)]
         else:
-            interested_keys = _get_entities_for_location(dbm,entity_type, location)
+            interested_keys = _get_entities_for_location(dbm, entity_type, location)
 
     _parse_key = _get_key_strategy(aggregate_on)
 
-    for key,val in values:
-        result_key,field = _parse_key(key)
+    for key, val in values:
+        result_key, field = _parse_key(key)
         if filter and result_key not in interested_keys:
             continue
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)
-        #        * overrides field specific aggregation, returns the aggregation for all fields.
+            #        * overrides field specific aggregation, returns the aggregation for all fields.
         if "*" in aggregates:
             interested_aggregate = aggregates.get("*")
         if interested_aggregate:
@@ -74,12 +77,12 @@ def _load_all_fields_latest_values(dbm, type_path):
                                      endkey=endkey)
     values = []
     for row in rows:
-        values.append((row.key,row.value))
+        values.append((row.key, row.value))
     return values
 
 
-def _find_in(values,key):
-    for k,v in values:
+def _find_in(values, key):
+    for k, v in values:
         if k == key:
             return v
     return None
@@ -95,15 +98,15 @@ def _load_all_fields_aggregated(dbm, type_path):
                                      endkey=endkey)
     values = []
     for row in rows:
-        values.append((row.key,row.value))
+        values.append((row.key, row.value))
 
-    latest_values = _load_all_fields_latest_values(dbm,type_path)
+    latest_values = _load_all_fields_latest_values(dbm, type_path)
 
-    for k,v in values:
-        v["latest"] = _find_in(latest_values,k)["latest"]
+    for k, v in values:
+        v["latest"] = _find_in(latest_values, k)["latest"]
 
-    for k,v in latest_values:
-        v_dict = _find_in(values,k)
+    for k, v in latest_values:
+        v_dict = _find_in(values, k)
         if v_dict is not None:
             v.update(v_dict)
 
@@ -118,18 +121,20 @@ def _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on):
                                      endkey=[entity_type, aggregation_type, {}])
     values = []
     for row in rows:
-        values.append((row.key,row.value))
+        values.append((row.key, row.value))
     return values
+
 
 def _translate_aggregation_type(aggregate_on):
     AGGREGATE_ON_MAP = {'location': attributes.GEO_PATH}
     aggregate_on_type = aggregate_on['type']
     return AGGREGATE_ON_MAP[aggregate_on_type] if aggregate_on_type in AGGREGATE_ON_MAP else aggregate_on_type
 
-def _get_entities_for_location(dbm,entity_type,location):
+
+def _get_entities_for_location(dbm, entity_type, location):
     view_name = "by_location"
     rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, startkey=[entity_type, location],
-                                         endkey=[entity_type, location, {}])
+                                     endkey=[entity_type, location, {}])
     values = []
     for row in rows:
         values.append(row.value)

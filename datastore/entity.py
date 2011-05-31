@@ -17,9 +17,10 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
-def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None,geometry=None):
+
+def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None, geometry=None):
     if is_string(entity_type):
-            entity_type = [entity_type]
+        entity_type = [entity_type]
     if is_empty(short_code):
         short_code = generate_short_code(dbm, entity_type)
     doc_id = _make_doc_id(entity_type, short_code.strip())
@@ -27,11 +28,12 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
         if not validate_entity_type_already_defined(dbm, entity_type):
             raise EntityTypeDoesNotExistsException(entity_type)
         e = Entity(dbm, entity_type=entity_type, location=location,
-                   aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code,geometry=geometry)
+                   aggregation_paths=aggregation_paths, id=doc_id, short_code=short_code, geometry=geometry)
         e.save()
         return e
     except ResourceConflict:
-         raise DataObjectAlreadyExists("Entity","short code",short_code)
+        raise DataObjectAlreadyExists("Entity", "short code", short_code)
+
 
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)
@@ -41,14 +43,17 @@ def _get_entity_type_tree(dbm):
 def get_all_entity_types(dbm):
     return _get_entity_type_tree(dbm).get_paths()
 
+
 def validate_entity_type_already_defined(dbm, entity_type):
     all_entities = get_all_entity_types(dbm)
     if all_entities:
         all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
         entity_type_lower_case = [each.lower() for each in entity_type]
         if entity_type_lower_case in all_entities_lower_case:
-                return True
+            return True
     return False
+
+
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
     assert is_sequence(entity_type)
@@ -65,38 +70,39 @@ def define_type(dbm, entity_type):
 def generate_short_code(dbm, entity_type):
     assert is_sequence(entity_type)
     count = _get_entity_count_for_type(dbm, entity_type=entity_type)
-    assert count >=0
+    assert count >= 0
     return _make_short_code(entity_type, count + 1)
 
 
 def _get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("mangrove_views/by_short_codes",descending = True,
-                                     startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
-    
+    rows = dbm.load_all_rows_in_view("mangrove_views/by_short_codes", descending=True,
+                                     startkey=[entity_type, {}], endkey=[entity_type], group_level=1)
+
     return rows[0]["value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    doc_id = _make_doc_id(entity_type,short_code)
-    return Entity.get(dbm,doc_id)
+    doc_id = _make_doc_id(entity_type, short_code)
+    return Entity.get(dbm, doc_id)
 
 
 def _generate_new_code(entity_type, count):
-    short_code = _make_short_code(entity_type,count + 1)
-    return _make_doc_id(entity_type,short_code)
+    short_code = _make_short_code(entity_type, count + 1)
+    return _make_doc_id(entity_type, short_code)
 
-def _make_doc_id(entity_type,short_code):
+
+def _make_doc_id(entity_type, short_code):
     ENTITY_ID_FORMAT = "%s/%s"
     _entity_type = ".".join(entity_type)
-    return ENTITY_ID_FORMAT % (_entity_type,short_code.lower())
+    return ENTITY_ID_FORMAT % (_entity_type, short_code.lower())
 
-def _make_short_code(entity_type,num):
+
+def _make_short_code(entity_type, num):
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].lower()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix,num)
-
+    return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def get_entities_by_type(dbm, entity_type):
@@ -182,12 +188,14 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     return entities
 
+
 def add_data(dbm, short_code, data, submission_id, entity_type):
     if is_string(entity_type):
-            entity_type = [entity_type]
+        entity_type = [entity_type]
     e = get_by_short_code(dbm, short_code, entity_type)
     data_record_id = e.add_data(data=data, submission_id=submission_id)
     return data_record_id
+
 
 class Entity(DataObject):
     """
@@ -245,7 +253,6 @@ class Entity(DataObject):
 
         if short_code is not None:
             doc.short_code = short_code.lower()
-
 
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)

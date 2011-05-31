@@ -151,7 +151,7 @@ class TestLocationValidations(unittest.TestCase):
             constraint = LocationConstraint()
             constraint.validate("a", "1.2")
 
-        self.assertEqual(("a",),e.exception.data)
+        self.assertEqual(("a",), e.exception.data)
 
     def test_should_invalidate_non_float_longitude(self):
         with self.assertRaises(LongitudeNotFloat) as e:
@@ -179,4 +179,3 @@ class TestLocationValidations(unittest.TestCase):
             constraint = LocationConstraint()
             constraint.validate("90", "-190")
         self.assertEqual(("-190",), e.exception.data)
-

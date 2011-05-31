@@ -10,7 +10,6 @@ from mangrove.form_model.validation import NumericConstraint
 
 class TestFormSubmission(TestCase):
     def setUp(self):
-
         self.dbm = Mock(spec=DatabaseManager)
         self.ddtype1 = Mock(spec=DataDictType)
         self.ddtype2 = Mock(spec=DataDictType)
@@ -36,10 +35,8 @@ class TestFormSubmission(TestCase):
     def test_should_create_form_submission_with_entity_id(self):
         answers = {"id": "1", "q1": "My Name", "q2": "40", "q3": "RED"}
 
-        form_submission = FormSubmission(self.form_model, answers,short_code='1', success=True,errors={},entity_type=["Clinic"],data={})
+        form_submission = FormSubmission(self.form_model, answers, short_code='1', success=True, errors={},
+                                         entity_type=["Clinic"], data={})
 
         self.assertEqual(form_submission.form_code, "aids")
         self.assertEqual(form_submission.short_code, "1")
-
-    
-    

@@ -170,14 +170,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
-        self.assertEqual({'G': '380 is an invalid latitude, must be between -90 and 90'},response.errors)
+        self.assertEqual({'g': '380 is an invalid latitude, must be between -90 and 90'},response.errors)
 
         INVALID_LONGITUDE = -184
         text = "REG +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
-        self.assertEqual({'G': '-184 is an invalid longitude, must be between -180 and 180'},response.errors)
+        self.assertEqual({'g': '-184 is an invalid longitude, must be between -180 and 180'},response.errors)
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
@@ -190,7 +190,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("REG", submission_log.form_code)
-        self.assertEquals({'N': 'buddy', 'S': 'DOG3', 'T':'dog'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't':'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
 

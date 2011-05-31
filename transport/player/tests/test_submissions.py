@@ -97,7 +97,7 @@ class TestSubmissions(TestCase):
                                                                             source = "1234",
                                                                             destination = "5678",
                                                                             form_code = "QR1",
-                                                                            values = { "EID" : "100", "Q1" : "20" }
+                                                                            values = { "eid" : "100", "q1" : "20" }
         )
 
 

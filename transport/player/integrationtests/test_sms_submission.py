@@ -140,7 +140,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "DOG1"
+        expected_short_code = "dog1"
         self.assertEqual(response.short_code, expected_short_code)
         a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
@@ -159,7 +159,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "DOG3"
+        expected_short_code = "dog3"
         self.assertEqual(response.short_code, expected_short_code)
         b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(b.short_code, expected_short_code)

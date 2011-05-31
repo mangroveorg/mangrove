@@ -54,7 +54,7 @@ class TestRegisterReporterViaSMS(unittest.TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "REP1"
+        expected_short_code = "rep1"
         self.assertEqual(response.short_code, expected_short_code)
         a = get_by_short_code(self.dbm, expected_short_code, ["reporter"])
         self.assertEqual(a.short_code, expected_short_code)

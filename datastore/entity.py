@@ -22,7 +22,6 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
             entity_type = [entity_type]
     if is_empty(short_code):
         short_code = generate_short_code(dbm, entity_type)
-
     doc_id = _make_doc_id(entity_type, short_code.strip())
     try:
         if not validate_entity_type_already_defined(dbm, entity_type):
@@ -91,11 +90,11 @@ def _generate_new_code(entity_type, count):
 def _make_doc_id(entity_type,short_code):
     ENTITY_ID_FORMAT = "%s/%s"
     _entity_type = ".".join(entity_type)
-    return ENTITY_ID_FORMAT % (_entity_type,short_code)
+    return ENTITY_ID_FORMAT % (_entity_type,short_code.lower())
 
 def _make_short_code(entity_type,num):
     SHORT_CODE_FORMAT = "%s%s"
-    entity_prefix = entity_type[-1].upper()[:3]
+    entity_prefix = entity_type[-1].lower()[:3]
     return   SHORT_CODE_FORMAT % (entity_prefix,num)
 
 
@@ -216,7 +215,6 @@ class Entity(DataObject):
         assert geometry is None or isinstance(geometry, dict)
         assert centroid is None or isinstance(centroid, list)
         assert gr_id is None or is_string(gr_id)
-
         DataObject.__init__(self, dbm)
 
         # Are we being constructed from an existing doc, in which case all the work is
@@ -246,7 +244,8 @@ class Entity(DataObject):
             doc.gr_id = gr_id
 
         if short_code is not None:
-            doc.short_code = short_code
+            doc.short_code = short_code.lower()
+
 
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)

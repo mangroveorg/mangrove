@@ -25,7 +25,7 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
 
     doc_id = _make_doc_id(entity_type, short_code.strip())
     try:
-        if entity_type not in get_all_entity_types(dbm):
+        if not validate_entity_type_already_defined(dbm, entity_type):
             raise EntityTypeDoesNotExistsException(entity_type)
         e = Entity(dbm, entity_type=entity_type, location=location,
                    aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code,geometry=geometry)
@@ -42,18 +42,21 @@ def _get_entity_type_tree(dbm):
 def get_all_entity_types(dbm):
     return _get_entity_type_tree(dbm).get_paths()
 
-
+def validate_entity_type_already_defined(dbm, entity_type):
+    all_entities = get_all_entity_types(dbm)
+    if all_entities:
+        all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
+        entity_type_lower_case = [each.lower() for each in entity_type]
+        if entity_type_lower_case in all_entities_lower_case:
+                return True
+    return False
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
     assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
-    all_entities = get_all_entity_types(dbm)
-    if all_entities:
-        all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
-        type_path_lower_case = [each.lower() for each in type_path]
-        if type_path_lower_case in all_entities_lower_case:
-            raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
+    if validate_entity_type_already_defined(dbm, type_path):
+        raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
         # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)

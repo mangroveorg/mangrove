@@ -97,7 +97,7 @@ class TestSubmissions(TestCase):
         self.submissionLogger.create_submission_log.assert_called_once_with(channel="sms",
                                                                             source="1234",
                                                                             destination="5678",
-                                                                            form_code="QR1",
+                                                                            form_code="qr1",
                                                                             values={"eid": "100", "q1": "20"}
         )
 

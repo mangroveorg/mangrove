@@ -106,7 +106,7 @@ class DataObject(object):
         if self._doc is None:
             raise NoDocumentError('No document to save')
 
-        return self._dbm.save(self)
+        return self._dbm._save_document(self._doc)
 
     def delete(self):
         self._dbm.delete(self)
@@ -273,11 +273,6 @@ class DatabaseManager(object):
             raise DataObjectNotFound(dataobject_name=object_class.__name__, param="id", value=id)
 
         return many[0]
-
-    def save(self, d_obj):
-        assert isinstance(d_obj, DataObject)
-        assert d_obj._doc is not None
-        return d_obj._doc.store(self.database).id
 
     def delete(self, d_obj):
         '''

@@ -24,7 +24,6 @@ class TestAggregationTrees(unittest.TestCase):
         t1.graph.add_path([ATree.root_id, 'a', 'b', 'c', 'd'])
         t1_adj = t1.graph.adj
         t1_id = t1.save()
-        self.dbm.blow_cache()
         t2 = self.dbm.get(t1_id, ATree)
         self.assertDictEqual(t1_adj, t2.graph.adj)
 
@@ -37,7 +36,6 @@ class TestAggregationTrees(unittest.TestCase):
         t2.add_path([ATree.root_id, '1', '2', '3', '4', '5'])
         t2_id = t2.save()
 
-        self.dbm.blow_cache()
         self.assertDictEqual(self.dbm.get(t1_id, ATree).graph.adj, self.dbm.get(t2_id, ATree).graph.adj)
 
     def test_get_paths(self):
@@ -58,7 +56,7 @@ class TestAggregationTrees(unittest.TestCase):
         t1.set_data_for('1', ddict)
         id = t1.save()
 
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
         self.assertDictEqual(ddict, t2.graph.node['1'])
 
     def node_data_with_non_string_keys_should_raise_valueerror(self):
@@ -78,7 +76,7 @@ class TestAggregationTrees(unittest.TestCase):
         t1.set_data_for('1', ddict)
         id = t1.save()
 
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
         self.assertDictEqual(ddict, t2.get_data_for('1'))
 
     def non_string_node_should_raise_valueerror(self):
@@ -100,7 +98,7 @@ class TestAggregationTrees(unittest.TestCase):
         path = [('a', {'a': 1}), ('b', {'b': 2}), ('c', {'c': 3, 'c1': 4})]
         t.add_root_path(path)
         id = t.save()
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
 
         for node, data in path:
             self.assertDictEqual(t2.get_data_for(node), data)
@@ -154,7 +152,7 @@ class TestAggregationTrees(unittest.TestCase):
         t.add_child('foo', 'baz')
         t.add_child('bar', 'bunk')
         id = t.save()
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
 
         expected = [['foo'], ['foo', 'bar'], ['foo', 'baz'], ['foo', 'bar', 'bunk']]
         expected.sort()
@@ -171,7 +169,7 @@ class TestAggregationTrees(unittest.TestCase):
         for c in children:
             t.add_child('b', c)
         id = t.save()
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
         self.assertEqual(t2.children_of('a'), ['b'])
         self.assertEqual(sorted(t2.children_of('b')), children)
         with self.assertRaises(ValueError):
@@ -181,7 +179,7 @@ class TestAggregationTrees(unittest.TestCase):
         t = ATree(self.dbm, 'children_test')
         t.add_root_path(['a', 'b', 'c'])
         id = t.save()
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
         self.assertIsNone(t2.parent_of(t2.root_id))
         self.assertEqual(t2.parent_of('a'), t2.root_id)
         self.assertEqual(t2.parent_of('c'), 'b')
@@ -192,7 +190,7 @@ class TestAggregationTrees(unittest.TestCase):
         t = ATree(self.dbm, 'children_test')
         t.add_root_path(['a', 'b', 'c'])
         id = t.save()
-        t2 = self.dbm.get(id, ATree, force_reload=True)
+        t2 = self.dbm.get(id, ATree)
         self.assertEqual(t2.ancestors_of('a'), [])
         self.assertEqual(t2.ancestors_of('b'), ['a'])
         self.assertEqual(t2.ancestors_of('c'), ['a', 'b'])

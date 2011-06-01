@@ -25,6 +25,6 @@ def submit(manager, entity_id, data, source):
     assert is_sequence(data) and len(data) > 0
     e = manager.get(entity_id, Entity)
     submission_log = SubmissionLogDocument(source=source)
-    submission_log = manager._save_document(submission_log)
+    manager._save_document(submission_log)
     data_record_id = e.add_data(data=data, event_time=utcnow(), submission_id=submission_log.id)
     return data_record_id, submission_log.id

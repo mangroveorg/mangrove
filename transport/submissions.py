@@ -58,7 +58,7 @@ class SubmissionLogger(object):
         return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
                                                              destination=destination, form_code=form_code,
                                                              values=values, status=status,
-                                                             error_message=error_message)).id
+                                                             error_message=error_message))
 
 
 class SubmissionHandler(object):

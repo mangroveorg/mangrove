@@ -108,7 +108,7 @@ class TestFormModel(unittest.TestCase):
         form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.delete_field(code="Q3")
         form_model.save()
-        form_model = self.dbm.get(self.form_model__id, FormModel, force_reload=True)
+        form_model = self.dbm.get(self.form_model__id, FormModel)
         self.assertEquals(len(form_model.fields), 3)
 
     def test_should_add_english_as_default_langauge(self):
@@ -235,7 +235,7 @@ class TestFormModel(unittest.TestCase):
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype)
         questions = [entityQ, ageQ, placeQ]
-        questionnaire = FormModel.new_from_db(self.dbm, document)
+        questionnaire = FormModel.new_from_doc(self.dbm, document)
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, ["Reporter"])
         self.assertEqual(questionnaire.name, "New Project")

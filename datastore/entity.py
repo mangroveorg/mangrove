@@ -358,7 +358,7 @@ class Entity(DataObject):
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
                                              data=data_list, submission_id=submission_id, form_code=form_code)
-        return self._dbm._save_document(data_record_doc).id
+        return self._dbm._save_document(data_record_doc)
 
     def invalidate_data(self, uid):
         '''Mark datarecord identified by uid as 'invalid'.

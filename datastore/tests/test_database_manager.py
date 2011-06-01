@@ -26,8 +26,8 @@ class TestDatabaseManager(unittest.TestCase):
 
     def test_should_persist_and_load_document_to_database(self):
         document = DocumentBase(document_type='TestDocument')
-
-        document = self.database_manager._save_document(document)
+        id = self.database_manager._save_document(document)
+        document = self.database_manager._load_document(id)
         self.assertTrue(document.document_type == 'TestDocument')
 
         document1 = self.database_manager._load_document(document.id)

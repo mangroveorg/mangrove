@@ -30,7 +30,7 @@ def get_form_model_by_code(dbm, code):
         raise FormModelDoesNotExistsException(code)
 
     doc = dbm._load_document(rows[0]['value']['_id'], FormModelDocument)
-    form = FormModel.new_from_db(dbm, doc)
+    form = FormModel.new_from_doc(dbm, doc)
     return form
 
 

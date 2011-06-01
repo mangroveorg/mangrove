@@ -29,7 +29,7 @@ def get_datadict_type_by_slug(dbm,slug):
 
     #  include_docs = 'true' returns the doc as a dict, which has to be wrapped into a DataDictDocument, and then into a DataDictType
     _doc = DataDictDocument.wrap(rows[0].doc)
-    return DataDictType.new_from_db(dbm,_doc)
+    return DataDictType.new_from_doc(dbm,_doc)
 
 
 def get_datadict_types(dbm, ids):
@@ -116,7 +116,7 @@ class DataDictType(DataObject):
     @classmethod
     def create_from_json(cls, json,dbm):
         doc = DataDictDocument.wrap(json)
-        return DataDictType.new_from_db(dbm,doc)
+        return DataDictType.new_from_doc(dbm,doc)
 
     def update_record_caches(self):
         '''This function will update the cached version of this type in all assosciated datarecords.'''

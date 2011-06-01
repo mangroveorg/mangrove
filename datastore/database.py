@@ -12,7 +12,7 @@ from documents import DocumentBase
 from datetime import datetime
 from mangrove.utils import dates
 from mangrove.utils.types import is_empty, is_sequence
-from mangrove.errors.MangroveException import NoDocumentError, DataObjectNotFound
+from mangrove.errors.MangroveException import NoDocumentError, DataObjectNotFound, MangroveException
 import views
 
 
@@ -84,7 +84,7 @@ class DataObject(object):
     __document_class__ = None
 
     @classmethod
-    def new_from_db(cls, dbm, doc):
+    def new_from_doc(cls, dbm, doc):
         assert isinstance(doc, cls.__document_class__)
         me = cls(dbm)
         me._set_document(doc)
@@ -115,9 +115,6 @@ class DataObject(object):
     def id(self):
         return self._doc.id if self._doc is not None else None
 
-    def update_cache(self):
-        pass
-
 
 class DatabaseManager(object):
     def __init__(self, server=None, database=None):
@@ -125,8 +122,7 @@ class DatabaseManager(object):
         Connect to the CouchDB server. If no database name is given,
         use the name provided in the settings
         """
-        self.cache_lock = Lock()
-        self.doc_cache = {}
+
         self.url = (server if server is not None else SERVER)
         self.database_name = database or DATABASE
         self.server = couchdb.client.Server(self.url)
@@ -148,19 +144,6 @@ class DatabaseManager(object):
     def __repr__(self):
         return repr(self.database)
 
-    def blow_cache(self):
-        '''
-        The DBM holds an in memory document cache where it stores documents after retrieval
-        from Couch.
-
-        This blows the cache, removing references to in-memory documents.
-
-        NOTE: If an object holds an external reference to the document, it will stay around
-        in memory, but a new document will be returned if requested from the DBM
-
-        '''
-        with self.cache_lock:
-            self.doc_cache = {}
 
     def load_all_rows_in_view(self, view_name, **values):
         full_view_name = view_name + '/' + view_name
@@ -200,23 +183,37 @@ class DatabaseManager(object):
         views.create_views(self)
 
     def _save_document(self, document, modified=None):
-        assert modified is None or isinstance(modified, datetime)
-        document.modified = (modified if modified is not None else dates.utcnow())
-        document.store(self.database)
-        return document
+        '''Returns document ID'''
+        # TODO: Throw exception if an error
+        result = self._save_documents([document], modified)[0]
+        # first item is success/failure
+        if not result[0]:
+            raise MangroveException('Failed to save document with ID: %s' % document.id)
 
-    def _save_documents(self, documents):
+        # second item is doc ID
+        return result[1]
+
+    def _save_documents(self, documents, modified=None):
         assert is_sequence(documents)
+        assert modified is None or isinstance(modified, datetime)
         for doc in documents:
             assert isinstance(doc, DocumentBase)
-        # TODO: what should we return here? this is what is avaliable from db.update()...
+            doc.modified = (modified if modified is not None else dates.utcnow())
+
+        # TODO: what should we return here? this is what is available from db.update()...
         # The return value of this method is a list containing a tuple for every
         # element in the `documents` sequence. Each tuple is of the form
         # ``(success, docid, rev_or_exc)``, where ``success`` is a boolean
         # indicating whether the update succeeded, ``docid`` is the ID of the
         # document, and ``rev_or_exc`` is either the new document revision, or
         # an exception instance (e.g. `ResourceConflict`) if the update failed.
-        return self.database.update(documents)
+
+        # Fix up rev, 'cause bulk update seems not to do that
+        results = self.database.update(documents)
+        for x in range(len(results)):
+            if results[x][0]:
+                documents[x]._data['_rev'] = results[x][2]
+        return results
 
     def invalidate(self, uid):
         doc = self._load_document(uid)
@@ -230,7 +227,7 @@ class DatabaseManager(object):
         '''
         Load a document from the DB into an in memory document object.
 
-        Low level interface does not create wrapping DataObject or put in cache
+        Low level interface does not create wrapping DataObject
 
         '''
         if is_empty(id):
@@ -238,33 +235,26 @@ class DatabaseManager(object):
         else:
             return document_class.load(self.database, id=id)
 
-    def get_many_by_ids(self, obj_class, ids):
-        docs = [row.doc for row in self.database.view('_all_docs', keys=ids, include_docs='true')]
-        objs = []
-        for doc in docs:
-            print obj_class, doc
-            obj = obj_class(self)
-            obj._set_document(doc)
-            objs.append(obj)
-        return objs
-
-    def get_many(self, ids, object_class, get_or_create=False, force_reload=False):
+    def get_many(self, ids, object_class):
         '''
         Get many data objects at once.
 
         Returns a (possibly empty) list of retrieved objects
 
         '''
+        assert issubclass(object_class, DataObject)
         assert is_sequence(ids)
+
         objs = []
-        for id in ids:
-            try:
-                objs.append(self.get(id, object_class, get_or_create, force_reload))
-            except DataObjectNotFound:
-                pass
+        rows = self.database.view('_all_docs', keys=ids, include_docs=True)
+        for row in rows:
+            if 'error' in row:
+                continue
+            obj = object_class.new_from_doc(self, object_class.__document_class__.wrap(row.get('doc')))
+            objs.append(obj)
         return objs
 
-    def get(self, id, object_class, get_or_create=False, force_reload=False):
+    def get(self, id, object_class, get_or_create=False):
         '''
         Higher level call for retrieving not just the CouchDB document but
         creating the full API object that wraps it.
@@ -272,43 +262,26 @@ class DatabaseManager(object):
         '''
         assert issubclass(object_class, DataObject)
 
-        obj = None
+        many = self.get_many([id], object_class)
+        if get_or_create and len(many)==0:
+            # create one 'cause none exists
+            doc = object_class.__document_class__(id=id)
+            doc.store(self.database)
+            many.append(object_class.new_from_doc(self, doc))
 
-        if force_reload or id not in self.doc_cache:
-            doc = self._load_document(id, object_class.__document_class__)
+        if len(many)==0:
+            raise DataObjectNotFound(dataobject_name=object_class.__name__, param="id", value=id)
 
-            if doc is None and not get_or_create:
-                raise DataObjectNotFound(dataobject_name=object_class.__name__, param="id", value=id)
-            elif doc is None:
-                # didn't find it, but get_or_create is True, so
-                # lets make it
-                doc = object_class.__document_class__(id=id)
-                doc = doc.store(self.database)
-
-            obj = object_class.new_from_db(self, doc)
-            with self.cache_lock:
-                self.doc_cache[obj._doc.id] = obj
-        elif not force_reload:
-            # id was in cache, Lock, dble check, return
-            with self.cache_lock:
-                # slight chance race condition blew it away, so check
-                if id in self.doc_cache:
-                    obj = self.doc_cache[id]
-        return obj
+        return many[0]
 
     def save(self, d_obj):
         assert isinstance(d_obj, DataObject)
         assert d_obj._doc is not None
-
-        with self.cache_lock:
-            self.doc_cache[d_obj._doc.id] = d_obj
-
         return d_obj._doc.store(self.database).id
 
     def delete(self, d_obj):
         '''
-        Deletes the document associated with the data_obj from the database and
-        removes from the cache.
+        Deletes the document associated with the data_obj from the database.
 
         '''
         assert isinstance(d_obj, DataObject)
@@ -318,6 +291,3 @@ class DatabaseManager(object):
 
         id = d_obj._doc.id
         self.database.delete(d_obj._doc)
-        with self.cache_lock:
-            if id in self.doc_cache:
-                del self.doc_cache[id]

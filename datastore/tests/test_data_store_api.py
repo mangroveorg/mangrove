@@ -163,7 +163,7 @@ class TestDataStoreApi(unittest.TestCase):
 
     def test_should_create_entity_from_document(self):
         existing = self.dbm.get(self.uuid, Entity)
-        e = Entity.new_from_db(self.dbm, existing._doc)
+        e = Entity.new_from_doc(self.dbm, existing._doc)
         self.assertTrue(e._doc is not None)
         self.assertEqual(e.id, existing.id)
         self.assertEqual(e.type_path, existing.type_path)

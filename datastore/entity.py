@@ -189,11 +189,11 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-def add_data(dbm, short_code, data, submission_id, entity_type):
+def add_data(dbm, short_code, data, submission_id, entity_type, form_code = None):
     if is_string(entity_type):
         entity_type = [entity_type]
     e = get_by_short_code(dbm, short_code, entity_type)
-    data_record_id = e.add_data(data=data, submission_id=submission_id)
+    data_record_id = e.add_data(data=data, submission_id=submission_id, form_code=form_code)
     return data_record_id
 
 
@@ -320,7 +320,7 @@ class Entity(DataObject):
         # aggregation paths on data records, in which case we need to
         # set a dirty flag and handle this in save.
 
-    def add_data(self, data=(), event_time=None, submission_id=None):
+    def add_data(self, data=(), event_time=None, submission_id=None, form_code = None):
         '''
         Add a new datarecord to this Entity and return a UUID for the
         datarecord.
@@ -347,7 +347,7 @@ class Entity(DataObject):
             data_list.append((label, dd_type, value))
 
         data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
-                                             data=data_list, submission_id=submission_id)
+                                             data=data_list, submission_id=submission_id, form_code=form_code)
         return self._dbm._save_document(data_record_doc).id
 
     def invalidate_data(self, uid):

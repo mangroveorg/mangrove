@@ -98,7 +98,7 @@ class SubmissionHandler(object):
             else:
                 data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
                                                  data=form_submission.values, submission_id=submission_id,
-                                                 entity_type=form.entity_type)
+                                                 entity_type=form.entity_type, form_code = form_code)
 
                 logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
                 return Response(reporters, True, {}, submission_id, data_record_id)

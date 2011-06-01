@@ -82,17 +82,6 @@ class DataDictType(DataObject):
         doc = DataDictDocument(id, primitive_type, constraints, slug, name, description, tags, **kwargs)
         self._set_document(doc)
 
-#    def save(self):
-#        #  if we are creating new DataDict
-#        if self._doc.rev is None:
-#            try:
-#                #  Check if slug already exists,
-#                get_datadict_type_by_slug(self._dbm,self.slug)
-#                raise DataObjectAlreadyExists("DataDictType","slug",self.slug)
-#            except DataObjectNotFound:
-#                pass
-#        super(DataDictType,self).save()
-
     @property
     def name(self):
         return self._doc.name

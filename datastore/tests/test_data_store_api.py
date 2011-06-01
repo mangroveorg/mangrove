@@ -188,6 +188,8 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertFalse(e._doc.void)
         apple_type = DataDictType(self.dbm, name='Apples', slug='apples', primitive_type='number')
         orange_type = DataDictType(self.dbm, name='Oranges', slug='oranges', primitive_type='number')
+        apple_type.save()
+        orange_type.save()
         data = [
                 [('apples', 20, apple_type), ('oranges', 30, orange_type)],
                 [('apples', 10, apple_type), ('oranges', 20, orange_type)]

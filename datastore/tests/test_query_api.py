@@ -393,36 +393,6 @@ class TestQueryApi(unittest.TestCase):
         for e in expected:
             self.assertIn(e, entity_types)
 
-        #
-        #
-        #    def test_should_fetch_aggregates_for_entity_type_for_hierarchy_path(self):
-        #        # Aggregate across all instances of an entity type in a given location..say India.
-        #        # values: {  'India' : [ ("beds" ,"avg",100), ("meds" ,"sum",10000)  ]  }
-        #        values = data.fetch(entity_type=['health facility', 'clinic'],aggregates = { "beds" : "avg" , "meds" : "sum"  },
-        #                            aggregate_on = { 'type' : 'location', 'value' : "India"} )
-        #
-        #        # Return aggregate for all entities at the same level in the hierarchy.
-        #        # E.g, below will return the average bed count and total medicine count per state, where state = level 2 in the hierarchy (Country, State, City)
-        #        # values : {  'Karnataka' : [ ("beds" ,"avg",100), ("meds" ,"sum",1000)  ], 'Maharashtra' : [ ("beds" ,"avg",10), ("meds" ,"sum",1000) ]  }
-        #
-        #        values = data.fetch(entity_type=['health facility', 'clinic'],aggregates = { "beds" : "avg" , "meds" : "sum"  },
-        #                            aggregate_on = { 'type' : 'location', 'level' : 2} )
-        #
-        #
-        #    def test_should_fetch_aggregates_for_entity_type_filtered_by_time(self):
-        #        values = data.fetch(entity_type=['health facility', 'clinic'],aggregates = { "beds" : "avg" , "meds" : "sum"  },
-        #                                aggregate_on = { 'type' : 'location', 'value' : "India"}, starttime = "01/01/2011",endtime = "01/12/2011" )
-        #
-        #
-        #    def test_should_fetch_by_range(self):
-        #        #   Total num of patients age bw 20 to 35.
-        #        #   Handle inclusive/exclusive ranges.
-        #        values = data.fetch(entity_type=['patient'],aggregates = { "*" : "count" },filter = { "age" : [20,35] })
-        #
-        #    def test_should_fetch_all_entities_for_a_criteria(self):
-        #        # Return all clinic entities with beds = 129
-        #        entity.get_entities(entity_type = ['clinic'], filter = {'beds' : 129})
-
     def test_should_fetch_aggregate_per_entity_for_all_fields_in_entity(self):
         # Aggregate across all data records for each entity for all fields
 

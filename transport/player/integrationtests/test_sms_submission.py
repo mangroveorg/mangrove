@@ -79,7 +79,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
-        self.assertEqual("clinic", data_record.form_code)
+        self.assertEqual("CLINIC", data_record.form_code)
 
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)

@@ -497,4 +497,3 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
-

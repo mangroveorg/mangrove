@@ -31,6 +31,7 @@ def create_question_from(dictionary, dbm):
         return _get_select_field(code, ddtype, dictionary, label, name, type)
     return None
 
+
 def field_to_json(object):
     #    assert isinstance(object, Field)
     if isinstance(object, datetime):
@@ -252,9 +253,9 @@ class GeoCodeField(Field):
 
     def validate(self, lat_long_string):
         lat_long = lat_long_string.split(" ")
-        if(len(lat_long)<2):
-            raise GeoCodeFormatException(self.code)
-        return LocationConstraint(code=self.code).validate(latitude=lat_long[0], longitude=lat_long[1])
+        if(len(lat_long) < 2):
+            raise GeoCodeFormatException(lat_long_string)
+        return LocationConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
 
 

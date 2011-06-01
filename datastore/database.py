@@ -61,18 +61,24 @@ def _delete_db_and_remove_db_manager(dbm):
 
 class DataObject(object):
     '''
-    Superclass for all objects that are essentially wrappers of DB data.
+    Superclass for all objects that are essentially wrappers of DB
+    data.
 
-    There isn't much API contract that needs to be implemented by subclasses:
-    - They must have a class level member called __document_class__ that points to the python-couchdb
-       document class that they use internally.
+    There isn't much API contract that needs to be implemented by
+    subclasses:
 
-    - A constructor where only 'dbm' is required (for initial construction)
+    - They must have a class level member called __document_class__
+      that points to the python-couchdb document class that they use
+      internally.
 
-    - _set_document call which is used to initialize with a new python-couchdb document
+    - A constructor where only 'dbm' is required (for initial
+      construction)
 
-    - a member self._doc which is used to hold the python-couchdb document
+    - _set_document call which is used to initialize with a new
+      python-couchdb document
 
+    - a member self._doc which is used to hold the python-couchdb
+      document
     '''
 
     __document_class__ = None
@@ -116,7 +122,8 @@ class DataObject(object):
 class DatabaseManager(object):
     def __init__(self, server=None, database=None):
         """
-            Connect to the CouchDB server. If no database name is given , use the name provided in the settings
+        Connect to the CouchDB server. If no database name is given,
+        use the name provided in the settings
         """
         self.cache_lock = Lock()
         self.doc_cache = {}

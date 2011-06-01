@@ -284,6 +284,3 @@ class TestDataStoreApi(unittest.TestCase):
     def test_should_create_entity_with_short_code(self):
         reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP999")
         self.assertEqual(reporter.short_code, "REP999")
-
-
-

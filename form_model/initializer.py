@@ -4,5 +4,3 @@ from mangrove.form_model.form_model import create_default_reg_form_model
 
 def run(manager):
     create_default_reg_form_model(manager)
-
-

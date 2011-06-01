@@ -7,18 +7,19 @@ from mangrove.datastore.database import  get_db_manager, _delete_db_and_remove_d
 from mangrove.datastore.entity import Entity
 from mangrove.datastore import data
 
+
 @SkipTest
 class TestViewPerf(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
         self.meds_type = create_data_dict(dbm=self.dbm, name='Medicines', slug='meds', primitive_type='number',
-                                     description='Number of medications')
+                                          description='Number of medications')
         self.beds_type = create_data_dict(dbm=self.dbm, name='Beds', slug='beds', primitive_type='number',
-                                     description='Number of beds')
+                                          description='Number of beds')
         self.director_type = create_data_dict(dbm=self.dbm, name='Director', slug='dir', primitive_type='string',
-                                         description='Name of director')
+                                              description='Name of director')
         self.patients_type = create_data_dict(dbm=self.dbm, name='Patients', slug='patients', primitive_type='number',
-                                         description='Patient Count')
+                                              description='Patient Count')
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
@@ -26,10 +27,10 @@ class TestViewPerf(unittest.TestCase):
     def test_should_create_with_bulk_upload(self):
         NUM_ENTITIES = 1000
         DATA_REC_PER_ENTITY = 10
-        BATCH = (NUM_ENTITIES * DATA_REC_PER_ENTITY)/1
+        BATCH = (NUM_ENTITIES * DATA_REC_PER_ENTITY) / 1
 
         start = datetime.datetime.now()
-        le = [Entity(self.dbm, entity_type=["Health_Facility","Clinic"], location=['India', 'MH', 'Pune'])
+        le = [Entity(self.dbm, entity_type=["Health_Facility", "Clinic"], location=['India', 'MH', 'Pune'])
               for x in range(0,
                              NUM_ENTITIES)]
         entity_docs = [x._doc for x in le]
@@ -40,7 +41,7 @@ class TestViewPerf(unittest.TestCase):
         print "data records"
         for e in le:
             for i in range(0, DATA_REC_PER_ENTITY):
-                e.add_data_bulk(data=[("beds", 10, self.beds_type),("meds",10,self.meds_type)])
+                e.add_data_bulk(data=[("beds", 10, self.beds_type), ("meds", 10, self.meds_type)])
 
         print "total bulk docs %s" % (len(self.dbm.bulk))
         print "bulk save !"
@@ -56,13 +57,10 @@ class TestViewPerf(unittest.TestCase):
 
         print "Firing view..."
         start = datetime.datetime.now()
-        values = data.fetch(self.dbm, entity_type=["Health_Facility","Clinic"],
+        values = data.fetch(self.dbm, entity_type=["Health_Facility", "Clinic"],
                             aggregates={"beds": data.reduce_functions.LATEST,
                                         "meds": data.reduce_functions.COUNT},
                             )
         end = datetime.datetime.now()
         print "views took %s" % (end - start,)
         print "Done!"
-
-
-  

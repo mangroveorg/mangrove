@@ -13,38 +13,39 @@ class AggregationTree(DataObject):
     '''
     Representation of an aggregation tree.
 
-    In memory this utilizes the NetworkX graph library with each node being a dict
+    In memory this utilizes the NetworkX graph library with each node
+    being a dict
 
-    The tree is represented in Couch as dicts of dicts under the attribute '_root'
+    The tree is represented in Couch as dicts of dicts under the
+    attribute '_root'
 
-    Each tree has a unique _id which should be a memorable name like 'geographic_boundaries'
+    Each tree has a unique _id which should be a memorable name like
+    'geographic_boundaries'
 
+    Each node in the tree is a dict of arbitrary attributes a special
+    '_children' attribute that holds the child nodes.
 
-    Each node in the tree is a dict of arbitrary attributes a special '_children' attribute that holds the child nodes.
+    The node's name is the node's key in the parent dict or '__root'
+    for the root node
 
-    The node's name is the node's key in the parent dict or '__root' for the root node
-
-    So a tree with a partial list of countries and states/provinces of this form (in pseudo-lisp-code):
+    So a tree with a partial list of countries and states/provinces of
+    this form (in pseudo-lisp-code):
 
     ((India(Maharashtra, Kerala, Karnataka)), (US(California(SF), Ohio)))
 
+    would look like this::
 
-
-    would look like this
-
-    {
-    _id: _geo
-    _root: {
-            children: {
-                        India: { _children: { Maharashtra: {}}, {Kerala: {}}, {Karnataka: {}}},,
-                        US: {_children: { {California: {_children: {SF: {}}}}, {Ohio: {}}},
-                      }
-            }
-    }
+        {
+        _id: _geo
+        _root: {
+                children: {
+                            India: { _children: { Maharashtra: {}}, {Kerala: {}}, {Karnataka: {}}},,
+                            US: {_children: { {California: {_children: {SF: {}}}}, {Ohio: {}}},
+                          }
+                }
+        }
 
     NOTE: Node names must be STRINGS because of JSON encoding issues for couch
-
-
     '''
     __document_class__ = AggregationTreeDocument
     root_id = '__root'
@@ -107,7 +108,7 @@ class AggregationTree(DataObject):
 
         '''
         # TODO: hold this as a cache that is blown by Add Path
-        return [p[1:] for p in nx.shortest_path(self.graph, AggregationTree.root_id,).values() if is_not_empty(p[1:])]
+        return [p[1:] for p in nx.shortest_path(self.graph, AggregationTree.root_id, ).values() if is_not_empty(p[1:])]
 
     def get_leaf_paths(self):
         '''
@@ -148,7 +149,7 @@ class AggregationTree(DataObject):
 
         if not self._verify_dict_keys_are_strings(data):
             raise ValueError('Keys in a nodes data-dictionary must be strings')
-            
+
         self.graph.add_node(name, data)
 
     def add_child(self, parent, child, data=None):
@@ -176,7 +177,7 @@ class AggregationTree(DataObject):
             raise ValueError("Node named: '%s' not in graph" % node)
 
         p = self.graph.predecessors(node)
-        return (None if len(p)==0 else p[0])
+        return (None if len(p) == 0 else p[0])
 
     def ancestors_of(self, node):
         a = []
@@ -229,7 +230,7 @@ class AggregationTree(DataObject):
 
     def add_root_path(self, path):
         '''Convenience function for adding this path starting at "root"'''
-        self.add_path([self.root_id]+path)
+        self.add_path([self.root_id] + path)
 
     def _sync_doc_to_graph(self):
         '''Converts internal CouchDB document dict into tree graph'''

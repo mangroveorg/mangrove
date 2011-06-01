@@ -35,21 +35,18 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity  = create_entity(self.dbm, entity_type=["HealthFacility","Clinic"],
-                                          location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
-                                          )
+        self.entity = create_entity(self.dbm, entity_type=["HealthFacility", "Clinic"],
+                                    location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
+                                    )
 
-
-        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],submission_id="1")
-
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission_id="1")
 
         reporter = create_entity(self.dbm, entity_type=["Reporter"],
-                        location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
-                            )
+                                 location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
+                                 )
 
         reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-                                  (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
-
+                                (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
@@ -70,25 +67,23 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +EID %s +NAME CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         s = SubmissionHandler(self.dbm)
 
         response = s.accept(Request("sms", text, "1234", "5678"))
 
         self.assertTrue(response.success)
 
-
-
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
+        self.assertEqual("CLINIC", data_record.form_code)
 
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")
-
 
 
     def test_should_give_error_for_wrong_integer_value(self):
@@ -133,14 +128,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
-    
+
     def test_should_register_new_entity(self):
-        text = "REG +N buddy +T dog +L 80 80 +D its a dog! +M 123456"
+        text = "REG +n buddy +T dog +L 80 80 +D its a dog! +M 123456"
         s = SubmissionHandler(self.dbm)
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "DOG1"
+        expected_short_code = "dog1"
         self.assertEqual(response.short_code, expected_short_code)
         a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
@@ -159,10 +154,25 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = s.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "DOG3"
+        expected_short_code = "dog3"
         self.assertEqual(response.short_code, expected_short_code)
         b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(b.short_code, expected_short_code)
+
+    def test_should_return_error_for_registration_having_invalid_geo_data(self):
+        INVALID_LATITUDE = 380
+        text = "REG +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertEqual({'g': '380 is an invalid latitude, must be between -90 and 90'}, response.errors)
+
+        INVALID_LONGITUDE = -184
+        text = "REG +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
+        s = SubmissionHandler(self.dbm)
+        response = s.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)
+        self.assertEqual({'g': '-184 is an invalid longitude, must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
@@ -175,7 +185,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("REG", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't':'dog'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 
 

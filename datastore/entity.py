@@ -17,22 +17,23 @@ from database import DatabaseManager, DataObject
 
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
-def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None,geometry=None):
+
+def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None, geometry=None):
     if is_string(entity_type):
-            entity_type = [entity_type]
+        entity_type = [entity_type]
     if is_empty(short_code):
         short_code = generate_short_code(dbm, entity_type)
-
     doc_id = _make_doc_id(entity_type, short_code.strip())
     try:
-        if entity_type not in get_all_entity_types(dbm):
+        if not validate_entity_type_already_defined(dbm, entity_type):
             raise EntityTypeDoesNotExistsException(entity_type)
         e = Entity(dbm, entity_type=entity_type, location=location,
-                   aggregation_paths=aggregation_paths, id=doc_id,short_code=short_code,geometry=geometry)
+                   aggregation_paths=aggregation_paths, id=doc_id, short_code=short_code, geometry=geometry)
         e.save()
         return e
     except ResourceConflict:
-         raise DataObjectAlreadyExists("Entity","short code",short_code)
+        raise DataObjectAlreadyExists("Entity", "short code", short_code)
+
 
 def _get_entity_type_tree(dbm):
     assert isinstance(dbm, DatabaseManager)
@@ -43,17 +44,23 @@ def get_all_entity_types(dbm):
     return _get_entity_type_tree(dbm).get_paths()
 
 
+def validate_entity_type_already_defined(dbm, entity_type):
+    all_entities = get_all_entity_types(dbm)
+    if all_entities:
+        all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
+        entity_type_lower_case = [each.lower() for each in entity_type]
+        if entity_type_lower_case in all_entities_lower_case:
+            return True
+    return False
+
+
 def define_type(dbm, entity_type):
     assert is_not_empty(entity_type)
     assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
-    all_entities = get_all_entity_types(dbm)
-    if all_entities:
-        all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
-        type_path_lower_case = [each.lower() for each in type_path]
-        if type_path_lower_case in all_entities_lower_case:
-            raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
+    if validate_entity_type_already_defined(dbm, type_path):
+        raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
         # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
@@ -63,39 +70,44 @@ def define_type(dbm, entity_type):
 def generate_short_code(dbm, entity_type):
     assert is_sequence(entity_type)
     count = _get_entity_count_for_type(dbm, entity_type=entity_type)
-    assert count >=0
+    assert count >= 0
     return _make_short_code(entity_type, count + 1)
 
 
 def _get_entity_count_for_type(dbm, entity_type):
     rows = dbm.load_all_rows_in_view("by_short_codes",descending = True,
                                      startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
-    
     return rows[0]["value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    doc_id = _make_doc_id(entity_type,short_code)
-    return Entity.get(dbm,doc_id)
+    doc_id = _make_doc_id(entity_type, short_code)
+    return Entity.get(dbm, doc_id)
 
 
 def _generate_new_code(entity_type, count):
-    short_code = _make_short_code(entity_type,count + 1)
-    return _make_doc_id(entity_type,short_code)
+    short_code = _make_short_code(entity_type, count + 1)
+    return _make_doc_id(entity_type, short_code)
 
 
-def _make_doc_id(entity_type,short_code):
+def _make_doc_id(entity_type, short_code):
     ENTITY_ID_FORMAT = "%s/%s"
     _entity_type = ".".join(entity_type)
-    return ENTITY_ID_FORMAT % (_entity_type,short_code)
+    return ENTITY_ID_FORMAT % (_entity_type, short_code)
 
 
-def _make_short_code(entity_type,num):
+def _make_short_code(entity_type, num):
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].upper()[:3]
     return   SHORT_CODE_FORMAT % (entity_prefix,num)
+
+
+def _make_short_code(entity_type, num):
+    SHORT_CODE_FORMAT = "%s%s"
+    entity_prefix = entity_type[-1].lower()[:3]
+    return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def get_entities_by_type(dbm, entity_type):
@@ -183,17 +195,20 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     return entities
 
+
 def add_data(dbm, short_code, data, submission_id, entity_type, form_code=None):
+
     if is_string(entity_type):
-            entity_type = [entity_type]
+        entity_type = [entity_type]
     e = get_by_short_code(dbm, short_code, entity_type)
     data_record_id = e.add_data(data=data, submission_id=submission_id, form_code=form_code)
     return data_record_id
 
+
 class Entity(DataObject):
     """
-    Entity class is main way of interacting with Entities AND datarecords.
-    Datarecords are always submitted/retrieved from an Entity.
+    The Entity class is the primary way for a developer to add save
+    data to the database.
     """
 
     __document_class__ = EntityDocument
@@ -216,7 +231,6 @@ class Entity(DataObject):
         assert geometry is None or isinstance(geometry, dict)
         assert centroid is None or isinstance(centroid, list)
         assert gr_id is None or is_string(gr_id)
-
         DataObject.__init__(self, dbm)
 
         # Are we being constructed from an existing doc, in which case all the work is
@@ -272,11 +286,21 @@ class Entity(DataObject):
 
     @property
     def type_string(self):
+        '''
+        An Entity's type is a list of strings. Return this Entity's
+        type list joined with a period. If there are no types in the
+        list return an empty string.
+        '''
         p = self.type_path
         return '' if p is None else '.'.join(p)
 
     @property
     def location_string(self):
+        '''
+        An Entity's location is a list of strings. Return this
+        Entity's location list joined with a period. If the location
+        list is empty return the empty string.
+        '''
         p = self.location_path
         return '' if p is None else '.'.join(p)
 
@@ -300,26 +324,19 @@ class Entity(DataObject):
         assert isinstance(self._doc[attributes.AGG_PATHS], dict)
         self._doc[attributes.AGG_PATHS][name] = list(path)
 
-        # TODO: Depending on implementation we will need to update aggregation paths
-        # on data records--in which case we need to set a dirty flag and handle this
-        # in save
+        # TODO: Depending on implementation we will need to update
+        # aggregation paths on data records, in which case we need to
+        # set a dirty flag and handle this in save.
 
     def add_data(self, data=(), event_time=None, submission_id=None, form_code=None, multiple_records=False):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
-
         Arguments:
-        data -- a sequence of ordered tuples, (label, value, type) where type is a DataDictType
-        submission_id -- an id to a 'submission' document in the submission log from which
-                        this data came
-        event_time -- the time at which the event occured rather than when it was reported
-
-        This is stored in couch as:
-            submission_id = "..."
-            event_time = "..."
-            data: [
-                            { 'type': <DataDictDocument>,'value': x},
-                            ...
-                        ]
+            data: a sequence of ordered tuples, (label, value, type)
+                where type is a DataDictType
+            event_time: the time at which the event occured rather than
+                when it was reported
+            submission_id: an id to a 'submission' document in the
+                submission log from which this data came
         '''
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
@@ -458,4 +475,3 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {"latest": "by_values_latest"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
-

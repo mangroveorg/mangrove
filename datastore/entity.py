@@ -68,7 +68,7 @@ def generate_short_code(dbm, entity_type):
 
 
 def _get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("mangrove_views/by_short_codes",descending = True,
+    rows = dbm.load_all_rows_in_view("by_short_codes",descending = True,
                                      startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
     
     return rows[0]["value"] if len(rows) else 0
@@ -183,11 +183,11 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
     return entities
 
-def add_data(dbm, short_code, data, submission_id, entity_type):
+def add_data(dbm, short_code, data, submission_id, entity_type, form_code=None):
     if is_string(entity_type):
             entity_type = [entity_type]
     e = get_by_short_code(dbm, short_code, entity_type)
-    data_record_id = e.add_data(data=data, submission_id=submission_id)
+    data_record_id = e.add_data(data=data, submission_id=submission_id, form_code=form_code)
     return data_record_id
 
 class Entity(DataObject):
@@ -304,7 +304,7 @@ class Entity(DataObject):
         # on data records--in which case we need to set a dirty flag and handle this
         # in save
 
-    def add_data(self, data=(), event_time=None, submission_id=None):
+    def add_data(self, data=(), event_time=None, submission_id=None, form_code=None, multiple_records=False):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
 
         Arguments:
@@ -332,10 +332,16 @@ class Entity(DataObject):
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):
                 raise ValueError('Data must be of the form (label, value, DataDictType).')
-            data_list.append(DataRecordDocument(entity_doc=self._doc, event_time=event_time,
+            if multiple_records:
+                data_list.append(DataRecordDocument(entity_doc=self._doc, event_time=event_time,
                                              data=[(label, dd_type, value)], submission_id=submission_id))
+                return self._dbm._save_documents(data_list)
+            else:
+                data_list.append((label, dd_type, value))
 
-        return self._dbm._save_documents(data_list)
+        data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
+                                             data=data_list, submission_id=submission_id, form_code=form_code)
+        return self._dbm._save_document(data_record_doc).id
 
     def invalidate_data(self, uid):
         '''Mark datarecord identified by uid as 'invalid'.

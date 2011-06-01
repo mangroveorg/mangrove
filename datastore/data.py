@@ -69,7 +69,7 @@ def _load_all_fields_latest_values(dbm, type_path):
     startkey = [type_path]
     endkey = [type_path, {}]
     view_group_level = BY_VALUES_FIELD_INDEX + 1
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, group_level=view_group_level,
+    rows = dbm.load_all_rows_in_view(view_name, group_level=view_group_level,
                                      startkey=startkey,
                                      endkey=endkey)
     values = []
@@ -128,7 +128,7 @@ def _translate_aggregation_type(aggregate_on):
 
 def _get_entities_for_location(dbm,entity_type,location):
     view_name = "by_location"
-    rows = dbm.load_all_rows_in_view('mangrove_views/' + view_name, startkey=[entity_type, location],
+    rows = dbm.load_all_rows_in_view(view_name, startkey=[entity_type, location],
                                          endkey=[entity_type, location, {}])
     values = []
     for row in rows:

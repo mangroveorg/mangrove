@@ -68,7 +68,7 @@ class TestDataDict(unittest.TestCase):
         ddtype = create_datadict_type(self.dbm, name=NAME,
                                       slug=SLUG, primitive_type=TYPE, constraints={}, description=DESC)
 
-        self.dbm.save.assert_called_once_with(ddtype)
+        self.dbm._save_document.assert_called_once_with(ddtype._doc)
 
         self.assertEqual(NAME, ddtype.name)
         self.assertEqual(DESC, ddtype.description)

@@ -4,12 +4,11 @@ import copy
 from datetime import datetime
 from time import mktime
 from collections import defaultdict
-from couchdb.http import ResourceConflict
 
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
+from mangrove.errors.MangroveException import FailedToSaveDataObject, EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -31,7 +30,7 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
                    aggregation_paths=aggregation_paths, id=doc_id, short_code=short_code, geometry=geometry)
         e.save()
         return e
-    except ResourceConflict:
+    except FailedToSaveDataObject:
         raise DataObjectAlreadyExists("Entity", "short code", short_code)
 
 

@@ -12,7 +12,7 @@ from documents import DocumentBase
 from datetime import datetime
 from mangrove.utils import dates
 from mangrove.utils.types import is_empty, is_sequence
-from mangrove.errors.MangroveException import NoDocumentError, DataObjectNotFound, MangroveException
+from mangrove.errors.MangroveException import NoDocumentError, DataObjectNotFound, FailedToSaveDataObject
 import views
 
 
@@ -188,7 +188,7 @@ class DatabaseManager(object):
         result = self._save_documents([document], modified)[0]
         # first item is success/failure
         if not result[0]:
-            raise MangroveException('Failed to save document with ID: %s' % document.id)
+            raise FailedToSaveDataObject(result[1])
 
         # second item is doc ID
         return result[1]

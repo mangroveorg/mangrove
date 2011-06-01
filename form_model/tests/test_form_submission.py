@@ -38,5 +38,5 @@ class TestFormSubmission(TestCase):
         form_submission = FormSubmission(self.form_model, answers, short_code='1', success=True, errors={},
                                          entity_type=["Clinic"], data={})
 
-        self.assertEqual(form_submission.form_code, "aids")
+        self.assertEqual(form_submission.form_code, "AIDS")
         self.assertEqual(form_submission.short_code, "1")

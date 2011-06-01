@@ -28,7 +28,7 @@ class TestShortCode(unittest.TestCase):
         saved_entity = Entity.get(self.dbm, entity.id)
         self.assertEqual(entity.id, saved_entity.id)
 
-        saved_entity = get_by_short_code(self.dbm, short_code="REP4", entity_type=["Reporter"])
+        saved_entity = get_by_short_code(self.dbm, short_code="rep4", entity_type=["Reporter"])
         self.assertEqual(saved_entity.id, entity.id)
 
         entity = create_entity(self.dbm, entity_type=["Reporter"], short_code="ABC")
@@ -39,7 +39,7 @@ class TestShortCode(unittest.TestCase):
             create_entity(self.dbm, entity_type="Reporter", short_code="ABC")
 
         entity = create_entity(self.dbm, entity_type="Reporter")
-        saved_entity = get_by_short_code(self.dbm, short_code="REP6", entity_type=["Reporter"])
+        saved_entity = get_by_short_code(self.dbm, short_code="rep6", entity_type=["Reporter"])
         self.assertEqual(saved_entity.id, entity.id)
 
         with self.assertRaises(EntityTypeDoesNotExistsException):
@@ -62,6 +62,6 @@ class TestShortCode(unittest.TestCase):
         reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], id="Reporter/repx")
         reporter.save()
 
-        entity = get_by_short_code(self.dbm, short_code="REPX", entity_type=["Reporter"])
+        entity = get_by_short_code(self.dbm, short_code="repx", entity_type=["Reporter"])
         self.assertTrue(entity is not None)
         self.assertEqual("Reporter/repx", entity.id)

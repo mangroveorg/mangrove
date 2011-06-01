@@ -123,7 +123,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         s = SubmissionHandler(self.dbm)
         s.accept(Request("sms", text, "1234", "5678"))
-        submission_list = get_submissions_made_for_questionnaire(self.dbm, "clinic")
+        submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
@@ -183,7 +183,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.source, submission_log.source)
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
-        self.assertEquals("reg", submission_log.form_code)
+        self.assertEquals("REG", submission_log.form_code)
         self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
 

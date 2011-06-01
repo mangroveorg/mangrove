@@ -96,7 +96,7 @@ def _generate_new_code(entity_type, count):
 def _make_doc_id(entity_type, short_code):
     ENTITY_ID_FORMAT = "%s/%s"
     _entity_type = ".".join(entity_type)
-    return ENTITY_ID_FORMAT % (_entity_type, short_code.lower())
+    return ENTITY_ID_FORMAT % (_entity_type, short_code)
 
 
 def _make_short_code(entity_type, num):
@@ -252,7 +252,7 @@ class Entity(DataObject):
             doc.gr_id = gr_id
 
         if short_code is not None:
-            doc.short_code = short_code.lower()
+            doc.short_code = short_code
 
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)

@@ -25,7 +25,7 @@ MOBILE_NUMBER_FIELD = "mobile_number"
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
-    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code.lower())
+    rows = dbm.load_all_rows_in_view('mangrove_views/questionnaire', key=code)
     if not len(rows):
         raise FormModelDoesNotExistsException(code)
 
@@ -62,7 +62,7 @@ class FormModel(DataObject):
         doc = FormModelDocument()
         doc.name = name
         doc.add_label(language, label)
-        doc.form_code = form_code.lower()
+        doc.form_code = form_code
         doc.entity_type = entity_type
         doc.type = type
         doc.active_languages = language

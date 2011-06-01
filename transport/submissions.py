@@ -75,7 +75,6 @@ class SubmissionHandler(object):
             reporters = reporter.find_reporter(self.dbm, request.source)
         player = self.get_player_for_transport(request)
         form_code, values = player.parse(request.message)
-        form_code = form_code.lower()
         logger = SubmissionLogger(self.dbm)
         submission_id = logger.create_submission_log(channel=request.transport, source=request.source,
                                                      destination=request.destination, form_code=form_code,

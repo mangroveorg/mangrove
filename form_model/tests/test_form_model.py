@@ -50,7 +50,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_create_registration_form_mode(self):
         form = create_default_reg_form_model(self.dbm)
         self.assertEqual(7, len(form.fields))
-        self.assertEqual("reg", form.form_code)
+        self.assertEqual("REG", form.form_code)
         self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
 

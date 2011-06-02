@@ -7,13 +7,13 @@ Will log the submission and forward to the appropriate channel handler.
 
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
-from mangrove.datastore import reporter
 from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE
 from mangrove.errors.MangroveException import  NoQuestionsSubmittedException
 from mangrove.errors.MangroveException import MangroveException
 from mangrove.transport.player.player import SMSPlayer, WebPlayer
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
+import reporter
 
 
 class Request(object):

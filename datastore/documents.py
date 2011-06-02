@@ -110,7 +110,7 @@ class DataRecordDocument(DocumentBase):
     A schema for the data_record is enforced here.
     """
     data = DictField()
-    entity_backing_field = DictField()
+    entity = DictField()
     submission_id = TextField()
     event_time = TZAwareDateTimeField()
     form_code = TextField()
@@ -127,7 +127,7 @@ class DataRecordDocument(DocumentBase):
         self.event_time = event_time
 
         if entity_doc:
-            self.entity_backing_field = entity_doc.unwrap()
+            self.entity = entity_doc.unwrap()
         if form_code:
             self.form_code = form_code
 

@@ -4,7 +4,7 @@ from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate, GeoCodeFormatException
-from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, LocationConstraint
+from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, GeoCodeConstraint
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -252,10 +252,12 @@ class GeoCodeField(Field):
                        label=label, language=language, ddtype=ddtype)
 
     def validate(self, lat_long_string):
-        lat_long = lat_long_string.split(" ")
-        if(len(lat_long) < 2):
-            raise GeoCodeFormatException(lat_long_string)
-        return LocationConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
+        if lat_long_string is None:
+            raise GeoCodeFormatException(self.code)
+        lat_long = lat_long_string.strip().split()
+        if len(lat_long)<2:
+            raise GeoCodeFormatException(self.code)
+        return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
 
 

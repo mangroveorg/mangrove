@@ -2,7 +2,7 @@
 
 import unittest
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, LocationConstraint
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint
 from mangrove.utils.types import is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -141,41 +141,49 @@ class TestChoiceValidations(unittest.TestCase):
 
 class TestLocationValidations(unittest.TestCase):
     def test_latitude_and_longitude_is_float(self):
-        constraint = LocationConstraint()
+
+        constraint = GeoCodeConstraint()
         expected_response = (130.0, 90.0)
         actual_response = constraint.validate("90", "130")
         self.assertEqual(expected_response, actual_response)
 
     def test_should_invalidate_non_float_latitude(self):
         with self.assertRaises(LatitudeNotFloat) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("a", "1.2")
 
         self.assertEqual(("a",), e.exception.data)
 
     def test_should_invalidate_non_float_longitude(self):
         with self.assertRaises(LongitudeNotFloat) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("1.2", "asasasas")
         self.assertEqual(("asasasas",), e.exception.data)
 
     def test_latitude_should_be_between_minus_90_and_90(self):
         with self.assertRaises(LatitudeNotInRange) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("100", "90")
         self.assertEqual(("100",), e.exception.data)
         with self.assertRaises(LatitudeNotInRange) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("-100", "90")
         self.assertEqual(("-100",), e.exception.data)
 
 
     def test_longitude_should_be_between_minus_180_and_180(self):
         with self.assertRaises(LongitudeNotInRange) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("-10", "190")
         self.assertEqual(("190",), e.exception.data)
         with self.assertRaises(LongitudeNotInRange) as e:
-            constraint = LocationConstraint()
+            constraint = GeoCodeConstraint()
             constraint.validate("90", "-190")
         self.assertEqual(("-190",), e.exception.data)
+
+    def test_should_strip_white_spaces(self):
+        constraint = GeoCodeConstraint()
+        self.assertEqual((130.0,90.0), constraint.validate("90 ", " 130"))
+        self.assertEqual((130.0,90.0), constraint.validate("   90 ", " 130  "))
+
+

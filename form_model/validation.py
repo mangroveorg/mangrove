@@ -72,7 +72,7 @@ class ChoiceConstraint(object):
         return choices
 
 
-class LocationConstraint(object):
+class GeoCodeConstraint(object):
     def validate(self, latitude, longitude):
         try:
             lat = is_float(latitude, min=ConstraintAttributes.MIN_LAT, max=ConstraintAttributes.MAX_LAT)

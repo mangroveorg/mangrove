@@ -342,25 +342,39 @@ class Entity(DataObject):
         '''
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
-        assert self.id is not None  # should never be none, even if haven't been saved, should have a UUID
-        # TODO: should we have a flag that says that this has been saved at least once to avoid adding data
-        # records for an Entity that may never be saved? Should docs just be saved on init?
+        assert self.id is not None, "id should never be none, even if haven't been saved, an entity should have a UUID."
+        # TODO: should we have a flag that says that this has been
+        # saved at least once to avoid adding data records for an
+        # Entity that may never be saved? Should docs just be saved on
+        # init?
         if event_time is None:
             event_time = utcnow()
-        data_list = []
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):
                 raise ValueError('Data must be of the form (label, value, DataDictType).')
-            if multiple_records:
-                data_list.append(DataRecordDocument(entity_doc=self._doc, event_time=event_time,
-                                             data=[(label, dd_type, value)], submission_id=submission_id))
-                return self._dbm._save_documents(data_list)
-            else:
-                data_list.append((label, dd_type, value))
 
-        data_record_doc = DataRecordDocument(entity_doc=self._doc, event_time=event_time,
-                                             data=data_list, submission_id=submission_id, form_code=form_code)
-        return self._dbm._save_document(data_record_doc)
+        if multiple_records:
+            data_list = []
+            for (label, value, dd_type) in data:
+                data_record = DataRecordDocument(
+                        entity_doc=self._doc,
+                        event_time=event_time,
+                        data=[(label, value, dd_type)],
+                        submission_id=submission_id
+                        )
+                data_list.append(data_record)
+            return self._dbm._save_documents(data_list)
+        else:
+            data_record_doc = DataRecordDocument(
+                entity_doc=self._doc,
+                event_time=event_time,
+                data=data,
+                submission_id=submission_id,
+                form_code=form_code
+                )
+            return self._dbm._save_document(data_record_doc)
+
+
 
     def invalidate_data(self, uid):
         '''Mark datarecord identified by uid as 'invalid'.

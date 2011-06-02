@@ -151,7 +151,7 @@ def get_entities_by_type(dbm, entity_type):
     assert is_string(entity_type)
 
     rows = dbm.load_all_rows_in_view('by_type', key=entity_type)
-    entities = [dbm.get(row.id, Entity) for row in rows]
+    entities = dbm.get_many([row.id for row in rows], Entity)
 
     return entities
 
@@ -164,42 +164,9 @@ def get_entities_by_value(dbm, label, value, as_of=None):
         label = label.slug
 
     rows = dbm.load_all_rows_in_view('by_label_value', key=[label, value])
-    entities = [dbm.get(row['value'], Entity) for row in rows]
+    entities = dbm.get_many([row['value'] for row in rows], Entity)
 
     return [e for e in entities if e.values({label: 'latest'}, asof=as_of) == {label: value}]
-
-
-def entities_for_attributes(attrs):
-    '''
-    retrieve entities with datarecords with the given
-    named attributes. Can be used to search for entities
-    by identifying info like a phone number
-
-    Include 'type' as an attr to restrict to a given entity type
-
-    returns a sequence of 0, 1 or more matches
-
-    ex:
-    attrs = { 'type':'clinic', 'name': 'HIV Clinic' }
-    print entities_for_attributes(attrs)
-
-    '''
-
-    pass
-
-
-# geo aggregation specific calls
-def entities_near(geocode, radius=1, attrs=None):
-    '''
-    Retrieve an entity within the given radius (in kilometers) of
-    the given geocode that matches the given attrs
-
-    Include 'type' as an attr to restrict to a given entity type
-
-    returns a sequence
-
-    '''
-    pass
 
 
 def get_entities_in(dbm, geo_path, type_path=None):
@@ -221,12 +188,12 @@ def get_entities_in(dbm, geo_path, type_path=None):
         # if not, then this needs to perform a query for each type and then take the intersection
         # of the result sets
         rows = dbm.load_all_rows_in_view('by_type_geo', key=(type_path + geo_path))
-        entities = [dbm.get(row.id, Entity) for row in rows]
+        entities = dbm.get_many([row.id for row in rows], Entity)
 
     # otherwise, filter by type
     if type_path is None:
         rows = dbm.load_all_rows_in_view('by_geo', key=geo_path)
-        entities = [dbm.get(row.id, Entity) for row in rows]
+        entities = dbm.get_many([row.id for row in rows], Entity)
 
     return entities
 

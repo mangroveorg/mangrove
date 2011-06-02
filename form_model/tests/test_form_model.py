@@ -5,7 +5,6 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
-from mangrove.datastore import datarecord
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
 from mangrove.form_model.form_model import FormModel, create_default_reg_form_model
 from mangrove.datastore.datadict import DataDictType
@@ -22,10 +21,6 @@ class TestFormModel(unittest.TestCase):
 
         self.default_ddtype.save()
 
-        self.entity_instance = datarecord.register(self.dbm, entity_type="HealthFacility.Clinic",
-                                                   data=[("Name", "Ruby", self.default_ddtype)],
-                                                   location=["India", "Pune"],
-                                                   source="sms")
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
@@ -278,3 +273,4 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
+

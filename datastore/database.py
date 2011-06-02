@@ -6,8 +6,7 @@ from couchdb.design import ViewDefinition
 from couchdb.http import ResourceNotFound
 import couchdb.client
 
-from settings import *
-import config
+import settings
 from documents import DocumentBase
 from datetime import datetime
 from mangrove.utils import dates
@@ -25,8 +24,8 @@ def get_db_manager(server=None, database=None):
     assert _dbms is not None
 
     # use defaults if not passed
-    srv = (server if server is not None else config._server)
-    db = (database if database is not None else config._db)
+    srv = (server if server is not None else settings.SERVER)
+    db = (database if database is not None else settings.DATABASE)
     k = (srv, db)
     # check if already created and in dict
     if k not in _dbms or _dbms[k] is None:
@@ -123,8 +122,8 @@ class DatabaseManager(object):
         use the name provided in the settings
         """
 
-        self.url = (server if server is not None else SERVER)
-        self.database_name = database or DATABASE
+        self.url = (server if server is not None else settings.SERVER)
+        self.database_name = database or settings.DATABASE
         self.server = couchdb.client.Server(self.url)
         try:
             self.database = self.server[self.database_name]

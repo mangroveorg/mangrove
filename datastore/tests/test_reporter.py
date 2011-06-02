@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
-from mangrove.datastore.datarecord import register
+from mangrove.datastore.entity import Entity, create_entity, define_type
 from mangrove.datastore.reporter import find_reporter
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
@@ -9,23 +9,32 @@ from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 
 
 class TestReporter(TestCase):
+
+    def register(self,manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
+    #    manager = get_db_manager()
+        e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
+                   short_code=short_code)
+        e.add_data(data=data)
+        return e
+
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
+        define_type(self.manager,["Reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
                                               primitive_type='string')
         self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name', primitive_type='string')
         #Register Reporter
-        register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["Reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                        (NAME_FIELD, "A", self.first_name_type)],
                  location=[],
                  source="sms")
-        register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["Reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
                        (NAME_FIELD, "B", self.first_name_type)],
                  location=[],
                  source="sms")
-        register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["Reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                        (NAME_FIELD, "B", self.first_name_type)],
                  location=[],

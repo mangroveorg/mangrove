@@ -2,7 +2,7 @@
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.datadict import create_datadict_type, get_datadict_type_by_slug, get_datadict_type
-from mangrove.errors.MangroveException import DataObjectAlreadyExists, DataObjectNotFound
+from mangrove.errors.MangroveException import  DataObjectNotFound
 
 
 class TestDataDict(unittest.TestCase):

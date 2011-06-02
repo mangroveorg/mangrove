@@ -18,6 +18,11 @@ ENTITY_TYPE_TREE = 'entity_type_tree'
 
 
 def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None, geometry=None):
+    """
+    Initialize and save an entity to the database. Return the entity
+    created unless the short code used is not unique or this entity
+    type has not been defined yet.
+    """
     if is_string(entity_type):
         entity_type = [entity_type]
     if is_empty(short_code):
@@ -35,11 +40,21 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
 
 
 def _get_entity_type_tree(dbm):
+    """
+    Return the AggregationTree object with id equal to
+    'entity_type_tree'.
+    """
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(ENTITY_TYPE_TREE, atree.AggregationTree, get_or_create=True)
 
 
 def get_all_entity_types(dbm):
+    """
+    Return a list of all entity types. If we think of all entity types
+    organized in a hierarchical tree, an entity type is a node in this
+    tree and the node is represented by a list containing the node
+    names in the path to this node.
+    """
     return _get_entity_type_tree(dbm).get_paths()
 
 
@@ -54,6 +69,11 @@ def validate_entity_type_already_defined(dbm, entity_type):
 
 
 def define_type(dbm, entity_type):
+    """
+    Add this entity type to the tree of all entity types and save it
+    to the database. entity_type may be a string or a list of
+    strings.
+    """
     assert is_not_empty(entity_type)
     assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
@@ -67,6 +87,11 @@ def define_type(dbm, entity_type):
 
 
 def generate_short_code(dbm, entity_type):
+    # todo: couchdb cannot guarantee uniqueness, so short codes should
+    # be assigned from an application using the mangrove
+    # library. ideally, we would put a short code onto an entity using
+    # the add_data method and then there should be a view that can
+    # easily find all entities with a particular short code.
     assert is_sequence(entity_type)
     count = _get_entity_count_for_type(dbm, entity_type=entity_type)
     assert count >= 0
@@ -74,12 +99,15 @@ def generate_short_code(dbm, entity_type):
 
 
 def _get_entity_count_for_type(dbm, entity_type):
+    # todo: this function can be removed when generate_short_code
+    # gets removed.
     rows = dbm.load_all_rows_in_view("by_short_codes",descending = True,
                                      startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
     return rows[0]["value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
+    # todo: remove
     assert is_string(short_code)
     assert is_sequence(entity_type)
     doc_id = _make_doc_id(entity_type, short_code)
@@ -87,30 +115,38 @@ def get_by_short_code(dbm, short_code, entity_type):
 
 
 def _generate_new_code(entity_type, count):
+    # todo: remove
     short_code = _make_short_code(entity_type, count + 1)
     return _make_doc_id(entity_type, short_code)
 
 
 def _make_doc_id(entity_type, short_code):
+    # todo: remove
     ENTITY_ID_FORMAT = "%s/%s"
     _entity_type = ".".join(entity_type)
     return ENTITY_ID_FORMAT % (_entity_type, short_code)
 
 
 def _make_short_code(entity_type, num):
+    # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].upper()[:3]
     return   SHORT_CODE_FORMAT % (entity_prefix,num)
 
 
 def _make_short_code(entity_type, num):
+    # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].lower()[:3]
     return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def get_entities_by_type(dbm, entity_type):
-    # TODO: change this?  for now it assumes _type is non-heirarchical
+    """
+    Return a list of all entities with this type.
+    """
+    # TODO: change this?  for now it assumes _type is
+    # non-heirarchical. Might also benefit from using get_many.
     assert isinstance(dbm, DatabaseManager)
     assert is_string(entity_type)
 

@@ -255,9 +255,11 @@ class DatabaseManager(object):
 
     def get(self, id, object_class, get_or_create=False):
         '''
-        Higher level call for retrieving not just the CouchDB document but
-        creating the full API object that wraps it.
-
+        Return the object from the database with the given
+        id. object_class must be given so we know how to wrap the data
+        retrieved from the database. If get_or_create is True and
+        there is no object in the database with this id then the
+        object will be created.
         '''
         assert issubclass(object_class, DataObject)
 

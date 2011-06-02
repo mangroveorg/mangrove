@@ -121,7 +121,7 @@ class DataRecordDocument(DocumentBase):
         self.submission_id = submission_id
         data_record = {}
         if data is not None:
-            for (label, dd_type, value) in data:
+            for (label, value, dd_type) in data:
                 data_record[label] = {'value': value, 'type': dd_type._doc.unwrap()}
         self.data = data_record
         self.event_time = event_time

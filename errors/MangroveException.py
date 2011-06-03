@@ -207,3 +207,7 @@ class GeoCodeFormatException(MangroveException):
 class FailedToSaveDataObject(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self, "Root Exception: %s" % data)
+
+class SMSParserInvalidFormatException(MangroveException):
+    def __init__(self, data):
+        MangroveException.__init__(self, "Could not parse, invalid format: %s" % data)

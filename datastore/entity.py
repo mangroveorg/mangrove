@@ -461,9 +461,16 @@ class Entity(DataObject):
 
     def values(self, aggregation_rules, asof=None):
         """
-        returns the aggregated value for the given fields using the aggregation function specified for data collected till a point in time.
-        Eg: data_records_func = {'arv':'latest', 'num_patients':'sum'} will return latest value for ARV and sum of number of patients
+        Return a dictionary of aggregated values. The keys are the
+        attribute label, each value is the aggregated value for the
+        given fields using the aggregation function specified for data
+        collected till a point in time.
+        Eg: aggregation_rules={'arv':'latest', 'num_patients':'sum'}
+        will return latest value for arv and sum the number of
+        patients.
         """
+        # todo: I think we need to simplify this method a bit and
+        # expose some of the ViewResults goodness.
         asof = asof or utcnow()
         result = {}
         for field, aggregate_fn in aggregation_rules.items():

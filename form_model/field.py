@@ -17,7 +17,10 @@ def create_question_from(dictionary, dbm):
     name = dictionary.get("name")
     code = dictionary.get("code")
     is_entity_question = dictionary.get("entity_question_flag")
-    label = dictionary.get("label")
+    label_dict = dictionary.get("label")
+    label=None
+    if label_dict is not None:
+        label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == field_attributes.TEXT_FIELD:
         return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name)

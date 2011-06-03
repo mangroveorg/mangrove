@@ -54,6 +54,7 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(e.id)
         self.assertTrue(e.type == "survey")
 
+
     def test_should_add_name_of_form_model(self):
         saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(saved.name == "aids")
@@ -222,11 +223,11 @@ class TestFormModel(unittest.TestCase):
         document.type = "survey"
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
-                            label={"eng": "Entity being reported on"}, entity_question_flag=True,
+                            label="Entity being reported on", entity_question_flag=True,
                             length=TextConstraint(min=1, max=10), ddtype=self.default_ddtype)
-        ageQ = IntegerField(name="What is your age?", code="AGE", label={"eng": ""},
+        ageQ = IntegerField(name="What is your age?", code="AGE", label="",
                             range=NumericConstraint(min=0, max=10), ddtype=self.default_ddtype)
-        placeQ = SelectField(name="Where do you live?", code="PLC", label={"eng": ""},
+        placeQ = SelectField(name="Where do you live?", code="PLC", label="",
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype)
         questions = [entityQ, ageQ, placeQ]
@@ -273,4 +274,3 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
-

@@ -1,4 +1,5 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
+import json
 
 import unittest
 from mock import Mock, patch
@@ -6,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException
-from mangrove.form_model.field import DateField, GeoCodeField
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -170,6 +171,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.constraint.max, 10)
         self.assertEqual(created_field.constraint.min, 1)
         self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertEqual(created_field.label, {"eng": "What is your name"})
 
     def test_should_create_integer_field_with_validations(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
@@ -446,3 +448,17 @@ class TestField(unittest.TestCase):
             field.validate(lat_long_string="")
         with self.assertRaises(GeoCodeFormatException):
             field.validate(lat_long_string=None)
+
+    def test_should_convert_field_list_to_string(self):
+        field1 = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
+        field2 = TextField(name="Question", code="AB", label="question", ddtype=self.ddtype)
+        test_string = json.dumps([field1,field2], default=field_to_json)
+        expected_string = '[{"length": {}, "code": "AA", "name": "Test", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "test"}}, {"length": {}, "code": "AB", "name": "Question", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "question"}}]'
+        self.assertEquals(expected_string, test_string)
+
+    def test_should_convert_field_list_with_apostrophe_to_string(self):
+        field1 = TextField(name="Test's", code="AA", label="test", ddtype=self.ddtype)
+        field2 = TextField(name="Question's", code="AB", label="question", ddtype=self.ddtype)
+        test_string = json.dumps([field1,field2], default=field_to_json)
+        expected_string = '[{"length": {}, "code": "AA", "name": "Test\'s", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "test"}}, {"length": {}, "code": "AB", "name": "Question\'s", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "question"}}]'
+        self.assertEquals(expected_string, test_string)

@@ -70,7 +70,7 @@ class NumberNotRegisteredException(MangroveException):
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, ("Sorry, more than one reporter found for %s.") % (from_number,),
+        MangroveException.__init__(self, ("Sorry, the telephone number %s has already been registered") % (from_number,),
                                    (from_number,))
 
 

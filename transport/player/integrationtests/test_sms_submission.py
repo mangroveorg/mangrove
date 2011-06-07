@@ -41,14 +41,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                     location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
                                     )
 
-        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission_id="1")
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission=dict(submission_id="1"))
 
         reporter = create_entity(self.dbm, entity_type=["Reporter"],
                                  location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
                                  )
 
         reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-                                (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
+                                (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)

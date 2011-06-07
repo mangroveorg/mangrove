@@ -43,7 +43,7 @@ class TestReportForFormCode(unittest.TestCase):
                                  )
 
         reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', telephone_number_type),
-                                (NAME_FIELD, "Test_reporter", name_type)], submission_id="2")
+                                (NAME_FIELD, "Test_reporter", name_type)], submission = dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=entity_id_type)

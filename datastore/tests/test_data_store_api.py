@@ -145,7 +145,7 @@ class TestDataStoreApi(unittest.TestCase):
                        ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
         data_record_id = clinic_entity.add_data(data=data_record,
                                                 event_time=datetime(2011, 01, 02, tzinfo=UTC),
-                                                submission_id="123456")
+                                                submission=dict(submission_id="123456"))
         self.assertTrue(data_record_id is not None)
 
         # Assert the saved document structure is as expected
@@ -159,7 +159,7 @@ class TestDataStoreApi(unittest.TestCase):
             # it seems the following has different representations for datetimes
             #self.assertTrue(dd_type._doc.unwrap() == DataDictDocument(saved.data[label]['type']))
         self.assertEqual(saved.event_time, datetime(2011, 01, 02, tzinfo=UTC))
-        self.assertEqual(saved.submission_id, "123456")
+        self.assertEqual(saved.submission['submission_id'], "123456")
 
     def test_should_create_entity_from_document(self):
         existing = self.dbm.get(self.uuid, Entity)

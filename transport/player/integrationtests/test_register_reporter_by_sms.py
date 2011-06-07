@@ -22,7 +22,7 @@ class TestRegisterReporterViaSMS(unittest.TestCase):
                         location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
                             )
         reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-                                  (NAME_FIELD, "Test_reporter", self.name_type)], submission_id="2")
+                                  (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
 
 

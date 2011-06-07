@@ -111,14 +111,12 @@ class DataRecordDocument(DocumentBase):
     """
     data = DictField()
     entity = DictField()
-    submission_id = TextField()
     event_time = TZAwareDateTimeField()
     submission = DictField()
 
-    def __init__(self, id=None, entity_doc=None, event_time=None, submission_id=None, data=None, submission = None):
+    def __init__(self, id=None, entity_doc=None, event_time=None, data=None, submission = None):
         assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
-        self.submission_id = submission_id
         data_record = {}
         if data is not None:
             for (label, value, dd_type) in data:

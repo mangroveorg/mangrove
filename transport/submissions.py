@@ -92,15 +92,15 @@ class SubmissionHandler(object):
                                          aggregation_paths=None, short_code=form_submission.short_code,
                                          geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
 
-                data_record_id = e.add_data(data=form_submission.values, submission_id=submission_id)
+                data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data )
 
                 logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
 
                 return Response(reporters, True, {}, submission_id, data_record_id, e.short_code)
             else:
                 data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
-                                                 data=form_submission.values, submission_id=submission_id,
-                                                 entity_type=form.entity_type, submission=denormalized_submission_data)
+                                                 data=form_submission.values, entity_type=form.entity_type,
+                                                 submission=denormalized_submission_data)
 
                 logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
                 return Response(reporters, True, {}, submission_id, data_record_id)

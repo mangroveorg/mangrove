@@ -1,9 +1,9 @@
 function(doc) {
-    if (!doc.void && doc.document_type == "DataRecord" && doc.form_code != null)
+    if (!doc.void && doc.document_type == "DataRecord" && doc.submission.form_code != null)
     {
         var time = Date.parse(doc.event_time);
         var short_code = doc.entity.short_code;
-        var form_code = doc.form_code;
+        var form_code = doc.submission.form_code;
         for (k in doc.data) {
             value = {};
             value["value"] = doc.data[k].value;

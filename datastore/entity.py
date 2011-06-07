@@ -2,7 +2,7 @@
 
 import copy
 from datetime import datetime
-from time import mktime
+from time import mktime, sleep
 from collections import defaultdict
 
 from documents import EntityDocument, DataRecordDocument, attributes
@@ -198,12 +198,12 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-def add_data(dbm, short_code, data, submission_id, entity_type, form_code=None):
+def add_data(dbm, short_code, data, submission_id, entity_type, submission=None):
 
     if is_string(entity_type):
         entity_type = [entity_type]
     e = get_by_short_code(dbm, short_code, entity_type)
-    data_record_id = e.add_data(data=data, submission_id=submission_id, form_code=form_code)
+    data_record_id = e.add_data(data=data, submission_id=submission_id, submission=submission)
     return data_record_id
 
 
@@ -330,7 +330,7 @@ class Entity(DataObject):
         # aggregation paths on data records, in which case we need to
         # set a dirty flag and handle this in save.
 
-    def add_data(self, data=(), event_time=None, submission_id=None, form_code=None, multiple_records=False):
+    def add_data(self, data=(), event_time=None, submission_id=None, submission=None, multiple_records=False):
         '''Add a new datarecord to this Entity and return a UUID for the datarecord.
         Arguments:
             data: a sequence of ordered tuples, (label, value, type)
@@ -360,7 +360,8 @@ class Entity(DataObject):
                         entity_doc=self._doc,
                         event_time=event_time,
                         data=[(label, value, dd_type)],
-                        submission_id=submission_id
+                        submission_id=submission_id,
+                        submission=submission
                         )
                 data_list.append(data_record)
             return self._dbm._save_documents(data_list)
@@ -370,7 +371,7 @@ class Entity(DataObject):
                 event_time=event_time,
                 data=data,
                 submission_id=submission_id,
-                form_code=form_code
+                submission=submission
                 )
             return self._dbm._save_document(data_record_doc)
 

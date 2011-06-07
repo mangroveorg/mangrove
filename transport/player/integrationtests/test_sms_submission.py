@@ -2,7 +2,9 @@
 
 #  This is an integration test.
 # Send sms, parse and save.
+from time import sleep
 import unittest
+from nose.plugins.attrib import attr
 from  mangrove import initializer
 
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
@@ -79,8 +81,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
-        self.assertEqual("CLINIC", data_record.form_code)
-
+        self.assertEqual("CLINIC", data_record.submission['form_code'])
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")

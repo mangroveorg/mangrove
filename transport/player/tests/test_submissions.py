@@ -26,7 +26,7 @@ class TestSubmissions(TestCase):
         self.submissionLogger = Mock(spec=SubmissionLogger)
         self.SubmissionLogger_mock_class.return_value = self.submissionLogger
         self.SUBMISSION_ID = "SUBMISSION_ID"
-        self.submissionLogger.create_submission_log.return_value = self.SUBMISSION_ID
+        self.submissionLogger.create_submission_log.return_value = self.SUBMISSION_ID,{}
 
         self.reporter_module.find_reporter.return_value = [{NAME_FIELD: "1234"}]
         self.form_model_mock = Mock(spec=FormModel)

@@ -52,7 +52,9 @@ class SubmissionLogger(object):
         self.dbm._save_document(log)
 
     def create_submission_log(self, channel, source, destination, form_code, values):
-        return self.log(channel, source, destination, form_code, values, False, "")
+        submission_id = self.log(channel, source, destination, form_code, values, False, "")
+        denormalized_submission_data = dict(submission_id=submission_id,form_code=form_code)
+        return submission_id,denormalized_submission_data
 
     def log(self, channel, source, destination, form_code, values, status, error_message):
         return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
@@ -76,7 +78,7 @@ class SubmissionHandler(object):
         player = self.get_player_for_transport(request)
         form_code, values = player.parse(request.message)
         logger = SubmissionLogger(self.dbm)
-        submission_id = logger.create_submission_log(channel=request.transport, source=request.source,
+        submission_id,denormalized_submission_data = logger.create_submission_log(channel=request.transport, source=request.source,
                                                      destination=request.destination, form_code=form_code,
                                                      values=values)
         form = get_form_model_by_code(self.dbm, form_code)
@@ -98,7 +100,7 @@ class SubmissionHandler(object):
             else:
                 data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
                                                  data=form_submission.values, submission_id=submission_id,
-                                                 entity_type=form.entity_type, form_code = form_code)
+                                                 entity_type=form.entity_type, submission=denormalized_submission_data)
 
                 logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
                 return Response(reporters, True, {}, submission_id, data_record_id)

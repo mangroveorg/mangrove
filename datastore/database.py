@@ -158,14 +158,7 @@ class DatabaseManager(object):
     def create_view(self, view_name, map, reduce):
         view_document = view_name # views get their own design doc for the time being
         view = ViewDefinition(view_document, view_name, map, reduce)
-        start = datetime.now()
-        full_view_name = view_document + '/' + view_name
         view.sync(self.database)
-        rows = len(self.database.view(full_view_name).rows)
-        end = datetime.now()
-        delta_t = (end - start)
-        print "%s\t%s.%s\t%s" % \
-              (full_view_name, delta_t.seconds, delta_t.microseconds, rows)
 
     def test_views(self):
         self._delete_design_docs()

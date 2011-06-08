@@ -2,9 +2,7 @@
 
 #  This is an integration test.
 # Send sms, parse and save.
-from time import sleep
 import unittest
-from nose.plugins.attrib import attr
 from  mangrove import initializer
 
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
@@ -14,7 +12,8 @@ from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTy
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
-from mangrove.transport.submissions import SubmissionHandler, Request, get_submissions_made_for_questionnaire
+from mangrove.transport.player.player import SMSPlayer, Request
+from mangrove.transport.submissions import SubmissionHandler,get_submissions_made_for_form
 from mangrove.datastore.datadict import DataDictType
 
 
@@ -65,14 +64,17 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
+        self.submission_handler = SubmissionHandler(self.dbm)
+        self.sms_player = SMSPlayer(self.dbm,self.submission_handler)
+
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
         text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
-        s = SubmissionHandler(self.dbm)
+        
 
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
         self.assertTrue(response.success)
 
@@ -89,16 +91,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = "CLINIC +EID %s +ARV 150 " % self.entity.id
-        s = SubmissionHandler(self.dbm)
-
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
     def test_should_give_error_for_wrong_text_value(self):
         text = "CLINIC +EID CID001 +NAME ABC"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
@@ -116,24 +116,24 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'},
                                                       status=False, error_message=""))
 
-        submission_list = get_submissions_made_for_questionnaire(self.dbm, "abc")
+        submission_list = get_submissions_made_for_form(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
 
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "CLINIC +EID %s +ARV 150 " % self.entity.id
-        s = SubmissionHandler(self.dbm)
-        s.accept(Request("sms", text, "1234", "5678"))
-        submission_list = get_submissions_made_for_questionnaire(self.dbm, "CLINIC")
+        
+        self.sms_player.accept(Request("sms", text, "1234", "5678"))
+        submission_list = get_submissions_made_for_form(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
 
     def test_should_register_new_entity(self):
         text = "REG +n buddy +T dog +L 80 80 +D its a dog! +M 123456"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "dog1"
@@ -142,8 +142,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(a.short_code, expected_short_code)
 
         text = "REG +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         self.assertEqual(response.short_code, "bud", ["dog"])
@@ -151,8 +151,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(a.short_code, "bud")
 
         text = "REG +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "dog3"
@@ -163,22 +163,22 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
         INVALID_LATITUDE = 380
         text = "REG +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual({'g': '380 is an invalid latitude, must be between -90 and 90'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "REG +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(Request("sms", text, "1234", "5678"))
+        
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual({'g': '-184 is an invalid longitude, must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
-        s = SubmissionHandler(self.dbm)
-        response = s.accept(request)
+        
+        response = self.sms_player.accept(request)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(request.transport, submission_log.channel)
@@ -193,14 +193,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         with self.assertRaises(DataObjectAlreadyExists):
             text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
-            s = SubmissionHandler(self.dbm)
-            s.accept(Request("sms", text, "1234", "5678"))
+            
+            self.sms_player.accept(Request("sms", text, "1234", "5678"))
             text = "REG +N buddy2 +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
-            s = SubmissionHandler(self.dbm)
-            s.accept(Request("sms", text, "1234", "5678"))
+            
+            self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):
             text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
-            s = SubmissionHandler(self.dbm)
-            s.accept(Request("sms", text, "1234", "5678"))
+            
+            self.sms_player.accept(Request("sms", text, "1234", "5678"))

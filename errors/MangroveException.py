@@ -216,3 +216,7 @@ class AggregationNotSupportedForTypeException(MangroveException):
     def __init__(self, field, aggregation):
         error_message = "%s for %s is not supported" % (aggregation, field)
         MangroveException.__init__(self, error_message, (aggregation, field))
+
+
+class UnknownTransportException(MangroveException):
+    pass

@@ -495,5 +495,5 @@ class Entity(DataObject):
         return rows[0]['value']['latest'] if len(rows) else None
 
     def _translate(self, aggregate_fn):
-        view_names = {"latest": "by_values_latest"}
+        view_names = {"latest": "by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn

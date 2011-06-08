@@ -497,3 +497,63 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
+
+    def test_should_fetch_aggregate_per_entity_per_form_model(self):
+
+        dd_types = self.create_datadict_types()
+        ENTITY_TYPE = ["Health_Facility", "Clinic"]
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
+        id1 = e.save()
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='1',form_code='CL1'))
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                         ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='2',form_code='CL1'))
+
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
+                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='1',form_code='CL2'))
+
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("doctors", 10, dd_types['doctors']),
+                         ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='2',form_code='CL2'))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
+        id2 = e.save()
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='3',form_code='CL1'))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='4',form_code='CL1'))
+
+        e.add_data(data=[("beds", 150, dd_types['beds']), ("doctors", 50, dd_types['doctors']),
+                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='3',form_code='CL2'))
+        e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
+                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='4',form_code='CL2'))
+
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
+        id3 = e.save()
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='5',form_code='CL1'))
+
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+                            aggregates={"director": data.reduce_functions.LATEST,
+                                        "beds": data.reduce_functions.LATEST,
+                                        "patients": data.reduce_functions.SUM}, filter={'form_code':'CL1'})
+
+        self.assertEqual(len(values), 3)
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70})
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12})
+
+        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.LATEST}, filter={'form_code':'CL2'})
+
+        self.assertEqual(len(values), 2)
+        self.assertEqual(values[id1], {"doctors": 10, "beds": 200})
+        self.assertEqual(values[id2], {'doctors': 40, "beds": 270})

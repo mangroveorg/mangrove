@@ -3,7 +3,7 @@ from documents import attributes
 
 BY_VALUES_ENTITY_ID_INDEX = 1
 BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
-
+BY_VALUES_FORM_CODE_INDEX = BY_VALUES_FIELD_INDEX + 1
 
 class reduce_functions(object):
     '''Constants for referencing reduce functions. '''
@@ -14,7 +14,7 @@ class reduce_functions(object):
     SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT]
 
 
-def _get_key_strategy(aggregate_on):
+def _get_key_strategy(aggregate_on, filter):
     if aggregate_on.get('type'):
         def _aggregate_by_path(db_key):
             entity_type, aggregation_type, field = db_key[:3]
@@ -23,6 +23,12 @@ def _get_key_strategy(aggregate_on):
             return key, field
 
         return _aggregate_by_path
+    elif filter is not None and filter.get('form_code'):
+        def _aggregate_by_entity_by_form_code(db_key):
+            key = [db_key[BY_VALUES_ENTITY_ID_INDEX],db_key[BY_VALUES_FORM_CODE_INDEX]]
+            field = db_key[BY_VALUES_FIELD_INDEX]
+            return key, field
+        return _aggregate_by_entity_by_form_code
     else:
         def _aggregate_by_entity(db_key):
             key = db_key[BY_VALUES_ENTITY_ID_INDEX]
@@ -32,6 +38,21 @@ def _get_key_strategy(aggregate_on):
         return _aggregate_by_entity
 
 
+def _get_interested_keys_for_location(aggregate_on, dbm, entity_type, location):
+    assert location, "Only filter by location supported"
+    if aggregate_on:
+        interested_keys = [tuple(location)]
+    else:
+        interested_keys = _get_entities_for_location(dbm, entity_type, location)
+    return interested_keys
+
+def _get_interested_keys_for_form_code(values, form_code):
+    interested_keys = []
+    for k,d in values:
+        if form_code in k:
+            interested_keys.append([k[BY_VALUES_ENTITY_ID_INDEX],k[BY_VALUES_FORM_CODE_INDEX]])
+    return interested_keys
+
 def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
     result = {}
     aggregates = {} if aggregates is None else aggregates
@@ -39,23 +60,26 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
     if aggregate_on:
         values = _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on)
     else:
-        values = _load_all_fields_aggregated(dbm, entity_type)
+        values = _load_all_fields_aggregated(dbm, entity_type, filter)
 
     interested_keys = None
     if filter:
         location = filter.get("location")
-        assert location, "Only filter by location supported"
-        if aggregate_on:
-            interested_keys = [tuple(location)]
-        else:
-            interested_keys = _get_entities_for_location(dbm, entity_type, location)
+        form_code = filter.get("form_code")
+        if location is not None:
+            interested_keys = _get_interested_keys_for_location(aggregate_on, dbm, entity_type, location)
+        if form_code is not None:
+            interested_keys =  _get_interested_keys_for_form_code(values, form_code)
 
-    _parse_key = _get_key_strategy(aggregate_on)
+    _parse_key = _get_key_strategy(aggregate_on, filter)
+
+
 
     for key, val in values:
         result_key, field = _parse_key(key)
         if filter and result_key not in interested_keys:
             continue
+        result_key = result_key[0] if isinstance(result_key,list) else result_key
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)
@@ -67,11 +91,14 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
     return result
 
 
-def _load_all_fields_latest_values(dbm, type_path):
+def _load_all_fields_latest_values(dbm, type_path, filter=None):
     view_name = "by_values_latest"
     startkey = [type_path]
     endkey = [type_path, {}]
-    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    if filter is not None and filter.get('form_code') is not None:
+        view_group_level = BY_VALUES_FORM_CODE_INDEX + 1
+    else:
+        view_group_level = BY_VALUES_FIELD_INDEX + 1
     rows = dbm.load_all_rows_in_view(view_name, group_level=view_group_level,
                                      startkey=startkey,
                                      endkey=endkey)
@@ -88,11 +115,14 @@ def _find_in(values, key):
     return None
 
 
-def _load_all_fields_aggregated(dbm, type_path):
+def _load_all_fields_aggregated(dbm, type_path,filter=None):
     view_name = "by_values"
     startkey = [type_path]
     endkey = [type_path, {}]
-    view_group_level = BY_VALUES_FIELD_INDEX + 1
+    if filter is not None and filter.get('form_code') is not None:
+        view_group_level = BY_VALUES_FORM_CODE_INDEX + 1
+    else:
+        view_group_level = BY_VALUES_FIELD_INDEX + 1
     rows = dbm.load_all_rows_in_view(view_name, group_level=view_group_level,
                                      startkey=startkey,
                                      endkey=endkey)
@@ -100,7 +130,7 @@ def _load_all_fields_aggregated(dbm, type_path):
     for row in rows:
         values.append((row.key, row.value))
 
-    latest_values = _load_all_fields_latest_values(dbm, type_path)
+    latest_values = _load_all_fields_latest_values(dbm, type_path, filter)
 
     for k, v in values:
         v["latest"] = _find_in(latest_values, k)["latest"]

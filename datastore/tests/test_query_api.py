@@ -552,8 +552,8 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.LATEST}, filter={'form_code':'CL2'})
+                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.SUM}, filter={'form_code':'CL2'})
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[id1], {"doctors": 10, "beds": 200})
-        self.assertEqual(values[id2], {'doctors': 40, "beds": 270})
+        self.assertEqual(values[id1], {"doctors": 10, "beds": 500})
+        self.assertEqual(values[id2], {'doctors': 40, "beds": 420})

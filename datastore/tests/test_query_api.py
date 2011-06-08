@@ -508,7 +508,7 @@ class TestQueryApi(unittest.TestCase):
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                          ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='1',form_code='CL1'))
-        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
                          ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='2',form_code='CL1'))
 
@@ -545,19 +545,19 @@ class TestQueryApi(unittest.TestCase):
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"director": data.reduce_functions.LATEST,
                                         "beds": data.reduce_functions.LATEST,
-                                        "patients": data.reduce_functions.SUM}, filter={'form_code':'CL1'})
+                                        "patients": data.reduce_functions.SUM, 'meds': data.reduce_functions.MIN}, filter={'form_code':'CL1'})
 
         self.assertEqual(len(values), 3)
-        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
-        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70})
-        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12})
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds':20})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds':250})
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds':50})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.SUM, 'patients':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
+                            aggregates={"doctors": data.reduce_functions.MAX, "beds": data.reduce_functions.SUM, 'patients':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[id1], {"doctors": 10, "beds": 500, 'patients':15})
-        self.assertEqual(values[id2], {'doctors': 40, "beds": 420, 'patients':35})
+        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients':15})
+        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients':35})
 
         with self.assertRaises(AggregationNotSupportedForTypeException):
             data.fetch(self.manager, entity_type=ENTITY_TYPE,

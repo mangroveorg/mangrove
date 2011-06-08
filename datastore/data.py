@@ -12,7 +12,10 @@ class reduce_functions(object):
     LATEST = "latest"
     COUNT = "count"  # Returns number of records containing the field
     AVG = 'avg'
-    SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT, AVG]
+    MIN = 'min'
+    MAX = 'max'
+
+    SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT, AVG, MIN, MAX]
 
 
 def _get_key_strategy(aggregate_on, filter):

@@ -5,6 +5,7 @@ from pytz import UTC
 from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
+from mangrove.errors.MangroveException import AggregationNotSupportedForTypeException
 
 
 class TestQueryApi(unittest.TestCase):
@@ -552,8 +553,14 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12})
 
         values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.SUM}, filter={'form_code':'CL2'})
+                            aggregates={"doctors": data.reduce_functions.LATEST, "beds": data.reduce_functions.SUM, 'patients':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[id1], {"doctors": 10, "beds": 500})
-        self.assertEqual(values[id2], {'doctors': 40, "beds": 420})
+        self.assertEqual(values[id1], {"doctors": 10, "beds": 500, 'patients':15})
+        self.assertEqual(values[id2], {'doctors': 40, "beds": 420, 'patients':35})
+
+        with self.assertRaises(AggregationNotSupportedForTypeException):
+            data.fetch(self.manager, entity_type=ENTITY_TYPE,
+                            aggregates={'director':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
+
+

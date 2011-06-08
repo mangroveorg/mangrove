@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from documents import attributes
+from mangrove.errors.MangroveException import AggregationNotSupportedForTypeException
 
 BY_VALUES_ENTITY_ID_INDEX = 1
 BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
@@ -10,8 +11,8 @@ class reduce_functions(object):
     SUM = "sum"
     LATEST = "latest"
     COUNT = "count"  # Returns number of records containing the field
-
-    SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT]
+    AVG = 'avg'
+    SUPPORTED_FUNCTIONS = [SUM, LATEST, COUNT, AVG]
 
 
 def _get_key_strategy(aggregate_on, filter):
@@ -42,7 +43,6 @@ def _get_key_strategy(aggregate_on, filter):
 
 
 def _get_interested_keys_for_location(aggregate_on, dbm, entity_type, location):
-    assert location, "Only filter by location supported"
     if aggregate_on:
         interested_keys = [tuple(location)]
     else:
@@ -89,7 +89,10 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
         if "*" in aggregates:
             interested_aggregate = aggregates.get("*")
         if interested_aggregate:
-            result.setdefault(result_key, {})[field] = val[interested_aggregate]
+            try:
+                result.setdefault(result_key, {})[field] = val[interested_aggregate]
+            except KeyError:
+                raise AggregationNotSupportedForTypeException(field,interested_aggregate)
     return result
 
 
@@ -136,6 +139,7 @@ def _load_all_fields_aggregated(dbm, type_path,filter=None):
 
     for k, v in values:
         v["latest"] = _find_in(latest_values, k)["latest"]
+        v['avg'] = v['sum']/v['count']
 
     for k, v in latest_values:
         v_dict = _find_in(values, k)

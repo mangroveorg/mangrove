@@ -20,20 +20,23 @@ def _get_key_strategy(aggregate_on, filter):
             entity_type, aggregation_type, field = db_key[:3]
             path = db_key[3:]
             key = tuple(path)
-            return key, field
+            return key, field, key
 
         return _aggregate_by_path
+
     elif filter is not None and filter.get('form_code'):
         def _aggregate_by_entity_by_form_code(db_key):
-            key = [db_key[BY_VALUES_ENTITY_ID_INDEX],db_key[BY_VALUES_FORM_CODE_INDEX]]
+            filter_key = (db_key[BY_VALUES_ENTITY_ID_INDEX],db_key[BY_VALUES_FORM_CODE_INDEX])
+            key = db_key[BY_VALUES_ENTITY_ID_INDEX]
             field = db_key[BY_VALUES_FIELD_INDEX]
-            return key, field
+            return key, field , filter_key
         return _aggregate_by_entity_by_form_code
+
     else:
         def _aggregate_by_entity(db_key):
             key = db_key[BY_VALUES_ENTITY_ID_INDEX]
             field = db_key[BY_VALUES_FIELD_INDEX]
-            return key, field
+            return key, field, key
 
         return _aggregate_by_entity
 
@@ -50,7 +53,7 @@ def _get_interested_keys_for_form_code(values, form_code):
     interested_keys = []
     for k,d in values:
         if form_code in k:
-            interested_keys.append([k[BY_VALUES_ENTITY_ID_INDEX],k[BY_VALUES_FORM_CODE_INDEX]])
+            interested_keys.append((k[BY_VALUES_ENTITY_ID_INDEX],k[BY_VALUES_FORM_CODE_INDEX]))
     return interested_keys
 
 def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
@@ -76,10 +79,9 @@ def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, 
 
 
     for key, val in values:
-        result_key, field = _parse_key(key)
-        if filter and result_key not in interested_keys:
+        result_key, field, filter_key = _parse_key(key)
+        if filter and filter_key not in interested_keys:
             continue
-        result_key = result_key[0] if isinstance(result_key,list) else result_key
         interested_aggregate = None
         if field in aggregates:
             interested_aggregate = aggregates.get(field)

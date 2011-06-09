@@ -38,7 +38,7 @@ class SubmissionHandler(object):
         assert isinstance(dbm,DatabaseManager)
         self.dbm = dbm
 
-    def accept_values(self, request):
+    def accept(self, request):
         assert isinstance(request,SubmissionRequest)
         form_code = request.form_code
         values = request.submission

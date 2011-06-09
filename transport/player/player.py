@@ -45,7 +45,7 @@ class SMSPlayer(object):
         form_code, values = sms_parser.parse(request.message)
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
-        submission_response = self.submission_handler.accept_values(submission_request)
+        submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=reporters,success=submission_response.success,errors =submission_response.errors,
                         submission_id=submission_response.submission_id,
                         datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code)
@@ -96,7 +96,7 @@ class WebPlayer(object):
         form_code, values = web_parser.parse(request.message)
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
-        submission_response = self.submission_handler.accept_values(submission_request)
+        submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=[],success=submission_response.success,errors =submission_response.errors,
                         submission_id=submission_response.submission_id,
                         datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code)

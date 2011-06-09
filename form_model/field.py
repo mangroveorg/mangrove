@@ -114,7 +114,7 @@ class Field(object):
 
     @property
     def language(self):
-        return self._dict.get(self.LANGUAGE) or field_attributes.DEFAULT_LANGUAGE
+        return self._dict.get(self.LANGUAGE)
 
     def _to_json(self):
         dict = self._dict.copy()

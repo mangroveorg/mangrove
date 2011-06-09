@@ -57,7 +57,7 @@ class TestSubmissions(TestCase):
     def test_should_return_true_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
@@ -66,7 +66,7 @@ class TestSubmissions(TestCase):
     def test_should_save_data_record_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(self.entity_module.add_data.called)
 
@@ -74,7 +74,7 @@ class TestSubmissions(TestCase):
     def test_should_not_save_data_record_if_in_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._invalid_form_submission()
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.assertFalse(self.entity_module.add_data.called)
         self.assertEqual({"field": "Invalid"}, response.errors)
@@ -83,14 +83,14 @@ class TestSubmissions(TestCase):
     def test_should_not_save_data_record_if_no_valid_questions_present(self):
         self.form_model_mock.validate_submission.return_value = self._empty_form_submission()
         with self.assertRaises(NoQuestionsSubmittedException):
-            response = self.submission_handler.accept_values(self.submission_request)
+            response = self.submission_handler.accept(self.submission_request)
 
 
     def test_should_create_new_submission_log(self):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.create_submission_log.assert_called_once_with(channel="sms",
                                                                             source="1234",
@@ -104,7 +104,7 @@ class TestSubmissions(TestCase):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=[])
@@ -114,7 +114,7 @@ class TestSubmissions(TestCase):
         form_submission = self._invalid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
@@ -125,13 +125,13 @@ class TestSubmissions(TestCase):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
 
         with self.assertRaises(FormModelDoesNotExistsException):
-            response = self.submission_handler.accept_values(self.submission_request)
+            response = self.submission_handler.accept(self.submission_request)
 
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
         self.form_model_mock._is_registration_form.return_value = True
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
         
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
@@ -147,7 +147,7 @@ class TestSubmissions(TestCase):
         self.form_model_mock.validate_submission.return_value = form_submission
         self.form_model_mock._is_registration_form.return_value = True
 
-        response = self.submission_handler.accept_values(self.submission_request)
+        response = self.submission_handler.accept(self.submission_request)
 
         self.assertFalse(response.success)
         self.assertEqual({"field": "Invalid"}, response.errors)

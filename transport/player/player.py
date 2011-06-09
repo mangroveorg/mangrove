@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import csv
 import re
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty
@@ -106,3 +107,53 @@ class WebParser(object):
     def parse(self, message):
         form_code = message.pop('form_code')
         return form_code, message
+
+
+class CsvPlayer(object):
+    def __init__(self,dbm, submission_handler):
+        self.dbm = dbm
+        self.submission_handler = submission_handler
+
+    def accept(self, csv_data):
+        pass
+
+
+class CsvParser(object):
+    def _next_line(self, dict_reader):
+        return dict_reader.next().values()[0]
+
+    def _parse_header(self, dict_reader):
+        field_header = dict_reader.fieldnames
+        while is_empty(field_header) or self._has_empty_values(field_header):
+            try:
+                field_header = self._next_line(dict_reader)
+            except StopIteration:
+                raise CSVParserInvalidHeaderFormatException()
+        return [field.strip().lower() for field in field_header]
+
+    def _strip_field_values(self, row):
+        for key, value in row.items():
+            if value is not None:
+                row[key] = value.strip()
+
+    def _parse_row(self, form_code_fieldname, row):
+        result_row = dict(row)
+        self._strip_field_values(result_row)
+        form_code = result_row.pop(form_code_fieldname)
+        return form_code, result_row
+
+    def parse(self, csv_data):
+        dict_reader = csv.DictReader(csv_data.split('\n'))
+        dict_reader.fieldnames = self._parse_header(dict_reader)
+        parsedData = []
+        form_code_fieldname = dict_reader.fieldnames[0]
+        for row in dict_reader:
+            parsedData.append(self._parse_row(form_code_fieldname, row))
+        return parsedData
+
+    def _has_empty_values(self, values_list):
+        for value in values_list:
+            if is_empty(value):
+                return True
+        return False
+

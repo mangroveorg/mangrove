@@ -11,7 +11,7 @@ class reduce_functions(object):
     SUM = "sum"
     LATEST = "latest"
     COUNT = "count"  # Returns number of records containing the field
-    AVG = 'avg'
+    AVG = 'average'
     MIN = 'min'
     MAX = 'max'
 
@@ -142,7 +142,7 @@ def _load_all_fields_aggregated(dbm, type_path,filter=None):
 
     for k, v in values:
         v["latest"] = _find_in(latest_values, k)["latest"]
-        v['avg'] = v['sum']/v['count']
+        v['average'] = v['sum']/v['count']
 
     for k, v in latest_values:
         v_dict = _find_in(values, k)

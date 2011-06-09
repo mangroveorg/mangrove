@@ -11,6 +11,7 @@ class Channel(object):
     SMS = "sms"
     WEB = "web"
     XFORMS = "xforms"
+    CSV = "csv"
 
 class Request(object):
     def __init__(self, transport, message, source, destination):
@@ -102,21 +103,28 @@ class WebPlayer(object):
                         submission_id=submission_response.submission_id,
                         datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code)
 
-
 class WebParser(object):
     def parse(self, message):
         form_code = message.pop('form_code')
         return form_code, message
 
-
 class CsvPlayer(object):
-    def __init__(self,dbm, submission_handler):
+    def __init__(self,dbm, submission_handler,parser):
         self.dbm = dbm
         self.submission_handler = submission_handler
+        self.parser = parser
 
     def accept(self, csv_data):
-        pass
-
+        response = []
+        submissions = self.parser.parse(csv_data)
+        for (form_code,values) in submissions:
+            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.CSV,
+                                                   source=Channel.CSV, destination="")
+            submission_response = self.submission_handler.accept(submission_request)
+            response.append(Response(reporters=[],success=submission_response.success,errors =submission_response.errors,
+                            submission_id=submission_response.submission_id,
+                            datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code))
+        return response
 
 class CsvParser(object):
     def _next_line(self, dict_reader):

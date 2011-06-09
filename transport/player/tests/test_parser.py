@@ -157,14 +157,14 @@ class TestCsvParser(TestCase):
                 }, values)
 
     def test_should_raise_exception_for_invalid_format(self):
-        csv_data = """
+        empty_csv_data = """
 
 
-"""
+     """
 
         csv_parser = CsvParser()
         with self.assertRaises(CSVParserInvalidHeaderFormatException):
-            results = csv_parser.parse(csv_data)
+            results = csv_parser.parse(empty_csv_data)
 
 
 

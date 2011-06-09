@@ -2,7 +2,7 @@
 import unittest
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.player.player import CsvPlayer
+from mangrove.transport.player.player import CsvPlayer, CsvParser
 from mangrove.transport.submissions import SubmissionHandler
 
 
@@ -10,6 +10,7 @@ class TestCsvPlayer(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
+        self.parser = CsvParser()
 
     def test_should_import_csv_string(self):
         csv_data = """
@@ -19,8 +20,8 @@ class TestCsvPlayer(unittest.TestCase):
         CLF1,CL003,12,Dr. C,203
         CLF1,CL004,13,Dr. D,204
         CLF1,CL005,14,Dr. E,205
-        """
-        csv_player = CsvPlayer(self.dbm, self.submission_handler_mock)
-        csv_player.accept(csv_data)
+"""
+        csv_player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser)
+        response = csv_player.accept(csv_data)
 
-#        self.assertEqual(1,self.submission_handler_mock.accept.call_count)
+        self.assertEqual(5,self.submission_handler_mock.accept.call_count)

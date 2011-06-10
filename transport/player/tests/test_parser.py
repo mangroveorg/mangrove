@@ -75,7 +75,7 @@ class TestCsvParser(TestCase):
         CLF1,CL005,15,Dr. A5,205"""
 
         csv_parser = CsvParser()
-        results = csv_parser.parse(csv_data)
+        results = csv_parser.parse(csv_data.split("\n"))
 
         self.assertEqual(5, len(results))
 
@@ -98,7 +98,7 @@ class TestCsvParser(TestCase):
         CLF1,CL002,12,"Dr. LastName,Firstname" """
 
         csv_parser = CsvParser()
-        results = csv_parser.parse(csv_data)
+        results = csv_parser.parse(csv_data.split("\n"))
 
         self.assertEqual(3, len(results))
 
@@ -142,7 +142,7 @@ class TestCsvParser(TestCase):
 """
 
         csv_parser = CsvParser()
-        results = csv_parser.parse(csv_data)
+        results = csv_parser.parse(csv_data.split("\n"))
 
         self.assertEqual(5, len(results))
 
@@ -164,7 +164,7 @@ class TestCsvParser(TestCase):
 
         csv_parser = CsvParser()
         with self.assertRaises(CSVParserInvalidHeaderFormatException):
-            results = csv_parser.parse(empty_csv_data)
+            results = csv_parser.parse(empty_csv_data.split("\n"))
 
 
 

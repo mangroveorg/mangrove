@@ -3,6 +3,7 @@ import datetime
 import unittest
 from unittest.case import SkipTest
 from datawinners.main.initial_couch_fixtures import create_data_dict
+from mangrove.datastore.data import EntityAggregration
 from mangrove.datastore.database import  get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import Entity
 from mangrove.datastore import data
@@ -57,9 +58,9 @@ class TestViewPerf(unittest.TestCase):
 
         print "Firing view..."
         start = datetime.datetime.now()
-        values = data.fetch(self.dbm, entity_type=["Health_Facility", "Clinic"],
+        values = data.aggregate_by_entity(self.dbm, entity_type=["Health_Facility", "Clinic"],
                             aggregates={"beds": data.reduce_functions.LATEST,
-                                        "meds": data.reduce_functions.COUNT},
+                                        "meds": data.reduce_functions.COUNT},aggregate_on=EntityAggregration()
                             )
         end = datetime.datetime.now()
         print "views took %s" % (end - start,)

@@ -1,11 +1,13 @@
 import datetime
+from mangrove.datastore.data import by, LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
 from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import AggregationNotSupportedForTypeException
+from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.form_model import FormModel
 
 
 class TestQueryApi(unittest.TestCase):
@@ -53,14 +55,18 @@ class TestQueryApi(unittest.TestCase):
 
         # values asof
         data_fetched = e.values({"beds": "latest", "meds": "latest", "doctors": "latest"},
-                                asof=datetime.datetime(2011, 01, 31, tzinfo=UTC))
+                                                                                         asof=datetime.datetime(2011, 01
+                                                                                                                , 31,
+                                                                                                                tzinfo=UTC))
         self.assertEqual(data_fetched["beds"], 10)
         self.assertEqual(data_fetched["meds"], 20)
         self.assertEqual(data_fetched["doctors"], 2)
 
         # values asof
         data_fetched = e.values({"beds": "latest", "meds": "latest", "doctors": "latest"},
-                                asof=datetime.datetime(2011, 03, 2, tzinfo=UTC))
+                                                                                         asof=datetime.datetime(2011, 03
+                                                                                                                , 2,
+                                                                                                                tzinfo=UTC))
         self.assertEqual(data_fetched["beds"], 20)
         self.assertEqual(data_fetched["meds"], 5)
         self.assertEqual(data_fetched["doctors"], 2)
@@ -77,7 +83,7 @@ class TestQueryApi(unittest.TestCase):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.save()
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),\
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("meds", 20, dd_types['meds']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
@@ -85,15 +91,19 @@ class TestQueryApi(unittest.TestCase):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),\
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),\
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"beds": data.reduce_functions.COUNT,
+#                                        "patients": data.reduce_functions.COUNT},
+#                            aggregate_on={'type': 'location', "level": 2})
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"beds": data.reduce_functions.COUNT,
                                         "patients": data.reduce_functions.COUNT},
-                            aggregate_on={'type': 'location', "level": 2})
+                            aggregate_on=LocationAggregration(level=2))
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("India", "MH")], {"beds": 1, "patients": 2})
 
@@ -106,31 +116,31 @@ class TestQueryApi(unittest.TestCase):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         id1 = e.save()
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         id2 = e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         id3 = e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"director": data.reduce_functions.LATEST,
                                         "beds": data.reduce_functions.LATEST,
-                                        "patients": data.reduce_functions.SUM})
+                                        "patients": data.reduce_functions.SUM},aggregate_on=EntityAggregration())
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
@@ -160,51 +170,55 @@ class TestQueryApi(unittest.TestCase):
         id1_pune = e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         id2_pune = e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         id3_pune = e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 50, dd_types['patients'])],
+                ("patients", 50, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": data.reduce_functions.LATEST,
-                                        "beds": data.reduce_functions.LATEST,
-                                        "patients": data.reduce_functions.SUM},
-                            filter={'location': ['India', 'MH', 'Pune']}
-        )
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"director": data.reduce_functions.LATEST,
+#                                        "beds": data.reduce_functions.LATEST,
+#                                        "patients": data.reduce_functions.SUM},
+#                            filter={'location': ['India', 'MH', 'Pune']}
+#        )
+        values=data.aggregate_by_entity(self.manager,entity_type=ENTITY_TYPE,aggregate_on=EntityAggregration(),
+                                    aggregates={"director": data.reduce_functions.LATEST,
+                                                "beds": data.reduce_functions.LATEST,
+                                                "patients": data.reduce_functions.SUM},filter=LocationFilter(['India', 'MH', 'Pune']))
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1_pune], {"director": "Dr. A", "beds": 500, "patients": 30})
@@ -222,69 +236,78 @@ class TestQueryApi(unittest.TestCase):
         e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 50, dd_types['patients'])],
+                ("patients", 50, dd_types['patients'])],
                    event_time=MARCH)
 
         # Entities for State 2: karnataka
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
         # Entities for State 3: Kerala
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Kerala', 'Kochi'])
         e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on={'type': 'location', "level": 2},
+                            aggregate_on=LocationAggregration(level=2),
                             )
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"patients": data.reduce_functions.SUM},
+#                            aggregate_on={'type': 'location', "level": 2},
+#                            )
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[("India", "MH")], {"patients": 200})
         self.assertEqual(values[("India", "Karnataka")], {"patients": 140})
         self.assertEqual(values[("India", "Kerala")], {"patients": 12})
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on={'type': 'location', "level": 2},
-                            filter={'location': ['India', 'MH']}
-                            )
+                            aggregate_on=LocationAggregration(level=2),
+                            filter=LocationFilter(['India', 'MH'])
+        )
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"patients": data.reduce_functions.SUM},
+#                            aggregate_on={'type': 'location', "level": 2},
+#                            filter={'location': ['India', 'MH']}
+#        )
 
         self.assertEqual(len(values), 1)
         self.assertEqual(values[("India", "MH")], {"patients": 200})
@@ -302,10 +325,10 @@ class TestQueryApi(unittest.TestCase):
         e.save()
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
@@ -313,10 +336,10 @@ class TestQueryApi(unittest.TestCase):
         e.save()
 
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
@@ -324,10 +347,10 @@ class TestQueryApi(unittest.TestCase):
         e.save()
 
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                         ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. AAA", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 50, dd_types['patients'])],
+                ("patients", 50, dd_types['patients'])],
                    event_time=MARCH)
 
         # Entities for State 2: karnataka
@@ -335,19 +358,19 @@ class TestQueryApi(unittest.TestCase):
         e.set_aggregation_path("governance", ["Director", "Med_Supervisor", "Nurse"])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Hubli'])
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Surgeon"])
         e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=FEB)
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=MARCH)
 
         # Entities for State 3: Kerala
@@ -355,21 +378,29 @@ class TestQueryApi(unittest.TestCase):
         e.set_aggregation_path("governance", ["Director", "Med_Officer", "Nurse"])
         e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on={'type': 'governance', "level": 2},
+                            aggregate_on=TypeAggregration(type='governance',level=2)
                             )
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"patients": data.reduce_functions.SUM},
+#                            aggregate_on={'type': 'governance', "level": 2},
+#                            )
 
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("Director", "Med_Officer")], {"patients": 212})
         self.assertEqual(values[("Director", "Med_Supervisor")], {"patients": 140})
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
                             aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on={'type': 'governance', "level": 3},
+                            aggregate_on=TypeAggregration(type='governance',level=3),
                             )
+#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+#                            aggregates={"patients": data.reduce_functions.SUM},
+#                            aggregate_on={'type': 'governance', "level": 3},
+#                            )
 
         self.assertEqual(len(values), 5)
         self.assertEqual(values[("Director", "Med_Officer", "Surgeon")], {"patients": 100})
@@ -385,11 +416,11 @@ class TestQueryApi(unittest.TestCase):
         entity_types = get_all_entity_types(self.manager)
 
         expected = [['HealthFacility'],
-                    ['HealthFacility', 'Clinic'],
-                    ['HealthFacility', 'Hospital'],
-                    ['WaterPoint'],
-                    ['WaterPoint', 'Lake'],
-                    ['WaterPoint', 'Dam']]
+            ['HealthFacility', 'Clinic'],
+            ['HealthFacility', 'Hospital'],
+            ['WaterPoint'],
+            ['WaterPoint', 'Lake'],
+            ['WaterPoint', 'Dam']]
 
         for e in expected:
             self.assertIn(e, entity_types)
@@ -403,28 +434,30 @@ class TestQueryApi(unittest.TestCase):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
         id1 = e.save()
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
         id2 = e.save()
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
         id3 = e.save()
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE, aggregates={"*": data.reduce_functions.LATEST})
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE, aggregates={"*": data.reduce_functions.LATEST})
+        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"*": data.reduce_functions.LATEST}, aggregate_on=EntityAggregration())
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds": 20})
@@ -462,23 +495,23 @@ class TestQueryApi(unittest.TestCase):
         e = Entity(self.manager, entity_type='foo')
         e.save()
         data_record = [('meds', 20, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type)]
         e.add_data(data_record, event_time=feb)
 
         f = Entity(self.manager, entity_type='bar')
         f.save()
         data_record = [('meds', 10, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type)]
         f.add_data(data_record, event_time=jan)
         data_record = [('foo', 20, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type)]
         f.add_data(data_record, event_time=march)
         data_record = [('bar', 30, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type)]
         f.add_data(data_record, event_time=april)
 
         # datadict_type, no as_of
@@ -499,68 +532,105 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
 
-    def test_should_fetch_aggregate_per_entity_per_form_model(self):
 
+    def test_should_aggregate_per_entity_per_form_model(self):
+        ENTITY_TYPE = ["HealthFacility", "Clinic"]
+        self.create_clinic_type(ENTITY_TYPE)
+        self._create_form_model("CL2")
+        self._create_form_model("CL1")
         dd_types = self.create_datadict_types()
-        ENTITY_TYPE = ["Health_Facility", "Clinic"]
-        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Pune'])
-        id1 = e.save()
+        e, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
+
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='1',form_code='CL1'))
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL1'))
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='2',form_code='CL1'))
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL1'))
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
-                         ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='1',form_code='CL2'))
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL2'))
 
         e.add_data(data=[("beds", 200, dd_types['beds']), ("doctors", 10, dd_types['doctors']),
-                         ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='2',form_code='CL2'))
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL2'))
 
-        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'Karnataka', 'Bangalore'])
-        id2 = e.save()
+        e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
+
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='3',form_code='CL1'))
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL1'))
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='4',form_code='CL1'))
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL1'))
 
         e.add_data(data=[("beds", 150, dd_types['beds']), ("doctors", 50, dd_types['doctors']),
-                         ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC), submission=dict(submission_id='3',form_code='CL2'))
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL2'))
         e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
-                         ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='4',form_code='CL2'))
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL2'))
 
-        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=['India', 'MH', 'Mumbai'])
-        id3 = e.save()
+        e, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'])
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
-                         ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC), submission=dict(submission_id='5',form_code='CL1'))
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='5', form_code='CL1'))
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": data.reduce_functions.LATEST,
-                                        "beds": data.reduce_functions.LATEST,
-                                        "patients": data.reduce_functions.SUM, 'meds': data.reduce_functions.MIN}, filter={'form_code':'CL1'})
+        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+                                             aggregates={"director": data.reduce_functions.LATEST,
+                                                         "beds": data.reduce_functions.LATEST,
+                                                         "patients": data.reduce_functions.SUM,
+                                                         'meds': data.reduce_functions.MIN})
 
         self.assertEqual(len(values), 3)
-        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds':20})
-        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds':250})
-        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds':50})
+        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
+        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
+        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
 
-        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"doctors": data.reduce_functions.MAX, "beds": data.reduce_functions.SUM, 'patients':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
+        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
+                                             aggregates={"doctors": data.reduce_functions.MAX,
+                                                         "beds": data.reduce_functions.SUM,
+                                                         'patients': data.reduce_functions.AVG})
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients':15})
-        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients':35})
+        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
+        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
 
-        with self.assertRaises(AggregationNotSupportedForTypeException):
-            data.fetch(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={'director':data.reduce_functions.AVG}, filter={'form_code':'CL2'})
+    def create_entity_instance(self, ENTITY_TYPE, location):
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)
+        id1 = e.save()
+        return e, id1
+
+    def create_clinic_type(self, entity_type):
+        self.entity_type = entity_type
+        define_type(self.manager, entity_type)
 
 
+    def _create_form_model(self, form_code):
+        self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
+                                           primitive_type='string')
+        self.default_ddtype.save()
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
+                              defaultValue="some default value", language="eng",
+                              ddtype=self.default_ddtype)
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
+                                 ddtype=self.default_ddtype)
+        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+
+        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+                                    form_code=form_code, type='survey', fields=[
+                question1, question2, question3, question4])
+        self.form_model__id = self.form_model.save()

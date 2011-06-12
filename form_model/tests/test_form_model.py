@@ -14,27 +14,7 @@ from mangrove.form_model.validation import NumericConstraint, TextConstraint
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
-        self.entity_type = ["HealthFacility", "Clinic"]
-        define_type(self.dbm, ["HealthFacility", "Clinic"])
-        self.default_ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-                                           primitive_type='string')
-
-        self.default_ddtype.save()
-
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
-        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
-                              ddtype=self.default_ddtype)
-        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.default_ddtype)
-        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
-
-        self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[
-                    question1, question2, question3, question4])
-        self.form_model__id = self.form_model.save()
+        self._create_form_model()
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
@@ -48,7 +28,6 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual("REG", form.form_code)
         self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
-
     def test_get_form_model(self):
         e = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(e.id)
@@ -58,6 +37,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_add_name_of_form_model(self):
         saved = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(saved.name == "aids")
+
 
     def test_should_add_label(self):
         saved = self.dbm.get(self.form_model__id, FormModel)
@@ -168,52 +148,52 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(form_model.fields[3].ddtype.id, self.default_ddtype.id)
         self.assertEqual(form_model.fields[3].ddtype.name, self.default_ddtype.name)
 
-
     def test_should_set_entity_type(self):
         form_model = self.dbm.get(self.form_model__id, FormModel)
         form_model.entity_id = "xyz"
         self.assertEquals(form_model.entity_id, "xyz")
 
+
     def test_should_create_a_questionnaire_from_dictionary(self):
         fields = [
-                    {
-                    "name": "What are you reporting on?",
-                    "defaultValue": "",
-                    "label": {
-                        "eng": "Entity being reported on"
+                {
+                "name": "What are you reporting on?",
+                "defaultValue": "",
+                "label": {
+                    "eng": "Entity being reported on"
+                },
+                "entity_question_flag": True,
+                "type": "text",
+                "ddtype": self.default_ddtype.to_json(),
+                "code": "eid",
+                "length": {"min": 1, "max": 10},
+                },
+                {
+                "range": {
+                    "max": 10,
+                    "min": 0
+                },
+                "label": {"eng": ""},
+                "type": "integer",
+                "ddtype": self.default_ddtype.to_json(),
+                "name": "What is your age?",
+                "code": "AGE"
+            },
+                {
+                "choices": [
+                        {
+                        "text": {"eng": "Pune"}
                     },
-                    "entity_question_flag": True,
-                    "type": "text",
-                    "ddtype": self.default_ddtype.to_json(),
-                    "code": "eid",
-                    "length": {"min": 1, "max": 10},
-                    },
-                    {
-                        "range": {
-                            "max": 10,
-                            "min": 0
-                        },
-                        "label": {"eng": ""},
-                        "type": "integer",
-                        "ddtype": self.default_ddtype.to_json(),
-                        "name": "What is your age?",
-                        "code": "AGE"
-                    },
-                    {
-                        "choices": [
-                                    {
-                                    "text": {"eng": "Pune"}
-                                },
-                                    {
-                                        "text": {"eng": "Bangalore"}
-                                    }
-                        ],
-                        "label": {"eng": ""},
-                        "type": "select",
-                        "ddtype": self.default_ddtype.to_json(),
-                        "name": "Where do you live?",
-                        "code": "PLC"
-                    }]
+                        {
+                        "text": {"eng": "Bangalore"}
+                    }
+                ],
+                "label": {"eng": ""},
+                "type": "select",
+                "ddtype": self.default_ddtype.to_json(),
+                "name": "Where do you live?",
+                "code": "PLC"
+            }]
         document = FormModelDocument()
         document.json_fields = fields
         document.entity_type = ["Reporter"]
@@ -239,15 +219,14 @@ class TestFormModel(unittest.TestCase):
         for i in range(len(questions)):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
 
-
     def test_should_set_name(self):
         self.form_model.name = 'test_name'
         self.assertEquals(self.form_model.name, 'test_name')
 
+
     def test_should_set_entity_type_in_doc(self):
         self.form_model.entity_type = ["WaterPoint", "Dam"]
         self.assertEqual(self.form_model.entity_type, ["WaterPoint", "Dam"])
-
 
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
@@ -256,6 +235,7 @@ class TestFormModel(unittest.TestCase):
                                form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
             form_model.save()
+
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
@@ -274,3 +254,23 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
+
+    def _create_form_model(self):
+        self.entity_type = ["HealthFacility", "Clinic"]
+        define_type(self.dbm, ["HealthFacility", "Clinic"])
+        self.default_ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
+                                           primitive_type='string')
+        self.default_ddtype.save()
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
+                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
+                              ddtype=self.default_ddtype)
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.default_ddtype)
+        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+        self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
+                                    form_code="1", type='survey', fields=[
+                question1, question2, question3, question4])
+        self.form_model__id = self.form_model.save()

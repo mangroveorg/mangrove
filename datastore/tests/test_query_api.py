@@ -1,5 +1,6 @@
 import datetime
-from mangrove.datastore.data import by, LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration
+from mangrove.datastore.aggregrate import aggregate_by_form_code_with_time_filter, SumAggregrate, MinAggregrate, LatestAggregrate
+from mangrove.datastore.data import by, LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_by_form_code
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
@@ -586,7 +587,7 @@ class TestQueryApi(unittest.TestCase):
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='5', form_code='CL1'))
 
-        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+        values = aggregate_by_form_code(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
                                              aggregates={"director": data.reduce_functions.LATEST,
                                                          "beds": data.reduce_functions.LATEST,
                                                          "patients": data.reduce_functions.SUM,
@@ -605,6 +606,84 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(len(values), 2)
         self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
         self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
+
+    def test_should_aggregate_per_entity_per_form_model_with_time_filter(self):
+        ENTITY_TYPE = ["HealthFacility", "Clinic"]
+        self.create_clinic_type(ENTITY_TYPE)
+        self._create_form_model("CL2")
+        self._create_form_model("CL1")
+        dd_types = self.create_datadict_types()
+        e, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
+
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL1'))
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL1'))
+
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL2'))
+
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("doctors", 10, dd_types['doctors']),
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL2'))
+
+        e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
+
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL1'))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL1'))
+
+        e.add_data(data=[("beds", 150, dd_types['beds']), ("doctors", 50, dd_types['doctors']),
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL2'))
+        e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL2'))
+
+        e, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'])
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='5', form_code='CL1'))
+
+        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+                                             aggregates=[SumAggregrate("patients"),MinAggregrate('meds')])
+#        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+#                                             aggregates={"director": data.reduce_functions.LATEST,
+#                                                         "beds": data.reduce_functions.LATEST,
+#                                                         "patients": data.reduce_functions.SUM,
+#                                                         'meds': data.reduce_functions.MIN})
+
+        self.assertEqual(len(values), 3)
+        self.assertEqual(values[id1], {"patients": 30,'meds': 20})
+        self.assertEqual(values[id2], {"patients": 70,'meds': 250})
+        self.assertEqual(values[id3], {"patients": 12,'meds': 50})
+#        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
+#        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
+#        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
+
+#        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
+#                                             aggregates={"doctors": data.reduce_functions.MAX,
+#                                                         "beds": data.reduce_functions.SUM,
+#                                                         'patients': data.reduce_functions.AVG})
+#
+#        self.assertEqual(len(values), 2)
+#        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
+#        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
 
     def create_entity_instance(self, ENTITY_TYPE, location):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)

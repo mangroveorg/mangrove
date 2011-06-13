@@ -1,10 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import csv
 import re
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException
 from mangrove.transport import reporter
-from mangrove.transport.submissions import  SubmissionRequest
-from mangrove.utils.types import is_empty
+from mangrove.transport.submissions import  SubmissionRequest, SubmissionResponse
+from mangrove.utils.types import is_empty, is_string
 
 
 class Channel(object):
@@ -13,12 +13,14 @@ class Channel(object):
     XFORMS = "xforms"
     CSV = "csv"
 
+
 class Request(object):
     def __init__(self, transport, message, source, destination):
         self.transport = transport
         self.message = message
         self.source = source
         self.destination = destination
+
 
 class Response(object):
     def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None):
@@ -30,10 +32,8 @@ class Response(object):
         self.short_code = short_code
 
 
-
-
 class SMSPlayer(object):
-    def __init__(self,dbm,submission_handler):
+    def __init__(self, dbm, submission_handler):
         self.dbm = dbm
         self.submission_handler = submission_handler
 
@@ -48,9 +48,10 @@ class SMSPlayer(object):
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
         submission_response = self.submission_handler.accept(submission_request)
-        return Response(reporters=reporters,success=submission_response.success,errors =submission_response.errors,
+        return Response(reporters=reporters, success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code)
+
 
 class SMSParser(object):
     MESSAGE_PREFIX = r'^(\w+)\s+\+(\w+)\s+(\w+)'
@@ -81,11 +82,12 @@ class SMSParser(object):
         return m.groups()
 
     def _validate_message_format(self, message):
-        if not re.match(self.MESSAGE_PREFIX,message):
+        if not re.match(self.MESSAGE_PREFIX, message):
             raise SMSParserInvalidFormatException(message)
 
+
 class WebPlayer(object):
-    def __init__(self,dbm,submission_handler):
+    def __init__(self, dbm, submission_handler):
         self.dbm = dbm
         self.submission_handler = submission_handler
 
@@ -99,17 +101,19 @@ class WebPlayer(object):
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
         submission_response = self.submission_handler.accept(submission_request)
-        return Response(reporters=[],success=submission_response.success,errors =submission_response.errors,
+        return Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code)
+
 
 class WebParser(object):
     def parse(self, message):
         form_code = message.pop('form_code')
         return form_code, message
 
+
 class CsvPlayer(object):
-    def __init__(self,dbm, submission_handler,parser):
+    def __init__(self, dbm, submission_handler, parser):
         self.dbm = dbm
         self.submission_handler = submission_handler
         self.parser = parser
@@ -117,14 +121,20 @@ class CsvPlayer(object):
     def accept(self, csv_data):
         response = []
         submissions = self.parser.parse(csv_data)
-        for (form_code,values) in submissions:
+        for (form_code, values) in submissions:
             submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.CSV,
                                                    source=Channel.CSV, destination="")
-            submission_response = self.submission_handler.accept(submission_request)
-            response.append(Response(reporters=[],success=submission_response.success,errors =submission_response.errors,
-                            submission_id=submission_response.submission_id,
-                            datarecord_id=submission_response.datarecord_id,short_code=submission_response.short_code))
+            try:
+                submission_response = self.submission_handler.accept(submission_request)
+                response.append(
+                    Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
+                             submission_id=submission_response.submission_id,
+                             datarecord_id=submission_response.datarecord_id,
+                             short_code=submission_response.short_code))
+            except MangroveException as e:
+                response.append(Response(reporters=[], success=False, errors=e.message))
         return response
+
 
 class CsvParser(object):
     def _next_line(self, dict_reader):
@@ -151,7 +161,8 @@ class CsvParser(object):
         return form_code, result_row
 
     def parse(self, csv_data):
-        dict_reader = csv.DictReader(csv_data.split('\n'))
+        assert not is_string(csv_data)
+        dict_reader = csv.DictReader(csv_data)
         dict_reader.fieldnames = self._parse_header(dict_reader)
         parsedData = []
         form_code_fieldname = dict_reader.fieldnames[0]

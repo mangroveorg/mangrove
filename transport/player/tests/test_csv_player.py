@@ -2,8 +2,9 @@
 import unittest
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.transport.player.player import CsvPlayer, CsvParser
-from mangrove.transport.submissions import SubmissionHandler
+from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 
 
 class TestCsvPlayer(unittest.TestCase):
@@ -11,17 +12,38 @@ class TestCsvPlayer(unittest.TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.parser = CsvParser()
+        self.csv_data = """
+                                FORM_CODE,ID,BEDS,DIRECTOR,MEDS
+                                CLF1,CL001,10,Dr. A,201
+                                CLF1,CL002,11,Dr. B,202
+                                CLF2,CL003,12,Dr. C,203
+                                CLF1,CL004,13,Dr. D,204
+                                CLF1,CL005,14,Dr. E,205
+"""
+        self.data = self.csv_data.split("\n")
+        self.player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser)
 
     def test_should_import_csv_string(self):
-        csv_data = """
-        FORM_CODE,ID,BEDS,DIRECTOR,MEDS
-        CLF1,CL001,10,Dr. A,201
-        CLF1,CL002,11,Dr. B,202
-        CLF1,CL003,12,Dr. C,203
-        CLF1,CL004,13,Dr. D,204
-        CLF1,CL005,14,Dr. E,205
-"""
-        csv_player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser)
-        response = csv_player.accept(csv_data)
+        self.player.accept(self.data)
 
         self.assertEqual(5,self.submission_handler_mock.accept.call_count)
+
+    def test_should_process_next_submission_if_exception_with_prev(self):
+        def expected_side_effect(*args, **kwargs):
+            request = kwargs.get('request') or args[0]
+            if request.form_code == 'CLF2':
+                raise FormModelDoesNotExistsException('')
+            return SubmissionResponse(success = True,submission_id=1)
+
+        self.submission_handler_mock.accept.side_effect = expected_side_effect
+
+        response = self.player.accept(self.data)
+        self.assertEqual(5, len(response))
+        self.assertEqual(False,response[2].success)
+
+        success = len([index for index in response if index.success])
+        total = len(response)
+        self.assertEqual(4,success)
+        self.assertEqual(5,total)
+
+

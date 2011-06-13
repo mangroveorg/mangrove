@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, define_type, get_all_entity_types
+from mangrove.datastore.entity import Entity, define_type, get_all_entity_types, get_all_entities
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
@@ -284,3 +284,18 @@ class TestDataStoreApi(unittest.TestCase):
     def test_should_create_entity_with_short_code(self):
         reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP999")
         self.assertEqual(reporter.short_code, "REP999")
+
+    def test_should_get_all_entities(self):
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Mumbai"], short_code='cli002')
+        e.save()
+
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Jalgaon"], short_code='cli003')
+        e.save()
+
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Nasik"], short_code='cli004')
+        uuid = e.save()
+
+        all_entities = get_all_entities(self.dbm)
+
+        self.assertEqual(4,len(all_entities))
+        self.assertEqual([uuid],[e['id'] for e in all_entities if e['id'] == uuid])

@@ -87,6 +87,7 @@ class SubmissionLogger(object):
             error_message = error_message + each + "\n"
         log = self.dbm._load_document(submission_id, SubmissionLogDocument)
         log.status = status
+        log.voided = not status
         log.data_record_id = data_record_id
         log.error_message = log.error_message + (error_message or "")
         self.dbm._save_document(log)
@@ -100,7 +101,7 @@ class SubmissionLogger(object):
         return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
                                                              destination=destination, form_code=form_code,
                                                              values=values, status=status,
-                                                             error_message=error_message))
+                                                             error_message=error_message, voided=True))
 
 def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, count_only=False):
     assert is_string(form_code)

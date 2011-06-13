@@ -206,6 +206,8 @@ def add_data(dbm, short_code, data, entity_type, submission=None):
     data_record_id = e.add_data(data=data, submission=submission)
     return data_record_id
 
+def get_all_entities(dbm , include_docs=False):
+    return dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
 
 class Entity(DataObject):
     """

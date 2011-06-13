@@ -7,7 +7,7 @@ from mangrove.utils.types import is_string
 BY_VALUES_ENTITY_ID_INDEX = 1
 BY_VALUES_FIELD_INDEX = BY_VALUES_ENTITY_ID_INDEX + 1
 BY_VALUES_FORM_CODE_INDEX = BY_VALUES_FIELD_INDEX + 1
-
+BY_VALUES_EVENT_TIME_INDEX=BY_VALUES_FORM_CODE_INDEX+1
 
 FORM_CODE_GROUP_LEVEL=BY_VALUES_FORM_CODE_INDEX + 1
 ENTITY_GROUP_LEVEL=BY_VALUES_FIELD_INDEX + 1
@@ -46,29 +46,17 @@ class LocationFilter(object):
     def __init__(self,location):
         self.location=location
 
-def aggregate_by_entity(dbm, entity_type, aggregates=None, aggregate_on=None, filter=None,starttime=None, endtime=None):
+def aggregate(dbm, entity_type, aggregates=None, aggregate_on=None, filter=None,starttime=None, endtime=None):
     result = {}
     aggregates = {} if aggregates is None else aggregates
-#    if filter is not None and filter.get('form_code') is not None:
-#        view_group_level = BY_VALUES_FORM_CODE_INDEX + 1
-#    else:
-#        view_group_level = BY_VALUES_FIELD_INDEX + 1
 
     aggregate,group_level = _get_aggregate_strategy(aggregate_on)
     values = aggregate(dbm, entity_type, group_level,aggregate_on)
     interested_keys = None
-#    interested_keys =  _get_interested_keys_for_form_code(values, {})
 
     if isinstance(filter,LocationFilter):
         interested_keys = _get_interested_keys_for_location(aggregate_on, dbm, entity_type, filter.location)
 
-#    if filter:
-#        location = filter.get("location")
-##        form_code = filter.get("form_code")
-#        if location is not None:
-#            interested_keys = _get_interested_keys_for_location(aggregate_on, dbm, form_code.entity_type, location)
-#        if form_code is not None:
-#            interested_keys =  _get_interested_keys_for_form_code(values, form_code)
     _parse_key = _get_key_strategy(aggregate_on,dict())
 
 
@@ -91,7 +79,7 @@ def aggregate_by_entity(dbm, entity_type, aggregates=None, aggregate_on=None, fi
                 raise AggregationNotSupportedForTypeException(field,interested_aggregate)
     return result
 
-def aggregate_by_form_code(dbm, form_code, aggregates=None, aggregate_on=None, filter=None,starttime=None, endtime=None):
+def aggregate_for_form(dbm, form_code, aggregates=None, aggregate_on=None, filter=None,starttime=None, endtime=None):
     assert is_string(form_code)
     result = {}
     aggregates = {} if aggregates is None else aggregates

@@ -1,6 +1,6 @@
 import datetime
-from mangrove.datastore.aggregrate import aggregate_by_form_code_with_time_filter, SumAggregrate, MinAggregrate, LatestAggregrate
-from mangrove.datastore.data import by, LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_by_form_code
+from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max
+from mangrove.datastore.data import  LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_for_form
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
@@ -97,14 +97,14 @@ class TestQueryApi(unittest.TestCase):
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),\
                 ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"beds": data.reduce_functions.COUNT,
-#                                        "patients": data.reduce_functions.COUNT},
-#                            aggregate_on={'type': 'location', "level": 2})
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"beds": data.reduce_functions.COUNT,
-                                        "patients": data.reduce_functions.COUNT},
-                            aggregate_on=LocationAggregration(level=2))
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"beds": data.reduce_functions.COUNT,
+        #                                        "patients": data.reduce_functions.COUNT},
+        #                            aggregate_on={'type': 'location', "level": 2})
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"beds": data.reduce_functions.COUNT,
+                                                      "patients": data.reduce_functions.COUNT},
+                                          aggregate_on=LocationAggregration(level=2))
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("India", "MH")], {"beds": 1, "patients": 2})
 
@@ -138,10 +138,11 @@ class TestQueryApi(unittest.TestCase):
                 ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"director": data.reduce_functions.LATEST,
-                                        "beds": data.reduce_functions.LATEST,
-                                        "patients": data.reduce_functions.SUM},aggregate_on=EntityAggregration())
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"director": data.reduce_functions.LATEST,
+                                                      "beds": data.reduce_functions.LATEST,
+                                                      "patients": data.reduce_functions.SUM},
+                                          aggregate_on=EntityAggregration())
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30})
@@ -210,16 +211,17 @@ class TestQueryApi(unittest.TestCase):
                 ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
 
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"director": data.reduce_functions.LATEST,
-#                                        "beds": data.reduce_functions.LATEST,
-#                                        "patients": data.reduce_functions.SUM},
-#                            filter={'location': ['India', 'MH', 'Pune']}
-#        )
-        values=data.aggregate_by_entity(self.manager,entity_type=ENTITY_TYPE,aggregate_on=EntityAggregration(),
-                                    aggregates={"director": data.reduce_functions.LATEST,
-                                                "beds": data.reduce_functions.LATEST,
-                                                "patients": data.reduce_functions.SUM},filter=LocationFilter(['India', 'MH', 'Pune']))
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"director": data.reduce_functions.LATEST,
+        #                                        "beds": data.reduce_functions.LATEST,
+        #                                        "patients": data.reduce_functions.SUM},
+        #                            filter={'location': ['India', 'MH', 'Pune']}
+        #        )
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE, aggregate_on=EntityAggregration(),
+                                          aggregates={"director": data.reduce_functions.LATEST,
+                                                      "beds": data.reduce_functions.LATEST,
+                                                      "patients": data.reduce_functions.SUM},
+                                          filter=LocationFilter(['India', 'MH', 'Pune']))
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1_pune], {"director": "Dr. A", "beds": 500, "patients": 30})
@@ -285,30 +287,30 @@ class TestQueryApi(unittest.TestCase):
                 ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
 
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on=LocationAggregration(level=2),
-                            )
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"patients": data.reduce_functions.SUM},
-#                            aggregate_on={'type': 'location', "level": 2},
-#                            )
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"patients": data.reduce_functions.SUM},
+                                          aggregate_on=LocationAggregration(level=2),
+                                          )
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"patients": data.reduce_functions.SUM},
+        #                            aggregate_on={'type': 'location', "level": 2},
+        #                            )
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[("India", "MH")], {"patients": 200})
         self.assertEqual(values[("India", "Karnataka")], {"patients": 140})
         self.assertEqual(values[("India", "Kerala")], {"patients": 12})
 
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on=LocationAggregration(level=2),
-                            filter=LocationFilter(['India', 'MH'])
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"patients": data.reduce_functions.SUM},
+                                          aggregate_on=LocationAggregration(level=2),
+                                          filter=LocationFilter(['India', 'MH'])
         )
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"patients": data.reduce_functions.SUM},
-#                            aggregate_on={'type': 'location', "level": 2},
-#                            filter={'location': ['India', 'MH']}
-#        )
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"patients": data.reduce_functions.SUM},
+        #                            aggregate_on={'type': 'location', "level": 2},
+        #                            filter={'location': ['India', 'MH']}
+        #        )
 
         self.assertEqual(len(values), 1)
         self.assertEqual(values[("India", "MH")], {"patients": 200})
@@ -381,27 +383,27 @@ class TestQueryApi(unittest.TestCase):
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                 ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
                    event_time=MARCH)
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on=TypeAggregration(type='governance',level=2)
-                            )
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"patients": data.reduce_functions.SUM},
-#                            aggregate_on={'type': 'governance', "level": 2},
-#                            )
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"patients": data.reduce_functions.SUM},
+                                          aggregate_on=TypeAggregration(type='governance', level=2)
+        )
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"patients": data.reduce_functions.SUM},
+        #                            aggregate_on={'type': 'governance', "level": 2},
+        #                            )
 
         self.assertEqual(len(values), 2)
         self.assertEqual(values[("Director", "Med_Officer")], {"patients": 212})
         self.assertEqual(values[("Director", "Med_Supervisor")], {"patients": 140})
 
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                            aggregates={"patients": data.reduce_functions.SUM},
-                            aggregate_on=TypeAggregration(type='governance',level=3),
-                            )
-#        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
-#                            aggregates={"patients": data.reduce_functions.SUM},
-#                            aggregate_on={'type': 'governance', "level": 3},
-#                            )
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"patients": data.reduce_functions.SUM},
+                                          aggregate_on=TypeAggregration(type='governance', level=3),
+                                          )
+        #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE,
+        #                            aggregates={"patients": data.reduce_functions.SUM},
+        #                            aggregate_on={'type': 'governance', "level": 3},
+        #                            )
 
         self.assertEqual(len(values), 5)
         self.assertEqual(values[("Director", "Med_Officer", "Surgeon")], {"patients": 100})
@@ -457,8 +459,9 @@ class TestQueryApi(unittest.TestCase):
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
 
         #        values = data.fetch(self.manager, entity_type=ENTITY_TYPE, aggregates={"*": data.reduce_functions.LATEST})
-        values = data.aggregate_by_entity(self.manager, entity_type=ENTITY_TYPE,
-                                          aggregates={"*": data.reduce_functions.LATEST}, aggregate_on=EntityAggregration())
+        values = data.aggregate(self.manager, entity_type=ENTITY_TYPE,
+                                          aggregates={"*": data.reduce_functions.LATEST},
+                                          aggregate_on=EntityAggregration())
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 20, "meds": 20})
@@ -587,18 +590,18 @@ class TestQueryApi(unittest.TestCase):
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='5', form_code='CL1'))
 
-        values = aggregate_by_form_code(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
-                                             aggregates={"director": data.reduce_functions.LATEST,
-                                                         "beds": data.reduce_functions.LATEST,
-                                                         "patients": data.reduce_functions.SUM,
-                                                         'meds': data.reduce_functions.MIN})
+        values = aggregate_for_form(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+                                        aggregates={"director": data.reduce_functions.LATEST,
+                                                    "beds": data.reduce_functions.LATEST,
+                                                    "patients": data.reduce_functions.SUM,
+                                                    'meds': data.reduce_functions.MIN})
 
         self.assertEqual(len(values), 3)
         self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
         self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
         self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
 
-        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
+        values = data.aggregate_for_form(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
                                              aggregates={"doctors": data.reduce_functions.MAX,
                                                          "beds": data.reduce_functions.SUM,
                                                          'patients': data.reduce_functions.AVG})
@@ -617,38 +620,43 @@ class TestQueryApi(unittest.TestCase):
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
                 ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='1', form_code='CL1'))
         e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
                 ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL1'))
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
                 ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='1', form_code='CL2'))
+                   submission=dict(submission_id='1', form_code='CL1'))
 
-        e.add_data(data=[("beds", 200, dd_types['beds']), ("doctors", 10, dd_types['doctors']),
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 10, dd_types['meds']),
                 ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL1'))
+
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("patients", 45, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 04, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL2'))
 
         e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
 
         e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
                 ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='CL1'))
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
                 ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code='CL1'))
 
-        e.add_data(data=[("beds", 150, dd_types['beds']), ("doctors", 50, dd_types['doctors']),
+        e.add_data(data=[("beds", 150, dd_types['beds']), ("meds", 50, dd_types['meds']),
                 ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='3', form_code='CL2'))
+                   submission=dict(submission_id='3', form_code='CL1'))
         e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
                 ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
@@ -657,33 +665,42 @@ class TestQueryApi(unittest.TestCase):
         e, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'])
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
                 ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='5', form_code='CL1'))
 
-        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
-                                             aggregates=[SumAggregrate("patients"),MinAggregrate('meds')])
-#        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
-#                                             aggregates={"director": data.reduce_functions.LATEST,
-#                                                         "beds": data.reduce_functions.LATEST,
-#                                                         "patients": data.reduce_functions.SUM,
-#                                                         'meds': data.reduce_functions.MIN})
+        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
+                                               aggregate_on=EntityAggregration(),
+                                               aggregates=[Sum("patients"), Min('meds'), Max('beds')],
+                                               starttime="01-01-2011 00:00:00", endtime="31-12-2011 00:00:00")
+        #        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
+        #                                             aggregates={"director": data.reduce_functions.LATEST,
+        #                                                         "beds": data.reduce_functions.LATEST,
+        #                                                         "patients": data.reduce_functions.SUM,
+        #                                                         'meds': data.reduce_functions.MIN})
 
-        self.assertEqual(len(values), 3)
-        self.assertEqual(values[id1], {"patients": 30,'meds': 20})
-        self.assertEqual(values[id2], {"patients": 70,'meds': 250})
-        self.assertEqual(values[id3], {"patients": 12,'meds': 50})
-#        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
-#        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
-#        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
+        self.assertEqual(len(values), 2)
+        self.assertEqual(values[id1], {"patients": 30, 'meds': 10, 'beds': 300})
+        self.assertEqual(values[id2], {"patients": 50, 'meds': 50, 'beds': 150})
 
-#        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
-#                                             aggregates={"doctors": data.reduce_functions.MAX,
-#                                                         "beds": data.reduce_functions.SUM,
-#                                                         'patients': data.reduce_functions.AVG})
-#
-#        self.assertEqual(len(values), 2)
-#        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
-#        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
+    #        self.assertEqual(values[id3], {"patients": 12, 'meds': 50})
+    #        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
+    #                                                         aggregate_on=EntityAggregration(),
+    #                                                         aggregates=[Sum("patients"), Min('meds')],
+    #                                                         starttime="")
+
+    #        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
+    #        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
+    #        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
+
+    #        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
+    #                                             aggregates={"doctors": data.reduce_functions.MAX,
+    #                                                         "beds": data.reduce_functions.SUM,
+    #                                                         'patients': data.reduce_functions.AVG})
+    #
+    #        self.assertEqual(len(values), 2)
+    #        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
+    #        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
+
 
     def create_entity_instance(self, ENTITY_TYPE, location):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)

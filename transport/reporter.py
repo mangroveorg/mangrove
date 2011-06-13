@@ -9,7 +9,7 @@ REPORTER_ENTITY_TYPE = ["Reporter"]
 
 
 def find_reporter(dbm, from_number):
-    reporters = data.aggregate_by_entity(dbm, entity_type=["Reporter"],
+    reporters = data.aggregate(dbm, entity_type=["Reporter"],
                             aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST,
                                         NAME_FIELD: data.reduce_functions.LATEST},aggregate_on=EntityAggregration()
                           )

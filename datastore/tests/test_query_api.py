@@ -1,5 +1,5 @@
 import datetime
-from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max
+from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max, Latest
 from mangrove.datastore.data import  LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_for_form
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
@@ -628,12 +628,12 @@ class TestQueryApi(unittest.TestCase):
                    submission=dict(submission_id='2', form_code='CL1'))
 
         e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
-                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                ("director", "Dr. A1", dd_types['director']), ("patients", 10, dd_types['patients'])],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='1', form_code='CL1'))
 
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 10, dd_types['meds']),
-                ("patients", 20, dd_types['patients'])],
+                ("patients", 20, dd_types['patients']),("director", "Dr. A2", dd_types['director'])],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL1'))
 
@@ -670,7 +670,7 @@ class TestQueryApi(unittest.TestCase):
 
         values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
                                                aggregate_on=EntityAggregration(),
-                                               aggregates=[Sum("patients"), Min('meds'), Max('beds')],
+                                               aggregates=[Sum("patients"), Min('meds'), Max('beds'),Latest("director")],
                                                starttime="01-01-2011 00:00:00", endtime="31-12-2011 00:00:00")
         #        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
         #                                             aggregates={"director": data.reduce_functions.LATEST,
@@ -679,8 +679,8 @@ class TestQueryApi(unittest.TestCase):
         #                                                         'meds': data.reduce_functions.MIN})
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[id1], {"patients": 30, 'meds': 10, 'beds': 300})
-        self.assertEqual(values[id2], {"patients": 50, 'meds': 50, 'beds': 150})
+        self.assertEqual(values[id1], {"patients": 30, 'meds': 10, 'beds': 300, 'director' : "Dr. A2"})
+        self.assertEqual(values[id2], {"patients": 50, 'meds': 50, 'beds': 150, 'director' : "Dr. B1"})
 
     #        self.assertEqual(values[id3], {"patients": 12, 'meds': 50})
     #        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',

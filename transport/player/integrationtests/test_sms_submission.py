@@ -87,6 +87,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")
+        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
+        self.assertEquals(data_record_id, submission_log.data_record_id)
 
 
     def test_should_give_error_for_wrong_integer_value(self):
@@ -103,29 +105,31 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_get_submissions_for_form(self):
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        id=self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                      status=False, error_message=""))
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+                                                      status=False, error_message="", data_record_id='2345678'))
+        id1 = self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                      status=False, error_message=""))
+                                                      status=False, error_message="", data_record_id='1234567'))
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="def",
                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'},
-                                                      status=False, error_message=""))
+                                                      status=False, error_message="", data_record_id='345678'))
 
-        submission_list = get_submissions_made_for_form(self.dbm, "abc")
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "abc")
         self.assertEquals(2, len(submission_list))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
+        self.assertEquals(2, len(ids))
+        self.assertListEqual(['1234567', '2345678'], ids)
 
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "CLINIC +EID %s +ARV 150 " % self.entity.id
         
         self.sms_player.accept(Request("sms", text, "1234", "5678"))
-        submission_list = get_submissions_made_for_form(self.dbm, "CLINIC")
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
 
@@ -188,6 +192,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals("REG", submission_log.form_code)
         self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
+        self.assertEquals(response.datarecord_id, submission_log.data_record_id)
 
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):

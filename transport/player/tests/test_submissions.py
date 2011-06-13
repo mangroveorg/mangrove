@@ -107,7 +107,7 @@ class TestSubmissions(TestCase):
         response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[])
+                                                                            status=True, errors=[], data_record_id=response.datarecord_id)
 
 
     def test_should_update_submission_log_on_failure(self):
@@ -139,7 +139,7 @@ class TestSubmissions(TestCase):
                                                                  location=["Pune"],
                                                                  short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[])
+                                                                            status=True, errors=[], data_record_id=response.datarecord_id)
 
 
     def test_should_not_register_entity_if_form_submission_invalid(self):

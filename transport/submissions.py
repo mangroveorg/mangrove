@@ -61,7 +61,7 @@ class SubmissionHandler(object):
 
                 data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data )
 
-                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                logger.update_submission_log(submission_id=submission_id, status=True, errors=[], data_record_id=data_record_id)
 
                 return SubmissionResponse(True,submission_id, {}, data_record_id, e.short_code)
             else:
@@ -69,7 +69,7 @@ class SubmissionHandler(object):
                                                  data=form_submission.values, entity_type=form.entity_type,
                                                  submission=denormalized_submission_data)
 
-                logger.update_submission_log(submission_id=submission_id, status=True, errors=[])
+                logger.update_submission_log(submission_id=submission_id, data_record_id = data_record_id, status=True, errors=[])
                 return SubmissionResponse(True, submission_id, {},data_record_id)
         else:
             _errors = form_submission.errors
@@ -81,12 +81,13 @@ class SubmissionLogger(object):
         assert isinstance(dbm,DatabaseManager)
         self.dbm = dbm
 
-    def update_submission_log(self, submission_id, status, errors):
+    def update_submission_log(self, submission_id, status, errors, data_record_id=None):
         error_message = ""
         for each in errors:
             error_message = error_message + each + "\n"
         log = self.dbm._load_document(submission_id, SubmissionLogDocument)
         log.status = status
+        log.data_record_id = data_record_id
         log.error_message = log.error_message + (error_message or "")
         self.dbm._save_document(log)
 
@@ -109,7 +110,11 @@ def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, c
     else:
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, startkey=[form_code],
                                          endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
-
-    answer = [each.value for each in rows]
-    answer.reverse()
-    return answer
+    answers, ids = list(), list()
+    for each in rows:
+        answers.append(each.value)
+        if not count_only:
+            ids.append(each.value["data_record_id"])
+    answers.reverse()
+    ids.reverse()
+    return answers, ids

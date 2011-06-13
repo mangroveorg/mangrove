@@ -231,9 +231,10 @@ class SubmissionLogDocument(DocumentBase):
     status = BooleanField()
     error_message = TextField()
     form_code = TextField()
+    data_record_id = TextField()
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None):
+                 error_message=None, form_code=None, data_record_id=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
@@ -243,7 +244,7 @@ class SubmissionLogDocument(DocumentBase):
         self.values = values
         self.status = status
         self.error_message = error_message
-
+        self.data_record_id = data_record_id
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

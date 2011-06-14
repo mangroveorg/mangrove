@@ -3,13 +3,13 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
 from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE
-from mangrove.errors.MangroveException import  NoQuestionsSubmittedException
+from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, DataObjectNotFound
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
 
 
 class SubmissionRequest(object):
-    def __init__(self,form_code,submission,transport,source,destination):
+    def __init__(self, form_code, submission, transport, source, destination):
         assert form_code is not None
         assert submission is not None
         assert transport is not None
@@ -22,8 +22,9 @@ class SubmissionRequest(object):
         self.source = source
         self.destination = destination
 
+
 class SubmissionResponse(object):
-    def __init__(self, success, submission_id, errors = None, datarecord_id=None, short_code=None):
+    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None):
         assert success is not None
         assert submission_id is not None
 
@@ -33,21 +34,24 @@ class SubmissionResponse(object):
         self.datarecord_id = datarecord_id
         self.short_code = short_code
 
+
 class SubmissionHandler(object):
     def __init__(self, dbm):
-        assert isinstance(dbm,DatabaseManager)
+        assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
 
     def accept(self, request):
-        assert isinstance(request,SubmissionRequest)
+        assert isinstance(request, SubmissionRequest)
         form_code = request.form_code
         values = request.submission
 
         logger = SubmissionLogger(self.dbm)
-        submission_id,denormalized_submission_data = logger.create_submission_log(channel=request.transport, source=request.source,
-                                                         destination=request.destination, form_code=form_code,
-                                                         values=values)
-        
+        submission_id, denormalized_submission_data = logger.create_submission_log(channel=request.transport,
+                                                                                   source=request.source,
+                                                                                   destination=request.destination,
+                                                                                   form_code=form_code,
+                                                                                   values=values)
+
         form = get_form_model_by_code(self.dbm, form_code)
         form_submission = form.validate_submission(values)
         if form_submission.is_valid:
@@ -59,26 +63,33 @@ class SubmissionHandler(object):
                                          short_code=form_submission.short_code,
                                          geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
 
-                data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data )
+                data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data)
 
-                logger.update_submission_log(submission_id=submission_id, status=True, errors=[], data_record_id=data_record_id)
+                logger.update_submission_log(submission_id=submission_id, status=True, errors=[],
+                                             data_record_id=data_record_id)
 
-                return SubmissionResponse(True,submission_id, {}, data_record_id, e.short_code)
+                return SubmissionResponse(True, submission_id, {}, data_record_id, e.short_code)
             else:
-                data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
-                                                 data=form_submission.values, entity_type=form.entity_type,
-                                                 submission=denormalized_submission_data)
+                try:
+                    data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
+                                                     data=form_submission.values, entity_type=form.entity_type,
+                                                     submission=denormalized_submission_data)
 
-                logger.update_submission_log(submission_id=submission_id, data_record_id = data_record_id, status=True, errors=[])
-                return SubmissionResponse(True, submission_id, {},data_record_id)
+                    logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True
+                                                 , errors=[])
+                    return SubmissionResponse(True, submission_id, {}, data_record_id)
+                except DataObjectNotFound as e:
+                    logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
+                    raise DataObjectNotFound('Entity','id','short_code')
         else:
             _errors = form_submission.errors
             logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())
-            return SubmissionResponse(False,submission_id,_errors)
+            return SubmissionResponse(False, submission_id, _errors)
+
 
 class SubmissionLogger(object):
     def __init__(self, dbm):
-        assert isinstance(dbm,DatabaseManager)
+        assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
 
     def update_submission_log(self, submission_id, status, errors, data_record_id=None):
@@ -94,14 +105,15 @@ class SubmissionLogger(object):
 
     def create_submission_log(self, channel, source, destination, form_code, values):
         submission_id = self.log(channel, source, destination, form_code, values, False, "")
-        denormalized_submission_data = dict(submission_id=submission_id,form_code=form_code)
-        return submission_id,denormalized_submission_data
+        denormalized_submission_data = dict(submission_id=submission_id, form_code=form_code)
+        return submission_id, denormalized_submission_data
 
     def log(self, channel, source, destination, form_code, values, status, error_message):
         return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
                                                              destination=destination, form_code=form_code,
                                                              values=values, status=status,
                                                              error_message=error_message, voided=True))
+
 
 def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, count_only=False):
     assert is_string(form_code)

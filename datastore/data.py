@@ -46,7 +46,94 @@ class LocationFilter(object):
     def __init__(self,location):
         self.location=location
 
-def aggregate(dbm, entity_type, aggregates=None, aggregate_on=None, filter=None,starttime=None, endtime=None):
+
+def aggregate(dbm, entity_type, aggregates=None, aggregate_on=None,
+              filter=None, starttime=None, endtime=None):
+    """
+    Example usage of aggregate:
+
+    1. Aggregate on all data records for a field per entity.
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregates={
+            "director": data.reduce_functions.LATEST,
+            "beds": data.reduce_functions.LATEST,
+            "patients": data.reduce_functions.SUM
+            },
+        aggregate_on=EntityAggregration()
+        )
+
+    Returns one row per entity, with the aggregated values for each
+    field.
+    {"<entity_id>": {"director": "Dr. A", "beds": 500, "patients": 30}}
+
+    2. Aggregate on a location level = 2
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregates={
+            "patients": data.reduce_functions.SUM
+            },
+        aggregate_on=LocationAggregration(level=2)
+        )
+
+    Returns {("India", "MH"): {"patients": 2}}
+
+    3. All entities, selected fields, filtered by location,
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregate_on=EntityAggregration(),
+        aggregates={
+            "director": data.reduce_functions.LATEST,
+            "beds": data.reduce_functions.LATEST,
+            "patients": data.reduce_functions.SUM
+            },
+        filter=LocationFilter(['India', 'MH', 'Pune'])
+        )
+
+    This returns you one row per entity for all entities of type
+    entity_type in Pune with the aggregations applied per field.
+
+    4. Aggregate on a location level = 2, but filter by location,
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregates={
+            "patients": data.reduce_functions.SUM
+            },
+        aggregate_on=LocationAggregration(level=2),
+        filter=LocationFilter(['India', 'MH'])
+        )
+
+    5. Aggregate on any hierarchy,
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregates={
+            "patients": data.reduce_functions.SUM
+            },
+        aggregate_on=TypeAggregration(type='governance', level=3)
+        )
+
+    6. Fetch aggregation for all the fields for all entities of a
+    given type, use '*' instead of field name,
+
+    values = data.aggregate(
+        self.manager,
+        entity_type=ENTITY_TYPE,
+        aggregates={
+            "*": data.reduce_functions.LATEST
+            },
+        aggregate_on=EntityAggregration()
+        )
+    """
     result = {}
     aggregates = {} if aggregates is None else aggregates
 

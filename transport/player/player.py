@@ -132,7 +132,7 @@ class CsvPlayer(object):
                              datarecord_id=submission_response.datarecord_id,
                              short_code=submission_response.short_code))
             except MangroveException as e:
-                response.append(Response(reporters=[], success=False, errors=e.message))
+                response.append(Response(reporters=[], success=False, errors=dict(error=e.message,row=values)))
         return response
 
 

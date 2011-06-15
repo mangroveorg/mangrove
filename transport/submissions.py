@@ -88,9 +88,15 @@ class SubmissionHandler(object):
 
 
 class SubmissionLogger(object):
+
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
+
+    def void_data_record(self, submission_id):
+        submission_log = self.dbm._load_document(submission_id, SubmissionLogDocument)
+        submission_log.voided = True
+        self.dbm._save_document(submission_log)
 
     def update_submission_log(self, submission_id, status, errors, data_record_id=None):
         error_message = ""

@@ -131,7 +131,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.sms_player.accept(Request("sms", text, "1234", "5678"))
         submission_list, ids = get_submissions_made_for_form(self.dbm, "CLINIC")
         self.assertEquals(1, len(submission_list))
-        self.assertEquals("Answer 150 for question ARV is greater than allowed.\n", submission_list[0]['error_message'])
+        self.assertEquals("Answer 150 for question ARV is greater than allowed.  ", submission_list[0]['error_message'])
 
 
     def test_should_register_new_entity(self):

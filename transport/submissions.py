@@ -95,6 +95,7 @@ class SubmissionLogger(object):
 
     def void_data_record(self, submission_id):
         submission_log = self.dbm._load_document(submission_id, SubmissionLogDocument)
+        submission_log.data_record_id = None
         submission_log.voided = True
         self.dbm._save_document(submission_log)
 

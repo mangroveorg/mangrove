@@ -127,13 +127,11 @@ def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, c
         rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code], endkey=[form_code, {}],
                                          group=True, group_level=1, reduce=True)
     else:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, startkey=[form_code],
-                                         endkey=[form_code, {}], skip=page_number * page_size, limit=page_size)
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
+                                         endkey=[form_code], skip=page_number * page_size, limit=page_size)
     answers, ids = list(), list()
     for each in rows:
         answers.append(each.value)
         if not count_only:
             ids.append(each.value["data_record_id"])
-    answers.reverse()
-    ids.reverse()
     return answers, ids

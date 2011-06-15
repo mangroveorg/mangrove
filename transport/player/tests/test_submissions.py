@@ -3,7 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
 from mangrove.transport.submissions import SubmissionHandler, SubmissionLogger, SubmissionRequest
@@ -126,6 +126,14 @@ class TestSubmissions(TestCase):
 
         with self.assertRaises(FormModelDoesNotExistsException):
             response = self.submission_handler.accept(self.submission_request)
+
+    def test_should_fail_submission_if_invalid_form_code(self):
+        form_submission = self._valid_form_submission()
+        self.form_model_mock.validate_submission.return_value = form_submission
+        self.entity_module.add_data.side_effect = DataObjectNotFound("Entity",'id','short_code')
+
+        with self.assertRaises(DataObjectNotFound):
+            self.submission_handler.accept(self.submission_request)
 
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()

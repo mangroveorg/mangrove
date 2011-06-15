@@ -80,7 +80,7 @@ class SubmissionHandler(object):
                     return SubmissionResponse(True, submission_id, {}, data_record_id)
                 except DataObjectNotFound as e:
                     logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
-                    raise DataObjectNotFound('Entity','id','short_code')
+                    raise DataObjectNotFound('Entity','short_code',form_submission.short_code)
         else:
             _errors = form_submission.errors
             logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())

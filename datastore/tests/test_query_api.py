@@ -1,5 +1,5 @@
 import datetime
-from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max, Latest
+from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max, Latest, aggregation_factory
 from mangrove.datastore.data import  LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_for_form
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
@@ -701,7 +701,11 @@ class TestQueryApi(unittest.TestCase):
     #        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
     #        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
 
-
+    def test_aggregation_factory(self):
+        test_object = aggregation_factory("sum", "patients")
+        self.assertEquals(6, test_object.reduce([1,2,3]))
+        self.assertEquals("patients", test_object.field_name)
+        
     def create_entity_instance(self, ENTITY_TYPE, location):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)
         id1 = e.save()

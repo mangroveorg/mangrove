@@ -43,6 +43,31 @@ class Latest(object):
         return list_of_values[len(list_of_values) - 1] if list_of_values else None
 
 
+class Count(object):
+    def __init__(self, field_name):
+        self.field_name = field_name
+
+    def reduce(self, list_of_values):
+        assert isinstance(list_of_values, list)
+        return len(list_of_values)
+
+
+class Average(object):
+    def __init__(self, field_name):
+        self.field_name = field_name
+
+    def reduce(self, list_of_values):
+        assert isinstance(list_of_values, list)
+        count = len(list_of_values)
+        if count > 0:
+            return float(sum(list_of_values)) / count
+
+AGGREGATION_DICTIONARY = dict(latest=Latest, sum=Sum, min=Min, max=Max, count=Count, average=Average)
+
+def aggregation_factory(key, field_name):
+    return AGGREGATION_DICTIONARY.get(key)(field_name)
+
+
 def aggregate_by_form_code_python(dbm, form_code, aggregates=None, aggregate_on=None, filter=None,
                                   starttime=None, endtime=None):
     assert is_string(form_code)

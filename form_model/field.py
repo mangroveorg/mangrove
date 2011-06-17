@@ -166,10 +166,11 @@ class DateField(Field):
     def validate(self, value):
         DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
         try:
-            return datetime.strptime(value, DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
+            datetime.strptime(value.strip(), DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
-
+        return value
+    
     @property
     def date_format(self):
         return self._dict.get(self.DATE_FORMAT)

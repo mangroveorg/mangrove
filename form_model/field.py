@@ -243,7 +243,6 @@ class SelectField(Field):
         for option in self.options:
             option_text = option["text"][field_attributes.DEFAULT_LANGUAGE]
             option_list.append({"text": option_text, "val": option.get("val")})
-        print option_list
         dict['choices'] = option_list
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict

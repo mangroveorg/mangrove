@@ -40,3 +40,4 @@ class TestFormSubmission(TestCase):
 
         self.assertEqual(form_submission.form_code, "AIDS")
         self.assertEqual(form_submission.short_code, "1")
+

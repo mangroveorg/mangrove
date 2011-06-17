@@ -46,6 +46,10 @@ class TestSubmissions(TestCase):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune"}, "1",
                               True, {}, self.ENTITY_TYPE, data={})
 
+    def _valid_form_submission_with_choices(self):
+        return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour":['red']}, "1",
+                              True, {}, self.ENTITY_TYPE, data={})
+
     def _empty_form_submission(self):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001'}, "1", True, {},
                               self.ENTITY_TYPE, data={})
@@ -163,3 +167,12 @@ class TestSubmissions(TestCase):
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
                                                                             errors=form_submission.errors.values())
+
+    def test_should_return_expanded_response(self):
+        form_submission = self._valid_form_submission_with_choices()
+        self.form_model_mock.validate_submission.return_value = form_submission
+
+        response = self.submission_handler.accept(self.submission_request)
+
+        expected_message = form_submission.cleaned_data
+        self.assertEquals(expected_message, response.processed_data)

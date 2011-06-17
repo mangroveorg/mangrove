@@ -23,13 +23,14 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None, processed_data=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
         self.errors = errors
         self.datarecord_id = datarecord_id
         self.short_code = short_code
+        self.processed_data = processed_data
 
 
 class SMSPlayer(object):
@@ -50,7 +51,7 @@ class SMSPlayer(object):
         submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=reporters, success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code, processed_data=submission_response.processed_data)
 
 
 class SMSParser(object):
@@ -103,7 +104,7 @@ class WebPlayer(object):
         submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code, processed_data=submission_response.processed_data)
 
 
 class WebParser(object):

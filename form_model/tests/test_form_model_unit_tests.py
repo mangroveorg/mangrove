@@ -58,18 +58,18 @@ class TestFormModel(unittest.TestCase):
         self.assertFalse(valid)
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
-        self.assertEqual({'entity_question': '1'}, cleaned_answers)
+        self.assertEqual({'ID': '1'}, cleaned_answers)
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
-        expected_result = {"entity_question": "1", "question1_Name": "Asif Momin", "Father's age": 20}
+        expected_result = {"ID": "1", "Q1": "Asif Momin", "Q2": 20}
         valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_ignore_field_validation_if_the_answer_blank(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
-        expected_result = {"entity_question": "1", "question1_Name": "Asif Momin"}
+        expected_result = {"ID": "1", "Q1": "Asif Momin"}
         valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(cleaned_answers, expected_result)
@@ -86,12 +86,12 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 2)
         self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
                           'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
-        self.assertEqual({'Color': ['RED'], 'entity_question': '1'}, cleaned_answers)
+        self.assertEqual({'Q3': ['RED'], 'ID': '1'}, cleaned_answers)
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
-        expected_cleaned_data = {'entity_question': '1', "question1_Name": "My Name", "Father's age": 40,
-                                 "Color": ["RED"]}
+        expected_cleaned_data = {'ID': '1', "Q1": "My Name", "Q2": 40,
+                                 "Q3": ["RED"]}
         valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
         self.assertTrue(valid)
         self.assertEqual(0, len(errors))
@@ -114,7 +114,7 @@ class TestFormModel(unittest.TestCase):
         form_submission = self.form_model.validate_submission(answers)
         self.assertTrue(form_submission.is_valid)
         self.assertEqual("1", form_submission.short_code)
-        self.assertEqual({"Father's age": 16.0, 'entity_question': '1'}, form_submission.cleaned_data)
+        self.assertEqual({"Q2": 16.0, 'ID': '1'}, form_submission.cleaned_data)
         self.assertEqual(0, len(form_submission.errors))
 
     def test_should_return_invalid_form_submission(self):
@@ -122,7 +122,7 @@ class TestFormModel(unittest.TestCase):
         form_submission = self.form_model.validate_submission(answers)
         self.assertFalse(form_submission.is_valid)
         self.assertEqual("1", form_submission.short_code)
-        self.assertEqual({'entity_question': '1'}, form_submission.cleaned_data)
+        self.assertEqual({'ID': '1'}, form_submission.cleaned_data)
         self.assertEqual(1, len(form_submission.errors))
 
 

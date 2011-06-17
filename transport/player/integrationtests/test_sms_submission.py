@@ -135,7 +135,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_register_new_entity(self):
-        text = "REG +n buddy +T dog +L 80 80 +D its a dog! +M 123456"
+        text = "REG +n buddy +T dog +G 80 80 +D its a dog! +M 123456"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)

@@ -86,4 +86,4 @@ class GeoCodeConstraint(object):
             raise LongitudeNotFloat(longitude)
         except VdtValueError:
             raise LongitudeNotInRange(longitude)
-        return long, lat
+        return lat, long

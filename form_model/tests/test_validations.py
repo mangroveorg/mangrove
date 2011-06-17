@@ -143,7 +143,7 @@ class TestLocationValidations(unittest.TestCase):
     def test_latitude_and_longitude_is_float(self):
 
         constraint = GeoCodeConstraint()
-        expected_response = (130.0, 90.0)
+        expected_response = (90.0, 130.0)
         actual_response = constraint.validate("90", "130")
         self.assertEqual(expected_response, actual_response)
 
@@ -183,7 +183,7 @@ class TestLocationValidations(unittest.TestCase):
 
     def test_should_strip_white_spaces(self):
         constraint = GeoCodeConstraint()
-        self.assertEqual((130.0,90.0), constraint.validate("90 ", " 130"))
-        self.assertEqual((130.0,90.0), constraint.validate("   90 ", " 130  "))
+        self.assertEqual((90.0, 130.0), constraint.validate("90 ", " 130"))
+        self.assertEqual((90.0, 130.0), constraint.validate("   90 ", " 130  "))
 
 

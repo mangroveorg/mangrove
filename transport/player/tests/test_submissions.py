@@ -44,7 +44,7 @@ class TestSubmissions(TestCase):
 
     def _valid_form_submission(self):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune"}, "1",
-                              True, {}, self.ENTITY_TYPE, data={})
+                              True, {}, "entity_type", data={})
 
     def _valid_form_submission_with_choices(self):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour":['red']}, "1",
@@ -147,7 +147,7 @@ class TestSubmissions(TestCase):
         
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
-        self.entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type=self.ENTITY_TYPE,
+        self.entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type",
                                                                  location=["Pune"],
                                                                  short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,

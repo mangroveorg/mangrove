@@ -60,7 +60,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="CLINIC", type='survey', fields=[question1, question2, question3])
+                                    form_code="clinic", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
@@ -71,7 +71,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def test_should_save_submitted_sms(self):
-        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        text = "clinic +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         
 
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
@@ -83,7 +83,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
-        self.assertEqual("CLINIC", data_record.submission['form_code'])
+        self.assertEqual("clinic", data_record.submission['form_code'])
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")
@@ -92,13 +92,13 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_give_error_for_wrong_integer_value(self):
-        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
+        text = "clinic +EID %s +ARV 150 " % self.entity.id
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
     def test_should_give_error_for_wrong_text_value(self):
-        text = "CLINIC +EID CID001 +NAME ABC"
+        text = "clinic +EID CID001 +NAME ABC"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
@@ -126,16 +126,16 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertListEqual(['1234567', '2345678'], ids)
 
     def test_error_messages_are_being_logged_in_submissions(self):
-        text = "CLINIC +EID %s +ARV 150 " % self.entity.id
+        text = "clinic +EID %s +ARV 150 " % self.entity.id
         
         self.sms_player.accept(Request("sms", text, "1234", "5678"))
-        submission_list, ids = get_submissions_made_for_form(self.dbm, "CLINIC")
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic")
         self.assertEquals(1, len(submission_list))
         self.assertEquals("Answer 150 for question ARV is greater than allowed.  ", submission_list[0]['error_message'])
 
 
     def test_should_register_new_entity(self):
-        text = "REG +n buddy +T dog +G 80 80 +D its a dog! +M 123456"
+        text = "reg +n buddy +T dog +G 80 80 +D its a dog! +M 123456"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -145,7 +145,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
 
-        text = "REG +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
+        text = "reg +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -154,7 +154,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         a = get_by_short_code(self.dbm, "bud", ["dog"])
         self.assertEqual(a.short_code, "bud")
 
-        text = "REG +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
+        text = "reg +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -166,21 +166,21 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
         INVALID_LATITUDE = 380
-        text = "REG +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
+        text = "reg +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual({'g': '380 is an invalid latitude, must be between -90 and 90'}, response.errors)
 
         INVALID_LONGITUDE = -184
-        text = "REG +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
+        text = "reg +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
         self.assertEqual({'g': '-184 is an invalid longitude, must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
-        request = Request(transport="sms", message="REG +N buddy +S DOG3 +T dog", source="1234", destination="5678")
+        request = Request(transport="sms", message="reg +N buddy +S DOG3 +T dog", source="1234", destination="5678")
         
         response = self.sms_player.accept(request)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
@@ -189,7 +189,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(request.source, submission_log.source)
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
-        self.assertEquals("REG", submission_log.form_code)
+        self.assertEquals("reg", submission_log.form_code)
         self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
         self.assertEquals(request.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record_id)
@@ -197,21 +197,28 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         with self.assertRaises(DataObjectAlreadyExists):
-            text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            text = "reg +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
-            text = "REG +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
+            text = "reg +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):
-            text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
+            text = "reg +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
     def test_entity_instance_is_case_insensitive(self):
-        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % "CLI1"
+        text = "clinic +EID %s +name CLINIC-MADA +ARV 50 +COL a" % "CLI1"
+
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+
+        self.assertTrue(response.success)
+
+    def test_questionnaire_code_is_case_insensitive(self):
+        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % "cli1"
 
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
 

@@ -10,7 +10,7 @@ from mangrove.form_model.field import TextField, GeoCodeField
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
-REGISTRATION_FORM_CODE = "REG"
+REGISTRATION_FORM_CODE = "reg"
 ENTITY_TYPE_FIELD_CODE = "T"
 ENTITY_TYPE_FIELD_NAME = "entity_type"
 LOCATION_TYPE_FIELD_NAME = "location"
@@ -323,6 +323,6 @@ def _construct_registration_form(manager):
                           defaultValue="some default value", language="eng", ddtype=description_type)
     question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the associated mobile number?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
-    form_model = FormModel(manager, name="REG", form_code=REGISTRATION_FORM_CODE, fields=[
+    form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
             question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model

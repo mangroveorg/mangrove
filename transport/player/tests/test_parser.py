@@ -54,7 +54,7 @@ class TestSMSParser(TestCase):
         smsplayer = SMSParser()
         form_code, values = smsplayer.parse("WP +ID 1 + ++ +NAME FirstName LastName ++ +AGE 10 ++ ")
         self.assertEqual({"id": "1", "name": "FirstName LastName", "age": "10"}, values)
-        self.assertEqual("WP", form_code)
+        self.assertEqual("wp", form_code)
 
 
     def test_should_return_form_code_and_message_as_dict(self):

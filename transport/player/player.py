@@ -66,7 +66,7 @@ class SMSParser(object):
         message = message.strip()
         self._validate_message_format(message)
         tokens = message.split(self.SEPARATOR)
-        form_code = tokens[0].strip()
+        form_code = tokens[0].strip().lower()
         tokens.remove(tokens[0])
         #remove any space if any. for example if the message is +
         tokens = [token.strip() for token in tokens if token]

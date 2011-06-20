@@ -37,7 +37,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.color_type.save()
 
         self.entity = create_entity(self.dbm, entity_type=["HealthFacility", "Clinic"],
-                                    location=["India", "Pune"], aggregation_paths=None, short_code="CLI1",
+                                    location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
 
         self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission=dict(submission_id="1"))
@@ -200,7 +200,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             text = "REG +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
-            text = "REG +N buddy2 +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            text = "REG +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
@@ -209,3 +209,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             text = "REG +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
+
+    def test_entity_instance_is_case_insensitive(self):
+        text = "CLINIC +EID %s +name CLINIC-MADA +ARV 50 +COL a" % "CLI1"
+
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+
+        self.assertTrue(response.success)

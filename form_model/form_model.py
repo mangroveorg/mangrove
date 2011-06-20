@@ -272,7 +272,7 @@ class FormSubmission(object):
 
         self.form_model = form_model
         self._cleaned_data = form_answers
-        self.short_code = short_code
+        self.short_code = short_code.lower() if short_code is not None else None
         self.form_code = self.form_model.form_code
         self.is_valid = success
         self.errors = errors

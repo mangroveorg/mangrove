@@ -3,7 +3,7 @@ import csv
 import re
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException
 from mangrove.transport import reporter
-from mangrove.transport.submissions import  SubmissionRequest, SubmissionResponse
+from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty, is_string
 
 
@@ -23,7 +23,8 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None, processed_data=None):
+    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None,
+                 processed_data=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
@@ -51,7 +52,8 @@ class SMSPlayer(object):
         submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=reporters, success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code, processed_data=submission_response.processed_data)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code,
+                        processed_data=submission_response.processed_data)
 
 
 class SMSParser(object):
@@ -104,7 +106,8 @@ class WebPlayer(object):
         submission_response = self.submission_handler.accept(submission_request)
         return Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
                         submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code, processed_data=submission_response.processed_data)
+                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code,
+                        processed_data=submission_response.processed_data)
 
 
 class WebParser(object):
@@ -127,13 +130,17 @@ class CsvPlayer(object):
                                                    source=Channel.CSV, destination="")
             try:
                 submission_response = self.submission_handler.accept(submission_request)
-                response.append(
-                    Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
-                             submission_id=submission_response.submission_id,
-                             datarecord_id=submission_response.datarecord_id,
-                             short_code=submission_response.short_code))
+                if not submission_response.success:
+                    response.append(Response(reporters=[], success=False,
+                                             errors=dict(error=submission_response.errors.values(), row=values)))
+                else:
+                    response.append(
+                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
+                                 submission_id=submission_response.submission_id,
+                                 datarecord_id=submission_response.datarecord_id,
+                                 short_code=submission_response.short_code))
             except MangroveException as e:
-                response.append(Response(reporters=[], success=False, errors=dict(error=e.message,row=values)))
+                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
         return response
 
 

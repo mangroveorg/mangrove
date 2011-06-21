@@ -31,7 +31,7 @@ class TestCsvPlayer(unittest.TestCase):
     def test_should_process_next_submission_if_exception_with_prev(self):
         def expected_side_effect(*args, **kwargs):
             request = kwargs.get('request') or args[0]
-            if request.form_code == 'CLF2':
+            if request.form_code == 'clf2':
                 raise FormModelDoesNotExistsException('')
             return SubmissionResponse(success = True,submission_id=1)
 

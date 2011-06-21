@@ -81,7 +81,7 @@ class TestCsvParser(TestCase):
 
         for index, result in enumerate(results):
             form_code, values = results[index]
-            self.assertEqual("CLF1", form_code)
+            self.assertEqual("clf1", form_code)
             offset = index + 1
             self.assertEqual(
                     {"id": "CL%03d" % (offset,), "beds": "%d" % (10 + offset,),
@@ -103,14 +103,14 @@ class TestCsvParser(TestCase):
         self.assertEqual(3, len(results))
 
         form_code, values = results[0]
-        self.assertEqual("CLF1", form_code)
+        self.assertEqual("clf1", form_code)
         self.assertEqual(
                     {"id": "CL001", "beds": "11",
                      "director": "Dr. A1",
                      "meds": "201"
                 }, values)
         form_code, values = results[1]
-        self.assertEqual("CLF1", form_code)
+        self.assertEqual("clf1", form_code)
         self.assertEqual(
                     {"id": "CL001", "beds": "",
                      "director": "Dr. A1",
@@ -118,7 +118,7 @@ class TestCsvParser(TestCase):
                 }, values)
 
         form_code, values = results[2]
-        self.assertEqual("CLF1", form_code)
+        self.assertEqual("clf1", form_code)
         self.assertEqual(
                     {"id": "CL002", "beds": "12",
                      "director": "Dr. LastName,Firstname",
@@ -148,7 +148,7 @@ class TestCsvParser(TestCase):
 
         for index, result in enumerate(results):
             form_code, values = results[index]
-            self.assertEqual("CLF1", form_code)
+            self.assertEqual("clf1", form_code)
             offset = index + 1
             self.assertEqual(
                     {"id": "CL%03d" % (offset,), "beds": "%d" % (10 + offset,),

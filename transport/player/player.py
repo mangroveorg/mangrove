@@ -165,7 +165,7 @@ class CsvParser(object):
     def _parse_row(self, form_code_fieldname, row):
         result_row = dict(row)
         self._strip_field_values(result_row)
-        form_code = result_row.pop(form_code_fieldname)
+        form_code = result_row.pop(form_code_fieldname).lower()
         return form_code, result_row
 
     def parse(self, csv_data):

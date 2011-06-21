@@ -42,8 +42,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission=dict(submission_id="1"))
 
-        reporter = create_entity(self.dbm, entity_type=["Reporter"],
-                                 location=["India", "Pune"], aggregation_paths=None, short_code="REP1",
+        reporter = create_entity(self.dbm, entity_type=["reporter"],
+                                 location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
                                  )
 
         reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
@@ -223,3 +223,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
 
         self.assertTrue(response.success)
+
+    def test_entity_type_is_case_insensitive_in_registration(self):
+        text = "reg +n buddy +T DOG +G 80 80 +M 123456"
+
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+
+        self.assertTrue(response.success)
+        data_record = self.dbm._load_document(response.datarecord_id, DataRecordDocument)
+        actual_type = data_record["entity"]["aggregation_paths"]["_type"]
+
+        self.assertEquals(["dog"], actual_type)

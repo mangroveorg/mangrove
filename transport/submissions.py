@@ -59,7 +59,7 @@ class SubmissionHandler(object):
             if len(form_submission.values) == 1:
                 raise NoQuestionsSubmittedException()
             if form._is_registration_form():
-                e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type,
+                e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type.lower(),
                                          location=[form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_NAME)],
                                          short_code=form_submission.short_code,
                                          geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))

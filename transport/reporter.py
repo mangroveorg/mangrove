@@ -5,11 +5,11 @@ from mangrove.errors.MangroveException import NumberNotRegisteredException
 from mangrove.datastore import data
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 
-REPORTER_ENTITY_TYPE = ["Reporter"]
+REPORTER_ENTITY_TYPE = ["reporter"]
 
 
 def find_reporter(dbm, from_number):
-    reporters = data.aggregate(dbm, entity_type=["Reporter"],
+    reporters = data.aggregate(dbm, entity_type=["reporter"],
                             aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST,
                                         NAME_FIELD: data.reduce_functions.LATEST},aggregate_on=EntityAggregration()
                           )

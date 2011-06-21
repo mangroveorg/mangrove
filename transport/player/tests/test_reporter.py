@@ -19,22 +19,22 @@ class TestReporter(TestCase):
 
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
-        define_type(self.manager,["Reporter"])
+        define_type(self.manager,["reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
                                               primitive_type='string')
         self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name', primitive_type='string')
         #Register Reporter
-        self.register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                        (NAME_FIELD, "A", self.first_name_type)],
                  location=[],
                  source="sms")
-        self.register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
                        (NAME_FIELD, "B", self.first_name_type)],
                  location=[],
                  source="sms")
-        self.register(self.manager, entity_type=["Reporter"],
+        self.register(self.manager, entity_type=["reporter"],
                  data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                        (NAME_FIELD, "B", self.first_name_type)],
                  location=[],

@@ -159,7 +159,7 @@ class CsvParser(object):
 
     def _strip_field_values(self, row):
         for key, value in row.items():
-            if value is not None:
+            if value is not None and type(value) is str:
                 row[key] = value.strip()
 
     def _parse_row(self, form_code_fieldname, row):

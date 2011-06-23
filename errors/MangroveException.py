@@ -149,15 +149,15 @@ class AnswerNotInListException(InvalidAnswerSubmissionException):
 
 
 class AnswerWrongType(InvalidAnswerSubmissionException):
-    def __init__(self, code):
-        InvalidAnswerSubmissionException.__init__(self, ("Answer to question %s is of wrong type.") % (code,), code)
+    def __init__(self, code, answer):
+        InvalidAnswerSubmissionException.__init__(self, ("Answer %s for question %s is of the wrong type.") % (answer, code,), code, (answer,))
 
 
 class IncorrectDate(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, date_format):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ('Answer to question %s is invalid: %s, expected date in %s format') %
-                                                  (code, answer, date_format), code, (answer, date_format))
+                                                  ('Answer %s for question %s is invalid. Expected date in %s format') %
+                                                  (answer, code, date_format), code, (answer, date_format))
 
 
 class NoDocumentError(MangroveException):
@@ -183,25 +183,25 @@ class ShortCodeTooLongException(MangroveException):
 
 class LatitudeNotFloat(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, ('The value for Latitude %s should be float') %
+        MangroveException.__init__(self, ('The answer %s should be float') %
                                          (lat,), data=(lat,))
 
 
 class LongitudeNotFloat(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, ('The value for Longitude %s should be float') %
+        MangroveException.__init__(self, ('The answer %s should be float') %
                                          (long,), data=(long,))
 
 
 class LongitudeNotInRange(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, ('%s is an invalid longitude, must be between -180 and 180') %
+        MangroveException.__init__(self, ('The answer %s must be between -180 and 180') %
                                          (long,), data=(long,))
 
 
 class LatitudeNotInRange(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, ('%s is an invalid latitude, must be between -90 and 90') %
+        MangroveException.__init__(self, ('The answer %s must be between -90 and 90') %
                                          (lat,), (lat,))
 
 

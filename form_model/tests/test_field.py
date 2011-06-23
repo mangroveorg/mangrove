@@ -241,7 +241,7 @@ class TestField(unittest.TestCase):
             field = IntegerField(name="Age", code="Q2", label="What is your age",
                                  language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
             field.validate("asas")
-        self.assertEqual(e.exception.message, "Answer to question Q2 is of wrong type.")
+        self.assertEqual(e.exception.message, "Answer asas for question Q2 is of the wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
@@ -321,7 +321,7 @@ class TestField(unittest.TestCase):
             valid_value = field.validate("13.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-                         "Answer to question Q2 is invalid: 13.2010, expected date in mm.yyyy format")
+                         "Answer 13.2010 for question Q2 is invalid. Expected date in mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",
@@ -329,7 +329,7 @@ class TestField(unittest.TestCase):
             valid_value = field.validate("33.12.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-                         "Answer to question Q2 is invalid: 33.12.2010, expected date in dd.mm.yyyy format")
+                         "Answer 33.12.2010 for question Q2 is invalid. Expected date in dd.mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",
@@ -337,7 +337,7 @@ class TestField(unittest.TestCase):
             valid_value = field.validate("13.01.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-                         "Answer to question Q2 is invalid: 13.01.2010, expected date in mm.dd.yyyy format")
+                         "Answer 13.01.2010 for question Q2 is invalid. Expected date in mm.dd.yyyy format")
 
     def test_should_validate_single_answer(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:

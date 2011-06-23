@@ -147,7 +147,7 @@ class IntegerField(Field):
         except VdtValueTooSmallError:
             raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtTypeError:
-            raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE])
+            raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE], value)
 
     @property
     def range(self):

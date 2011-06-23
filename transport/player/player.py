@@ -170,7 +170,7 @@ class CsvParser(object):
 
     def parse(self, csv_data):
         assert not is_string(csv_data)
-        dict_reader = csv.DictReader(csv_data)
+        dict_reader = csv.DictReader(csv_data,restkey='extra_values')
         dict_reader.fieldnames = self._parse_header(dict_reader)
         parsedData = []
         form_code_fieldname = dict_reader.fieldnames[0]

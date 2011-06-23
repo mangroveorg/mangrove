@@ -130,7 +130,11 @@ def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, c
                                          group=True, group_level=1, reduce=True)
         count = rows[0].value if rows else None
         return count
-    rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
+    if page_size is None:
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
+                                         endkey=[form_code])
+    else:
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
                                          endkey=[form_code], skip=page_number * page_size, limit=page_size)
     answers, ids = list(), list()
     for each in rows:

@@ -170,14 +170,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
-        self.assertEqual({'g': '380 is an invalid latitude, must be between -90 and 90'}, response.errors)
+        self.assertEqual({'g': 'The answer 380 must be between -90 and 90'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
-        self.assertEqual({'g': '-184 is an invalid longitude, must be between -180 and 180'}, response.errors)
+        self.assertEqual({'g': 'The answer -184 must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
         request = Request(transport="sms", message="reg +N buddy +S DOG3 +T dog", source="1234", destination="5678")

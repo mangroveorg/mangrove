@@ -36,7 +36,7 @@ def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short
         e.save()
         return e
     except FailedToSaveDataObject:
-        raise DataObjectAlreadyExists("Entity", "short code", short_code)
+        raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
 
 
 def _get_entity_type_tree(dbm):

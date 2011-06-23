@@ -74,6 +74,11 @@ class MultipleReportersForANumberException(MangroveException):
                                    (from_number,))
 
 
+class MultipleSubmissionsForSameCodeException(MangroveException):
+    def __init__(self, field_code):
+        MangroveException.__init__(self, ("Multiple responses for question code %s") %(field_code, ),(field_code,))
+
+
 class EntityTypeDoesNotExistsException(MangroveException):
     def __init__(self, entity_type):
         entity_type_full_name = ".".join(entity_type)

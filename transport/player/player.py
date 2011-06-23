@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import csv
 import re
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty, is_string
@@ -77,6 +77,8 @@ class SMSParser(object):
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
             field_code = field_code.lower()
+            if field_code in submission.keys():
+                raise MultipleSubmissionsForSameCodeException(field_code)
             submission[field_code] = answer.strip()
         return form_code, submission
 

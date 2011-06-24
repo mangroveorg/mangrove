@@ -21,6 +21,7 @@ NAME_FIELD = "name"
 SHORT_NAME_FIELD = "short_name"
 DESCRIPTION_FIELD = "description"
 MOBILE_NUMBER_FIELD = "mobile_number"
+REPORTER = ["reporter"]
 
 
 def get_form_model_by_code(dbm, code):
@@ -255,6 +256,9 @@ class FormModel(DataObject):
 
     def _is_registration_form(self):
         return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
+
+    def _is_activity_report(self):
+        return self.entity_type == REPORTER
 
 
 class FormSubmission(object):

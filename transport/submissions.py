@@ -6,6 +6,7 @@ from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE
 from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, DataObjectNotFound
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
+from mangrove.transport import reporter
 
 
 class SubmissionRequest(object):
@@ -41,6 +42,12 @@ class SubmissionHandler(object):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
 
+    def save_data_for_entity(self, e, form_submission, denormalized_submission_data, logger, submission_id):
+        data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data)
+        logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True
+                                     , errors=[])
+        return data_record_id
+
     def accept(self, request):
         assert isinstance(request, SubmissionRequest)
         form_code = request.form_code
@@ -64,24 +71,20 @@ class SubmissionHandler(object):
                                          short_code=form_submission.short_code,
                                          geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
 
-                data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data)
-
-                logger.update_submission_log(submission_id=submission_id, status=True, errors=[],
-                                             data_record_id=data_record_id)
-
+                data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,
+                                                               submission_id)
                 return SubmissionResponse(True, submission_id, {}, data_record_id, e.short_code, form_submission.cleaned_data)
-            else:
-                try:
-                    data_record_id = entity.add_data(dbm=self.dbm, short_code=form_submission.short_code,
-                                                     data=form_submission.values, entity_type=form.entity_type,
-                                                     submission=denormalized_submission_data)
+            if form._is_activity_report():
+                form_submission.short_code = reporter.get_short_code_from_reporter_number(request.source)
+            try:
+                e = entity.get_by_short_code(self.dbm, form_submission.short_code, form.entity_type)
+                data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,
+                                                           submission_id)
+                return SubmissionResponse(True, submission_id, {}, data_record_id, processed_data=form_submission.cleaned_data)
 
-                    logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True
-                                                 , errors=[])
-                    return SubmissionResponse(True, submission_id, {}, data_record_id, processed_data=form_submission.cleaned_data)
-                except DataObjectNotFound as e:
-                    logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
-                    raise DataObjectNotFound('Entity','Unique Identification Number(ID)',form_submission.short_code)
+            except DataObjectNotFound as e:
+                logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
+                raise DataObjectNotFound('Entity','Unique Identification Number(ID)',form_submission.short_code)
         else:
             _errors = form_submission.errors
             logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())

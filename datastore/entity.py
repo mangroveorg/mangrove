@@ -198,14 +198,6 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-def add_data(dbm, short_code, data, entity_type, submission=None):
-
-    if is_string(entity_type):
-        entity_type = [entity_type]
-    e = get_by_short_code(dbm, short_code, entity_type)
-    data_record_id = e.add_data(data=data, submission=submission)
-    return data_record_id
-
 def get_all_entities(dbm , include_docs=False):
     return dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
 

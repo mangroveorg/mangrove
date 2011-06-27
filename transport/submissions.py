@@ -7,6 +7,7 @@ from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, Da
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
 from mangrove.transport import reporter
+from mangrove.datastore.datadict import DataDictType
 
 
 class SubmissionRequest(object):
@@ -61,6 +62,9 @@ class SubmissionHandler(object):
                                                                                    values=values)
 
         form = get_form_model_by_code(self.dbm, form_code)
+        if form._is_activity_report():
+            short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
+            values.update(eid=short_code)
         form_submission = form.validate_submission(values)
         if form_submission.is_valid:
             if len(form_submission.values) == 1:
@@ -74,8 +78,7 @@ class SubmissionHandler(object):
                 data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,
                                                                submission_id)
                 return SubmissionResponse(True, submission_id, {}, data_record_id, e.short_code, form_submission.cleaned_data)
-            if form._is_activity_report():
-                form_submission.short_code = reporter.get_short_code_from_reporter_number(request.source)
+
             try:
                 e = entity.get_by_short_code(self.dbm, form_submission.short_code, form.entity_type)
                 data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,

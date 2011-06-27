@@ -10,6 +10,8 @@ from mangrove.form_model.field import TextField, GeoCodeField
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
+ARPT_SHORT_CODE = "dummy"
+
 REGISTRATION_FORM_CODE = "reg"
 ENTITY_TYPE_FIELD_CODE = "T"
 ENTITY_TYPE_FIELD_NAME = "entity_type"
@@ -21,7 +23,7 @@ NAME_FIELD = "name"
 SHORT_NAME_FIELD = "short_name"
 DESCRIPTION_FIELD = "description"
 MOBILE_NUMBER_FIELD = "mobile_number"
-REPORTER = ["reporter"]
+REPORTER = "reporter"
 
 
 def get_form_model_by_code(dbm, code):
@@ -258,7 +260,7 @@ class FormModel(DataObject):
         return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
 
     def _is_activity_report(self):
-        return self.entity_type == REPORTER
+        return self.entity_type == [REPORTER]
 
 
 class FormSubmission(object):

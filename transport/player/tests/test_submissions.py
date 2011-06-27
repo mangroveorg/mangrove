@@ -31,7 +31,7 @@ class TestSubmissions(TestCase):
 
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock._is_registration_form.return_value = False
-        self.form_model_mock._is_activity_report.return_value = False
+        self.form_model_mock.entity_defaults_to_reporter.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
         
@@ -184,7 +184,7 @@ class TestSubmissions(TestCase):
         reporter_module = reporter_patcher.start()
         self.form_model_mock.validate_submission.return_value = form_submission
         self.form_model_mock._is_registration_form.return_value = False
-        self.form_model_mock._is_activity_report.return_value = True
+        self.form_model_mock.entity_defaults_to_reporter.return_value = True
 
         response = self.submission_handler.accept(self.submission_request)
 

@@ -259,7 +259,7 @@ class FormModel(DataObject):
     def _is_registration_form(self):
         return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
 
-    def _is_activity_report(self):
+    def entity_defaults_to_reporter(self):
         return self.entity_type == [REPORTER]
 
 

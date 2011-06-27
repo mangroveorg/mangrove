@@ -63,7 +63,7 @@ class SubmissionHandler(object):
                                                                                    values=values)
 
         form = get_form_model_by_code(self.dbm, form_code)
-        if form._is_activity_report():
+        if form.entity_defaults_to_reporter():
             short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
             values[ENTITY_QUESTION_DISPLAY_CODE]=short_code
         form_submission = form.validate_submission(values)
@@ -88,7 +88,7 @@ class SubmissionHandler(object):
 
             except DataObjectNotFound as e:
                 logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
-                raise DataObjectNotFound('Entity','Unique Identification Number(ID)',form_submission.short_code)
+                raise DataObjectNotFound('Subject','Unique Identification Number(ID)',form_submission.short_code)
         else:
             _errors = form_submission.errors
             logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())

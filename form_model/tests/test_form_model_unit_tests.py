@@ -132,7 +132,7 @@ class TestFormModel(unittest.TestCase):
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                         form_code="1", type='survey', fields=[question1])
-        self.assertTrue(activity_report._is_activity_report())
+        self.assertTrue(activity_report.entity_defaults_to_reporter())
 
 
 #

@@ -9,6 +9,7 @@ from mangrove.utils.types import is_string
 from mangrove.transport import reporter
 from mangrove.datastore.datadict import DataDictType
 
+ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
 class SubmissionRequest(object):
     def __init__(self, form_code, submission, transport, source, destination):
@@ -64,7 +65,7 @@ class SubmissionHandler(object):
         form = get_form_model_by_code(self.dbm, form_code)
         if form._is_activity_report():
             short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
-            values.update(eid=short_code)
+            values[ENTITY_QUESTION_DISPLAY_CODE]=short_code
         form_submission = form.validate_submission(values)
         if form_submission.is_valid:
             if len(form_submission.values) == 1:

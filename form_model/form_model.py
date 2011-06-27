@@ -296,7 +296,10 @@ class FormSubmission(object):
 
 def create_default_reg_form_model(manager):
     form_model = _construct_registration_form(manager)
-    form_model.save()
+    try:
+        form_model.save()
+    except DataObjectAlreadyExists as e:
+        form_model = get_form_model_by_code(manager, "reg")
     return form_model
 
 

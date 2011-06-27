@@ -192,3 +192,7 @@ class TestSubmissions(TestCase):
         self.assertTrue(reporter_module.get_short_code_from_reporter_number.called)
         reporter_patcher.stop()
 
+    def test_should_throw_error_if_entity_being_reported_on_doesnt_exist(self):
+        form_submission = self._valid_form_submission()
+
+        pass

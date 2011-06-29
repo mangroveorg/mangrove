@@ -13,6 +13,7 @@ class Channel(object):
     WEB = "web"
     XFORMS = "xforms"
     CSV = "csv"
+    XLS = "xls"
 
 
 class Request(object):
@@ -195,7 +196,25 @@ class XlsPlayer(object):
         self.parser = parser
 
     def accept(self, file_contents):
-        pass
+        response = []
+        submissions = self.parser.parse(file_contents)
+        for (form_code, values) in submissions:
+            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.XLS,
+                                                   source=Channel.XLS, destination="")
+            try:
+                submission_response = self.submission_handler.accept(submission_request)
+                if not submission_response.success:
+                    response.append(Response(reporters=[], success=False,
+                                             errors=dict(error=submission_response.errors.values(), row=values)))
+                else:
+                    response.append(
+                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
+                                 submission_id=submission_response.submission_id,
+                                 datarecord_id=submission_response.datarecord_id,
+                                 short_code=submission_response.short_code))
+            except MangroveException as e:
+                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
+        return response
 
 
 class XlsParser(object):
@@ -210,15 +229,15 @@ class XlsParser(object):
             row = worksheet.row_values(row_num)
 
             if not header_found:
-                header,header_found = self._is_header_row(row)
+                header, header_found = self._is_header_row(row)
                 continue
             if self._is_empty(row):
                 continue
 
             row = self._clean(row)
-            row_dict = dict(zip(header,row))
-            form_code,values = (row_dict.pop(header[0]), row_dict)
-            parsedData.append((form_code,values))
+            row_dict = dict(zip(header, row))
+            form_code, values = (row_dict.pop(header[0]).lower(), row_dict)
+            parsedData.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
         return parsedData
@@ -226,14 +245,14 @@ class XlsParser(object):
 
     def _is_header_row(self, row):
         if is_empty(row[0]):
-            return None,False
-        return self._clean(row),True
+            return None, False
+        return [str(value).strip().lower() for value in row], True
 
     def _clean(self, row):
         return [str(value).strip() for value in row]
 
     def _is_empty(self, row):
-        return len([ value for value in row if not is_empty(value)]) == 0
+        return len([value for value in row if not is_empty(value)]) == 0
 
 
 

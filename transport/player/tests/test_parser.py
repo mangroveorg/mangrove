@@ -200,8 +200,8 @@ class TestXlsParser(TestCase):
         submissions = self.parser.parse(input_file.read())
         self.assertEqual(5,len(submissions))
         form_code,values = submissions[0]
-        self.assertEqual("CLF1",form_code)
-        self.assertEqual({ "ID" : 'CL001', 'BEDS' : '10', 'DIRECTOR' : 'Dr. A', 'MEDS' : '201'  },values)
+        self.assertEqual("clf1",form_code)
+        self.assertEqual({ "id" : 'CL001', 'beds' : '10', 'director' : 'Dr. A', 'meds' : '201'  },values)
         input_file.close()
 
     def test_should_raise_exception_for_invalid_format(self):

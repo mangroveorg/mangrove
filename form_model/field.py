@@ -5,6 +5,7 @@ from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate, GeoCodeFormatException
 from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, GeoCodeConstraint
+from mangrove.utils.types import is_sequence
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -210,6 +211,10 @@ class TextField(Field):
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
+class LocationField(TextField):
+    def validate(self, value):
+        assert is_sequence(value) or value is None
+        return value
 
 class SelectField(Field):
     OPTIONS = "choices"

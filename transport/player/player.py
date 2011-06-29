@@ -2,7 +2,7 @@
 import csv
 import re
 import xlrd
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty, is_string
@@ -219,6 +219,8 @@ class XlsParser(object):
             row_dict = dict(zip(header,row))
             form_code,values = (row_dict.pop(header[0]), row_dict)
             parsedData.append((form_code,values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
         return parsedData
 
 

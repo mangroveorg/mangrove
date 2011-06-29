@@ -3,7 +3,7 @@ from posix import remove
 
 from unittest import TestCase
 import os
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.transport.player.player import SMSParser, WebParser, CsvParser, XlsParser
 import xlwt
 
@@ -202,6 +202,26 @@ class TestXlsParser(TestCase):
         form_code,values = submissions[0]
         self.assertEqual("CLF1",form_code)
         self.assertEqual({ "ID" : 'CL001', 'BEDS' : '10', 'DIRECTOR' : 'Dr. A', 'MEDS' : '201'  },values)
+        input_file.close()
+
+    def test_should_raise_exception_for_invalid_format(self):
+        data = """
+
+
+
+
+"""
+        os.remove(self.file_name)
+        self.file_name = "test.xls"
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test')
+        for row_number, row  in enumerate(data.split('\n')):
+            for col_number, val in enumerate(row.split(',')):
+                ws.write(row_number, col_number, val)
+        wb.save(self.file_name)
+        input_file = open(self.file_name)
+        with self.assertRaises(XlsParserInvalidHeaderFormatException):
+            self.parser.parse(input_file.read())
         input_file.close()
 
 

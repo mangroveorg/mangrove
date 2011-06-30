@@ -316,21 +316,21 @@ def _construct_registration_form(manager):
     #Create registration questionnaire
 
     question1 = TextField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
-                          label="What is associated entity type?",
+                          label="What is associated subject type?",
                           language="eng", entity_question_flag=False, ddtype=entity_id_type)
 
-    question2 = TextField(name=NAME_FIELD, code="N", label="What is the entity's name?",
+    question2 = TextField(name=NAME_FIELD, code="N", label="What is the subject's name?",
                           defaultValue="some default value", language="eng", ddtype=name_type)
-    question3 = TextField(name=SHORT_NAME_FIELD, code="S", label="What is the entity's short name?",
+    question3 = TextField(name=SHORT_NAME_FIELD, code="S", label="What is the subject's short name?",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
-    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
+    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the subject's location?",
                           language="eng", ddtype=location_type)
-    question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the entity's geo code?",
+    question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the subject's geo code?",
                              language="eng", ddtype=geo_code_type)
-    question6 = TextField(name=DESCRIPTION_FIELD, code="D", label="Describe the entity",
+    question6 = TextField(name=DESCRIPTION_FIELD, code="D", label="Describe the subject",
                           defaultValue="some default value", language="eng", ddtype=description_type)
-    question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the associated mobile number?",
+    question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the mobile number associated with the subject?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
             question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])

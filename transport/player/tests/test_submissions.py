@@ -149,7 +149,7 @@ class TestSubmissions(TestCase):
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
         self.entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type",
-                                                                 location=["Pune"],
+                                                                 location=None,
                                                                  short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=[], data_record_id=response.datarecord_id)

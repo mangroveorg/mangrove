@@ -21,8 +21,6 @@ class attributes(object):
     TYPE_PATH = '_type'
     DATA = 'data'
     ACTIVE_LANGUAGES = 'activeLanguages'
-    ACTIVE_STATE = 'Active'
-    INACTIVE_STATE = 'Inactive'
 
 
 class TZAwareDateTimeField(DateTimeField):
@@ -199,14 +197,12 @@ class FormModelDocument(DocumentBase):
     type = TextField()
     label = DictField()
     form_code = TextField()
-    state = TextField()
     entity_type = ListField(TextField())
     json_fields = ListField(DictField())
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')
         self.metadata[attributes.ACTIVE_LANGUAGES] = []
-        self.state=attributes.ACTIVE_STATE
 
     @property
     def active_languages(self):

@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.datastore import entity
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
@@ -7,6 +8,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException
 from mangrove.form_model.field import TextField, GeoCodeField
+from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
@@ -292,6 +294,16 @@ class FormSubmission(object):
     @property
     def cleaned_data(self):
         return self._cleaned_data
+
+    def to_entity(self, dbm, create=False):
+        if create:
+            location_string = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+            location = None if location_string is None else [location_string]
+            return entity.create_entity(dbm=dbm, entity_type=self.entity_type.lower(),
+                                 location=location,
+                                 short_code=self.short_code,
+                                 geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+        return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
 
 def create_default_reg_form_model(manager):

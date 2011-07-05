@@ -2,12 +2,11 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore import entity
-from mangrove.form_model.form_model import get_form_model_by_code, LOCATION_TYPE_FIELD_NAME, GEO_CODE, LOCATION_TYPE_FIELD_CODE
+from mangrove.form_model.form_model import get_form_model_by_code, GEO_CODE, LOCATION_TYPE_FIELD_CODE
 from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, DataObjectNotFound
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
 from mangrove.transport import reporter
-from mangrove.datastore.datadict import DataDictType
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
@@ -38,14 +37,13 @@ class SubmissionResponse(object):
         self.short_code = short_code
         self.processed_data = processed_data
 
-
 class SubmissionHandler(object):
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
 
-    def save_data_for_entity(self, e, form_submission, denormalized_submission_data, logger, submission_id):
-        data_record_id = e.add_data(data=form_submission.values, submission=denormalized_submission_data)
+    def save_data_and_update_log(self, e, form_submission, submission_information, logger, submission_id):
+        data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
         logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True
                                      , errors=[])
         return data_record_id
@@ -55,12 +53,9 @@ class SubmissionHandler(object):
         form_code = request.form_code
         values = request.submission
 
-        logger = SubmissionLogger(self.dbm)
-        submission_id, denormalized_submission_data = logger.create_submission_log(channel=request.transport,
-                                                                                   source=request.source,
-                                                                                   destination=request.destination,
-                                                                                   form_code=form_code,
-                                                                                   values=values)
+        logger = SubmissionLogger(self.dbm, request)
+        submission_id = logger.create_submission_log()
+        submission_information = dict(submission_id=submission_id, form_code=form_code)
 
         form = get_form_model_by_code(self.dbm, form_code)
         if form.entity_defaults_to_reporter():
@@ -70,23 +65,13 @@ class SubmissionHandler(object):
         if form_submission.is_valid:
             if len(form_submission.values) == 1:
                 raise NoQuestionsSubmittedException()
-            if form._is_registration_form():
-                location_string = form_submission.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
-                location = None if location_string is None else [location_string]
-                e = entity.create_entity(dbm=self.dbm, entity_type=form_submission.entity_type.lower(),
-                                         location=location,
-                                         short_code=form_submission.short_code,
-                                         geometry=convert_to_geometry(form_submission.cleaned_data.get(GEO_CODE)))
-
-                data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,
-                                                               submission_id)
-                return SubmissionResponse(True, submission_id, {}, data_record_id, e.short_code, form_submission.cleaned_data)
-
             try:
-                e = entity.get_by_short_code(self.dbm, form_submission.short_code, form.entity_type)
-                data_record_id = self.save_data_for_entity(e, form_submission, denormalized_submission_data, logger,
+                should_create_entity = form._is_registration_form()
+                e = form_submission.to_entity(self.dbm, create=should_create_entity)
+                data_record_id = self.save_data_and_update_log(e, form_submission, submission_information, logger,
                                                            submission_id)
-                return SubmissionResponse(True, submission_id, {}, data_record_id, processed_data=form_submission.cleaned_data)
+                short_code = e.short_code if form._is_registration_form() else None
+                return SubmissionResponse(True, submission_id, {}, data_record_id, short_code=short_code, processed_data=form_submission.cleaned_data)
 
             except DataObjectNotFound as e:
                 logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
@@ -99,9 +84,14 @@ class SubmissionHandler(object):
 
 class SubmissionLogger(object):
 
-    def __init__(self, dbm):
+    def __init__(self, dbm, request):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
+        self.channel=request.transport
+        self.source=request.source
+        self.destination=request.destination
+        self.form_code = request.form_code
+        self.values = request.submission
 
     def void_data_record(self, submission_id):
         submission_log = self.dbm._load_document(submission_id, SubmissionLogDocument)
@@ -120,16 +110,11 @@ class SubmissionLogger(object):
         log.error_message = log.error_message + (error_message or "")
         self.dbm._save_document(log)
 
-    def create_submission_log(self, channel, source, destination, form_code, values):
-        submission_id = self.log(channel, source, destination, form_code, values, False, "")
-        denormalized_submission_data = dict(submission_id=submission_id, form_code=form_code)
-        return submission_id, denormalized_submission_data
-
-    def log(self, channel, source, destination, form_code, values, status, error_message):
-        return self.dbm._save_document(SubmissionLogDocument(channel=channel, source=source,
-                                                             destination=destination, form_code=form_code,
-                                                             values=values, status=status,
-                                                             error_message=error_message, voided=True))
+    def create_submission_log(self):
+        return self.dbm._save_document(SubmissionLogDocument(channel=self.channel, source=self.source,
+                                                             destination=self.destination, form_code=self.form_code,
+                                                             values=self.values, status=False,
+                                                             error_message="", voided=True))
 
 
 def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, count_only=False):

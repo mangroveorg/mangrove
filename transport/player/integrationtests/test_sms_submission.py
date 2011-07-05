@@ -165,9 +165,9 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_register_new_entity(self):
-        text = "reg +n buddy +T dog +G 80 80 +D its a dog! +M 123456"
-        
-        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+#        text = "reg +n buddy +T dog +L def +D its a dog!"
+        message1 = "reg +t  dog +n  Clinic in Diégo–Suarez +l  Diégo–Suarez +g  -12.35  49.3  +d This is a Clinic in Diégo–Suarez +m 87654325"
+        response = self.sms_player.accept(Request("sms", message1, "1234", "5678"))
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "dog1"
@@ -175,7 +175,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
 
-        text = "reg +N buddy +S bud +T dog +L 80 80 +D its a dog! +M 45557"
+        text = "reg +N buddy +S bud +T dog +G 80 80 +D its a dog! +M 45557"
         
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertTrue(response.success)
@@ -227,7 +227,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         with self.assertRaises(DataObjectAlreadyExists):
-            text = "reg +N buddy +S DOG3 +T dog +L 80 80 +D its a dog! +M 123456"
+            text = "reg +N buddy +S DOG3 +T dog +G 80 80 +D its a dog! +M 123456"
             
             self.sms_player.accept(Request("sms", text, "1234", "5678"))
             text = "reg +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"

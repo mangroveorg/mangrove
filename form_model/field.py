@@ -33,6 +33,8 @@ def create_question_from(dictionary, dbm):
         return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
         return _get_select_field(code, ddtype, dictionary, label, name, type)
+    elif type == field_attributes.LIST_FIELD:
+        return _get_list_field(name, code, label, ddtype)
     return None
 
 
@@ -58,6 +60,7 @@ class field_attributes(object):
     DEFAULT_LANGUAGE = "eng"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
     NAME = "name"
+    LIST_FIELD = "list"
 
 
 class Field(object):
@@ -178,7 +181,7 @@ class DateField(Field):
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
         return value
-    
+
     @property
     def date_format(self):
         return self._dict.get(self.DATE_FORMAT)
@@ -211,10 +214,18 @@ class TextField(Field):
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
-class LocationField(TextField):
+
+class ListField(Field):
+
+    def __init__(self, name, code, label, ddtype, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE):
+        Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+
     def validate(self, value):
-        assert is_sequence(value) or value is None
-        return value
+        if is_sequence(value) or value is None:
+            return value
+        return [value]
 
 class SelectField(Field):
     OPTIONS = "choices"
@@ -260,7 +271,6 @@ class SelectField(Field):
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
-
 class GeoCodeField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
@@ -275,14 +285,14 @@ class GeoCodeField(Field):
         return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
 
-
-
 def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name):
     length_dict = dictionary.get("length")
     length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
                             max=length_dict.get(ConstraintAttributes.MAX))
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                      length=length, ddtype=ddtype)
+
+
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name):
@@ -302,3 +312,7 @@ def _get_select_field(code, ddtype, dictionary, label, name, type):
     single_select = True if type == field_attributes.SELECT_FIELD else False
     return SelectField(name=name, code=code, label=label, options=choices,
                        single_select_flag=single_select, ddtype=ddtype)
+
+
+def _get_list_field(name, code, label, ddtype):
+    return ListField(name, code, label, ddtype)

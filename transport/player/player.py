@@ -71,33 +71,44 @@ class SMSParser(object):
             message = unicode(message, encoding='utf-8')
         return message
 
-    def parse(self, message):
-        assert is_string(message)
+    def _clean(self, message):
         message = self._to_unicode(message)
-        message = message.strip()
-        self._validate_message_format(message)
-        tokens = message.split(self.SEPARATOR)
+        return message.strip()
+
+    def _pop_form_code(self, tokens):
         form_code = tokens[0].strip().lower()
         tokens.remove(tokens[0])
-        #remove any space if any. for example if the message is +
+        return form_code
+
+    def _parse_tokens(self, tokens):
         tokens = [token.strip() for token in tokens if token]
         submission = {}
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
-            field_code = field_code.lower()
             if field_code in submission.keys():
                 raise MultipleSubmissionsForSameCodeException(field_code)
-            submission[field_code] = answer.strip()
-        return form_code, submission
+            submission[field_code] = answer
+        return submission
 
     def _parse_token(self, token):
         m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
-        return m.groups()
+        field_code, value = m.groups()
+        return field_code.lower(), value.strip()
 
-    def _validate_message_format(self, message):
+    def _validate_format(self, message):
         if not re.match(self.MESSAGE_PREFIX, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
+    
+    def parse(self, message):
+        assert is_string(message)
+        message = self._clean(message)
+        self._validate_format(message)
+        tokens = message.split(self.SEPARATOR)
+        form_code = self._pop_form_code(tokens)
+        submission = self._parse_tokens(tokens)
+        return form_code, submission
+
 
 
 class WebPlayer(object):

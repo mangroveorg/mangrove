@@ -59,14 +59,21 @@ class SMSPlayer(object):
 
 
 class SMSParser(object):
-    MESSAGE_PREFIX = r'^(\w+)\s+\+(\w+)\s+(\w+)'
-    MESSAGE_TOKEN = r"(\S+)(.*)"
-    SEPARATOR = "+"
+    MESSAGE_PREFIX = ur'^(\w+)\s+\+(\w+)\s+(\w+)'
+    MESSAGE_TOKEN = ur"(\S+)(.*)"
+    SEPARATOR = u"+"
 
     def __init__(self):
         pass
 
+    def _to_unicode(self, message):
+        if type(message) is not unicode:
+            message = unicode(message, encoding='utf-8')
+        return message
+
     def parse(self, message):
+        assert is_string(message)
+        message = self._to_unicode(message)
         message = message.strip()
         self._validate_message_format(message)
         tokens = message.split(self.SEPARATOR)
@@ -85,11 +92,11 @@ class SMSParser(object):
         return form_code, submission
 
     def _parse_token(self, token):
-        m = re.match(self.MESSAGE_TOKEN, token)  # Match first non white space set of values.
+        m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
         return m.groups()
 
     def _validate_message_format(self, message):
-        if not re.match(self.MESSAGE_PREFIX, message):
+        if not re.match(self.MESSAGE_PREFIX, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
 
 

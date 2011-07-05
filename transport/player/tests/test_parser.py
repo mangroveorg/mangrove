@@ -1,5 +1,4 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from posix import remove
 
 from unittest import TestCase
 import os
@@ -52,6 +51,27 @@ class TestSMSParser(TestCase):
 
         with self.assertRaises(SMSParserInvalidFormatException):
             form_code, values = smsplayer.parse("WP +ID")
+
+    def test_should_accept_only_strings(self):
+        sms_parser = SMSParser()
+        with self.assertRaises(AssertionError):
+            sms_parser.parse(10)
+        with self.assertRaises(AssertionError):
+            sms_parser.parse(None)
+
+
+
+    def test_should_accept_unicode(self):
+        sms_parser = SMSParser()
+        form_code, values = sms_parser.parse(u"reg +s Āgra +n شصلكقم +m 080 +t clinic")
+        self.assertEqual({u"s": u"Āgra", u"n": u"شصلكقم", u"m": u"080", u"t": u"clinic"}, values)
+
+
+    def test_should_convert_input_to_unicode(self):
+        sms_parser = SMSParser()
+        form_code, values = sms_parser.parse("reg +s Āgra +n شصلكقم +m 080 +t clinic")
+        self.assertEqual({u"s": u"Āgra", u"n": u"شصلكقم", u"m": u"080", u"t": u"clinic"}, values)
+
 
     def test_should_ignore_additional_separators(self):
         smsplayer = SMSParser()
@@ -108,25 +128,25 @@ class TestCsvParser(TestCase):
         form_code, values = results[0]
         self.assertEqual("clf1", form_code)
         self.assertEqual(
-                    {"id": "CL001", "beds": "11",
-                     "director": "Dr. A1",
-                     "meds": "201"
-                }, values)
+                {"id": "CL001", "beds": "11",
+                 "director": "Dr. A1",
+                 "meds": "201"
+            }, values)
         form_code, values = results[1]
         self.assertEqual("clf1", form_code)
         self.assertEqual(
-                    {"id": "CL001", "beds": "",
-                     "director": "Dr. A1",
-                     "meds": "201"
-                }, values)
+                {"id": "CL001", "beds": "",
+                 "director": "Dr. A1",
+                 "meds": "201"
+            }, values)
 
         form_code, values = results[2]
         self.assertEqual("clf1", form_code)
         self.assertEqual(
-                    {"id": "CL002", "beds": "12",
-                     "director": "Dr. LastName,Firstname",
-                     "meds": None
-                }, values)
+                {"id": "CL002", "beds": "12",
+                 "director": "Dr. LastName,Firstname",
+                 "meds": None
+            }, values)
 
     def test_should_parse_csv_string_with_empty_lines(self):
         csv_data = """
@@ -170,9 +190,6 @@ class TestCsvParser(TestCase):
             results = csv_parser.parse(empty_csv_data.split("\n"))
 
 
-
-
-
 class TestXlsParser(TestCase):
     def setUp(self):
         data = """
@@ -198,10 +215,10 @@ class TestXlsParser(TestCase):
     def test_should_parse_xls_contents(self):
         input_file = open(self.file_name)
         submissions = self.parser.parse(input_file.read())
-        self.assertEqual(5,len(submissions))
-        form_code,values = submissions[0]
-        self.assertEqual("clf1",form_code)
-        self.assertEqual({ "id" : 'CL001', 'beds' : '10', 'director' : 'Dr. A', 'meds' : '201'  },values)
+        self.assertEqual(5, len(submissions))
+        form_code, values = submissions[0]
+        self.assertEqual("clf1", form_code)
+        self.assertEqual({"id": 'CL001', 'beds': '10', 'director': 'Dr. A', 'meds': '201'}, values)
         input_file.close()
 
     def test_should_raise_exception_for_invalid_format(self):

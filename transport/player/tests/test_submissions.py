@@ -36,7 +36,7 @@ class TestSubmissions(TestCase):
         self.form_model_mock.entity_defaults_to_reporter.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
-        
+
         self.submission_request = SubmissionRequest(form_code=self.FORM_CODE, submission=self.VALUES, transport=self.sms
                                                     , source="1234", destination="5678")
         self.submission_handler = SubmissionHandler(self.dbm)
@@ -51,7 +51,8 @@ class TestSubmissions(TestCase):
                               True, {}, "entity_type", data={})
 
     def _valid_form_submission_with_choices(self):
-        return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour":['red']}, "1",
+        return FormSubmission(self.form_model_mock,
+                {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour": ['red']}, "1",
                               True, {}, self.ENTITY_TYPE, data={})
 
     def _empty_form_submission(self):
@@ -110,7 +111,8 @@ class TestSubmissions(TestCase):
         response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[], data_record_id=response.datarecord_id)
+                                                                            status=True, errors=[],
+                                                                            data_record_id=response.datarecord_id)
 
 
     def test_should_update_submission_log_on_failure(self):
@@ -134,7 +136,8 @@ class TestSubmissions(TestCase):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        self.form_submission_entity_module.get_by_short_code.side_effect = DataObjectNotFound("Entity",'id','short_code')
+        self.form_submission_entity_module.get_by_short_code.side_effect = DataObjectNotFound("Entity", 'id',
+                                                                                              'short_code')
 
         with self.assertRaises(DataObjectNotFound):
             self.submission_handler.accept(self.submission_request)
@@ -144,14 +147,16 @@ class TestSubmissions(TestCase):
         self.form_model_mock._is_registration_form.return_value = True
 
         response = self.submission_handler.accept(self.submission_request)
-        
+
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
-        self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type",
-                                                                 location=None,
-                                                                 short_code="1", geometry=None)
+        self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type"
+                                                                                 ,
+                                                                                 location=None,
+                                                                                 short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[], data_record_id=response.datarecord_id)
+                                                                            status=True, errors=[],
+                                                                            data_record_id=response.datarecord_id)
 
 
     def test_should_not_register_entity_if_form_submission_invalid(self):

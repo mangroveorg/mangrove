@@ -26,24 +26,24 @@ class TestCsvPlayer(unittest.TestCase):
     def test_should_import_csv_string(self):
         self.player.accept(self.data)
 
-        self.assertEqual(5,self.submission_handler_mock.accept.call_count)
+        self.assertEqual(5, self.submission_handler_mock.accept.call_count)
 
     def test_should_process_next_submission_if_exception_with_prev(self):
         def expected_side_effect(*args, **kwargs):
             request = kwargs.get('request') or args[0]
             if request.form_code == 'clf2':
                 raise FormModelDoesNotExistsException('')
-            return SubmissionResponse(success = True,submission_id=1)
+            return SubmissionResponse(success=True, submission_id=1)
 
         self.submission_handler_mock.accept.side_effect = expected_side_effect
 
         response = self.player.accept(self.data)
         self.assertEqual(5, len(response))
-        self.assertEqual(False,response[2].success)
+        self.assertEqual(False, response[2].success)
 
         success = len([index for index in response if index.success])
         total = len(response)
-        self.assertEqual(4,success)
-        self.assertEqual(5,total)
+        self.assertEqual(4, success)
+        self.assertEqual(5, total)
 
 

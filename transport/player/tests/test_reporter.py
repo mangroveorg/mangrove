@@ -5,40 +5,39 @@ from mangrove.datastore.entity import create_entity, define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
-from mangrove.transport.reporter import find_reporter
+from mangrove.transport.reporter import find_reporter, get_short_code_from_reporter_number
 
 
 class TestReporter(TestCase):
-
-    def register(self,manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
+    def register(self, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
     #    manager = get_db_manager()
         e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
-                   short_code=short_code)
+                          short_code=short_code)
         e.add_data(data=data)
         return e
 
     def setUp(self):
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
-        define_type(self.manager,["reporter"])
+        define_type(self.manager, ["reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
                                               primitive_type='string')
         self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name', primitive_type='string')
         #Register Reporter
         self.register(self.manager, entity_type=["reporter"],
-                 data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                       (NAME_FIELD, "A", self.first_name_type)],
-                 location=[],
-                 source="sms")
+                      data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
+                              (NAME_FIELD, "A", self.first_name_type)],
+                      location=[],
+                      source="sms")
         self.register(self.manager, entity_type=["reporter"],
-                 data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
-                       (NAME_FIELD, "B", self.first_name_type)],
-                 location=[],
-                 source="sms")
+                      data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
+                              (NAME_FIELD, "B", self.first_name_type)],
+                      location=[],
+                      source="sms", short_code="rep5")
         self.register(self.manager, entity_type=["reporter"],
-                 data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                       (NAME_FIELD, "B", self.first_name_type)],
-                 location=[],
-                 source="sms")
+                      data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
+                              (NAME_FIELD, "B", self.first_name_type)],
+                      location=[],
+                      source="sms")
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.manager)
@@ -59,3 +58,7 @@ class TestReporter(TestCase):
         self.assertEqual(2, len(reporter_list))
         self.assertTrue({NAME_FIELD: "A", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
+
+    def test_should_return_short_code(self):
+        short_code = get_short_code_from_reporter_number(self.manager, "8888567890")
+        self.assertEquals("rep5", short_code)

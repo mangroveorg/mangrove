@@ -1,7 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import csv
 import re
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException
+import xlrd
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty, is_string
@@ -12,6 +13,7 @@ class Channel(object):
     WEB = "web"
     XFORMS = "xforms"
     CSV = "csv"
+    XLS = "xls"
 
 
 class Request(object):
@@ -57,38 +59,56 @@ class SMSPlayer(object):
 
 
 class SMSParser(object):
-    MESSAGE_PREFIX = r'^(\w+)\s+\+(\w+)\s+(\w+)'
-    MESSAGE_TOKEN = r"(\S+)(.*)"
-    SEPARATOR = "+"
+    MESSAGE_PREFIX = ur'^(\w+)\s+\+(\w+)\s+(\w+)'
+    MESSAGE_TOKEN = ur"(\S+)(.*)"
+    SEPARATOR = u"+"
 
     def __init__(self):
         pass
 
-    def parse(self, message):
-        message = message.strip()
-        self._validate_message_format(message)
-        tokens = message.split(self.SEPARATOR)
+    def _to_unicode(self, message):
+        if type(message) is not unicode:
+            message = unicode(message, encoding='utf-8')
+        return message
+
+    def _clean(self, message):
+        message = self._to_unicode(message)
+        return message.strip()
+
+    def _pop_form_code(self, tokens):
         form_code = tokens[0].strip().lower()
         tokens.remove(tokens[0])
-        #remove any space if any. for example if the message is +
+        return form_code
+
+    def _parse_tokens(self, tokens):
         tokens = [token.strip() for token in tokens if token]
         submission = {}
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
-            field_code = field_code.lower()
             if field_code in submission.keys():
                 raise MultipleSubmissionsForSameCodeException(field_code)
-            submission[field_code] = answer.strip()
-        return form_code, submission
+            submission[field_code] = answer
+        return submission
 
     def _parse_token(self, token):
-        m = re.match(self.MESSAGE_TOKEN, token)  # Match first non white space set of values.
-        return m.groups()
+        m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
+        field_code, value = m.groups()
+        return field_code.lower(), value.strip()
 
-    def _validate_message_format(self, message):
-        if not re.match(self.MESSAGE_PREFIX, message):
+    def _validate_format(self, message):
+        if not re.match(self.MESSAGE_PREFIX, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
+    
+    def parse(self, message):
+        assert is_string(message)
+        message = self._clean(message)
+        self._validate_format(message)
+        tokens = message.split(self.SEPARATOR)
+        form_code = self._pop_form_code(tokens)
+        submission = self._parse_tokens(tokens)
+        return form_code, submission
+
 
 
 class WebPlayer(object):
@@ -172,7 +192,7 @@ class CsvParser(object):
 
     def parse(self, csv_data):
         assert not is_string(csv_data)
-        dict_reader = csv.DictReader(csv_data,restkey='extra_values')
+        dict_reader = csv.DictReader(csv_data, restkey='extra_values')
         dict_reader.fieldnames = self._parse_header(dict_reader)
         parsedData = []
         form_code_fieldname = dict_reader.fieldnames[0]
@@ -186,3 +206,72 @@ class CsvParser(object):
                 return True
         return False
 
+
+class XlsPlayer(object):
+    def __init__(self, dbm, submission_handler, parser):
+        self.dbm = dbm
+        self.submission_handler = submission_handler
+        self.parser = parser
+
+    def accept(self, file_contents):
+        response = []
+        submissions = self.parser.parse(file_contents)
+        for (form_code, values) in submissions:
+            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.XLS,
+                                                   source=Channel.XLS, destination="")
+            try:
+                submission_response = self.submission_handler.accept(submission_request)
+                if not submission_response.success:
+                    response.append(Response(reporters=[], success=False,
+                                             errors=dict(error=submission_response.errors.values(), row=values)))
+                else:
+                    response.append(
+                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
+                                 submission_id=submission_response.submission_id,
+                                 datarecord_id=submission_response.datarecord_id,
+                                 short_code=submission_response.short_code))
+            except MangroveException as e:
+                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
+        return response
+
+
+class XlsParser(object):
+    def parse(self, xls_contents):
+        assert xls_contents is not None
+        workbook = xlrd.open_workbook(file_contents=xls_contents)
+        worksheet = workbook.sheets()[0]
+        header_found = False
+        header = None
+        parsedData = []
+        for row_num in range(worksheet.nrows):
+            row = worksheet.row_values(row_num)
+
+            if not header_found:
+                header, header_found = self._is_header_row(row)
+                continue
+            if self._is_empty(row):
+                continue
+
+            row = self._clean(row)
+            row_dict = dict(zip(header, row))
+            form_code, values = (row_dict.pop(header[0]).lower(), row_dict)
+            parsedData.append((form_code, values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
+        return parsedData
+
+
+    def _is_header_row(self, row):
+        if is_empty(row[0]):
+            return None, False
+        return [str(value).strip().lower() for value in row], True
+
+    def _clean(self, row):
+        return [str(value).strip() for value in row]
+
+    def _is_empty(self, row):
+        return len([value for value in row if not is_empty(value)]) == 0
+
+
+
+        

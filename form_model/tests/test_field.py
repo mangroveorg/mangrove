@@ -34,6 +34,7 @@ class TestField(unittest.TestCase):
             "defaultValue": "some default value",
             "label": {"eng": "What is your name"},
             "name": "field1_Name",
+            "instruction": "Answer is word or phrase",
             "code": "Q1",
             "length": {"min": 1, "max": 20},
             "type": "text",
@@ -41,7 +42,7 @@ class TestField(unittest.TestCase):
             }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
                           defaultValue="some default value", length=TextConstraint(1, 20), language="eng",
-                          ddtype=self.ddtype)
+                          ddtype=self.ddtype, instruction="Answer is word or phrase")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -53,9 +54,10 @@ class TestField(unittest.TestCase):
             "range": {},
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
+            "instruction":"test_instruction"
             }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="eng", ddtype=self.ddtype)
+                             language="eng", ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -67,9 +69,10 @@ class TestField(unittest.TestCase):
             "range": {"min": 15, "max": 120},
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
+            "instruction":"test_instruction"
             }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype)
+                             language="eng", range=NumericConstraint(min=15, max=120), ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -82,6 +85,7 @@ class TestField(unittest.TestCase):
             "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
+            "instruction":None
             }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             language="eng", options=[("RED", 1), ("YELLOW", 2), ('green', 3)], ddtype=self.ddtype)
@@ -97,10 +101,11 @@ class TestField(unittest.TestCase):
             "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select",
+            "instruction":"test_instruction"
             }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             language="eng", options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
-                            ddtype=self.ddtype)
+                            ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -111,11 +116,12 @@ class TestField(unittest.TestCase):
             "name": "field1_Name",
             "code": "Q1",
             "length": {},
+            "instruction":"test_instruction",
             "ddtype": self.DDTYPE_JSON,
             "type": "text"
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          defaultValue="some default value", ddtype=self.ddtype)
+                          defaultValue="some default value", ddtype=self.ddtype, instruction="test_instruction")
         field.add_or_edit_label(language="fra", label="french label")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -128,10 +134,11 @@ class TestField(unittest.TestCase):
             "code": "Q1",
             "length": {},
             "ddtype": self.DDTYPE_JSON,
-            "type": "text"
+            "type": "text",
+            "instruction":"test_instruction",
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          defaultValue="some default value", ddtype=self.ddtype)
+                          defaultValue="some default value", ddtype=self.ddtype,instruction="test_instruction")
         field.add_or_edit_label(language="fra", label="french label")
         field.add_or_edit_label(label="english label")
         actual_json = field._to_json()
@@ -146,10 +153,11 @@ class TestField(unittest.TestCase):
             "length": {},
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
-            "entity_question_flag": True
+            "entity_question_flag": True,
+            "instruction":"test_instruction"
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          entity_question_flag=True, ddtype=self.ddtype)
+                          entity_question_flag=True, ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -385,7 +393,8 @@ class TestField(unittest.TestCase):
             "length": {},
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
-            "entity_question_flag": True
+            "entity_question_flag": True,
+            "instruction":None
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
                           entity_question_flag=True, ddtype=self.ddtype)
@@ -400,10 +409,13 @@ class TestField(unittest.TestCase):
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
             "code": "T",
-            "label": {"eng": "What type?"}}
+            "label": {"eng": "What type?"},
+            "instruction":"test",
+
+            }
         field = SelectField(name="type", code="T", label="What type?",
                             options=[{"text": {"fr": "lake", "eng": "Lake"}}, {"text": {"fr": "dam", "eng": "Dam"}}],
-                            ddtype=self.ddtype,
+                            ddtype=self.ddtype, instruction="test",
                             language="eng",
                             single_select_flag=True)
         actual_json = field._to_json_view()
@@ -416,9 +428,10 @@ class TestField(unittest.TestCase):
             "code": "Q1",
             "type": "geocode",
             "ddtype": self.DDTYPE_JSON,
+            "instruction":"test_instruction"
             }
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
-                             language="eng")
+                             language="eng", instruction="test_instruction",)
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -453,12 +466,12 @@ class TestField(unittest.TestCase):
         field1 = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
         field2 = TextField(name="Question", code="AB", label="question", ddtype=self.ddtype)
         test_string = json.dumps([field1,field2], default=field_to_json)
-        expected_string = '[{"length": {}, "code": "AA", "name": "Test", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "test"}}, {"length": {}, "code": "AB", "name": "Question", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "question"}}]'
+        expected_string = '[{"code": "AA", "name": "Test", "defaultValue": "", "instruction": null, "label": {"eng": "test"}, "length": {}, "ddtype": {"test": "test"}, "type": "text"}, {"code": "AB", "name": "Question", "defaultValue": "", "instruction": null, "label": {"eng": "question"}, "length": {}, "ddtype": {"test": "test"}, "type": "text"}]'
         self.assertEquals(expected_string, test_string)
 
     def test_should_convert_field_list_with_apostrophe_to_string(self):
         field1 = TextField(name="Test's", code="AA", label="test", ddtype=self.ddtype)
         field2 = TextField(name="Question's", code="AB", label="question", ddtype=self.ddtype)
         test_string = json.dumps([field1,field2], default=field_to_json)
-        expected_string = '[{"length": {}, "code": "AA", "name": "Test\'s", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "test"}}, {"length": {}, "code": "AB", "name": "Question\'s", "ddtype": {"test": "test"}, "defaultValue": "", "type": "text", "label": {"eng": "question"}}]'
+        expected_string = '[{"code": "AA", "name": "Test\'s", "defaultValue": "", "instruction": null, "label": {"eng": "test"}, "length": {}, "ddtype": {"test": "test"}, "type": "text"}, {"code": "AB", "name": "Question\'s", "defaultValue": "", "instruction": null, "label": {"eng": "question"}, "length": {}, "ddtype": {"test": "test"}, "type": "text"}]'
         self.assertEquals(expected_string, test_string)

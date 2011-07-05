@@ -5,6 +5,7 @@ from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate, GeoCodeFormatException
 from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, GeoCodeConstraint
+from mangrove.utils.types import is_sequence
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -47,6 +48,7 @@ class field_attributes(object):
     '''Constants for referencing standard attributes in questionnaire.'''
     LANGUAGE = "language"
     FIELD_CODE = "code"
+    INSTRUCTION = "instruction"
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
     SELECT_FIELD = 'select1'
@@ -65,12 +67,14 @@ class Field(object):
     CODE = "code"
     DDTYPE = "ddtype"
     LANGUAGE = "language"
+    INSTRUCTION = "instruction"
 
     _DEFAULT_VALUES = {
         NAME: "",
         TYPE: "",
         CODE: "",
-        DDTYPE: None
+        DDTYPE: None,
+        INSTRUCTION:''
     }
 
     _DEFAULT_LANGUAGE_SPECIFIC_VALUES = {
@@ -105,6 +109,10 @@ class Field(object):
         return self._dict.get(self.CODE)
 
     @property
+    def instruction(self):
+        return self._dict.get(self.INSTRUCTION)
+
+    @property
     def is_entity_field(self):
         return False
 
@@ -132,9 +140,9 @@ class Field(object):
 class IntegerField(Field):
     RANGE = "range"
 
-    def __init__(self, name, code, label, ddtype, range=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, ddtype, range=None, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
 
         self.constraint = range if range is not None else NumericConstraint()
         self._dict[self.RANGE] = self.constraint._to_json()
@@ -157,9 +165,9 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, code, label, date_format, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, date_format, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
 
         self._dict[self.DATE_FORMAT] = date_format
 
@@ -181,10 +189,10 @@ class TextField(Field):
     LENGTH = "length"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, code, label, ddtype, length=None, defaultValue=None,
+    def __init__(self, name, code, label, ddtype, length=None, defaultValue=None, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         self.constraint = length if length is not None else TextConstraint()
         self._dict[self.LENGTH] = self.constraint._to_json()
@@ -203,17 +211,21 @@ class TextField(Field):
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
+class LocationField(TextField):
+    def validate(self, value):
+        assert is_sequence(value) or value is None
+        return value
 
 class SelectField(Field):
     OPTIONS = "choices"
 
-    def __init__(self, name, code, label, options, ddtype, language=field_attributes.DEFAULT_LANGUAGE,
+    def __init__(self, name, code, label, options, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.SINGLE_SELECT_FLAG = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -250,9 +262,9 @@ class SelectField(Field):
 
 
 class GeoCodeField(Field):
-    def __init__(self, name, code, label, ddtype, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction)
 
     def validate(self, lat_long_string):
         if lat_long_string is None:

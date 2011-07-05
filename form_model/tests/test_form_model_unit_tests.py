@@ -14,19 +14,19 @@ class TestFormModel(unittest.TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.datadict_patcher = patch("mangrove.form_model.form_model.get_or_create_data_dict")
         self.datadict_mock = self.datadict_patcher.start()
-        ddtype_mock = Mock(spec=DataDictType)
-        self.datadict_mock.return_value = ddtype_mock
+        self.ddtype_mock = Mock(spec=DataDictType)
+        self.datadict_mock.return_value = self.ddtype_mock
 
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=ddtype_mock)
+                              language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
-                              ddtype=ddtype_mock)
+                              ddtype=self.ddtype_mock)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=ddtype_mock)
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype_mock)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=ddtype_mock)
-        question5 = TextField(name="Desc", code="Q4", label="Description", ddtype=ddtype_mock)
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
+        question5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[
@@ -124,6 +124,15 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual("1", form_submission.short_code)
         self.assertEqual({'ID': '1'}, form_submission.cleaned_data)
         self.assertEqual(1, len(form_submission.errors))
+
+    def test_should_assert_activity_report(self):
+
+        question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
+                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
+                              ddtype=self.ddtype_mock)
+        activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
+                                        form_code="1", type='survey', fields=[question1])
+        self.assertTrue(activity_report.entity_defaults_to_reporter())
 
 
 #

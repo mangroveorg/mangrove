@@ -42,11 +42,11 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission=dict(submission_id="1"))
 
-        reporter = create_entity(self.dbm, entity_type=["reporter"],
+        self.reporter = create_entity(self.dbm, entity_type=["reporter"],
                                  location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
                                  )
 
-        reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
+        self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
                                 (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
@@ -90,6 +90,36 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertEquals(data_record_id, submission_log.data_record_id)
 
+    def test_should_save_submitted_sms_for_activity_report(self):
+
+        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
+                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+        question2 = TextField(name="Name", code="NAME", label="Clinic Name",
+                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
+                              ddtype=self.name_type)
+        question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
+                                 range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
+        activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
+                                    form_code="acp", type='survey', fields=[question1, question2, question3])
+        activity_report.save()
+
+        text = "acp +name tester +ARV 50 "
+
+
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+
+        self.assertTrue(response.success)
+
+        data_record_id = response.datarecord_id
+        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
+        self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
+        self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
+        self.assertEqual("acp", data_record.submission['form_code'])
+        data = self.reporter.values({"Name": "latest", "Arv stock": "latest"})
+        self.assertEquals(data["Arv stock"], 50)
+        self.assertEquals(data["Name"], "tester")
+        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
+        self.assertEquals(data_record_id, submission_log.data_record_id)
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = "clinic +EID %s +ARV 150 " % self.entity.id

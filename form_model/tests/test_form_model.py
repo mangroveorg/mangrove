@@ -28,6 +28,13 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual("reg", form.form_code)
         self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
+    def test_should_not_throw_exception_for_new_default_reg_form_model(self):
+        create_default_reg_form_model(self.dbm)
+        form = create_default_reg_form_model(self.dbm)
+        self.assertEqual(7, len(form.fields))
+        self.assertEqual("reg", form.form_code)
+        self.assertEqual('string', form.fields[3].ddtype.primitive_type)
+
     def test_get_form_model(self):
         e = self.dbm.get(self.form_model__id, FormModel)
         self.assertTrue(e.id)

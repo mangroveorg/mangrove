@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.datastore import entity
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
@@ -7,8 +8,11 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException
 from mangrove.form_model.field import TextField, GeoCodeField
+from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
+
+ARPT_SHORT_CODE = "dummy"
 
 REGISTRATION_FORM_CODE = "reg"
 ENTITY_TYPE_FIELD_CODE = "T"
@@ -21,6 +25,7 @@ NAME_FIELD = "name"
 SHORT_NAME_FIELD = "short_name"
 DESCRIPTION_FIELD = "description"
 MOBILE_NUMBER_FIELD = "mobile_number"
+REPORTER = "reporter"
 
 
 def get_form_model_by_code(dbm, code):
@@ -256,6 +261,9 @@ class FormModel(DataObject):
     def _is_registration_form(self):
         return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
 
+    def entity_defaults_to_reporter(self):
+        return self.entity_type == [REPORTER]
+
 
 class FormSubmission(object):
     def _to_three_tuple(self):
@@ -287,10 +295,23 @@ class FormSubmission(object):
     def cleaned_data(self):
         return self._cleaned_data
 
+    def to_entity(self, dbm, create=False):
+        if create:
+            location_string = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+            location = None if location_string is None else [location_string]
+            return entity.create_entity(dbm=dbm, entity_type=self.entity_type.lower(),
+                                 location=location,
+                                 short_code=self.short_code,
+                                 geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+        return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
+
 
 def create_default_reg_form_model(manager):
     form_model = _construct_registration_form(manager)
-    form_model.save()
+    try:
+        form_model.save()
+    except DataObjectAlreadyExists as e:
+        form_model = get_form_model_by_code(manager, "reg")
     return form_model
 
 
@@ -307,21 +328,21 @@ def _construct_registration_form(manager):
     #Create registration questionnaire
 
     question1 = TextField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
-                          label="What is associated entity type?",
+                          label="What is associated subject type?",
                           language="eng", entity_question_flag=False, ddtype=entity_id_type)
 
-    question2 = TextField(name=NAME_FIELD, code="N", label="What is the entity's name?",
+    question2 = TextField(name=NAME_FIELD, code="N", label="What is the subject's name?",
                           defaultValue="some default value", language="eng", ddtype=name_type)
-    question3 = TextField(name=SHORT_NAME_FIELD, code="S", label="What is the entity's short name?",
+    question3 = TextField(name=SHORT_NAME_FIELD, code="S", label="What is the subject's short name?",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
-    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the entity's location?",
+    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the subject's location?",
                           language="eng", ddtype=location_type)
-    question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the entity's geo code?",
+    question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the subject's geo code?",
                              language="eng", ddtype=geo_code_type)
-    question6 = TextField(name=DESCRIPTION_FIELD, code="D", label="Describe the entity",
+    question6 = TextField(name=DESCRIPTION_FIELD, code="D", label="Describe the subject",
                           defaultValue="some default value", language="eng", ddtype=description_type)
-    question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the associated mobile number?",
+    question7 = TextField(name=MOBILE_NUMBER_FIELD, code="M", label="What is the mobile number associated with the subject?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
             question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])

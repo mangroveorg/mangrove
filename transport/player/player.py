@@ -1,7 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import csv
 import re
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException
+import xlrd
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty, is_string
@@ -12,6 +13,7 @@ class Channel(object):
     WEB = "web"
     XFORMS = "xforms"
     CSV = "csv"
+    XLS = "xls"
 
 
 class Request(object):
@@ -172,7 +174,7 @@ class CsvParser(object):
 
     def parse(self, csv_data):
         assert not is_string(csv_data)
-        dict_reader = csv.DictReader(csv_data,restkey='extra_values')
+        dict_reader = csv.DictReader(csv_data, restkey='extra_values')
         dict_reader.fieldnames = self._parse_header(dict_reader)
         parsedData = []
         form_code_fieldname = dict_reader.fieldnames[0]
@@ -186,3 +188,72 @@ class CsvParser(object):
                 return True
         return False
 
+
+class XlsPlayer(object):
+    def __init__(self, dbm, submission_handler, parser):
+        self.dbm = dbm
+        self.submission_handler = submission_handler
+        self.parser = parser
+
+    def accept(self, file_contents):
+        response = []
+        submissions = self.parser.parse(file_contents)
+        for (form_code, values) in submissions:
+            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.XLS,
+                                                   source=Channel.XLS, destination="")
+            try:
+                submission_response = self.submission_handler.accept(submission_request)
+                if not submission_response.success:
+                    response.append(Response(reporters=[], success=False,
+                                             errors=dict(error=submission_response.errors.values(), row=values)))
+                else:
+                    response.append(
+                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
+                                 submission_id=submission_response.submission_id,
+                                 datarecord_id=submission_response.datarecord_id,
+                                 short_code=submission_response.short_code))
+            except MangroveException as e:
+                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
+        return response
+
+
+class XlsParser(object):
+    def parse(self, xls_contents):
+        assert xls_contents is not None
+        workbook = xlrd.open_workbook(file_contents=xls_contents)
+        worksheet = workbook.sheets()[0]
+        header_found = False
+        header = None
+        parsedData = []
+        for row_num in range(worksheet.nrows):
+            row = worksheet.row_values(row_num)
+
+            if not header_found:
+                header, header_found = self._is_header_row(row)
+                continue
+            if self._is_empty(row):
+                continue
+
+            row = self._clean(row)
+            row_dict = dict(zip(header, row))
+            form_code, values = (row_dict.pop(header[0]).lower(), row_dict)
+            parsedData.append((form_code, values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
+        return parsedData
+
+
+    def _is_header_row(self, row):
+        if is_empty(row[0]):
+            return None, False
+        return [str(value).strip().lower() for value in row], True
+
+    def _clean(self, row):
+        return [str(value).strip() for value in row]
+
+    def _is_empty(self, row):
+        return len([value for value in row if not is_empty(value)]) == 0
+
+
+
+        

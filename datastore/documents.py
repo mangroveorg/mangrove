@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, Mapping
 import datetime
 import calendar
 from uuid import uuid1

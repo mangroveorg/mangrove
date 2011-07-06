@@ -7,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, ListField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -45,6 +45,21 @@ class TestField(unittest.TestCase):
                           ddtype=self.ddtype, instruction="Answer is word or phrase")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+
+    def test_should_create_list_field_type_for_default_english_language(self):
+        expected_json = {
+            "label": {"eng": "What is your location"},
+            "name": "loc",
+            "instruction": "Answer is list",
+            "code": "Q1",
+            "type": "list",
+            "ddtype": self.DDTYPE_JSON,
+            }
+        field = ListField(name="loc", code="Q1", label="What is your location", language="eng",
+                          ddtype=self.ddtype, instruction="Answer is list")
+        actual_json = field._to_json()
+        self.assertEqual(actual_json, expected_json)
+
 
     def test_should_create_integer_field_type_for_default_english_language(self):
         expected_json = {
@@ -309,7 +324,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.date_format, "%m.%Y")
         self.assertEqual(created_field.ddtype, self.ddtype)
 
-    def test_should_create_location_field(self):
+    def test_should_create_geo_code_field(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         field_json = {
             "label": {"eng": "What is your location"},

@@ -1,13 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore import entity
-
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException
-from mangrove.form_model.field import TextField, GeoCodeField
+from mangrove.form_model.field import TextField, GeoCodeField, ListField
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -304,8 +303,8 @@ class FormSubmission(object):
 
     def to_entity(self, dbm, create=False):
         if create:
-            location_string = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
-            location = None if location_string is None else [location_string]
+            location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+
             return entity.create_entity(dbm=dbm, entity_type=self.entity_type.lower(),
                                  location=location,
                                  short_code=self.short_code,
@@ -336,14 +335,14 @@ def _construct_registration_form(manager):
 
     question1 = TextField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
                           label="What is associated subject type?",
-                          language="eng", entity_question_flag=False, ddtype=entity_id_type)
+                          language="eng", ddtype=entity_id_type)
 
     question2 = TextField(name=NAME_FIELD, code="N", label="What is the subject's name?",
                           defaultValue="some default value", language="eng", ddtype=name_type)
     question3 = TextField(name=SHORT_NAME_FIELD, code="S", label="What is the subject's short name?",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
-    question4 = TextField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the subject's location?",
+    question4 = ListField(name=LOCATION_TYPE_FIELD_NAME, code="L", label="What is the subject's location?",
                           language="eng", ddtype=location_type)
     question5 = GeoCodeField(name=GEO_CODE, code="G", label="What is the subject's geo code?",
                              language="eng", ddtype=geo_code_type)

@@ -181,8 +181,8 @@ class CsvParser(object):
 
     def _strip_field_values(self, row):
         for key, value in row.items():
-            if value is not None and type(value) is str:
-                row[key] = value.strip()
+            if value is not None and is_string(value):
+                row[unicode(key, encoding='utf-8')] = unicode(value.strip(), encoding='utf-8')
 
     def _parse_row(self, form_code_fieldname, row):
         result_row = dict(row)

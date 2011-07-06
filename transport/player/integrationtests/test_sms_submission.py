@@ -161,7 +161,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.sms_player.accept(Request("sms", text, "1234", "5678"))
         submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic")
         self.assertEquals(1, len(submission_list))
-        self.assertEquals("Answer 150 for question ARV is greater than allowed.  ", submission_list[0]['error_message'])
+        self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submission_list[0]['error_message'])
 
 
     def test_should_register_new_entity(self):
@@ -264,3 +264,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         actual_type = data_record["entity"]["aggregation_paths"]["_type"]
 
         self.assertEquals(["dog"], actual_type)
+
+    def test_should_accept_unicode_submissions(self):
+        text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45° 56`"
+        response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
+        self.assertFalse(response.success)

@@ -50,6 +50,14 @@ class TestSubmissions(TestCase):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune"}, "1",
                               True, {}, "entity_type", data={})
 
+    def _valid_form_submission_unicode(self):
+        return FormSubmission(self.form_model_mock, {'What is associated entity?': u'Āgra', "location": "Agra"}, "1",
+                              True, {}, "entity_type", data={})
+
+    def _invalid_form_submission_unicode(self):
+        return FormSubmission(self.form_model_mock, {}, "1", False, {"field": u"Āgra"}, self.ENTITY_TYPE, data={})
+
+
     def _valid_form_submission_with_choices(self):
         return FormSubmission(self.form_model_mock,
                 {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour": ['red']}, "1",
@@ -132,7 +140,7 @@ class TestSubmissions(TestCase):
         with self.assertRaises(FormModelDoesNotExistsException):
             response = self.submission_handler.accept(self.submission_request)
 
-    def test_should_fail_submission_if_invalid_form_code(self):
+    def test_should_fail_submission_if_invalid_short_code(self):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
@@ -196,7 +204,20 @@ class TestSubmissions(TestCase):
         self.assertTrue(reporter_module.get_short_code_from_reporter_number.called)
         reporter_patcher.stop()
 
-    def test_should_throw_error_if_entity_being_reported_on_doesnt_exist(self):
-        form_submission = self._valid_form_submission()
+    def test_should_accept_unicodes_for_valid_submission(self):
+        form_submission = self._valid_form_submission_unicode()
+        self.form_model_mock.validate_submission.return_value = form_submission
 
-        pass
+        response = self.submission_handler.accept(self.submission_request)
+
+        self.assertTrue(response.success)
+        self.assertEqual({}, response.errors)
+
+    def test_should_accept_unicodes_for_invalid_submission(self):
+        form_submission = self._invalid_form_submission_unicode()
+        self.form_model_mock.validate_submission.return_value = form_submission
+
+        response = self.submission_handler.accept(self.submission_request)
+
+        self.assertFalse(response.success)
+        self.assertEqual({'field': u'Āgra'}, response.errors)

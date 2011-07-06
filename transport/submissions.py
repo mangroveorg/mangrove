@@ -100,14 +100,11 @@ class SubmissionLogger(object):
         self.dbm._save_document(submission_log)
 
     def update_submission_log(self, submission_id, status, errors, data_record_id=None):
-        error_message = ""
-        for each in errors:
-            error_message = error_message + each + "  "
         log = self.dbm._load_document(submission_id, SubmissionLogDocument)
         log.status = status
         log.voided = not status
         log.data_record_id = data_record_id
-        log.error_message = log.error_message + (error_message or "")
+        log.error_message += " ".join(errors)
         self.dbm._save_document(log)
 
     def create_submission_log(self):

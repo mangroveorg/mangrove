@@ -14,13 +14,13 @@ class MangroveException(Exception):
 
 class DataObjectAlreadyExists(MangroveException):
     def __init__(self, dataobject_name, param, value):
-        error_message = "%s with %s = %s already exists." % (dataobject_name, param, value)
+        error_message = u"%s with %s = %s already exists." % (dataobject_name, param, value)
         MangroveException.__init__(self, error_message, (param, value))
 
 
 class DataObjectNotFound(MangroveException):
     def __init__(self, dataobject_name, param, value):
-        error_message = "%s with %s = %s not found." % (dataobject_name, param, value)
+        error_message = u"%s with %s = %s not found." % (dataobject_name, param, value)
         MangroveException.__init__(self, error_message, (param, value))
 
 
@@ -30,23 +30,23 @@ class EntityTypeAlreadyDefined(MangroveException):
 
 class FormModelDoesNotExistsException(MangroveException):
     def __init__(self, questionnaire_code):
-        error_message = "The questionnaire with code %s does not exist." % questionnaire_code if questionnaire_code else "The questionnaire does not exist."
+        error_message = u"The questionnaire with code %s does not exist." % questionnaire_code if questionnaire_code else "The questionnaire does not exist."
         MangroveException.__init__(self, error_message, (questionnaire_code, ))
 
 
 class FieldDoesNotExistsException(MangroveException):
     def __init__(self, field_code):
-        MangroveException.__init__(self, "The field with code %s does not exist." % field_code, (field_code, ))
+        MangroveException.__init__(self, u"The field with code %s does not exist." % field_code, (field_code, ))
 
 
 class EntityQuestionCodeNotSubmitted(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "The submission does not contain entity question code.")
+        MangroveException.__init__(self, u"The submission does not contain entity question code.")
 
 
 class EntityTypeCodeNotSubmitted(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "The submission does not contain entity type code.")
+        MangroveException.__init__(self, u"The submission does not contain entity type code.")
 
 
 class EntityQuestionAlreadyExistsException(MangroveException):
@@ -59,24 +59,24 @@ class QuestionCodeAlreadyExistsException(MangroveException):
 
 class NoQuestionsSubmittedException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "The submission contains no valid questions.")
+        MangroveException.__init__(self, u"The submission contains no valid questions.")
 
 
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, ("Sorry, this number %s is not registered with us.") % (from_number,),
+        MangroveException.__init__(self, (u"Sorry, this number %s is not registered with us.") % (from_number,),
                                    (from_number,))
 
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, ("Sorry, the telephone number %s has already been registered") % (from_number,),
+        MangroveException.__init__(self, (u"Sorry, the telephone number %s has already been registered") % (from_number,),
                                    (from_number,))
 
 
 class MultipleSubmissionsForSameCodeException(MangroveException):
     def __init__(self, field_code):
-        MangroveException.__init__(self, ("Multiple responses for question code %s") %(field_code, ),(field_code,))
+        MangroveException.__init__(self, (u"Multiple responses for question code %s") %(field_code, ),(field_code,))
 
 
 class EntityTypeDoesNotExistsException(MangroveException):
@@ -84,7 +84,7 @@ class EntityTypeDoesNotExistsException(MangroveException):
         entity_type_full_name = ".".join(entity_type)
         entity_type_short_name = entity_type[-1]
         MangroveException.__init__(self,
-                                   ("Entity type %s doesnt exist.") % (entity_type_full_name,),
+                                   (u"Entity type %s doesnt exist.") % (entity_type_full_name,),
                                    (entity_type_short_name,))
 
 
@@ -101,62 +101,61 @@ class InvalidAnswerSubmissionException(MangroveException):
 class AnswerTooBigException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s is greater than allowed.") % (
+                                                  (u"Answer %s for question %s is greater than allowed.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerTooSmallException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s is smaller than allowed.") % (
+                                                  (u"Answer %s for question %s is smaller than allowed.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerTooLongException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s is longer than allowed.") % (
+                                                  (u"Answer %s for question %s is longer than allowed.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s is shorter than allowed.") % (
+                                                  (u"Answer %s for question %s is shorter than allowed.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s contains more than one value.") % (
+                                                  (u"Answer %s for question %s contains more than one value.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerHasNoValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ("Answer %s for question %s has no value.") % (
+                                                  (u"Answer %s for question %s has no value.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerNotInListException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  (
-                                                  "Answer %s for question %s is not present in the allowed options.") % (
+                                                  (u"Answer %s for question %s is not present in the allowed options.") % (
                                                   answer, code,), code, (answer,))
 
 
 class AnswerWrongType(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        InvalidAnswerSubmissionException.__init__(self, ("Answer %s for question %s is of the wrong type.") % (answer, code,), code, (answer,))
+        InvalidAnswerSubmissionException.__init__(self, (u"Answer %s for question %s is of the wrong type.") % (answer, code,), code, (answer,))
 
 
 class IncorrectDate(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, date_format):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  ('Answer %s for question %s is invalid. Expected date in %s format') %
+                                                  (u'Answer %s for question %s is invalid. Expected date in %s format') %
                                                   (answer, code, date_format), code, (answer, date_format))
 
 
@@ -166,64 +165,64 @@ class NoDocumentError(MangroveException):
 
 class UnknownOrganization(MangroveException):
     def __init__(self, tel_number):
-        MangroveException.__init__(self, ('No organization found for telephone number %s') %
+        MangroveException.__init__(self, (u'No organization found for telephone number %s') %
                                          (tel_number,), (tel_number,))
 
 
 class ShortCodeAlreadyInUseException(MangroveException):
     def __init__(self, short_code):
-        MangroveException.__init__(self, ('The ID %s is already in use. Please specify another') %
+        MangroveException.__init__(self, (u'The ID %s is already in use. Please specify another') %
                                          (short_code,), (short_code,))
 
 
 class ShortCodeTooLongException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "The short code is longer than 12 characters")
+        MangroveException.__init__(self, u"The short code is longer than 12 characters")
 
 
 class LatitudeNotFloat(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, ('The answer %s should be float') %
+        MangroveException.__init__(self, (u'The answer %s should be float') %
                                          (lat,), data=(lat,))
 
 
 class LongitudeNotFloat(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, ('The answer %s should be float') %
+        MangroveException.__init__(self, (u'The answer %s should be float') %
                                          (long,), data=(long,))
 
 
 class LongitudeNotInRange(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, ('The answer %s must be between -180 and 180') %
+        MangroveException.__init__(self, (u'The answer %s must be between -180 and 180') %
                                          (long,), data=(long,))
 
 
 class LatitudeNotInRange(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, ('The answer %s must be between -90 and 90') %
+        MangroveException.__init__(self, (u'The answer %s must be between -90 and 90') %
                                          (lat,), (lat,))
 
 
 class GeoCodeFormatException(MangroveException):
     def __init__(self, data):
-        MangroveException.__init__(self, "GPS coordinates must be in the format 'lat long'.", (data,))
+        MangroveException.__init__(self, u"GPS coordinates must be in the format 'lat long'.", (data,))
 
 class FailedToSaveDataObject(MangroveException):
     def __init__(self, data):
-        MangroveException.__init__(self, "Root Exception: %s" % data)
+        MangroveException.__init__(self, u"Root Exception: %s" % data)
 
 class SMSParserInvalidFormatException(MangroveException):
     def __init__(self, data):
-        MangroveException.__init__(self, "Could not parse, invalid format: %s" % data)
+        MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data)
 
 class CSVParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "Could not parse header, invalid format.")
+        MangroveException.__init__(self, u"Could not parse header, invalid format.")
 
 class XlsParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, "Could not parse header, invalid format.")
+        MangroveException.__init__(self, u"Could not parse header, invalid format.")
 
 class AggregationNotSupportedForTypeException(MangroveException):
     def __init__(self, field, aggregation):

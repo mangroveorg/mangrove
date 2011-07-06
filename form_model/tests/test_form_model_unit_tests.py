@@ -134,17 +134,15 @@ class TestFormModel(unittest.TestCase):
                                         form_code="1", type='survey', fields=[question1])
         self.assertTrue(activity_report.entity_defaults_to_reporter())
 
+    def test_form_model_is_active_when_created(self):
+        self.assertTrue(self.form_model.is_active())
 
-#
-#    def test_give_error_for_no_entity_short_code_while_registration(self):
-#        with self.assertRaises(EntityQuestionCodeNotSubmitted):
-#            dbm = Mock(spec=DatabaseManager)
-#            question1 = TextField(name="entity_question", code="ID", label="What is associated entity", language="eng", entity_question_flag=True, ddtype=self.ddtype2)
-#            question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age", ddtype=self.ddtype3)
-#
-#            form_model = FormModel(dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
-#                                   form_code="AIDS", type='survey',
-#                                   fields=[question1, question3])
-#            answers = {"Q2": "10"}
-#            form_submission = FormSubmission(form_model, answers)
-#            form_submission.is_valid()
+    def test_should_be_able_to_deactivate_the_form_model(self):
+        self.form_model.deactivate()
+        self.assertFalse(self.form_model.is_active())
+
+    def test_should_be_able_to_activate_the_form_model(self):
+        self.form_model.deactivate()
+        self.assertFalse(self.form_model.is_active())
+        self.form_model.activate()
+        self.assertTrue(self.form_model.is_active())

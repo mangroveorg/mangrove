@@ -51,7 +51,6 @@ class Response(object):
             self.short_code = submission_response.short_code
             self.processed_data = submission_response.processed_data
 
-
 def _short_code_not_in(entity_q_code,values):
     return values.get(entity_q_code) is None
 

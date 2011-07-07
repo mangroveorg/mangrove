@@ -16,12 +16,22 @@ class Channel(object):
     XLS = "xls"
 
 
-class Request(object):
-    def __init__(self, transport, message, source, destination):
+class TransportInfo(object):
+    def __init__(self,transport, source, destination):
+        assert transport is not None
+        assert source is not None
+        assert destination is not None
         self.transport = transport
-        self.message = message
         self.source = source
         self.destination = destination
+
+
+class Request(object):
+    def __init__(self, message, transportInfo):
+        assert transportInfo is not None
+        assert message is not None
+        self.transport = transportInfo
+        self.message = message
 
 
 class Response(object):
@@ -38,22 +48,29 @@ class Response(object):
             self.processed_data = submission_response.processed_data
 
 
+def submit( submission_handler, transportInfo, form_code, values):
+    submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=transportInfo.transport,
+                                           source=transportInfo.source, destination=transportInfo.destination)
+    submission_response = submission_handler.accept(submission_request)
+    return submission_response
+
+
+
 class SMSPlayer(object):
     def __init__(self, dbm, submission_handler):
         self.dbm = dbm
         self.submission_handler = submission_handler
 
-    def accept(self, request):
-        assert request is not None
-        assert request.source is not None
-        assert request.destination is not None
-        assert request.message is not None
-        reporters = reporter.find_reporter(self.dbm, request.source)
+    def _parse(self, request):
         sms_parser = SMSParser()
         form_code, values = sms_parser.parse(request.message)
-        submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
-                                               source=request.source, destination=request.destination)
-        submission_response = self.submission_handler.accept(submission_request)
+        return form_code, values
+
+    def accept(self, request):
+        assert request is not None
+        reporters = reporter.find_reporter(self.dbm, request.transport.source)
+        form_code, values = self._parse(request)
+        submission_response = submit(self.submission_handler, request.transport, form_code, values)
         return Response(reporters=reporters, submission_response=submission_response)
 
 
@@ -115,16 +132,15 @@ class WebPlayer(object):
         self.dbm = dbm
         self.submission_handler = submission_handler
 
-    def accept(self, request):
-        assert request is not None
-        assert request.source is not None
-        assert request.destination is not None
-        assert request.message is not None
+    def _parse(self, request):
         web_parser = WebParser()
         form_code, values = web_parser.parse(request.message)
-        submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
-                                               source=request.source, destination=request.destination)
-        submission_response = self.submission_handler.accept(submission_request)
+        return form_code, values
+
+    def accept(self, request):
+        assert request is not None
+        form_code, values = self._parse(request)
+        submission_response = submit(self.submission_handler, request.transport, form_code, values)
         return Response(reporters=[], submission_response=submission_response)
 
 
@@ -144,10 +160,9 @@ class CsvPlayer(object):
         responses = []
         submissions = self.parser.parse(csv_data)
         for (form_code, values) in submissions:
-            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.CSV,
-                                                   source=Channel.CSV, destination="")
             try:
-                submission_response = self.submission_handler.accept(submission_request)
+                transport_info = TransportInfo(transport=Channel.CSV, source=Channel.CSV, destination="")
+                submission_response = submit(self.submission_handler, transport_info, form_code, values)
                 response= Response(reporters=[],submission_response=submission_response)
                 if not submission_response.success:
                     response.errors = dict(error=submission_response.errors.values(), row=values)
@@ -211,10 +226,9 @@ class XlsPlayer(object):
         responses = []
         submissions = self.parser.parse(file_contents)
         for (form_code, values) in submissions:
-            submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.XLS,
-                                                   source=Channel.XLS, destination="")
             try:
-                submission_response = self.submission_handler.accept(submission_request)
+                transport_info = TransportInfo(transport=Channel.XLS, source=Channel.XLS, destination="")
+                submission_response = submit(self.submission_handler, transport_info, form_code, values)
                 response= Response(reporters=[],submission_response=submission_response)
                 if not submission_response.success:
                     response.errors = dict(error=submission_response.errors.values(), row=values)

@@ -25,15 +25,17 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, reporters, success, errors, submission_id=None, datarecord_id=None, short_code=None,
-                 processed_data=None):
+    def __init__(self, reporters, submission_response):
         self.reporters = reporters if reporters is not None else []
-        self.success = success
-        self.submission_id = submission_id
-        self.errors = errors
-        self.datarecord_id = datarecord_id
-        self.short_code = short_code
-        self.processed_data = processed_data
+        self.success = False
+        self.errors = {}
+        if submission_response is not None:
+            self.success = submission_response.success
+            self.submission_id = submission_response.submission_id
+            self.errors = submission_response.errors
+            self.datarecord_id = submission_response.datarecord_id
+            self.short_code = submission_response.short_code
+            self.processed_data = submission_response.processed_data
 
 
 class SMSPlayer(object):
@@ -52,10 +54,7 @@ class SMSPlayer(object):
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
         submission_response = self.submission_handler.accept(submission_request)
-        return Response(reporters=reporters, success=submission_response.success, errors=submission_response.errors,
-                        submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code,
-                        processed_data=submission_response.processed_data)
+        return Response(reporters=reporters, submission_response=submission_response)
 
 
 class SMSParser(object):
@@ -126,10 +125,7 @@ class WebPlayer(object):
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=request.transport,
                                                source=request.source, destination=request.destination)
         submission_response = self.submission_handler.accept(submission_request)
-        return Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
-                        submission_id=submission_response.submission_id,
-                        datarecord_id=submission_response.datarecord_id, short_code=submission_response.short_code,
-                        processed_data=submission_response.processed_data)
+        return Response(reporters=[], submission_response=submission_response)
 
 
 class WebParser(object):
@@ -145,25 +141,23 @@ class CsvPlayer(object):
         self.parser = parser
 
     def accept(self, csv_data):
-        response = []
+        responses = []
         submissions = self.parser.parse(csv_data)
         for (form_code, values) in submissions:
             submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.CSV,
                                                    source=Channel.CSV, destination="")
             try:
                 submission_response = self.submission_handler.accept(submission_request)
+                response= Response(reporters=[],submission_response=submission_response)
                 if not submission_response.success:
-                    response.append(Response(reporters=[], success=False,
-                                             errors=dict(error=submission_response.errors.values(), row=values)))
-                else:
-                    response.append(
-                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
-                                 submission_id=submission_response.submission_id,
-                                 datarecord_id=submission_response.datarecord_id,
-                                 short_code=submission_response.short_code))
+                    response.errors = dict(error=submission_response.errors.values(), row=values)
+                responses.append(response)
             except MangroveException as e:
-                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
-        return response
+                response = Response(reporters=[], submission_response=None)
+                response.success=False
+                response.errors = dict(error=e.message, row=values)
+                responses.append(response)
+        return responses
 
 
 class CsvParser(object):
@@ -214,25 +208,23 @@ class XlsPlayer(object):
         self.parser = parser
 
     def accept(self, file_contents):
-        response = []
+        responses = []
         submissions = self.parser.parse(file_contents)
         for (form_code, values) in submissions:
             submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=Channel.XLS,
                                                    source=Channel.XLS, destination="")
             try:
                 submission_response = self.submission_handler.accept(submission_request)
+                response= Response(reporters=[],submission_response=submission_response)
                 if not submission_response.success:
-                    response.append(Response(reporters=[], success=False,
-                                             errors=dict(error=submission_response.errors.values(), row=values)))
-                else:
-                    response.append(
-                        Response(reporters=[], success=submission_response.success, errors=submission_response.errors,
-                                 submission_id=submission_response.submission_id,
-                                 datarecord_id=submission_response.datarecord_id,
-                                 short_code=submission_response.short_code))
+                    response.errors = dict(error=submission_response.errors.values(), row=values)
+                responses.append(response)
             except MangroveException as e:
-                response.append(Response(reporters=[], success=False, errors=dict(error=e.message, row=values)))
-        return response
+                response = Response(reporters=[], submission_response=None)
+                response.success=False
+                response.errors = dict(error=e.message, row=values)
+                responses.append(response)
+        return responses
 
 
 class XlsParser(object):

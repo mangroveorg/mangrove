@@ -18,9 +18,12 @@ class TestSMSPlayer(TestCase):
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request( transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
         self.sms_player = SMSPlayer(self.dbm, self.submission_handler_mock)
+        self.generate_code_patcher = patch("mangrove.transport.player.player._generate_short_code_if_registration_form")
+        self.generate_code_patcher.start()
 
     def tearDown(self):
         self.reporter_patcher.stop()
+        self.generate_code_patcher.stop()
 
     def test_should_submit_if_parsing_is_successful(self):
         self.sms_player.accept(self.request)
@@ -46,3 +49,5 @@ class TestSMSPlayer(TestCase):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.submission_handler_mock.accept.call_count)
+
+

@@ -32,7 +32,7 @@ class TestSubmissions(TestCase):
         self.submissionLogger.create_submission_log.return_value = self.SUBMISSION_ID
 
         self.form_model_mock = Mock(spec=FormModel)
-        self.form_model_mock._is_registration_form.return_value = False
+        self.form_model_mock.is_registration_form.return_value = False
         self.form_model_mock.entity_defaults_to_reporter.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
@@ -151,7 +151,7 @@ class TestSubmissions(TestCase):
 
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
-        self.form_model_mock._is_registration_form.return_value = True
+        self.form_model_mock.is_registration_form.return_value = True
 
         response = self.submission_handler.accept(self.submission_request)
 
@@ -169,7 +169,7 @@ class TestSubmissions(TestCase):
     def test_should_not_register_entity_if_form_submission_invalid(self):
         form_submission = self._invalid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
-        self.form_model_mock._is_registration_form.return_value = True
+        self.form_model_mock.is_registration_form.return_value = True
 
         response = self.submission_handler.accept(self.submission_request)
 
@@ -194,7 +194,7 @@ class TestSubmissions(TestCase):
         reporter_patcher = patch('mangrove.transport.submissions.reporter')
         reporter_module = reporter_patcher.start()
         self.form_model_mock.validate_submission.return_value = form_submission
-        self.form_model_mock._is_registration_form.return_value = False
+        self.form_model_mock.is_registration_form.return_value = False
         self.form_model_mock.entity_defaults_to_reporter.return_value = True
 
         response = self.submission_handler.accept(self.submission_request)

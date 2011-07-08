@@ -8,7 +8,7 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import FailedToSaveDataObject, EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException
+from mangrove.errors.MangroveException import FailedToSaveDataObject, EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
@@ -17,26 +17,33 @@ from database import DatabaseManager, DataObject
 ENTITY_TYPE_TREE = 'entity_type_tree'
 
 
-def create_entity(dbm, entity_type, location=None, aggregation_paths=None, short_code=None, geometry=None):
+def _check_if_exists(dbm, entity_type, short_code):
+    try:
+        existing_entity = get_by_short_code(dbm, short_code, entity_type)
+        return True
+    except DataObjectNotFound:
+        return False
+
+
+
+
+def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """
     Initialize and save an entity to the database. Return the entity
     created unless the short code used is not unique or this entity
     type has not been defined yet.
     """
-    if is_string(entity_type):
-        entity_type = [entity_type]
-    if is_empty(short_code):
-        short_code = generate_short_code(dbm, entity_type)
-    doc_id = _make_doc_id(entity_type, short_code.strip())
-    try:
-        if not validate_entity_type_already_defined(dbm, entity_type):
-            raise EntityTypeDoesNotExistsException(entity_type)
-        e = Entity(dbm, entity_type=entity_type, location=location,
-                   aggregation_paths=aggregation_paths, id=doc_id, short_code=short_code, geometry=geometry)
-        e.save()
-        return e
-    except FailedToSaveDataObject:
+    assert is_string(short_code) and not is_empty(short_code)
+    assert type(entity_type) is list and not is_empty(entity_type)
+    type_hierarchy = [e_type.lower() for e_type in entity_type]
+    if not entity_type_already_defined(dbm, type_hierarchy):
+        raise EntityTypeDoesNotExistsException(entity_type)
+    if _check_if_exists(dbm,type_hierarchy,short_code):
         raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
+    e = Entity(dbm, entity_type=type_hierarchy, location=location,
+               aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
+    e.save()
+    return e
 
 
 def _get_entity_type_tree(dbm):
@@ -58,7 +65,7 @@ def get_all_entity_types(dbm):
     return _get_entity_type_tree(dbm).get_paths()
 
 
-def validate_entity_type_already_defined(dbm, entity_type):
+def entity_type_already_defined(dbm, entity_type):
     all_entities = get_all_entity_types(dbm)
     if all_entities:
         all_entities_lower_case = [[x.lower() for x in each] for each in all_entities]
@@ -78,7 +85,7 @@ def define_type(dbm, entity_type):
     assert is_sequence(entity_type)
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
-    if validate_entity_type_already_defined(dbm, type_path):
+    if entity_type_already_defined(dbm, type_path):
         raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
         # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
@@ -110,7 +117,10 @@ def get_by_short_code(dbm, short_code, entity_type):
     # todo: remove
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    doc_id = _make_doc_id(entity_type, short_code)
+    rows = dbm.load_all_rows_in_view("by_short_codes", key=[entity_type, short_code], reduce=False)
+    if is_empty(rows):
+        raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
+    doc_id = rows[0]["value"]
     return Entity.get(dbm, doc_id)
 
 

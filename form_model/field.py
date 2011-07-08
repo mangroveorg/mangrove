@@ -215,7 +215,7 @@ class TextField(Field):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
 
-class ListField(Field):
+class HierarchyField(Field):
 
     def __init__(self, name, code, label, ddtype, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE):
@@ -226,6 +226,7 @@ class ListField(Field):
         if is_sequence(value) or value is None:
             return value
         return [value]
+    
 
 class SelectField(Field):
     OPTIONS = "choices"
@@ -315,4 +316,4 @@ def _get_select_field(code, ddtype, dictionary, label, name, type):
 
 
 def _get_list_field(name, code, label, ddtype):
-    return ListField(name, code, label, ddtype)
+    return HierarchyField(name, code, label, ddtype)

@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import os
 import unittest
-from mock import Mock
+from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.transport.player.player import XlsPlayer, XlsParser
@@ -13,7 +13,7 @@ class TestXlsPlayer(unittest.TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.parser = XlsParser()
-        self.csv_data = """
+        self.xls_data = """
                                 FORM_CODE,ID,BEDS,DIRECTOR,MEDS
                                 CLF1,CL001,10,Dr. A,201
                                 CLF1,CL002,11,Dr. B,202
@@ -26,11 +26,16 @@ class TestXlsPlayer(unittest.TestCase):
         self.file_name = 'test.xls'
         wb = xlwt.Workbook()
         ws = wb.add_sheet('test')
-        for row_number, row  in enumerate(self.csv_data.split('\n')):
+        for row_number, row  in enumerate(self.xls_data.split('\n')):
             for col_number, val in enumerate(row.split(',')):
                 ws.write(row_number, col_number, val)
         wb.save(self.file_name)
         self.player = XlsPlayer(self.dbm, self.submission_handler_mock, self.parser)
+        self.generate_code_patcher = patch("mangrove.transport.player.player._generate_short_code_if_registration_form")
+        self.generate_code_patcher.start()
+
+    def tearDown(self):
+        self.generate_code_patcher.stop()
 
     def test_should_import_xls_string(self):
         self.player.accept(file_contents=open(self.file_name).read())

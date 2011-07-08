@@ -4,7 +4,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, GeoCodeField, HierarchyField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -17,20 +17,24 @@ class TestFormModel(unittest.TestCase):
         self.ddtype_mock = Mock(spec=DataDictType)
         self.datadict_mock.return_value = self.ddtype_mock
 
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+        q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
-        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
+        q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
                               ddtype=self.ddtype_mock)
-        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
+        q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.ddtype_mock)
-        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
+        q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
-        question5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
+        q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[
-                    question1, question2, question3, question4, question5])
+                                    form_code="1", type='survey', fields=[#        expected_short_code = "dog3"
+#        self.assertEqual(response.short_code, expected_short_code)
+#        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+#        self.assertEqual(b.short_code, expected_short_code)
+
+                    q1, q2, q3, q4, q5])
 
 
     def tearDown(self):
@@ -146,3 +150,14 @@ class TestFormModel(unittest.TestCase):
         self.assertFalse(self.form_model.is_active())
         self.form_model.activate()
         self.assertTrue(self.form_model.is_active())
+
+    def test_create_form_submission_with_entity_type_as_lowercase_list_of_string(self):
+        answers = {"s": "1", "t": "Reporter"}
+        registration_form = _construct_registration_form(self.dbm)
+        form_submission = registration_form.validate_submission(answers)
+        self.assertEqual(["reporter"], form_submission.entity_type)
+
+        answers = {"s": "1", "t": ["Reporter"]}
+        form_submission = registration_form.validate_submission(answers)
+        self.assertEqual(["reporter"], form_submission.entity_type)
+

@@ -69,11 +69,11 @@ class SubmissionHandler(object):
             if len(form_submission.values) == 1:
                 raise NoQuestionsSubmittedException()
             try:
-                should_create_entity = form._is_registration_form()
+                should_create_entity = form.is_registration_form()
                 e = form_submission.to_entity(self.dbm, create=should_create_entity)
                 data_record_id = self.save_data_and_update_log(e, form_submission, submission_information, logger,
                                                            submission_id)
-                short_code = e.short_code if form._is_registration_form() else None
+                short_code = e.short_code if form.is_registration_form() else None
                 return SubmissionResponse(True, submission_id, {}, data_record_id, short_code=short_code, processed_data=form_submission.cleaned_data)
 
             except DataObjectNotFound as e:

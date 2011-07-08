@@ -7,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, ListField
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -55,7 +55,7 @@ class TestField(unittest.TestCase):
             "type": "list",
             "ddtype": self.DDTYPE_JSON,
             }
-        field = ListField(name="loc", code="Q1", label="What is your location", language="eng",
+        field = HierarchyField(name="loc", code="Q1", label="What is your location", language="eng",
                           ddtype=self.ddtype, instruction="Answer is list")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)

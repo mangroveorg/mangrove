@@ -27,7 +27,7 @@ class TestReporter(TestCase):
                       data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                               (NAME_FIELD, "A", self.first_name_type)],
                       location=[],
-                      source="sms")
+                      source="sms", short_code="REP1")
         self.register(self.manager, entity_type=["reporter"],
                       data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
                               (NAME_FIELD, "B", self.first_name_type)],
@@ -37,7 +37,7 @@ class TestReporter(TestCase):
                       data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
                               (NAME_FIELD, "B", self.first_name_type)],
                       location=[],
-                      source="sms")
+                      source="sms", short_code="REP2")
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.manager)

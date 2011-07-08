@@ -46,6 +46,7 @@ class TZAwareDateTimeField(DateTimeField):
             value = datetime.datetime.combine(value, datetime.time(0))
         return py_datetime_to_js_datestring(value)
 
+
 class DocumentBase(Document):
     created = TZAwareDateTimeField()
     modified = TZAwareDateTimeField()
@@ -60,8 +61,6 @@ class DocumentBase(Document):
         self.document_type = document_type
         self.void = False
 
-    def void(self):
-        self.void=True
 
 class EntityDocument(DocumentBase):
     """

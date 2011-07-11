@@ -53,8 +53,8 @@ class SubmissionHandler(object):
         form_code = request.form_code
         values = request.submission
 
-        logger = SubmissionLogger(self.dbm, request)
-        submission_id = logger.create_submission_log()
+        logger = SubmissionLogger(self.dbm)
+        submission_id = logger.create_submission_log(request)
         submission_information = dict(submission_id=submission_id, form_code=form_code)
 
         form = get_form_model_by_code(self.dbm, form_code)
@@ -87,14 +87,9 @@ class SubmissionHandler(object):
 
 class SubmissionLogger(object):
 
-    def __init__(self, dbm, request):
+    def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
-        self.channel=request.transport
-        self.source=request.source
-        self.destination=request.destination
-        self.form_code = request.form_code
-        self.values = request.submission
 
     def void_data_record(self, submission_id):
         submission_log = self.dbm._load_document(submission_id, SubmissionLogDocument)
@@ -110,10 +105,10 @@ class SubmissionLogger(object):
         log.error_message += " ".join(errors)
         self.dbm._save_document(log)
 
-    def create_submission_log(self):
-        return self.dbm._save_document(SubmissionLogDocument(channel=self.channel, source=self.source,
-                                                             destination=self.destination, form_code=self.form_code,
-                                                             values=self.values, status=False,
+    def create_submission_log(self, request):
+        return self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
+                                                             destination=request.destination, form_code=request.form_code,
+                                                             values=request.submission, status=False,
                                                              error_message="", voided=True))
 
 

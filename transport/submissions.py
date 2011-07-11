@@ -1,10 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.datastore import entity
-from mangrove.form_model.form_model import get_form_model_by_code, GEO_CODE, LOCATION_TYPE_FIELD_CODE
+from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
-from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_string
 from mangrove.transport import reporter
 
@@ -44,8 +42,8 @@ class SubmissionHandler(object):
 
     def save_data_and_update_log(self, e, form_submission, submission_information, logger, submission_id):
         data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
-        logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True
-                                     , errors=[])
+        logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True,
+                                     errors=[])
         return data_record_id
 
     def accept(self, request):

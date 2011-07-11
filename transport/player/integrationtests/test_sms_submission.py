@@ -171,10 +171,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(message1)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-#        expected_short_code = "dog1"
-#        self.assertEqual(response.short_code, expected_short_code)
-#        a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-#        self.assertEqual(a.short_code, expected_short_code)
+        expected_short_code = "dog1"
+        self.assertEqual(response.short_code, expected_short_code)
+        a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual(a.short_code, expected_short_code)
 
         text = "reg +N buddy +S bud +T dog +G 80 80 +D its a dog! +M 45557"
         
@@ -190,10 +190,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-#        expected_short_code = "dog3"
-#        self.assertEqual(response.short_code, expected_short_code)
-#        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-#        self.assertEqual(b.short_code, expected_short_code)
+        expected_short_code = "dog3"
+        self.assertEqual(response.short_code, expected_short_code)
+        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual(b.short_code, expected_short_code)
 
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
         INVALID_LATITUDE = 380

@@ -100,21 +100,18 @@ def generate_short_code(dbm, entity_type):
     # the add_data method and then there should be a view that can
     # easily find all entities with a particular short code.
     assert is_sequence(entity_type)
-    count = _get_entity_count_for_type(dbm, entity_type=entity_type)
+    count = get_entity_count_for_type(dbm, entity_type=entity_type)
     assert count >= 0
     return _make_short_code(entity_type, count + 1)
 
 
-def _get_entity_count_for_type(dbm, entity_type):
-    # todo: this function can be removed when generate_short_code
-    # gets removed.
+def get_entity_count_for_type(dbm, entity_type):
     rows = dbm.load_all_rows_in_view("by_short_codes",descending = True,
-                                     startkey=[entity_type, {}], endkey=[entity_type], group_level = 1)
+                                     startkey=[[entity_type], {}], endkey=[[entity_type]], group_level = 1)
     return rows[0]["value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
-    # todo: remove
     assert is_string(short_code)
     assert is_sequence(entity_type)
     rows = dbm.load_all_rows_in_view("by_short_codes", key=[entity_type, short_code], reduce=False)
@@ -288,7 +285,10 @@ class Entity(DataObject):
     @property
     def location_path(self):
         '''Returns a copy of the path'''
-        return list(self._doc.location)
+        return list(self._doc.location) if self._doc.location is not None else []
+
+
+
 
     @property
     def type_string(self):

@@ -4,6 +4,7 @@ import pprint
 import time
 import re
 import xlrd
+from mangrove.datastore import entity
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE
 from mangrove.transport import reporter
@@ -60,19 +61,18 @@ def _epoch_last_three_digit():
     epoch_last_three_digit = divmod(epoch, 1000)[1]
     return epoch_last_three_digit
 
-def _generate_short_code(entity_type):
-    epoch_last_six_digit = _epoch_last_three_digit()
-    return entity_type[:3].lower()+ str(epoch_last_six_digit)
+def _generate_short_code(dbm,entity_type):
+    current_count = entity.get_entity_count_for_type(dbm, entity_type)
+    entity_type_prefix = entity_type[:3]+"%s"
+    return  entity_type_prefix % (current_count+1)
 
 
 def _generate_short_code_if_registration_form(dbm, form_code, values):
-
-
     form_model = get_form_model_by_code(dbm, form_code)
     if form_model.is_registration_form():
         entity_q_code = form_model.entity_question.code
         if _short_code_not_in(entity_q_code, values):
-            values[entity_q_code] = _generate_short_code(values[ENTITY_TYPE_FIELD_CODE])
+            values[entity_q_code] = _generate_short_code(dbm,values[ENTITY_TYPE_FIELD_CODE])
 
 
 def submit( dbm,submission_handler, transportInfo, form_code, values):

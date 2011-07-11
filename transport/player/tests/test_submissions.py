@@ -3,7 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
 from mangrove.transport.submissions import SubmissionHandler, SubmissionLogger, SubmissionRequest
@@ -83,7 +83,7 @@ class TestSubmissions(TestCase):
     def test_should_save_data_record_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
-        response = self.submission_handler.accept(self.submission_request)
+        self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(self.form_submission_entity_module.get_by_short_code.called)
 
@@ -100,14 +100,14 @@ class TestSubmissions(TestCase):
     def test_should_not_save_data_record_if_no_valid_questions_present(self):
         self.form_model_mock.validate_submission.return_value = self._empty_form_submission()
         with self.assertRaises(NoQuestionsSubmittedException):
-            response = self.submission_handler.accept(self.submission_request)
+            self.submission_handler.accept(self.submission_request)
 
 
     def test_should_create_new_submission_log(self):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        response = self.submission_handler.accept(self.submission_request)
+        self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(self.submissionLogger.create_submission_log.called)
 
@@ -127,18 +127,17 @@ class TestSubmissions(TestCase):
         form_submission = self._invalid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 
-        response = self.submission_handler.accept(self.submission_request)
+        self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
                                                                             errors=form_submission.errors.values())
 
     def test_should_fail_submission_if_invalid_form_code(self):
-        dbm = Mock(spec=DatabaseManager)
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
 
         with self.assertRaises(FormModelDoesNotExistsException):
-            response = self.submission_handler.accept(self.submission_request)
+            self.submission_handler.accept(self.submission_request)
 
     def test_should_fail_submission_if_invalid_short_code(self):
         form_submission = self._valid_form_submission()
@@ -221,3 +220,8 @@ class TestSubmissions(TestCase):
 
         self.assertFalse(response.success)
         self.assertEqual({'field': u'Āgra'}, response.errors)
+
+    def test_should_raise_inactive_form_model_exception(self):
+        self.form_model_mock.is_active.return_value = False
+        with self.assertRaises(InactiveFormModelException):
+            self.submission_handler.accept(self.submission_request)

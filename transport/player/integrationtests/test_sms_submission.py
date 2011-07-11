@@ -8,7 +8,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
@@ -269,3 +269,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45° 56`"
         response = self.sms_player.accept(Request("sms", text, "1234", "5678"))
         self.assertFalse(response.success)
+
+    def test_should_raise_exception_for_inactive_form_model(self):
+        self.form_model.deactivate()
+        self.form_model.save()
+        text = "clinic +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
+        with self.assertRaises(InactiveFormModelException):
+            self.sms_player.accept(Request(transport="sms", message=text, source="1234", destination="5678"))

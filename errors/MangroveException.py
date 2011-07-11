@@ -229,3 +229,7 @@ class AggregationNotSupportedForTypeException(MangroveException):
         error_message = "%s for %s is not supported" % (aggregation, field)
         MangroveException.__init__(self, error_message, (aggregation, field))
 
+class InactiveFormModelException(MangroveException):
+    def __init__(self, form_code):
+        error_message = "The form_model %s is inactive" % (form_code, )
+        MangroveException.__init__(self, error_message, (form_code, ))

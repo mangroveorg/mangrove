@@ -4,17 +4,16 @@ import copy
 from datetime import datetime
 from time import mktime
 from collections import defaultdict
-
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 import mangrove.datastore.aggregationtree as atree
-from mangrove.errors.MangroveException import FailedToSaveDataObject, EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
+from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
 from database import DatabaseManager, DataObject
 
-ENTITY_TYPE_TREE = 'entity_type_tree'
+ENTITY_TYPE_TREE = u'entity_type_tree'
 
 
 def _check_if_exists(dbm, entity_type, short_code):
@@ -86,7 +85,7 @@ def define_type(dbm, entity_type):
     type_path = ([entity_type] if is_string(entity_type) else entity_type)
     type_path = [item.strip() for item in type_path]
     if entity_type_already_defined(dbm, type_path):
-        raise EntityTypeAlreadyDefined("Type: %s is already defined" % '.'.join(entity_type))
+        raise EntityTypeAlreadyDefined(u"Type: %s is already defined" % u'.'.join(entity_type))
         # now make the new one
     entity_tree = _get_entity_type_tree(dbm)
     entity_tree.add_path([atree.AggregationTree.root_id] + entity_type)
@@ -106,9 +105,9 @@ def generate_short_code(dbm, entity_type):
 
 
 def get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view("by_short_codes",descending = True,
+    rows = dbm.load_all_rows_in_view(u"by_short_codes",descending = True,
                                      startkey=[[entity_type], {}], endkey=[[entity_type]], group_level = 1)
-    return rows[0]["value"] if len(rows) else 0
+    return rows[0][u"value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
@@ -138,7 +137,7 @@ def _make_short_code(entity_type, num):
     # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].upper()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix,num)
+    return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def _make_short_code(entity_type, num):
@@ -157,7 +156,7 @@ def get_entities_by_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(entity_type)
 
-    rows = dbm.load_all_rows_in_view('by_type', key=entity_type)
+    rows = dbm.load_all_rows_in_view(u'by_type', key=entity_type)
     entities = dbm.get_many([row.id for row in rows], Entity)
 
     return entities
@@ -170,14 +169,16 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     if isinstance(label, DataDictType):
         label = label.slug
 
-    rows = dbm.load_all_rows_in_view('by_label_value', key=[label, value])
-    entities = dbm.get_many([row['value'] for row in rows], Entity)
+    rows = dbm.load_all_rows_in_view(u'by_label_value', key=[label, value])
+    entities = dbm.get_many([row[u'value'] for row in rows], Entity)
 
-    return [e for e in entities if e.values({label: 'latest'}, asof=as_of) == {label: value}]
+    return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
 
 
 def get_entities_in(dbm, geo_path, type_path=None):
-    '''Retrieve an entity within the given fully-qualified geographic placename.'''
+    """
+    Retrieve an entity within the given fully-qualified geographic placename.
+    """
     assert isinstance(dbm, DatabaseManager)
     assert is_string(geo_path) or isinstance(geo_path, list)
     assert is_string(type_path) or isinstance(type_path, list) or type_path is None
@@ -194,19 +195,20 @@ def get_entities_in(dbm, geo_path, type_path=None):
         # TODO: is the type field necessarily a heirarchy?
         # if not, then this needs to perform a query for each type and then take the intersection
         # of the result sets
-        rows = dbm.load_all_rows_in_view('by_type_geo', key=(type_path + geo_path))
+        rows = dbm.load_all_rows_in_view(u'by_type_geo', key=(type_path + geo_path))
         entities = dbm.get_many([row.id for row in rows], Entity)
 
     # otherwise, filter by type
     if type_path is None:
-        rows = dbm.load_all_rows_in_view('by_geo', key=geo_path)
+        rows = dbm.load_all_rows_in_view(u'by_geo', key=geo_path)
         entities = dbm.get_many([row.id for row in rows], Entity)
 
     return entities
 
 
-def get_all_entities(dbm , include_docs=False):
+def get_all_entities(dbm, include_docs=False):
     return dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
+
 
 class Entity(DataObject):
     """
@@ -218,7 +220,8 @@ class Entity(DataObject):
 
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
                  geometry=None, centroid=None, gr_id=None, id=None, short_code=None):
-        '''Construct a new entity.
+        """
+        Construct a new entity.
 
         Note: _couch_document is used for 'protected' factory methods and
         should not be passed in standard construction.
@@ -226,7 +229,7 @@ class Entity(DataObject):
         If _couch_document is passed, the other args are ignored
 
         entity_type may be a string (flat type) or sequence (hierarchical type)
-        '''
+        """
         assert isinstance(dbm, DatabaseManager)
         assert entity_type is None or is_sequence(entity_type) or is_string(entity_type)
         assert location is None or is_sequence(location)
@@ -269,22 +272,28 @@ class Entity(DataObject):
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
             for name in aggregation_paths.keys():
                 if name in reserved_names:
-                    raise ValueError('Attempted to add an aggregation path with a reserved name')
+                    raise ValueError(u'Attempted to add an aggregation path with a reserved name')
                 self.set_aggregation_path(name, aggregation_paths[name])
 
     @property
     def aggregation_paths(self):
-        '''Returns a copy of the dict'''
+        """
+        Returns a copy of the dict
+        """
         return copy.deepcopy(self._doc.aggregation_paths)
 
     @property
     def type_path(self):
-        '''Returns a copy of the path'''
+        """
+        Returns a copy of the path
+        """
         return list(self._doc.entity_type)
 
     @property
     def location_path(self):
-        '''Returns a copy of the path'''
+        """
+        Returns a copy of the path
+        """
         return list(self._doc.location) if self._doc.location is not None else []
 
 
@@ -292,23 +301,24 @@ class Entity(DataObject):
 
     @property
     def type_string(self):
-        '''
+        """
         An Entity's type is a list of strings. Return this Entity's
         type list joined with a period. If there are no types in the
         list return an empty string.
-        '''
+
+        """
         p = self.type_path
-        return '' if p is None else '.'.join(p)
+        return u'' if p is None else u'.'.join(p)
 
     @property
     def location_string(self):
-        '''
+        """
         An Entity's location is a list of strings. Return this
         Entity's location list joined with a period. If the location
         list is empty return the empty string.
-        '''
+        """
         p = self.location_path
-        return '' if p is None else '.'.join(p)
+        return u'' if p is None else u'.'.join(p)
 
     @property
     def geometry(self):
@@ -335,7 +345,8 @@ class Entity(DataObject):
         # set a dirty flag and handle this in save.
 
     def add_data(self, data=(), event_time=None, submission=None, multiple_records=False):
-        '''Add a new datarecord to this Entity and return a UUID for the datarecord.
+        """
+        Add a new datarecord to this Entity and return a UUID for the datarecord.
         Arguments:
             data: a sequence of ordered tuples, (label, value, type)
                 where type is a DataDictType
@@ -343,10 +354,10 @@ class Entity(DataObject):
                 when it was reported
             submission_id: an id to a 'submission' document in the
                 submission log from which this data came
-        '''
+        """
         assert is_sequence(data)
         assert event_time is None or isinstance(event_time, datetime)
-        assert self.id is not None, "id should never be none, even if haven't been saved, an entity should have a UUID."
+        assert self.id is not None, u"id should never be none, even if haven't been saved,an entity should have a UUID."
         # TODO: should we have a flag that says that this has been
         # saved at least once to avoid adding data records for an
         # Entity that may never be saved? Should docs just be saved on
@@ -355,17 +366,17 @@ class Entity(DataObject):
             event_time = utcnow()
         for (label, value, dd_type) in data:
             if not isinstance(dd_type, DataDictType) or is_empty(label):
-                raise ValueError('Data must be of the form (label, value, DataDictType).')
+                raise ValueError(u'Data must be of the form (label, value, DataDictType).')
 
         if multiple_records:
             data_list = []
             for (label, value, dd_type) in data:
                 data_record = DataRecordDocument(
-                        entity_doc=self._doc,
-                        event_time=event_time,
-                        data=[(label, value, dd_type)],
-                        submission=submission
-                        )
+                    entity_doc=self._doc,
+                    event_time=event_time,
+                    data=[(label, value, dd_type)],
+                    submission=submission
+                )
                 data_list.append(data_record)
             return self._dbm._save_documents(data_list)
         else:
@@ -374,38 +385,36 @@ class Entity(DataObject):
                 event_time=event_time,
                 data=data,
                 submission=submission
-                )
+            )
             return self._dbm._save_document(data_record_doc)
 
 
-
     def invalidate_data(self, uid):
-        '''Mark datarecord identified by uid as 'invalid'.
+        """
+        Mark datarecord identified by uid as 'invalid'.
 
         Can be used to mark a submitted record as 'bad' so that
         it will be ignored in reporting. This is because we
         don't want to delete submitted data, even if it is
-        erroneous.
-        '''
+        erroneous
+        """
         self._dbm.invalidate(uid)
 
     def invalidate(self):
-        '''
+        """
         Mark the entity as invalid.
-
         This will also mark all associated data records as invalid.
-
-        '''
+        """
         self._doc.void = True
         self.save()
         for id in self._get_data_ids():
             self.invalidate_data(id)
 
     def _get_data_ids(self):
-        '''Returns a list of all data documents ids for this entity.
-
+        """
+        Returns a list of all data documents ids for this entity.
         This should only be used internally to perform update actions on data records as necessary.
-        '''
+        """
         rows = self._get_rows()
         return [row.id for row in rows]
 
@@ -414,7 +423,7 @@ class Entity(DataObject):
         Return a list of all the data records associated with this
         entity.
         """
-        return self._dbm.load_all_rows_in_view('entity_data', key=self.id)
+        return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
 
     def get_all_data(self):
         """
@@ -422,45 +431,49 @@ class Entity(DataObject):
         the second level is the data dict type slug, and the third
         contains the value.
         """
-        rows = self._dbm.load_all_rows_in_view('id_time_slug_value', key=self.id)
+        rows = self._dbm.load_all_rows_in_view(u'id_time_slug_value', key=self.id)
         result = defaultdict(dict)
         for row in rows:
-            row = row['value']
-            result[row['event_time']][row['slug']] = row['value']
+            row = row[u'value']
+            result[row[u'event_time']][row['slug']] = row['value']
         return result
 
     def data_types(self, tags=None):
-        '''Returns a list of each type of data that is stored on this entity.'''
+        """
+        Returns a list of each type of data that is stored on this entity
+        """
         assert tags is None or isinstance(tags, list) or is_string(tags)
         if tags is None or is_empty(tags):
-            rows = self._dbm.load_all_rows_in_view('entity_datatypes', key=self.id)
-            result = get_datadict_types(self._dbm, [row['value'] for row in rows])
+            rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
+            result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
         else:
             if is_string(tags):
                 tags = [tags]
             keys = []
             for tag in tags:
-                rows = self._dbm.load_all_rows_in_view('entity_datatypes_by_tag', key=[self.id, tag])
-                keys.append([row['value'] for row in rows])
+                rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
+                keys.append([row[u'value'] for row in rows])
             ids_with_all_tags = list(set.intersection(*map(set, keys)))
             result = get_datadict_types(self._dbm, ids_with_all_tags)
         return result
 
     def state(self):
-        '''Returns a dictionary containing the current state of the entity.
-
+        """
+        Returns a dictionary containing the current state of the entity.
         Contains the latest value of each type of data stored on the entity.
-        '''
+        """
         return dict([(dd_type.slug, self.value(dd_type.slug)) for dd_type in self.data_types()])
 
 
     def value(self, label):
-        '''Returns the latest value for the given label.'''
+        """
+            Returns the latest value for the given label.
+        """
         assert isinstance(label, DataDictType) or is_string(label)
         if isinstance(label, DataDictType):
             label = label.slug
 
-        return self.values({label: 'latest'})[label]
+        return self.values({label: u'latest'})[label]
 
     def values(self, aggregation_rules, asof=None):
         """
@@ -496,8 +509,8 @@ class Entity(DataObject):
         #  The aggregation map-reduce view will return only one row for an entity-id
         # From this we return the field we are interested in.
         # TODO: Hardcoding to 'latest' for now. Generalize to any aggregation function.
-        return rows[0]['value']['latest'] if len(rows) else None
+        return rows[0][u'value'][u'latest'] if len(rows) else None
 
     def _translate(self, aggregate_fn):
-        view_names = {"latest": "by_values_latest_by_time"}
+        view_names = {u"latest": u"by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn

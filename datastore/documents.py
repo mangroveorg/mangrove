@@ -23,6 +23,7 @@ class attributes(object):
     ACTIVE_LANGUAGES = 'activeLanguages'
     ACTIVE_STATE = 'Active'
     INACTIVE_STATE = 'Inactive'
+    TEST_STATE = 'test'
 
 
 class TZAwareDateTimeField(DateTimeField):
@@ -237,9 +238,10 @@ class SubmissionLogDocument(DocumentBase):
     error_message = TextField()
     form_code = TextField()
     data_record_id = TextField()
+    test = BooleanField()
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None, data_record_id=None, voided=None):
+                 error_message=None, form_code=None, data_record_id=None, voided=None, test=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
@@ -251,6 +253,7 @@ class SubmissionLogDocument(DocumentBase):
         self.error_message = error_message
         self.data_record_id = data_record_id
         self.voided = voided
+        self.test = test
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

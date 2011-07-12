@@ -151,6 +151,10 @@ class TestFormModel(unittest.TestCase):
         self.form_model.activate()
         self.assertTrue(self.form_model.is_active())
 
+    def test_should_be_able_to_put_the_form_model_in_test_mode(self):
+        self.form_model.set_test_mode()
+        self.assertTrue(self.form_model.is_in_test_mode())
+
     def test_create_form_submission_with_entity_type_as_lowercase_list_of_string(self):
         answers = {"s": "1", "t": "Reporter"}
         registration_form = _construct_registration_form(self.dbm)

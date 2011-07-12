@@ -265,14 +265,23 @@ class FormModel(DataObject):
     def entity_defaults_to_reporter(self):
         return self.entity_type == [REPORTER]
 
+    def is_inactive(self):
+        return True if self._doc.state == attributes.INACTIVE_STATE else False
+
     def is_active(self):
         return True if self._doc.state == attributes.ACTIVE_STATE else False
+
+    def is_in_test_mode(self):
+        return True if self._doc.state == attributes.TEST_STATE else False
 
     def deactivate(self):
         self._doc.state=attributes.INACTIVE_STATE
 
     def activate(self):
         self._doc.state=attributes.ACTIVE_STATE
+
+    def set_test_mode(self):
+        self._doc.state=attributes.TEST_STATE
 
 
 class FormSubmission(object):

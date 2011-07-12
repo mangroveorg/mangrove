@@ -19,11 +19,9 @@ class TestSubmissions(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.form_model_patcher = patch('mangrove.transport.submissions.get_form_model_by_code')
         self.form_submission_entity_patcher = patch('mangrove.form_model.form_model.entity')
-        self.entity_patcher = patch('mangrove.transport.submissions.entity')
         self.SubmissionLogger_class_patcher = patch('mangrove.transport.submissions.SubmissionLogger', )
 
         self.get_form_model_mock = self.form_model_patcher.start()
-        self.entity_module = self.entity_patcher.start()
         self.form_submission_entity_module = self.form_submission_entity_patcher.start()
         self.SubmissionLogger_mock_class = self.SubmissionLogger_class_patcher.start()
         self.submissionLogger = Mock(spec=SubmissionLogger)
@@ -34,6 +32,8 @@ class TestSubmissions(TestCase):
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_registration_form.return_value = False
         self.form_model_mock.entity_defaults_to_reporter.return_value = False
+        self.form_model_mock.is_inactive.return_value = False
+        self.form_model_mock.is_in_test_mode.return_value = False
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
 
@@ -44,7 +44,6 @@ class TestSubmissions(TestCase):
     def tearDown(self):
         self.form_model_patcher.stop()
         self.form_submission_entity_patcher.stop()
-        self.entity_patcher.stop()
 
     def _valid_form_submission(self):
         return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune"}, "1",
@@ -93,7 +92,6 @@ class TestSubmissions(TestCase):
 
         response = self.submission_handler.accept(self.submission_request)
 
-        self.assertFalse(self.entity_module.add_data.called)
         self.assertEqual({"field": "Invalid"}, response.errors)
         self.assertFalse(response.success)
 
@@ -120,7 +118,7 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=[],
-                                                                            data_record_id=response.datarecord_id)
+                                                                            data_record_id=response.datarecord_id, in_test_mode=False)
 
 
     def test_should_update_submission_log_on_failure(self):
@@ -131,7 +129,7 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            errors=form_submission.errors.values())
+                                                                            errors=form_submission.errors.values(), in_test_mode=False)
 
     def test_should_fail_submission_if_invalid_form_code(self):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
@@ -163,7 +161,7 @@ class TestSubmissions(TestCase):
                                                                                  short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=[],
-                                                                            data_record_id=response.datarecord_id)
+                                                                            data_record_id=response.datarecord_id, in_test_mode=False)
 
 
     def test_should_not_register_entity_if_form_submission_invalid(self):
@@ -178,7 +176,7 @@ class TestSubmissions(TestCase):
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            errors=form_submission.errors.values())
+                                                                            errors=form_submission.errors.values(), in_test_mode=False)
 
     def test_should_return_expanded_response(self):
         form_submission = self._valid_form_submission_with_choices()
@@ -222,6 +220,19 @@ class TestSubmissions(TestCase):
         self.assertEqual({'field': u'Āgra'}, response.errors)
 
     def test_should_raise_inactive_form_model_exception(self):
-        self.form_model_mock.is_active.return_value = False
+        self.form_model_mock.is_inactive.return_value = True
         with self.assertRaises(InactiveFormModelException):
             self.submission_handler.accept(self.submission_request)
+
+
+    def test_should_log_submissions_in_test_mode(self):
+        self.form_model_mock.is_in_test_mode.return_value = True
+        self.form_model_mock.is_inactive.return_value = False
+        form_submission = self._valid_form_submission()
+        self.form_model_mock.validate_submission.return_value = form_submission
+
+        response = self.submission_handler.accept(self.submission_request)
+
+        self.assertTrue(response.success)
+        self.assertIsNone(response.datarecord_id)
+        self.assertIsNotNone(response.submission_id)

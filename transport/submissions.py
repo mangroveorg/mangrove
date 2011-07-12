@@ -40,10 +40,13 @@ class SubmissionHandler(object):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
 
-    def save_data_and_update_log(self, e, form_submission, submission_information, logger, submission_id):
-        data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
+    def save_data_and_update_log(self, e, form_submission, submission_information, logger, submission_id, is_form_in_test_mode=False):
+        data_record_id = None
+        if not is_form_in_test_mode:
+            data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
+
         logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True,
-                                     errors=[])
+                                     errors=[], in_test_mode=is_form_in_test_mode)
         return data_record_id
 
     def accept(self, request):
@@ -56,7 +59,7 @@ class SubmissionHandler(object):
         submission_information = dict(submission_id=submission_id, form_code=form_code)
 
         form = get_form_model_by_code(self.dbm, form_code)
-        if not form.is_active():
+        if form.is_inactive():
             logger.update_submission_log(submission_id, False, 'Inactive form_model')
             raise InactiveFormModelException(form.form_code)
         if form.entity_defaults_to_reporter():
@@ -70,16 +73,16 @@ class SubmissionHandler(object):
                 should_create_entity = form.is_registration_form()
                 e = form_submission.to_entity(self.dbm, create=should_create_entity)
                 data_record_id = self.save_data_and_update_log(e, form_submission, submission_information, logger,
-                                                           submission_id)
+                                                           submission_id, form.is_in_test_mode())
                 short_code = e.short_code if form.is_registration_form() else None
                 return SubmissionResponse(True, submission_id, {}, data_record_id, short_code=short_code, processed_data=form_submission.cleaned_data)
 
             except DataObjectNotFound as e:
-                logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message)
+                logger.update_submission_log(submission_id=submission_id, status=False, errors=e.message, in_test_mode=form.is_in_test_mode())
                 raise DataObjectNotFound('Subject','Unique Identification Number(ID)',form_submission.short_code)
         else:
             _errors = form_submission.errors
-            logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values())
+            logger.update_submission_log(submission_id=submission_id, status=False, errors=_errors.values(), in_test_mode=form.is_in_test_mode())
             return SubmissionResponse(False, submission_id, _errors, processed_data=form_submission.cleaned_data)
 
 
@@ -95,19 +98,20 @@ class SubmissionLogger(object):
         submission_log.voided = True
         self.dbm._save_document(submission_log)
 
-    def update_submission_log(self, submission_id, status, errors, data_record_id=None):
+    def update_submission_log(self, submission_id, status, errors, data_record_id=None, in_test_mode=False):
         log = self.dbm._load_document(submission_id, SubmissionLogDocument)
         log.status = status
         log.voided = not status
         log.data_record_id = data_record_id
         log.error_message += " ".join(errors)
+        log.test = in_test_mode
         self.dbm._save_document(log)
 
     def create_submission_log(self, request):
         return self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
                                                              destination=request.destination, form_code=request.form_code,
                                                              values=request.submission, status=False,
-                                                             error_message="", voided=True))
+                                                             error_message="", voided=True, test=False))
 
 
 def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, count_only=False):

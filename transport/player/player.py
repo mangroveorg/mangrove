@@ -71,7 +71,7 @@ def _generate_short_code_if_registration_form(dbm, form_code, values):
     if form_model.is_registration_form():
         entity_q_code = form_model.entity_question.code
         if _short_code_not_in(entity_q_code, values):
-            values[entity_q_code] = _generate_short_code(dbm,values[ENTITY_TYPE_FIELD_CODE])
+            values[entity_q_code] = _generate_short_code(dbm,values[ENTITY_TYPE_FIELD_CODE].lower())
 
 
 def submit( dbm,submission_handler, transportInfo, form_code, values):

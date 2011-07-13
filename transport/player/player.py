@@ -1,11 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import csv
-import pprint
 import time
 import re
 import xlrd
 from mangrove.datastore import entity
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, MangroveException, MultipleSubmissionsForSameCodeException, XlsParserInvalidHeaderFormatException, SubmissionParseException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE
 from mangrove.transport import reporter
 from mangrove.transport.submissions import  SubmissionRequest
@@ -145,11 +144,15 @@ class SMSParser(object):
     
     def parse(self, message):
         assert is_string(message)
-        message = self._clean(message)
-        self._validate_format(message)
-        tokens = message.split(self.SEPARATOR)
-        form_code = self._pop_form_code(tokens)
-        submission = self._parse_tokens(tokens)
+        form_code = None
+        try:
+            message = self._clean(message)
+            self._validate_format(message)
+            tokens = message.split(self.SEPARATOR)
+            form_code = self._pop_form_code(tokens)
+            submission = self._parse_tokens(tokens)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
 
 

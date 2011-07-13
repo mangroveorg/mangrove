@@ -237,4 +237,3 @@ class InactiveFormModelException(MangroveException):
 class SubmissionParseException(MangroveException):
     def __init__(self, form_code, message):
         MangroveException.__init__(self, message, (form_code,))
-        self.form_code = form_code

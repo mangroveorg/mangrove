@@ -151,7 +151,7 @@ class SMSParser(object):
             tokens = message.split(self.SEPARATOR)
             form_code = self._pop_form_code(tokens)
             submission = self._parse_tokens(tokens)
-        except MultipleSubmissionsForSameCodeException as ex:
+        except MangroveException as ex:
             raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
 

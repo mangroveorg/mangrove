@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 import os
-from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
+from mangrove.errors.MangroveException import SMSParserInvalidFormatException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, SubmissionParseException
 from mangrove.transport.player.player import SMSParser, WebParser, CsvParser, XlsParser
 import xlwt
 
@@ -25,31 +25,31 @@ class TestSMSParser(TestCase):
 
     def test_should_raise_error_if_invalid_sms_format(self):
         smsplayer = SMSParser()
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("+")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("  +  ")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("  +  +")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("+WP ")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("WP")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("WP+")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse(" WP ")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("WP ID")
 
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             form_code, values = smsplayer.parse("WP +ID")
 
     def test_should_accept_only_strings(self):

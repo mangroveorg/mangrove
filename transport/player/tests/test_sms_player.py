@@ -2,7 +2,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
+from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException, SubmissionParseException
 from mangrove.form_model.form_model import  NAME_FIELD
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.transport.submissions import SubmissionHandler
@@ -32,7 +32,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_not_submit_if_parsing_is_not_successful(self):
         self.request = Request(transportInfo=self.transport, message="invalid format")
-        with self.assertRaises(SMSParserInvalidFormatException):
+        with self.assertRaises(SubmissionParseException):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.submission_handler_mock.accept.call_count)
@@ -45,7 +45,7 @@ class TestSMSPlayer(TestCase):
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request(transportInfo=transport, message="cli001 +na tester1 +na tester2")
-        with self.assertRaises(MultipleSubmissionsForSameCodeException):
+        with self.assertRaises(SubmissionParseException):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.submission_handler_mock.accept.call_count)

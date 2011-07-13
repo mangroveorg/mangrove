@@ -186,7 +186,8 @@ class TestField(unittest.TestCase):
             "type": "text",
             "length": {"min": 1, "max": 10},
             "entity_field_flag": True,
-            "ddtype": self.ddtype
+            "ddtype": self.ddtype,
+            "instruction":"some instruction"
         }
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, TextField)
@@ -195,6 +196,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.constraint.min, 1)
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertEqual(created_field.label, {"eng": "What is your name"})
+        self.assertEqual(created_field.instruction, "some instruction")
 
     def test_should_create_integer_field_with_validations(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype

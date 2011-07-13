@@ -19,22 +19,23 @@ def create_question_from(dictionary, dbm):
     code = dictionary.get("code")
     is_entity_question = dictionary.get("entity_question_flag")
     label_dict = dictionary.get("label")
+    instruction = dictionary.get("instruction")
     label=None
     if label_dict is not None:
         label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name)
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction=instruction)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, ddtype, dictionary, label, name)
+        return _get_integer_field(code, ddtype, dictionary, label, name, instruction=instruction)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, ddtype, dictionary, label, name)
+        return _get_date_field(code, ddtype, dictionary, label, name, instruction=instruction)
     elif type == field_attributes.LOCATION_FIELD:
-        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype)
+        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, ddtype, dictionary, label, name, type)
+        return _get_select_field(code, ddtype, dictionary, label, name, type, instruction=instruction)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, ddtype)
+        return _get_list_field(name, code, label, ddtype, instruction=instruction)
     return None
 
 
@@ -129,6 +130,7 @@ class Field(object):
 
     def _to_json(self):
         dict = self._dict.copy()
+        dict['instruction'] = self._dict[self.INSTRUCTION]
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
@@ -286,34 +288,34 @@ class GeoCodeField(Field):
         return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
 
-def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name):
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction):
     length_dict = dictionary.get("length")
     length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
                             max=length_dict.get(ConstraintAttributes.MAX))
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                     length=length, ddtype=ddtype)
+                     length=length, ddtype=ddtype, instruction=instruction)
 
 
 
 
-def _get_integer_field(code, ddtype, dictionary, label, name):
+def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
     range_dict = dictionary.get("range")
     range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                               max=range_dict.get(ConstraintAttributes.MAX))
-    return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype)
+    return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype, instruction=instruction)
 
 
-def _get_date_field(code, ddtype, dictionary, label, name):
+def _get_date_field(code, ddtype, dictionary, label, name, instruction):
     date_format = dictionary.get("date_format")
-    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype)
+    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype, instruction=instruction)
 
 
-def _get_select_field(code, ddtype, dictionary, label, name, type):
+def _get_select_field(code, ddtype, dictionary, label, name, type, instruction):
     choices = dictionary.get("choices")
     single_select = True if type == field_attributes.SELECT_FIELD else False
     return SelectField(name=name, code=code, label=label, options=choices,
-                       single_select_flag=single_select, ddtype=ddtype)
+                       single_select_flag=single_select, ddtype=ddtype, instruction=instruction)
 
 
-def _get_list_field(name, code, label, ddtype):
-    return HierarchyField(name, code, label, ddtype)
+def _get_list_field(name, code, label, ddtype, instruction):
+    return HierarchyField(name, code, label, ddtype, instruction=instruction)

@@ -126,7 +126,7 @@ def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, c
     if count_only:
         rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code], endkey=[form_code, {}],
                                          group=True, group_level=1, reduce=True)
-        count = _get_row_count(rows)
+        count = _get_row_count(rows) if rows else 0
         return count
     if page_size is None:
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],

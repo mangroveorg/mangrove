@@ -2,7 +2,7 @@
 import unittest
 from IPython.external.pretty import pprint
 from mock import Mock, patch
-from mangrove.datastore.database import DatabaseManager
+from mangrove.datsastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.transport.player import player
 from mangrove.transport.player.player import CsvPlayer, CsvParser, submit

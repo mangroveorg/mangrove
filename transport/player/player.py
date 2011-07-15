@@ -300,10 +300,10 @@ class XlsParser(object):
     def _is_header_row(self, row):
         if is_empty(row[0]):
             return None, False
-        return [str(value).strip().lower() for value in row], True
+        return [unicode(value).strip().lower() for value in row], True
 
     def _clean(self, row):
-        return [str(value).strip() for value in row]
+        return [unicode(value).strip() for value in row]
 
     def _is_empty(self, row):
         return len([value for value in row if not is_empty(value)]) == 0

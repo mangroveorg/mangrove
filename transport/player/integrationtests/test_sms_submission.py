@@ -2,7 +2,9 @@
 
 #  This is an integration test.
 # Send sms, parse and save.
+from time import mktime
 import unittest
+import datetime
 from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
@@ -12,7 +14,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
-from mangrove.transport.submissions import SubmissionHandler,get_submissions_made_for_form
+from mangrove.transport.submissions import SubmissionHandler,get_submissions_made_for_form, get_submission_count_for_form
 from mangrove.datastore.datadict import DataDictType
 
 
@@ -151,7 +153,9 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'},
                                                       status=False, error_message="", data_record_id='345678'))
 
-        submission_list, ids = get_submissions_made_for_form(self.dbm, "abc")
+        oneDay = datetime.timedelta(days=1)
+        tomorrow = datetime.datetime.now() + oneDay
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "abc",0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(2, len(submission_list))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
@@ -161,7 +165,9 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "clinic +EID %s +ARV 150 " % self.entity.id
         self.send_sms(text)
-        submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic")
+        oneDay = datetime.timedelta(days=1)
+        tomorrow = datetime.datetime.now() + oneDay
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(submission_list))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submission_list[0]['error_message'])
 

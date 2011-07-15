@@ -120,20 +120,21 @@ def _get_row_count(rows):
     result=rows[0].value
     return result.get('count') if result else None
 
-
-def get_submissions_made_for_form(dbm, form_code, page_number=0, page_size=20, count_only=False):
+def get_submission_count_for_form(dbm, form_code, start_time, end_time):
     assert is_string(form_code)
-    if count_only:
-        rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code], endkey=[form_code, {}],
-                                         group=True, group_level=1, reduce=True)
-        count = _get_row_count(rows) if rows else 0
-        return count
+    rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code, start_time], endkey=[form_code, end_time, {}],
+                                     group=True, group_level=1, reduce=True)
+    count = _get_row_count(rows) if rows else 0
+    return count
+
+def get_submissions_made_for_form(dbm, form_code, start_time, end_time, page_number=0, page_size=20):
+    assert is_string(form_code)
     if page_size is None:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
-                                         endkey=[form_code])
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, end_time, {}],
+                                         endkey=[form_code, start_time])
     else:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, {}],
-                                         endkey=[form_code], skip=page_number * page_size, limit=page_size)
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, end_time,{}],
+                                         endkey=[form_code, start_time], skip=page_number * page_size, limit=page_size)
     answers, ids = list(), list()
     for each in rows:
         answers.append(each.value)

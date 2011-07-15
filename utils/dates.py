@@ -61,3 +61,7 @@ def js_datestring_to_py_datetime(s):
     if is_empty(s):
         raise ValueError("Not a valid datetime string")
     return to_aware_utc(parse_iso_date_str(s))
+
+import time
+def convert_to_epoch(end_time):
+    return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None

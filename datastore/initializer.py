@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.entity import define_type
-from mangrove.datastore.views import create_views
+from mangrove.datastore.views import create_views, sync_views
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.transport.reporter import REPORTER_ENTITY_TYPE
 
@@ -14,5 +14,5 @@ def create_entity_types(manager, entity_types):
 
 
 def run(manager):
-    create_views(manager)
+    sync_views(manager)
     create_entity_types(manager, [REPORTER_ENTITY_TYPE])

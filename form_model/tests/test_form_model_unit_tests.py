@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, IntegerField, SelectField, GeoCodeField, HierarchyField
-from mangrove.form_model.form_model import _construct_registration_form, FormModel
+from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
 
@@ -43,7 +43,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_create_registration_form_mode(self):
         form = _construct_registration_form(self.dbm)
         self.assertEqual(7, len(form.fields))
-        self.assertEqual("reg", form.form_code)
+        self.assertEqual(REGISTRATION_FORM_CODE, form.form_code)
 
     def test_registration_form_should_have_entity_type_field(self):
         form = _construct_registration_form(self.dbm)

@@ -116,7 +116,7 @@ def get_by_short_code(dbm, short_code, entity_type):
     rows = dbm.load_all_rows_in_view("by_short_codes", key=[entity_type, short_code], reduce=False)
     if is_empty(rows):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
-    doc_id = rows[0]["value"]
+    doc_id = rows[0].id
     return Entity.get(dbm, doc_id)
 
 

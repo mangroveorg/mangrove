@@ -63,6 +63,22 @@ def string_as_bool(arg):
     return False
 
 
+
+
+def sequence_to_str(arg,separator=u","):
+    """
+    Converts a sequence of any type including non-string sequences to a string.
+    Converts None to empty string.
+     Conversion is shallow and doesn't recurse to more than one level down.""
+    """
+    if arg is None: return u""
+    assert is_sequence(arg)
+    def _to_str(x):
+        return u"" if x is None else unicode(x)
+    str_sequence = [ _to_str(x) for x in arg]
+    return separator.join(str_sequence)
+
+
 def primitive_type(arg):
     ''' Returns a string representing the primitive type.
 

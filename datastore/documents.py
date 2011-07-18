@@ -207,7 +207,6 @@ class FormModelDocument(DocumentBase):
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')
         self.metadata[attributes.ACTIVE_LANGUAGES] = []
-        self.state=attributes.ACTIVE_STATE
 
     @property
     def active_languages(self):

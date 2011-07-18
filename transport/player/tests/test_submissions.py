@@ -234,5 +234,5 @@ class TestSubmissions(TestCase):
         response = self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(response.success)
-        self.assertIsNone(response.datarecord_id)
+        self.assertIsNotNone(response.datarecord_id)
         self.assertIsNotNone(response.submission_id)

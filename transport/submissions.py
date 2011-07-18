@@ -41,13 +41,19 @@ class SubmissionHandler(object):
         self.dbm = dbm
 
     def save_data_and_update_log(self, e, form_submission, submission_information, logger, submission_id, is_form_in_test_mode=False):
-        data_record_id = None
-        if not is_form_in_test_mode:
-            data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
+        data_record_id = e.add_data(data=form_submission.values, submission=submission_information)
 
         logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id, status=True,
                                      errors=[], in_test_mode=is_form_in_test_mode)
         return data_record_id
+
+    def _should_accept_submission(self, form):
+        return form.is_inactive()
+
+    def _reject_submission_for_inactive_forms(self, form, logger, submission_id):
+        if self._should_accept_submission(form):
+            logger.update_submission_log(submission_id, False, 'Inactive form_model')
+            raise InactiveFormModelException(form.form_code)
 
     def accept(self, request):
         assert isinstance(request, SubmissionRequest)
@@ -59,9 +65,9 @@ class SubmissionHandler(object):
         submission_information = dict(submission_id=submission_id, form_code=form_code)
 
         form = get_form_model_by_code(self.dbm, form_code)
-        if form.is_inactive():
-            logger.update_submission_log(submission_id, False, 'Inactive form_model')
-            raise InactiveFormModelException(form.form_code)
+
+        self._reject_submission_for_inactive_forms(form, logger, submission_id)
+
         if form.entity_defaults_to_reporter():
             short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
             values[ENTITY_QUESTION_DISPLAY_CODE]=short_code

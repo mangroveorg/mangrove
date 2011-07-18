@@ -277,14 +277,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         with self.assertRaises(InactiveFormModelException):
             self.send_sms(text)
 
-    def test_should_only_log_for_form_model_in_test_mode(self):
+    def test_should_set_submission_log_as_Test_for_form_model_in_test_mode(self):
         self.form_model.set_test_mode()
         self.form_model.save()
         text = "clinic +EID %s +name CLINIC-MADA +ARV 50 +COL a" % self.entity.short_code
         response = self.send_sms(text)
 
         self.assertTrue(response.success)
-        self.assertIsNone(response.datarecord_id)
+        self.assertIsNotNone(response.datarecord_id)
         self.assertIsNotNone(response.submission_id)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertTrue(submission_log.test)

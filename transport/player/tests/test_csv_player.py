@@ -4,7 +4,8 @@ from mock import Mock
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.transport.player import player
-from mangrove.transport.player.player import CsvPlayer, CsvParser
+from mangrove.transport.player.parser import CsvParser
+from mangrove.transport.player.player import CsvPlayer
 from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 
 

@@ -4,7 +4,8 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
-from mangrove.transport.player.player import XlsPlayer, XlsParser
+from mangrove.transport.player.parser import XlsParser
+from mangrove.transport.player.player import XlsPlayer
 from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 import xlwt
 

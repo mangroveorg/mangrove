@@ -2,6 +2,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException, SubmissionParseException
 from mangrove.form_model.form_model import  NAME_FIELD
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
@@ -30,6 +31,22 @@ class TestSMSPlayer(TestCase):
 
         self.assertEqual(1, self.submission_handler_mock.accept.call_count)
 
+    def test_should_submit_if_submission_by_registered_reporter(self):
+        reporter = Mock(spec=Entity)
+        self.reporter_module.find_reporter_entity.return_value = reporter
+
+        self.sms_player.accept(self.request)
+
+        self.assertEqual(1, self.submission_handler_mock.accept.call_count)
+        submission_request = self.submission_handler_mock.accept.call_args[0][0]
+        self.assertEqual(reporter, submission_request.reporter)
+
+    def test_should_check_if_submission_by_unregistered_reporter(self):
+        self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
+        with self.assertRaises(NumberNotRegisteredException):
+            self.sms_player.accept(self.request)
+
+
     def test_should_not_submit_if_parsing_is_not_successful(self):
         self.request = Request(transportInfo=self.transport, message="invalid format")
         with self.assertRaises(SubmissionParseException):
@@ -37,10 +54,6 @@ class TestSMSPlayer(TestCase):
 
         self.assertEqual(0, self.submission_handler_mock.accept.call_count)
 
-    def test_should_check_if_submission_by_registered_reporter(self):
-        self.reporter_module.find_reporter.side_effect = NumberNotRegisteredException("1234")
-        with self.assertRaises(NumberNotRegisteredException):
-            self.sms_player.accept(self.request)
 
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")

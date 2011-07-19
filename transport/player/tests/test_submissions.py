@@ -3,6 +3,7 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
@@ -37,8 +38,10 @@ class TestSubmissions(TestCase):
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
 
+        reporter = Mock(spec=Entity)
+        reporter.short_code.return_value = "REP1"
         self.submission_request = SubmissionRequest(form_code=self.FORM_CODE, submission=self.VALUES, transport=self.sms
-                                                    , source="1234", destination="5678")
+                                                    , source="1234", destination="5678",reporter=reporter)
         self.submission_handler = SubmissionHandler(self.dbm)
 
     def tearDown(self):
@@ -189,20 +192,6 @@ class TestSubmissions(TestCase):
 
         expected_message = form_submission.cleaned_data
         self.assertEquals(expected_message, response.processed_data)
-
-    def test_should_get_reporter_by_from_number_if_activity_report(self):
-        form_submission = self._valid_form_submission()
-        reporter_patcher = patch('mangrove.transport.submissions.reporter')
-        reporter_module = reporter_patcher.start()
-        self.form_model_mock.validate_submission.return_value = form_submission
-        self.form_model_mock.is_registration_form.return_value = False
-        self.form_model_mock.entity_defaults_to_reporter.return_value = True
-
-        response = self.submission_handler.accept(self.submission_request)
-
-        self.assertTrue(response.success)
-        self.assertTrue(reporter_module.get_short_code_from_reporter_number.called)
-        reporter_patcher.stop()
 
     def test_should_accept_unicodes_for_valid_submission(self):
         form_submission = self._valid_form_submission_unicode()

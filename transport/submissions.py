@@ -4,12 +4,11 @@ from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, InactiveFormModelException
 from mangrove.utils.types import is_string, sequence_to_str
-from mangrove.transport import reporter
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
 class SubmissionRequest(object):
-    def __init__(self, form_code, submission, transport, source, destination):
+    def __init__(self, form_code, submission, transport, source, destination,reporter=None):
         assert form_code is not None
         assert submission is not None
         assert transport is not None
@@ -21,6 +20,7 @@ class SubmissionRequest(object):
         self.transport = transport
         self.source = source
         self.destination = destination
+        self.reporter = reporter
 
 
 class SubmissionResponse(object):
@@ -55,6 +55,9 @@ class SubmissionHandler(object):
         if self._should_accept_submission(form):
             raise InactiveFormModelException(form.form_code)
 
+    def _set_entity_short_code(self, short_code, values):
+        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
+
     def accept(self, request):
         assert isinstance(request, SubmissionRequest)
         form_code = request.form_code
@@ -65,8 +68,7 @@ class SubmissionHandler(object):
         form = get_form_model_by_code(self.dbm, form_code)
 
         if form.entity_defaults_to_reporter():
-            short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
-            values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
+            self._set_entity_short_code(request.reporter.short_code, values)
 
         try:
             cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values)

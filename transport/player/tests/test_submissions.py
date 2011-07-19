@@ -117,7 +117,7 @@ class TestSubmissions(TestCase):
         response = self.submission_handler.accept(self.submission_request)
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[],
+                                                                            status=True, errors=None,
                                                                             data_record_id=response.datarecord_id, in_test_mode=False)
 
 
@@ -129,7 +129,8 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            errors=form_submission.errors.values(), in_test_mode=False)
+                                                                            data_record_id = None,
+                                                                            errors=form_submission.errors, in_test_mode=False)
 
     def test_should_fail_submission_if_invalid_form_code(self):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
@@ -155,12 +156,13 @@ class TestSubmissions(TestCase):
 
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
+        self.assertEqual("1", response.short_code)
         self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type"
                                                                                  ,
                                                                                  location=None,
                                                                                  short_code="1", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=[],
+                                                                            status=True, errors=None,
                                                                             data_record_id=response.datarecord_id, in_test_mode=False)
 
 
@@ -176,7 +178,8 @@ class TestSubmissions(TestCase):
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            errors=form_submission.errors.values(), in_test_mode=False)
+                                                                            data_record_id = None,
+                                                                            errors=form_submission.errors, in_test_mode=False)
 
     def test_should_return_expanded_response(self):
         form_submission = self._valid_form_submission_with_choices()

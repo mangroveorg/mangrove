@@ -2,8 +2,8 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
-from mangrove.utils.types import is_string
+from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, InactiveFormModelException
+from mangrove.utils.types import is_string, sequence_to_str
 from mangrove.transport import reporter
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
@@ -35,6 +35,7 @@ class SubmissionResponse(object):
         self.short_code = short_code
         self.processed_data = processed_data
 
+
 class SubmissionHandler(object):
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
@@ -42,17 +43,16 @@ class SubmissionHandler(object):
         self.logger = SubmissionLogger(self.dbm)
 
 
-    def save_data(self, entity, form_submission, submission_id,form):
-        submission_information = dict(submission_id=submission_id, form_code=form.form_code)
+    def save_data(self, entity, form_submission, form):
+        submission_information = dict(form_code=form.form_code)
         data_record_id = entity.add_data(data=form_submission.values, submission=submission_information)
         return data_record_id
 
     def _should_accept_submission(self, form):
         return form.is_inactive()
 
-    def _reject_submission_for_inactive_forms(self, form, submission_id):
+    def _reject_submission_for_inactive_forms(self, form):
         if self._should_accept_submission(form):
-            self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
             raise InactiveFormModelException(form.form_code)
 
     def accept(self, request):
@@ -63,45 +63,50 @@ class SubmissionHandler(object):
         submission_id = self.logger.create_submission_log(request)
 
         form = get_form_model_by_code(self.dbm, form_code)
-        cleaned_data,data_record_id,entity,_status,_errors = self.submit(form,submission_id,values)
 
-        self.logger.update_submission_log(submission_id=submission_id,data_record_id=data_record_id,status=_status,errors=[],in_test_mode=form.is_form_in_test_mode)
+        if form.entity_defaults_to_reporter():
+            short_code = reporter.get_short_code_from_reporter_number(self.dbm, request.source)
+            values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
 
-        short_code = entity.short_code if form.is_registration_form() else None
+        try:
+            cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values)
+        except InactiveFormModelException:
+            self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
+            raise
 
-        return SubmissionResponse(True, submission_id, {}, data_record_id, short_code=short_code, processed_data=cleaned_data)
+        self.logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id,
+                                          status=status, errors=errors, in_test_mode=form.is_in_test_mode())
+
+        return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
+                                  processed_data=cleaned_data)
 
     def get_entity(self, form, form_submission):
         should_create_entity = form.is_registration_form()
         e = form_submission.to_entity(self.dbm, create=should_create_entity)
         return e
 
-    def submit(self, form,submission_id,values):
-
-        self._reject_submission_for_inactive_forms(form,submission_id)
-
-        if form.entity_defaults_to_reporter():
-                short_code = reporter.get_short_code_from_reporter_number(self.dbm, "")
-                values[ENTITY_QUESTION_DISPLAY_CODE]=short_code
+    def submit(self, form, values):
+        self._reject_submission_for_inactive_forms(form)
 
         form_submission = form.validate_submission(values)
 
         data_record_id = None
-        _errors = []
-        _entity = None
+        _errors = None
+        status = False
+
         if form_submission.is_valid:
             if len(form_submission.values) == 1:
                 raise NoQuestionsSubmittedException()
-            try:
-                entity = self.get_entity(form, form_submission)
-                data_record_id = self.save_data(entity, form_submission,submission_id,form)
+            entity = self.get_entity(form, form_submission)
+            data_record_id = self.save_data(entity, form_submission, form)
+            status = True
         else:
             _errors = form_submission.errors
 
+        return form_submission.cleaned_data, data_record_id, form_submission.short_code, status, _errors
 
 
 class SubmissionLogger(object):
-
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         self.dbm = dbm
@@ -112,18 +117,26 @@ class SubmissionLogger(object):
         submission_log.voided = True
         self.dbm._save_document(submission_log)
 
+    def _to_string(self, errors):
+        if is_string(errors):
+            return errors
+        if isinstance(errors, dict):
+            return sequence_to_str(errors.values())
+        return sequence_to_str(errors)
+
     def update_submission_log(self, submission_id, status, errors, data_record_id=None, in_test_mode=False):
         log = self.dbm._load_document(submission_id, SubmissionLogDocument)
         log.status = status
         log.voided = not status
         log.data_record_id = data_record_id
-        log.error_message += " ".join(errors)
+        log.error_message += self._to_string(errors)
         log.test = in_test_mode
         self.dbm._save_document(log)
 
     def create_submission_log(self, request):
         return self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
-                                                             destination=request.destination, form_code=request.form_code,
+                                                             destination=request.destination,
+                                                             form_code=request.form_code,
                                                              values=request.submission, status=False,
                                                              error_message="", voided=True, test=False))
 
@@ -131,23 +144,29 @@ class SubmissionLogger(object):
 def _get_row_count(rows):
     if rows is None:
         return None
-    result=rows[0].value
+    result = rows[0].value
     return result.get('count') if result else None
+
 
 def get_submission_count_for_form(dbm, form_code, start_time, end_time):
     assert is_string(form_code)
-    rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code, start_time], endkey=[form_code, end_time, {}],
+    rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code, start_time], endkey=[form_code, end_time,
+            {}]
+                                     ,
                                      group=True, group_level=1, reduce=True)
     count = _get_row_count(rows) if rows else 0
     return count
 
+
 def get_submissions_made_for_form(dbm, form_code, start_time, end_time, page_number=0, page_size=20):
     assert is_string(form_code)
     if page_size is None:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, end_time, {}],
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
+                                         startkey=[form_code, end_time, {}],
                                          endkey=[form_code, start_time])
     else:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending = True, startkey=[form_code, end_time,{}],
+        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
+                                         startkey=[form_code, end_time, {}],
                                          endkey=[form_code, start_time], skip=page_number * page_size, limit=page_size)
     answers, ids = list(), list()
     for each in rows:

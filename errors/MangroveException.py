@@ -206,7 +206,7 @@ class LatitudeNotInRange(MangroveException):
 
 class GeoCodeFormatException(MangroveException):
     def __init__(self, data):
-        MangroveException.__init__(self, u"GPS coordinates must be in the format 'lat long'.", (data,))
+        MangroveException.__init__(self, u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315", (data,))
 
 class FailedToSaveDataObject(MangroveException):
     def __init__(self, data):

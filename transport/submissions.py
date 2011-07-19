@@ -82,11 +82,6 @@ class SubmissionHandler(object):
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
                                   processed_data=cleaned_data)
 
-    def get_entity(self, form, form_submission):
-        should_create_entity = form.is_registration_form()
-        e = form_submission.to_entity(self.dbm, create=should_create_entity)
-        return e
-
     def submit(self, form, values):
         self._reject_submission_for_inactive_forms(form)
 
@@ -99,7 +94,7 @@ class SubmissionHandler(object):
         if form_submission.is_valid:
             if len(form_submission.values) == 1:
                 raise NoQuestionsSubmittedException()
-            entity = self.get_entity(form, form_submission)
+            entity = form_submission.to_entity(self.dbm)
             data_record_id = self.save_data(entity, form_submission, form)
             status = True
         else:

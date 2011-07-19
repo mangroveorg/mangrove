@@ -166,7 +166,6 @@ class FormModel(DataObject):
         return None
 
     def _is_valid(self, answers):
-        success = True
         cleaned_answers = {}
         errors = {}
         data = {}
@@ -191,20 +190,13 @@ class FormModel(DataObject):
             if is_valid:
                 cleaned_answers[field.code] = result
             else:
-                success = False
                 errors[key] = result
                 data[key] = error_data
-        return success, cleaned_answers, errors, data
+        return cleaned_answers, errors, data
 
     def validate_submission(self, values):
-        success, cleaned_answers, errors, data = self._is_valid(values)
-        short_code = cleaned_answers.get(self.entity_question.code)
-        if self.is_registration_form():
-            entity_type = cleaned_answers.get(ENTITY_TYPE_FIELD_CODE)
-        else:
-            entity_type = self.entity_type
-        type_hierarchy = [e_type.lower() for e_type in entity_type]
-        return FormSubmission(self, cleaned_answers, short_code, success, errors, type_hierarchy, data)
+        cleaned_answers, errors, data = self._is_valid(values)
+        return FormSubmission(self, cleaned_answers,errors)
 
     @property
     def cleaned_data(self):
@@ -292,21 +284,29 @@ class FormSubmission(object):
         return [(self.form_model.get_field_by_code(field).name, value, self.form_model.get_field_by_code(field).ddtype)  for (field, value) in
                 self.cleaned_data.items()]
 
-    def __init__(self, form_model, form_answers, short_code, success, errors, entity_type, data):
+    def _get_answer_for(self, code):
+        for key in self._cleaned_data:
+            if key.lower() == code.lower():
+                return self._cleaned_data[key]
+        return None
+
+    def __init__(self, form_model, form_answers,errors=None):
         assert errors is None or type(errors) == dict
-        assert data is None or type(data) == dict
-        assert success is not None and type(success) == bool
         assert form_answers is not None and type(form_answers) == dict
-        assert form_model is not None and isinstance(form_model, FormModel)
 
         self.form_model = form_model
         self._cleaned_data = form_answers
+        short_code = self._get_answer_for(form_model.entity_question.code)
         self.short_code = short_code.lower() if short_code is not None else None
         self.form_code = self.form_model.form_code
-        self.is_valid = success
+        self.is_valid = (errors is None or len(errors) == 0)
         self.errors = errors
-        self.entity_type = entity_type
-        self.error_data = data
+        if form_model.is_registration_form():
+            entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
+        else:
+            entity_type = self.form_model.entity_type
+        type_hierarchy = [e_type.lower() for e_type in entity_type]
+        self.entity_type = type_hierarchy
 
     @property
     def values(self):
@@ -316,8 +316,8 @@ class FormSubmission(object):
     def cleaned_data(self):
         return self._cleaned_data
 
-    def to_entity(self, dbm, create=False):
-        if create:
+    def to_entity(self, dbm):
+        if self.form_model.is_registration_form():
             location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
             return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
                                  location=location,

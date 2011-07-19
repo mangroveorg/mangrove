@@ -5,13 +5,14 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
+
+from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
 from mangrove.transport.submissions import SubmissionHandler, SubmissionLogger, SubmissionRequest
 
 
 class TestSubmissions(TestCase):
-    ENTITY_TYPE = ["EntityType"]
 
     def setUp(self):
         self.FORM_CODE = "QR1"
@@ -35,6 +36,11 @@ class TestSubmissions(TestCase):
         self.form_model_mock.entity_defaults_to_reporter.return_value = False
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.is_in_test_mode.return_value = False
+        self.ENTITY_TYPE = ["entity_type"]
+        self.form_model_mock.entity_type = self.ENTITY_TYPE
+        entity_question = Mock()
+        entity_question.code = "eid"
+        self.form_model_mock.entity_question = entity_question
         self.get_form_model_mock.return_value = self.form_model_mock
         self.sms = Channel.SMS
 
@@ -49,29 +55,25 @@ class TestSubmissions(TestCase):
         self.form_submission_entity_patcher.stop()
 
     def _valid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001', "location": "Pune"}, "1",
-                              True, {}, "entity_type", data={})
+        return FormSubmission(self.form_model_mock, {'eid': 'CID001', "location": "Pune"})
 
     def _valid_form_submission_unicode(self):
-        return FormSubmission(self.form_model_mock, {'What is associated entity?': u'Āgra', "location": "Agra"}, "1",
-                              True, {}, "entity_type", data={})
+        return FormSubmission(self.form_model_mock, {'eid': u'Āgra', "location": "Agra"})
 
     def _invalid_form_submission_unicode(self):
-        return FormSubmission(self.form_model_mock, {}, "1", False, {"field": u"Āgra"}, self.ENTITY_TYPE, data={})
+        return FormSubmission(self.form_model_mock, {}, {"field": u"Āgra"})
 
 
     def _valid_form_submission_with_choices(self):
         return FormSubmission(self.form_model_mock,
-                {'What is associated entity?': 'CID001', "location": "Pune", "favourite_colour": ['red']}, "1",
-                              True, {}, self.ENTITY_TYPE, data={})
+                {'eid': 'CID001', "location": "Pune", "favourite_colour": ['red']})
 
     def _empty_form_submission(self):
-        return FormSubmission(self.form_model_mock, {'What is associated entity?': 'CID001'}, "1", True, {},
-                              self.ENTITY_TYPE, data={})
+        return FormSubmission(self.form_model_mock, {'eid': 'CID001'})
 
 
     def _invalid_form_submission(self):
-        return FormSubmission(self.form_model_mock, {}, "1", False, {"field": "Invalid"}, self.ENTITY_TYPE, data={})
+        return FormSubmission(self.form_model_mock, {}, {"field": "Invalid"})
 
     def test_should_return_true_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
@@ -159,11 +161,12 @@ class TestSubmissions(TestCase):
 
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
-        self.assertEqual("1", response.short_code)
-        self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type="entity_type"
+        self.assertEqual("cid001", response.short_code)
+        self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type=self
+        .ENTITY_TYPE
                                                                                  ,
                                                                                  location=None,
-                                                                                 short_code="1", geometry=None)
+                                                                                 short_code="cid001", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=None,
                                                                             data_record_id=response.datarecord_id, in_test_mode=False)

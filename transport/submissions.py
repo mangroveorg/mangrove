@@ -92,8 +92,6 @@ class SubmissionHandler(object):
         status = False
 
         if form_submission.is_valid:
-            if len(form_submission.values) == 1:
-                raise NoQuestionsSubmittedException()
             entity = form_submission.to_entity(self.dbm)
             data_record_id = self.save_data(entity, form_submission, form)
             status = True

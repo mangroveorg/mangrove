@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, ShortCodeTooLongException
+    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -195,6 +195,8 @@ class FormModel(DataObject):
         return cleaned_answers, errors, data
 
     def validate_submission(self, values):
+        if values is None or len(values) == 1:
+            raise NoQuestionsSubmittedException()
         cleaned_answers, errors, data = self._is_valid(values)
         return FormSubmission(self, cleaned_answers,errors)
 

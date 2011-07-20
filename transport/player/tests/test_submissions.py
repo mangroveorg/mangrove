@@ -101,7 +101,7 @@ class TestSubmissions(TestCase):
         self.assertFalse(response.success)
 
     def test_should_not_save_data_record_if_no_valid_questions_present(self):
-        self.form_model_mock.validate_submission.return_value = self._empty_form_submission()
+        self.form_model_mock.validate_submission.side_effect = NoQuestionsSubmittedException()
         with self.assertRaises(NoQuestionsSubmittedException):
             self.submission_handler.accept(self.submission_request)
 

@@ -2,7 +2,7 @@
 
 
 def slugify(text, delim=u'_'):
-    '''Generates an ASCII-only slug.'''
+    u"""'Generates an ASCII-only slug.''"""
     import re
     from unicodedata import normalize
 

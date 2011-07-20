@@ -10,7 +10,7 @@ from database import DataObject
 
 
 class AggregationTree(DataObject):
-    '''
+    """""
     Representation of an aggregation tree.
 
     In memory this utilizes the NetworkX graph library with each node
@@ -46,16 +46,16 @@ class AggregationTree(DataObject):
         }
 
     NOTE: Node names must be STRINGS because of JSON encoding issues for couch
-    '''
+    """""
     __document_class__ = AggregationTreeDocument
     root_id = '__root'
 
     def __init__(self, dbm, id=None):
-        '''
+        """""
         Note: _document is for 'protected' factory methods. If it is passed in the other
         arguments are ignored.
 
-        '''
+        """""
         assert (id is None or is_not_empty(id))
 
         DataObject.__init__(self, dbm)
@@ -88,47 +88,47 @@ class AggregationTree(DataObject):
         return self.graph.node[node]
 
     def set_data_for(self, node, dikt):
-        '''
+        """""
         Note: all keys in the data dictionary 'dikt' must be strings
 
         If not, this raises a value error
-        '''
+        """""
         assert is_string(node)
         if not self._verify_dict_keys_are_strings(dikt):
             raise ValueError('Keys in a nodes data-dictionary must be strings')
         self.graph.node[node] = dikt
 
     def get_paths(self):
-        '''
+        """""
         Returns a list of lists, each one a path from root to every node, with root removed.
 
         So a simple tree of ROOT->A->B->C returns [[A],[A,B], [A,B,C]]
 
         Use this method if every node has meaning, e.g. HEALTH FAC->HOSPITAL->REGIONAL
 
-        '''
+        """""
         # TODO: hold this as a cache that is blown by Add Path
         return [p[1:] for p in nx.shortest_path(self.graph, AggregationTree.root_id, ).values() if is_not_empty(p[1:])]
 
     def get_leaf_paths(self):
-        '''
+        """""
         Returns a list of lists for all unique paths from root to leaves.
 
         Paths do not include ROOT and start one level below root
 
-        '''
+        """""
 
         # TODO: this is a hacky, probably really slow way to do ths. I need to either find the fast way or cache this.
         # But it is a crazy list comprehension ;-)
         return [nx.shortest_path(self.graph, AggregationTree.root_id, n)[1:] for n in
-                [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n) == 1]]
+        [n for n in self.graph.nodes() if n != AggregationTree.root_id and self.graph.degree(n) == 1]]
 
     def _verify_dict_keys_are_strings(self, dikt):
-        '''
+        """""
         Returns True if all keys are strings, false otherwise
 
         if 'None' is passed, returns True 'cause there are no keys to NOT be strings!
-        '''
+        """""
         if dikt is not None:
             for k in dikt.keys():
                 if not is_string(k):
@@ -136,13 +136,13 @@ class AggregationTree(DataObject):
         return True
 
     def _add_node(self, name, data=None):
-        '''
+        """""
         Adds a node and data the tree.
 
         NOTE: Because of JSON encoding issues, the node Names and all data dict keys must be strings.
         If not a ValueError is raised!
 
-        '''
+        """""
         assert data is None or isinstance(data, dict)
         if not is_string(name):
             raise ValueError('Node names must be strings')
@@ -153,7 +153,7 @@ class AggregationTree(DataObject):
         self.graph.add_node(name, data)
 
     def add_child(self, parent, child, data=None):
-        '''raises value error if parent not in tree'''
+        """""raises value error if parent not in tree"""""
         if parent not in self.graph:
             raise ValueError('"%s" not found in graph' % parent)
 
@@ -191,7 +191,7 @@ class AggregationTree(DataObject):
         return a
 
     def add_path(self, nodes):
-        '''Adds a path to the tree.
+        """""Adds a path to the tree.
 
         If the first item in the path is AggregationTree.root_id, this will be added at root.
 
@@ -203,7 +203,7 @@ class AggregationTree(DataObject):
         e.g. add_path('a', ('b', {size: 10}), 'c')
 
         Raises a 'ValueError' if the path does NOT start with root and the first item cannot be found.
-        '''
+        """""
 
         assert is_sequence(nodes) and is_not_empty(nodes)
 
@@ -229,11 +229,11 @@ class AggregationTree(DataObject):
         self.graph.add_path(path)
 
     def add_root_path(self, path):
-        '''Convenience function for adding this path starting at "root"'''
+        """""Convenience function for adding this path starting at "root" """
         self.add_path([self.root_id] + path)
 
     def _sync_doc_to_graph(self):
-        '''Converts internal CouchDB document dict into tree graph'''
+        """""Converts internal CouchDB document dict into tree graph"""""
 
         assert self._doc is not None
 
@@ -266,7 +266,7 @@ class AggregationTree(DataObject):
         self.graph = graph
 
     def _sync_graph_to_doc(self):
-        '''Converts internal tree to dict for CouchDB document'''
+        """""Converts internal tree to dict for CouchDB document"""""
         assert self.graph is not None
 
         def build_dicts(dicts, parent, node_dict):

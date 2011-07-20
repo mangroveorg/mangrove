@@ -16,11 +16,11 @@ class TestCsvReader(unittest.TestCase):
 
     def test_iteritems(self):
         expected_list = [
-            {
+                {
                 'one': '1',
                 'two': '2',
                 'three': '3',
                 },
-            ]
+                 ]
         actual_list = list(self.csv_reader.iter_dicts())
         self.assertEquals(expected_list, actual_list)

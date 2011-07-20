@@ -65,18 +65,19 @@ class NoQuestionsSubmittedException(MangroveException):
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):
         MangroveException.__init__(self, (u"Sorry, this number %s is not registered with us.") % (from_number,),
-                                   (from_number,))
+                (from_number,))
 
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
-        MangroveException.__init__(self, (u"Sorry, the telephone number %s has already been registered") % (from_number,),
-                                   (from_number,))
+        MangroveException.__init__(self,
+                                   (u"Sorry, the telephone number %s has already been registered") % (from_number,),
+                (from_number,))
 
 
 class MultipleSubmissionsForSameCodeException(MangroveException):
     def __init__(self, field_code):
-        MangroveException.__init__(self, (u"Multiple responses for question code %s") %(field_code, ),(field_code,))
+        MangroveException.__init__(self, (u"Multiple responses for question code %s") % (field_code, ), (field_code,))
 
 
 class EntityTypeDoesNotExistsException(MangroveException):
@@ -85,7 +86,7 @@ class EntityTypeDoesNotExistsException(MangroveException):
         entity_type_short_name = entity_type[-1]
         MangroveException.__init__(self,
                                    (u"Entity type %s doesnt exist.") % (entity_type_full_name,),
-                                   (entity_type_short_name,))
+                (entity_type_short_name,))
 
 
 class InvalidAnswerSubmissionException(MangroveException):
@@ -102,60 +103,64 @@ class AnswerTooBigException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is greater than allowed.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerTooSmallException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is smaller than allowed.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerTooLongException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is longer than allowed.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is shorter than allowed.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s contains more than one value.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerHasNoValuesException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s has no value.") % (
-                                                  answer, code,), code, (answer,))
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerNotInListException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  (u"Answer %s for question %s is not present in the allowed options.") % (
-                                                  answer, code,), code, (answer,))
+                                                  (
+                                                      u"Answer %s for question %s is not present in the allowed options.") % (
+                                                      answer, code,), code, (answer,))
 
 
 class AnswerWrongType(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
-        InvalidAnswerSubmissionException.__init__(self, (u"Answer %s for question %s is of the wrong type.") % (answer, code,), code, (answer,))
+        InvalidAnswerSubmissionException.__init__(self,
+                                                  (u"Answer %s for question %s is of the wrong type.") % (answer, code,)
+                                                  , code, (answer,))
 
 
 class IncorrectDate(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, date_format):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  (u'Answer %s for question %s is invalid. Expected date in %s format') %
+                                                  (
+                                                      u'Answer %s for question %s is invalid. Expected date in %s format') %
                                                   (answer, code, date_format), code, (answer, date_format))
 
 
@@ -206,33 +211,42 @@ class LatitudeNotInRange(MangroveException):
 
 class GeoCodeFormatException(MangroveException):
     def __init__(self, data):
-        MangroveException.__init__(self, u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315", (data,))
+        MangroveException.__init__(self,
+                                   u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315"
+                                   , (data,))
+
 
 class FailedToSaveDataObject(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self, u"Root Exception: %s" % data)
 
+
 class SMSParserInvalidFormatException(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data)
+
 
 class CSVParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, u"Could not parse header, invalid format.")
 
+
 class XlsParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, u"Could not parse header, invalid format.")
+
 
 class AggregationNotSupportedForTypeException(MangroveException):
     def __init__(self, field, aggregation):
         error_message = "%s for %s is not supported" % (aggregation, field)
         MangroveException.__init__(self, error_message, (aggregation, field))
 
+
 class InactiveFormModelException(MangroveException):
     def __init__(self, form_code):
         error_message = "The form_model %s is inactive" % (form_code, )
         MangroveException.__init__(self, error_message, (form_code, ))
+
 
 class SubmissionParseException(MangroveException):
     def __init__(self, form_code, message):

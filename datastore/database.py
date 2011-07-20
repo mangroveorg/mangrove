@@ -52,14 +52,14 @@ def remove_db_manager(dbm):
 
 
 def _delete_db_and_remove_db_manager(dbm):
-    '''This is really only used for testing purposes.'''
+    """This is really only used for testing purposes."""
     remove_db_manager(dbm)
     if dbm.database_name in dbm.server:
         del dbm.server[dbm.database_name]
 
 
 class DataObject(object):
-    '''
+    """
     Superclass for all objects that are essentially wrappers of DB
     data.
 
@@ -78,7 +78,7 @@ class DataObject(object):
 
     - a member self._doc which is used to hold the python-couchdb
       document
-    '''
+    """
 
     __document_class__ = None
 
@@ -151,7 +151,7 @@ class DatabaseManager(object):
         rows = self.database.view(full_view_name, **values).rows
         end = datetime.now()
         delta_t = (end - start)
-        print "[DEBUG] --- took %s.%s seconds (%s rows)" % \
+        print "[DEBUG] --- took %s.%s seconds (%s rows)" %\
               (delta_t.seconds, delta_t.microseconds, len(rows))
         return rows
 
@@ -175,7 +175,7 @@ class DatabaseManager(object):
         views.create_views(self)
 
     def _save_document(self, document, modified=None):
-        '''Returns document ID'''
+        u"""'Returns document ID''"""
         # TODO: Throw exception if an error
         result = self._save_documents([document], modified)[0]
         # first item is success/failure
@@ -216,24 +216,24 @@ class DatabaseManager(object):
         self.database.delete(document)
 
     def _load_document(self, id, document_class=DocumentBase):
-        '''
+        """
         Load a document from the DB into an in memory document object.
 
         Low level interface does not create wrapping DataObject
 
-        '''
+        """
         if is_empty(id):
             return None
         else:
             return document_class.load(self.database, id=id)
 
     def get_many(self, ids, object_class):
-        '''
+        """
         Get many data objects at once.
 
         Returns a (possibly empty) list of retrieved objects
 
-        '''
+        """
         assert issubclass(object_class, DataObject)
         assert is_sequence(ids)
 
@@ -247,32 +247,32 @@ class DatabaseManager(object):
         return objs
 
     def get(self, id, object_class, get_or_create=False):
-        '''
+        """
         Return the object from the database with the given
         id. object_class must be given so we know how to wrap the data
         retrieved from the database. If get_or_create is True and
         there is no object in the database with this id then the
         object will be created.
-        '''
+        """
         assert issubclass(object_class, DataObject)
 
         many = self.get_many([id], object_class)
-        if get_or_create and len(many)==0:
+        if get_or_create and len(many) == 0:
             # create one 'cause none exists
             doc = object_class.__document_class__(id=id)
             doc.store(self.database)
             many.append(object_class.new_from_doc(self, doc))
 
-        if len(many)==0:
+        if not len(many):
             raise DataObjectNotFound(dataobject_name=object_class.__name__, param="id", value=id)
 
         return many[0]
 
     def delete(self, d_obj):
-        '''
+        """
         Deletes the document associated with the data_obj from the database.
 
-        '''
+        """
         assert isinstance(d_obj, DataObject)
 
         if d_obj._doc is None:

@@ -4,7 +4,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
-from mangrove.form_model.field import TextField, IntegerField, SelectField, GeoCodeField, HierarchyField
+from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -53,13 +53,12 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
 
     def test_should_return_error_for_invalid_integer_value(self):
         answers = {"id": "1", "q2": "200"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertFalse(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
         self.assertEqual({'ID': '1'}, cleaned_answers)
@@ -67,26 +66,25 @@ class TestFormModel(unittest.TestCase):
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
         expected_result = {"ID": "1", "Q1": "Asif Momin", "Q2": 20}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_ignore_field_validation_if_the_answer_blank(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
         expected_result = {"ID": "1", "Q1": "Asif Momin"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
         answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertFalse(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertEqual(len(errors), 2)
         self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
                           'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
@@ -96,8 +94,8 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
         expected_cleaned_data = {'ID': '1', "Q1": "My Name", "Q2": 40,
                                  "Q3": ["RED"]}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))
         self.assertEqual(cleaned_answers, expected_cleaned_data)
 
@@ -108,8 +106,8 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_validate_field_case_insensitive(self):
         answers = {"Id": "1", "Q1": "Asif Momin", "q2": "40"}
-        valid, cleaned_answers, errors, data = self.form_model._is_valid(answers)
-        self.assertTrue(valid)
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertTrue(len(errors) == 0)
         self.assertEqual({}, errors)
 
 

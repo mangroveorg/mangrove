@@ -3,10 +3,11 @@
 from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerTooLongException, AnswerTooShortException, AnswerWrongType, IncorrectDate, GeoCodeFormatException
-from mangrove.form_model.validation import NumericConstraint, ConstraintAttributes, TextConstraint, ChoiceConstraint, GeoCodeConstraint
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes
+
 from mangrove.utils.types import is_sequence
-from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
+from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
 
 
 def create_question_from(dictionary, dbm):
@@ -20,7 +21,7 @@ def create_question_from(dictionary, dbm):
     is_entity_question = dictionary.get("entity_question_flag")
     label_dict = dictionary.get("label")
     instruction = dictionary.get("instruction")
-    label=None
+    label = None
     if label_dict is not None:
         label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
@@ -48,7 +49,7 @@ def field_to_json(object):
 
 
 class field_attributes(object):
-    '''Constants for referencing standard attributes in questionnaire.'''
+    """Constants for referencing standard attributes in questionnaire."""
     LANGUAGE = "language"
     FIELD_CODE = "code"
     INSTRUCTION = "instruction"
@@ -78,7 +79,7 @@ class Field(object):
         TYPE: "",
         CODE: "",
         DDTYPE: None,
-        INSTRUCTION:''
+        INSTRUCTION: ''
     }
 
     _DEFAULT_LANGUAGE_SPECIFIC_VALUES = {
@@ -145,7 +146,8 @@ class Field(object):
 class IntegerField(Field):
     RANGE = "range"
 
-    def __init__(self, name, code, label, ddtype, range=None, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, ddtype, range=None, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction)
 
@@ -170,7 +172,8 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
 
-    def __init__(self, name, code, label, date_format, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, date_format, ddtype, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction)
 
@@ -218,7 +221,6 @@ class TextField(Field):
 
 
 class HierarchyField(Field):
-
     def __init__(self, name, code, label, ddtype, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
@@ -228,12 +230,13 @@ class HierarchyField(Field):
         if is_sequence(value) or value is None:
             return value
         return [value]
-    
+
 
 class SelectField(Field):
     OPTIONS = "choices"
 
-    def __init__(self, name, code, label, options, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
+    def __init__(self, name, code, label, options, ddtype, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE,
                  single_select_flag=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
@@ -274,6 +277,7 @@ class SelectField(Field):
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
+
 class GeoCodeField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
@@ -283,7 +287,7 @@ class GeoCodeField(Field):
         if lat_long_string is None:
             raise GeoCodeFormatException(self.code)
         lat_long = lat_long_string.strip().split()
-        if len(lat_long)<2:
+        if len(lat_long) < 2:
             raise GeoCodeFormatException(self.code)
         return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 
@@ -296,8 +300,6 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
                      length=length, ddtype=ddtype, instruction=instruction)
 
 
-
-
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
     range_dict = dictionary.get("range")
     range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
@@ -307,7 +309,8 @@ def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
 
 def _get_date_field(code, ddtype, dictionary, label, name, instruction):
     date_format = dictionary.get("date_format")
-    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype, instruction=instruction)
+    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype,
+                     instruction=instruction)
 
 
 def _get_select_field(code, ddtype, dictionary, label, name, type, instruction):

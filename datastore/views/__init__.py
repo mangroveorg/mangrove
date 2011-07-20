@@ -6,7 +6,7 @@ import string
 
 
 def create_views(dbm):
-    '''Creates a standard set of views in the database'''
+    """Creates a standard set of views in the database"""
     global view_js
     database_manager = dbm
     for v in view_js.keys():
@@ -18,7 +18,7 @@ def create_views(dbm):
 
 
 def sync_views(dbm):
-    '''Updates or Creates a standard set of views in the database'''
+    """Updates or Creates a standard set of views in the database"""
     global view_js
     database_manager = dbm
     for v in view_js.keys():

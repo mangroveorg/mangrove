@@ -9,12 +9,13 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException
+
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
-from mangrove.transport.submissions import SubmissionHandler,get_submissions_made_for_form, get_submission_count_for_form
+from mangrove.transport.submissions import SubmissionHandler, get_submissions_made_for_form
 from mangrove.datastore.datadict import DataDictType
 
 
@@ -41,14 +42,15 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                     location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
 
-        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)], submission=dict(submission_id="1"))
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],
+                                                   submission=dict(submission_id="1"))
 
         self.reporter = create_entity(self.dbm, entity_type=["reporter"],
-                                 location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
-                                 )
+                                      location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
+                                      )
 
         self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-                                (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
+                (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
@@ -66,14 +68,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.form_model__id = self.form_model.save()
 
         self.submission_handler = SubmissionHandler(self.dbm)
-        self.sms_player = SMSPlayer(self.dbm,self.submission_handler)
+        self.sms_player = SMSPlayer(self.dbm, self.submission_handler)
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
 
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
-        response = self.sms_player.accept(Request(transportInfo=transport_info,message=text))
+        response = self.sms_player.accept(Request(transportInfo=transport_info, message=text))
         return response
 
     def test_should_save_submitted_sms(self):
@@ -96,7 +98,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(data_record_id, submission_log.data_record_id)
 
     def test_should_save_submitted_sms_for_activity_report(self):
-
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
@@ -109,7 +110,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         activity_report.save()
 
         text = "acp +name tester +ARV 50 "
-
 
         response = self.send_sms(text)
 
@@ -134,7 +134,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_give_error_for_wrong_text_value(self):
         text = "clinic +EID CID001 +NAME ABC"
-        
+
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
@@ -155,7 +155,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        submission_list, ids = get_submissions_made_for_form(self.dbm, "abc",0, int(mktime(tomorrow.timetuple())) * 1000)
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "abc", 0,
+                                                             int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(2, len(submission_list))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submission_list[0]['values'])
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submission_list[1]['values'])
@@ -167,13 +168,17 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.send_sms(text)
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        submission_list, ids = get_submissions_made_for_form(self.dbm, "clinic", 0,
+                                                             int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(submission_list))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submission_list[0]['error_message'])
 
 
     def test_should_register_new_entity(self):
-        message1 = "reg +t  dog +n  Clinic in Diégo–Suarez +l  Diégo–Suarez +g  -12.35  49.3  +d This is a Clinic in Diégo–Suarez +m 87654325"
+        message1 = """reg +t  dog +n  Clinic in Diégo–Suarez +l  Diégo–Suarez +g  -12.35  49.3  +d This is a Clinic in
+        Diégo–Suarez + m
+        87654325
+        """
         response = self.send_sms(message1)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
@@ -183,7 +188,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(a.short_code, expected_short_code)
 
         text = "reg +N buddy +S bud +T dog +G 80 80 +D its a dog! +M 45557"
-        
+
         response = self.send_sms(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
@@ -192,7 +197,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(a.short_code, "bud")
 
         text = "reg +N buddy2 +T dog +L 80 80 +D its another dog! +M 78541"
-        
+
         response = self.send_sms(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
@@ -204,14 +209,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
         INVALID_LATITUDE = 380
         text = "reg +N buddy2 +T dog +G %s 80 +D its another dog! +M 78541" % (INVALID_LATITUDE,)
-        
+
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertEqual({'g': 'The answer 380 must be between -90 and 90'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg +N buddy2 +T dog +G 80 %s +D its another dog! +M 78541" % (INVALID_LONGITUDE,)
-        
+
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertEqual({'g': 'The answer -184 must be between -180 and 180'}, response.errors)
@@ -219,7 +224,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         request = Request(transportInfo=transport_info, message="reg +N buddy +S DOG3 +T dog")
-        
+
         response = self.sms_player.accept(request)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertIsInstance(submission_log, SubmissionLogDocument)

@@ -21,7 +21,8 @@ class TestReporter(TestCase):
         define_type(self.manager, ["reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
                                               primitive_type='string')
-        self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name', primitive_type='string')
+        self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name',
+                                            primitive_type='string')
         #Register Reporter
         self.register(self.manager, entity_type=["reporter"],
                       data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),

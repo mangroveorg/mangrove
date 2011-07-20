@@ -23,7 +23,7 @@ class TestCsvPlayer(unittest.TestCase):
                                 CLF1,CL005,14,Dr. E,205
 """
         self.original_code_generator = player._generate_short_code_if_registration_form
-        player._generate_short_code_if_registration_form= Mock(spec=player._generate_short_code_if_registration_form)
+        player._generate_short_code_if_registration_form = Mock(spec=player._generate_short_code_if_registration_form)
         self.data = self.csv_data.split("\n")
         self.player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser)
 

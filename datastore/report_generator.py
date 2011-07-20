@@ -17,7 +17,9 @@ def get_data_by_form_code(dbm, form_code):
     rows = _load_all_data_by_form_code_for(form_code=form_code, using_dbm=dbm)
     return create_formatted_data(rows)
 
+
 def _load_all_data_by_form_code_for(form_code, using_dbm):
     view_name = "data_by_form"
-    rows = using_dbm.load_all_rows_in_view(view_name, startkey=[form_code, ], endkey=[form_code, {}], group_level=3, desc=False)
+    rows = using_dbm.load_all_rows_in_view(view_name, startkey=[form_code, ], endkey=[form_code, {}], group_level=3,
+                                           desc=False)
     return [(row.key, row.value) for row in rows]

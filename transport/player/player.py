@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import time
 from mangrove.datastore import entity
-from mangrove.errors.MangroveException import   MangroveException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
@@ -18,7 +18,7 @@ class Channel(object):
 
 
 class TransportInfo(object):
-    def __init__(self,transport, source, destination):
+    def __init__(self, transport, source, destination):
         assert transport is not None
         assert source is not None
         assert destination is not None
@@ -48,7 +48,8 @@ class Response(object):
             self.short_code = submission_response.short_code
             self.processed_data = submission_response.processed_data
 
-def _short_code_not_in(entity_q_code,values):
+
+def _short_code_not_in(entity_q_code, values):
     return is_empty(values.get(entity_q_code))
 
 
@@ -57,10 +58,11 @@ def _epoch_last_three_digit():
     epoch_last_three_digit = divmod(epoch, 1000)[1]
     return epoch_last_three_digit
 
-def _generate_short_code(dbm,entity_type):
+
+def _generate_short_code(dbm, entity_type):
     current_count = entity.get_entity_count_for_type(dbm, entity_type)
-    entity_type_prefix = entity_type[:3]+"%s"
-    return  entity_type_prefix % (current_count+1)
+    entity_type_prefix = entity_type[:3] + "%s"
+    return  entity_type_prefix % (current_count + 1)
 
 
 def _generate_short_code_if_registration_form(dbm, form_code, values):
@@ -68,17 +70,16 @@ def _generate_short_code_if_registration_form(dbm, form_code, values):
     if form_model.is_registration_form():
         entity_q_code = form_model.entity_question.code
         if _short_code_not_in(entity_q_code, values):
-            values[entity_q_code] = _generate_short_code(dbm,values[ENTITY_TYPE_FIELD_CODE].lower())
+            values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
 
 
-def submit( dbm,submission_handler, transportInfo, form_code, values,reporter_entity=None):
+def submit( dbm, submission_handler, transportInfo, form_code, values, reporter_entity=None):
     _generate_short_code_if_registration_form(dbm, form_code, values)
     submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=transportInfo.transport,
                                            source=transportInfo.source, destination=transportInfo.destination,
                                            reporter=reporter_entity)
     submission_response = submission_handler.accept(submission_request)
     return submission_response
-
 
 
 class SMSPlayer(object):
@@ -95,7 +96,8 @@ class SMSPlayer(object):
         assert request is not None
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         form_code, values = self._parse(request)
-        submission_response = submit(self.dbm,self.submission_handler, request.transport, form_code, values,reporter_entity)
+        submission_response = submit(self.dbm, self.submission_handler, request.transport, form_code, values,
+                                     reporter_entity)
         return Response(reporters=None, submission_response=submission_response)
 
 
@@ -112,7 +114,7 @@ class WebPlayer(object):
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request)
-        submission_response = submit(self.dbm,self.submission_handler, request.transport, form_code, values)
+        submission_response = submit(self.dbm, self.submission_handler, request.transport, form_code, values)
         return Response(reporters=[], submission_response=submission_response)
 
 
@@ -128,14 +130,14 @@ class CsvPlayer(object):
         for (form_code, values) in submissions:
             try:
                 transport_info = TransportInfo(transport=Channel.CSV, source=Channel.CSV, destination="")
-                submission_response = submit(self.dbm,self.submission_handler, transport_info, form_code, values)
-                response= Response(reporters=[],submission_response=submission_response)
+                submission_response = submit(self.dbm, self.submission_handler, transport_info, form_code, values)
+                response = Response(reporters=[], submission_response=submission_response)
                 if not submission_response.success:
                     response.errors = dict(error=submission_response.errors.values(), row=values)
                 responses.append(response)
             except MangroveException as e:
                 response = Response(reporters=[], submission_response=None)
-                response.success=False
+                response.success = False
                 response.errors = dict(error=e.message, row=values)
                 responses.append(response)
         return responses
@@ -153,14 +155,14 @@ class XlsPlayer(object):
         for (form_code, values) in submissions:
             try:
                 transport_info = TransportInfo(transport=Channel.XLS, source=Channel.XLS, destination="")
-                submission_response = submit(self.dbm,self.submission_handler, transport_info, form_code, values)
-                response= Response(reporters=[],submission_response=submission_response)
+                submission_response = submit(self.dbm, self.submission_handler, transport_info, form_code, values)
+                response = Response(reporters=[], submission_response=submission_response)
                 if not submission_response.success:
                     response.errors = dict(error=submission_response.errors.values(), row=values)
                 responses.append(response)
             except MangroveException as e:
                 response = Response(reporters=[], submission_response=None)
-                response.success=False
+                response.success = False
                 response.errors = dict(error=e.message, row=values)
                 responses.append(response)
         return responses

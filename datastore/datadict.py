@@ -45,17 +45,17 @@ def get_or_create_data_dict(dbm, name, slug, primitive_type, description=None, c
 
 
 class DataDictType(DataObject):
-    '''DataDict is an abstraction that stores named data types and constraints .'''
+    """DataDict is an abstraction that stores named data types and constraints ."""
 
     __document_class__ = DataDictDocument
 
-    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None, \
+    def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None,
                  constraints=None, tags=None, id=None, **kwargs):
 
-        '''Create a new DataDictType.
+        """Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
-        '''
+        """
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_string(name)
         assert slug is None or is_string(slug)
@@ -111,7 +111,7 @@ class DataDictType(DataObject):
         return DataDictType.new_from_doc(dbm,doc)
 
     def update_record_caches(self):
-        '''This function will update the cached version of this type in all assosciated datarecords.'''
+        """This function will update the cached version of this type in all assosciated datarecords."""
         rows = self._dbm.load_all_rows_in_view('datarecords_by_datatype_and_label', key=[self.id])
         records_to_update = [{'id': row.id, 'label': row['key'][1]} for row in rows]
         for record in records_to_update:

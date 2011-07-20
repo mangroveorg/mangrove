@@ -106,7 +106,7 @@ class TestAggregationTrees(unittest.TestCase):
     def test_get_leaf_paths(self):
         t = ATree(self.dbm, 'leaf_paths_test')
         paths = [(ATree.root_id, 'a', 'b', 'c', 'd'),
-                 (ATree.root_id, '1', '2', '3', '4')]
+                (ATree.root_id, '1', '2', '3', '4')]
         for p in paths:
             t.add_path(p)
 

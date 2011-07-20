@@ -2,13 +2,13 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import  NoQuestionsSubmittedException, InactiveFormModelException
+from mangrove.errors.MangroveException import   InactiveFormModelException
 from mangrove.utils.types import is_string, sequence_to_str
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
 class SubmissionRequest(object):
-    def __init__(self, form_code, submission, transport, source, destination,reporter=None):
+    def __init__(self, form_code, submission, transport, source, destination, reporter=None):
         assert form_code is not None
         assert submission is not None
         assert transport is not None

@@ -21,10 +21,10 @@ def is_naive_datetime(d):
 
 
 def to_aware_utc(d):
-    '''Returns a tz aware datetime in UTC for given datetime.
+    """""Returns a tz aware datetime in UTC for given datetime.
 
     NOTE: if passed in datetime is naive, it assumes it is in UTC
-    '''
+    """""
     assert isinstance(d, datetime)
     if is_naive_datetime(d):
         # assume was in UTC!
@@ -35,10 +35,7 @@ def to_aware_utc(d):
 
 
 def to_naive_utc(d):
-    '''Returns a naive (no timezone) datetime in UTC.
-
-    NOTE: if inbound datetime is naive, it assumes it's already UTC and returns as is
-    '''
+    """Returns a naive (no timezone) datetime in UTC."""
     assert isinstance(d, datetime)
     if not is_naive_datetime(d):
         d = d.astimezone(pytz.UTC).replace(tzinfo=None)
@@ -63,5 +60,6 @@ def js_datestring_to_py_datetime(s):
     return to_aware_utc(parse_iso_date_str(s))
 
 import time
+
 def convert_to_epoch(end_time):
     return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None

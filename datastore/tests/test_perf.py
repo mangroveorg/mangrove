@@ -59,9 +59,9 @@ class TestViewPerf(unittest.TestCase):
         print "Firing view..."
         start = datetime.datetime.now()
         values = data.aggregate(self.dbm, entity_type=["Health_Facility", "Clinic"],
-                            aggregates={"beds": data.reduce_functions.LATEST,
-                                        "meds": data.reduce_functions.COUNT},aggregate_on=EntityAggregration()
-                            )
+                                aggregates={"beds": data.reduce_functions.LATEST,
+                                            "meds": data.reduce_functions.COUNT}, aggregate_on=EntityAggregration()
+        )
         end = datetime.datetime.now()
         print "views took %s" % (end - start,)
         print "Done!"

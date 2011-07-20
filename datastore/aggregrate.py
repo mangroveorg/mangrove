@@ -119,6 +119,7 @@ def _start_time_filter(row, start_time):
     epoch = int(time.mktime(time.strptime(start_time, '%d-%m-%Y %H:%M:%S'))) * 1000
     return row.key[BY_VALUES_EVENT_TIME_INDEX] >= epoch
 
+
 def _end_time_filter(row, end_time):
     if end_time is None:
         return True

@@ -146,9 +146,9 @@ class TestDataStoreApi(unittest.TestCase):
         facility_type.save()
         opened_type.save()
         data_record = [('meds', 20, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type),
-                       ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type),
+                ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
         data_record_id = clinic_entity.add_data(data=data_record,
                                                 event_time=datetime(2011, 01, 02, tzinfo=UTC),
                                                 submission=dict(submission_id="123456"))
@@ -197,8 +197,8 @@ class TestDataStoreApi(unittest.TestCase):
         apple_type.save()
         orange_type.save()
         data = [
-                [('apples', 20, apple_type), ('oranges', 30, orange_type)],
-                [('apples', 10, apple_type), ('oranges', 20, orange_type)]
+            [('apples', 20, apple_type), ('oranges', 30, orange_type)],
+            [('apples', 10, apple_type), ('oranges', 20, orange_type)]
         ]
         data_ids = []
         for d in data:
@@ -238,7 +238,7 @@ class TestDataStoreApi(unittest.TestCase):
         define_type(self.dbm, ["Clinic"])
         entity_types = get_all_entity_types(self.dbm)
         self.assertListEqual(entity_types, [["Clinic"]])
-    
+
     def test_should_return_data_types(self):
         med_type = DataDictType(self.dbm,
                                 name='Medicines',
@@ -263,8 +263,8 @@ class TestDataStoreApi(unittest.TestCase):
         e = Entity(self.dbm, entity_type='foo')
         e.save()
         data_record = [('meds', 20, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
+                ('doc', "aroj", doctor_type),
+                ('facility', 'clinic', facility_type)]
         e.add_data(data_record)
         # med (tag in list)
         types = [typ.slug for typ in e.data_types(['med'])]
@@ -303,5 +303,5 @@ class TestDataStoreApi(unittest.TestCase):
 
         all_entities = get_all_entities(self.dbm)
 
-        self.assertEqual(4,len(all_entities))
-        self.assertEqual([uuid],[e['id'] for e in all_entities if e['id'] == uuid])
+        self.assertEqual(4, len(all_entities))
+        self.assertEqual([uuid], [e['id'] for e in all_entities if e['id'] == uuid])

@@ -3,9 +3,8 @@ import csv
 from exceptions import StopIteration
 import re
 import xlrd
-from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException,\
-    SMSParserInvalidFormatException, MangroveException, SubmissionParseException,\
-    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
+from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
+    SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException
 from mangrove.utils.types import is_empty, is_string
 
 class SMSParser(object):

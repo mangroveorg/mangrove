@@ -4,16 +4,15 @@ from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, DataObjectNotFound, InactiveFormModelException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, \
+    DataObjectNotFound, InactiveFormModelException
 
-from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
 from mangrove.transport.submissions import SubmissionHandler, SubmissionLogger, SubmissionRequest
 
 
 class TestSubmissions(TestCase):
-
     def setUp(self):
         self.FORM_CODE = "QR1"
         self.VALUES = {"EID": "100", "Q1": "20"}
@@ -46,8 +45,9 @@ class TestSubmissions(TestCase):
 
         reporter = Mock(spec=Entity)
         reporter.short_code.return_value = "REP1"
-        self.submission_request = SubmissionRequest(form_code=self.FORM_CODE, submission=self.VALUES, transport=self.sms
-                                                    , source="1234", destination="5678",reporter=reporter)
+        self.submission_request = SubmissionRequest(form_code=self.FORM_CODE, submission=self.VALUES,
+                                                    transport=self.sms
+                                                    , source="1234", destination="5678", reporter=reporter)
         self.submission_handler = SubmissionHandler(self.dbm)
 
     def tearDown(self):
@@ -123,7 +123,8 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=None,
-                                                                            data_record_id=response.datarecord_id, in_test_mode=False)
+                                                                            data_record_id=response.datarecord_id,
+                                                                            in_test_mode=False)
 
 
     def test_should_update_submission_log_on_failure(self):
@@ -134,8 +135,9 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            data_record_id = None,
-                                                                            errors=form_submission.errors, in_test_mode=False)
+                                                                            data_record_id=None,
+                                                                            errors=form_submission.errors,
+                                                                            in_test_mode=False)
 
     def test_should_fail_submission_if_invalid_form_code(self):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
@@ -169,7 +171,8 @@ class TestSubmissions(TestCase):
                                                                                  short_code="cid001", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=True, errors=None,
-                                                                            data_record_id=response.datarecord_id, in_test_mode=False)
+                                                                            data_record_id=response.datarecord_id,
+                                                                            in_test_mode=False)
 
 
     def test_should_not_register_entity_if_form_submission_invalid(self):
@@ -184,8 +187,9 @@ class TestSubmissions(TestCase):
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            data_record_id = None,
-                                                                            errors=form_submission.errors, in_test_mode=False)
+                                                                            data_record_id=None,
+                                                                            errors=form_submission.errors,
+                                                                            in_test_mode=False)
 
     def test_should_return_expanded_response(self):
         form_submission = self._valid_form_submission_with_choices()

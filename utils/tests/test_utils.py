@@ -14,14 +14,13 @@ try:
 except ImportError:
     import simplejson as json
 
-
 class TestTypeUtils(TestCase):
     an_int = 1
     a_float = 2.1
     a_bool = True
     true_strings = ('y', 'Y', 'yes', 'yeS', 'yES', 'YES', 'Yes', '1', 't', 'T', 'True', 'TrUe',
                     u'y', u'Y', u'yes', u'yeS', u'yES', u'YES', u'Yes', u'1', u't', u'T', u'True', u'TrUe',
-    )
+        )
     not_true_strings = ('a', u"v", 0, None, ())
     a_datetime = datetime.now()
     a_list = [1, 2]
@@ -40,21 +39,21 @@ class TestTypeUtils(TestCase):
     an_empty_tuple = ()
 
     empties = (
-    None, a_blank_string, a_ws_string, an_empty_dict,
-    an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode
-    )
+        None, a_blank_string, a_ws_string, an_empty_dict,
+        an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode
+        )
 
     non_empties = (
-    an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict,
-    a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
-    )
+        an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict,
+        a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
+        )
 
     seqs = (a_list, a_tuple, an_empty_list, an_empty_tuple, true_strings, not_true_strings)
 
     non_seqs = (
-    None, an_int, a_float, a_bool, a_string, a_blank_string, a_nonempty_ws_string,
-    a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode, a_dict, an_empty_dict,
-    )
+        None, an_int, a_float, a_bool, a_string, a_blank_string, a_nonempty_ws_string,
+        a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode, a_dict, an_empty_dict,
+        )
 
     iters = seqs + (a_dict, an_empty_dict)
 
@@ -63,25 +62,25 @@ class TestTypeUtils(TestCase):
     nums = (an_int, a_float)
     non_nums = (None, a_list, a_tuple, a_dict, a_blank_string, a_nonempty_ws_string, a_string, an_empty_dict,
                 an_empty_list, an_empty_tuple, a_unicode, a_blank_unicode, a_ws_unicode, a_nonempty_ws_unicode
-    )
+        )
 
     strs = (
-    a_string, a_unicode, a_ws_string, a_ws_unicode,
-    a_nonempty_ws_unicode, a_nonempty_ws_string, a_blank_unicode, a_blank_string
-    )
+        a_string, a_unicode, a_ws_string, a_ws_unicode,
+        a_nonempty_ws_unicode, a_nonempty_ws_string, a_blank_unicode, a_blank_string
+        )
 
     non_strs = (
-    None, an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict, an_empty_dict,
-    an_empty_list, an_empty_tuple
-    )
+        None, an_int, a_float, a_bool, a_datetime, a_list, a_tuple, a_dict, an_empty_dict,
+        an_empty_list, an_empty_tuple
+        )
 
     bools = (True, False)
     non_bools = (
-    None, a_blank_string, a_ws_string, an_empty_dict,
-    an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode,
-    an_int, a_float, a_datetime, a_list, a_tuple, a_dict,
-    a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
-    )
+        None, a_blank_string, a_ws_string, an_empty_dict,
+        an_empty_list, an_empty_tuple, a_blank_unicode, a_ws_unicode,
+        an_int, a_float, a_datetime, a_list, a_tuple, a_dict,
+        a_string, a_nonempty_ws_string, a_unicode, a_nonempty_ws_unicode
+        )
 
     def _test_a_list(self, pos, neg, test, pos_fail_msg, neg_fail_msg):
         if pos is not None:
@@ -106,7 +105,7 @@ class TestTypeUtils(TestCase):
 
     def test_is_iterable(self):
         self._test_a_list(self.iters, self.non_iters, utils.types.is_iterable,
-                  "failed 'is_iterable'", "passed 'is_iterable'")
+                          "failed 'is_iterable'", "passed 'is_iterable'")
 
     def test_is_number(self):
         self._test_a_list([True, False] + list(self.nums), self.non_nums, utils.types.is_number,
@@ -131,16 +130,16 @@ class TestTypeUtils(TestCase):
                           ": primitive_type returned something other than 'numeric'", "")
 
         self._test_a_list([self.a_datetime], None,
-                          lambda x: types.primitive_type(x) == 'datetime',
-                          ": primitive_type returned something other than 'datetime'", "")
+                                           lambda x: types.primitive_type(x) == 'datetime',
+                                           ": primitive_type returned something other than 'datetime'", "")
 
         self._test_a_list(self.bools, None,
                           lambda x: types.primitive_type(x) == 'boolean',
                           ": primitive_type returned something other than 'boolean'", "")
 
         self._test_a_list([None], None,
-                          lambda x: types.primitive_type(x) == 'unknown',
-                          ": primitive_type returned something other than 'unknown'", "")
+                                lambda x: types.primitive_type(x) == 'unknown',
+                                ": primitive_type returned something other than 'unknown'", "")
 
 
 class TestDateUtils(TestCase):

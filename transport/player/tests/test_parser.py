@@ -2,7 +2,8 @@
 
 from unittest import TestCase
 import os
-from mangrove.errors.MangroveException import  CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, SubmissionParseException
+from mangrove.errors.MangroveException import  CSVParserInvalidHeaderFormatException,\
+    XlsParserInvalidHeaderFormatException, SubmissionParseException
 
 from mangrove.transport.player.parser import SMSParser, WebParser, CsvParser, XlsParser
 import xlwt
@@ -57,7 +58,6 @@ class TestSMSParser(TestCase):
             self.sms_parser.parse(10)
         with self.assertRaises(AssertionError):
             self.sms_parser.parse(None)
-
 
 
     def test_should_accept_unicode(self):

@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, Mapping
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
 import datetime
 import calendar
 from uuid import uuid1
@@ -10,7 +10,7 @@ from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_
 
 
 class attributes(object):
-    '''Constants for referencing standard attributes in docs.'''
+    """""Constants for referencing standard attributes in docs."""""
     MODIFIED = 'modified'
     CREATED = 'created'
     EVENT_TIME = 'event_time'
@@ -65,7 +65,8 @@ class DocumentBase(Document):
 
 class EntityDocument(DocumentBase):
     """
-    The couch entity document. It abstracts out the couch related functionality and inherits from the Document class of couchdb-python.
+    The couch entity document. It abstracts out the couch related functionality and inherits from the Document class
+    of couchdb-python.
     A schema for the entity is enforced here.
     """
     aggregation_paths = DictField()
@@ -117,7 +118,7 @@ class DataRecordDocument(DocumentBase):
     event_time = TZAwareDateTimeField()
     submission = DictField()
 
-    def __init__(self, id=None, entity_doc=None, event_time=None, data=None, submission = None):
+    def __init__(self, id=None, entity_doc=None, event_time=None, data=None, submission=None):
         assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
         data_record = {}
@@ -134,7 +135,7 @@ class DataRecordDocument(DocumentBase):
 
 
 class DataDictDocument(DocumentBase):
-    '''The CouchDB data dictionary document.'''
+    """""The CouchDB data dictionary document."""""
 
     primitive_type = TextField()
     constraints = DictField()
@@ -145,7 +146,7 @@ class DataDictDocument(DocumentBase):
 
     def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None,
                  description=None, tags=None, **kwargs):
-        '''Create a new CouchDB document that represents a DataDictType'''
+        """""Create a new CouchDB document that represents a DataDictType"""""
         DocumentBase.__init__(self, id, 'DataDict')
 
         assert primitive_type is None or is_string(primitive_type)
@@ -223,7 +224,8 @@ class FormModelDocument(DocumentBase):
 
 class SubmissionLogDocument(DocumentBase):
     """
-    The processed submission log document. It will contain metadata about the submission. (Eg: source, submitted_on etc.)
+    The processed submission log document. It will contain metadata about the submission. (Eg: source,
+    submitted_on etc.)
     along with the parsed key value pairs of the sms that came in
     """
 
@@ -253,6 +255,7 @@ class SubmissionLogDocument(DocumentBase):
         self.data_record_id = data_record_id
         self.voided = voided
         self.test = test
+
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

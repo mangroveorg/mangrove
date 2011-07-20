@@ -7,7 +7,6 @@ import unittest
 
 
 class TestDatabaseManager(unittest.TestCase):
-
     def setUp(self):
         self.database_manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
 

@@ -155,6 +155,12 @@ class TestSubmissions(TestCase):
         with self.assertRaises(DataObjectNotFound):
             self.submission_handler.accept(self.submission_request)
 
+        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
+                                                                            status=False,
+                                                                            errors = u'Entity with id = short_code not found.',
+                                                                            in_test_mode=False)
+
+
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
         self.form_model_mock.is_registration_form.return_value = True

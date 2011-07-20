@@ -2,7 +2,7 @@
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import   InactiveFormModelException
+from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException
 from mangrove.utils.types import is_string, sequence_to_str
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
@@ -74,6 +74,9 @@ class SubmissionHandler(object):
             cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values, submission_id)
         except InactiveFormModelException:
             self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
+            raise
+        except MangroveException as e:
+            self.logger.update_submission_log(submission_id=submission_id,status=False,errors = e.message, in_test_mode=form.is_in_test_mode())
             raise
 
         self.logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id,

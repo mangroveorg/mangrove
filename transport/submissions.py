@@ -43,8 +43,8 @@ class SubmissionHandler(object):
         self.logger = SubmissionLogger(self.dbm)
 
 
-    def save_data(self, entity, form_submission, form):
-        submission_information = dict(form_code=form.form_code)
+    def save_data(self, entity, form_submission, form, submission_id=None):
+        submission_information = dict(form_code=form.form_code, submission_id=submission_id)
         data_record_id = entity.add_data(data=form_submission.values, submission=submission_information)
         return data_record_id
 
@@ -71,7 +71,7 @@ class SubmissionHandler(object):
             self._set_entity_short_code(request.reporter.short_code, values)
 
         try:
-            cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values)
+            cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values, submission_id)
         except InactiveFormModelException:
             self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
             raise
@@ -82,7 +82,7 @@ class SubmissionHandler(object):
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
                                   processed_data=cleaned_data)
 
-    def submit(self, form, values):
+    def submit(self, form, values, submission_id):
         self._reject_submission_for_inactive_forms(form)
 
         form_submission = form.validate_submission(values)
@@ -93,7 +93,7 @@ class SubmissionHandler(object):
 
         if form_submission.is_valid:
             entity = form_submission.to_entity(self.dbm)
-            data_record_id = self.save_data(entity, form_submission, form)
+            data_record_id = self.save_data(entity, form_submission, form, submission_id)
             status = True
         else:
             _errors = form_submission.errors

@@ -351,13 +351,13 @@ def _construct_registration_form(manager):
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
                           defaultValue="some default value", language="eng", ddtype=name_type)
-    question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's short name?",
+    question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", language="eng", ddtype=name_type,
                           entity_question_flag=True)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
                                language="eng", ddtype=location_type)
-    question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's geo code?",
+    question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
                              language="eng", ddtype=geo_code_type)
     question6 = TextField(name=DESCRIPTION_FIELD, code=DESCRIPTION_FIELD_CODE, label="Describe the subject",
                           defaultValue="some default value", language="eng", ddtype=description_type)

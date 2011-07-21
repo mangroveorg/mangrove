@@ -340,7 +340,7 @@ def _construct_registration_form(manager):
                                                primitive_type='string')
     mobile_number_type = get_or_create_data_dict(manager, name='Mobile Number Type', slug='mobile_number',
                                                  primitive_type='string')
-    name_type = get_or_create_data_dict(manager, name='Name', slug='Name', primitive_type='string')
+    name_type = get_or_create_data_dict(manager, name='Name', slug='name', primitive_type='string')
     entity_id_type = get_or_create_data_dict(manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
 
     #Create registration questionnaire

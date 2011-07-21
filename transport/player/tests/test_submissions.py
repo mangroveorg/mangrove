@@ -4,7 +4,7 @@ from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException, \
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException,\
     DataObjectNotFound, InactiveFormModelException
 
 from mangrove.form_model.form_model import FormModel, FormSubmission
@@ -82,6 +82,8 @@ class TestSubmissions(TestCase):
 
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
+        self.assertFalse(response.is_registration)
+
 
 
     def test_should_save_data_record_if_valid_form_submission(self):
@@ -92,6 +94,7 @@ class TestSubmissions(TestCase):
         self.assertTrue(self.form_submission_entity_module.get_by_short_code.called)
 
 
+
     def test_should_not_save_data_record_if_in_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._invalid_form_submission()
 
@@ -99,6 +102,7 @@ class TestSubmissions(TestCase):
 
         self.assertEqual({"field": "Invalid"}, response.errors)
         self.assertFalse(response.success)
+        self.assertFalse(response.is_registration)
 
     def test_should_not_save_data_record_if_no_valid_questions_present(self):
         self.form_model_mock.validate_submission.side_effect = NoQuestionsSubmittedException()
@@ -157,7 +161,8 @@ class TestSubmissions(TestCase):
 
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
-                                                                            errors = u'Entity with id = short_code not found.',
+                                                                            errors=u'Entity with id = short_code not found.'
+                                                                            ,
                                                                             in_test_mode=False)
 
 
@@ -170,9 +175,9 @@ class TestSubmissions(TestCase):
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
         self.assertEqual("cid001", response.short_code)
+        self.assertTrue(response.is_registration)
         self.form_submission_entity_module.create_entity.assert_called_once_with(dbm=self.dbm, entity_type=self
-        .ENTITY_TYPE
-                                                                                 ,
+        .ENTITY_TYPE,
                                                                                  location=None,
                                                                                  short_code="cid001", geometry=None)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
@@ -190,6 +195,7 @@ class TestSubmissions(TestCase):
 
         self.assertFalse(response.success)
         self.assertEqual({"field": "Invalid"}, response.errors)
+        self.assertTrue(response.is_registration)
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
         self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
                                                                             status=False,
@@ -241,3 +247,4 @@ class TestSubmissions(TestCase):
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         self.assertIsNotNone(response.submission_id)
+

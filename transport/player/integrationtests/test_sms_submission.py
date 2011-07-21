@@ -91,6 +91,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
         self.assertEqual("clinic", data_record.submission['form_code'])
+        self.assertEqual(u"Test_reporter",response.reporters[0].get(NAME_FIELD))
+
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")
@@ -114,6 +116,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(text)
 
         self.assertTrue(response.success)
+        self.assertEqual(u"Test_reporter",response.reporters[0].get(NAME_FIELD))
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)

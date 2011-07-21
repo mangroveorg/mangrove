@@ -2,7 +2,7 @@
 import time
 from mangrove.datastore import entity
 from mangrove.errors.MangroveException import MangroveException
-from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE
+from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
 from mangrove.transport.submissions import  SubmissionRequest
@@ -47,6 +47,7 @@ class Response(object):
             self.datarecord_id = submission_response.datarecord_id
             self.short_code = submission_response.short_code
             self.processed_data = submission_response.processed_data
+            self.is_registration = submission_response.is_registration
 
 
 def _short_code_not_in(entity_q_code, values):
@@ -94,11 +95,11 @@ class SMSPlayer(object):
 
     def accept(self, request):
         assert request is not None
-        reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
+        reporter_entity,reporter_name = reporter.find_reporter_entity(self.dbm, request.transport.source)
         form_code, values = self._parse(request)
         submission_response = submit(self.dbm, self.submission_handler, request.transport, form_code, values,
                                      reporter_entity)
-        return Response(reporters=None, submission_response=submission_response)
+        return Response(reporters=[{ NAME_FIELD : reporter_name}], submission_response=submission_response)
 
 
 class WebPlayer(object):

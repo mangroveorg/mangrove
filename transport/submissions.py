@@ -24,7 +24,7 @@ class SubmissionRequest(object):
 
 
 class SubmissionResponse(object):
-    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None):
+    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None,is_registration=False):
         assert success is not None
         assert submission_id is not None
 
@@ -34,6 +34,7 @@ class SubmissionResponse(object):
         self.datarecord_id = datarecord_id
         self.short_code = short_code
         self.processed_data = processed_data
+        self.is_registration = is_registration
 
 
 class SubmissionHandler(object):
@@ -83,7 +84,7 @@ class SubmissionHandler(object):
                                           status=status, errors=errors, in_test_mode=form.is_in_test_mode())
 
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
-                                  processed_data=cleaned_data)
+                                  processed_data=cleaned_data,is_registration = form.is_registration_form())
 
     def submit(self, form, values, submission_id):
         self._reject_submission_for_inactive_forms(form)

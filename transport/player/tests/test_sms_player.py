@@ -10,12 +10,17 @@ from mangrove.transport.submissions import SubmissionHandler
 
 
 class TestSMSPlayer(TestCase):
+    def _mock_reporter(self):
+        self.reporter_mock = Mock(spec=Entity)
+        reporter_name = "1234"
+        self.reporter_module.find_reporter_entity.return_value = self.reporter_mock, reporter_name
+
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.reporter_patcher = patch('mangrove.transport.player.player.reporter')
         self.reporter_module = self.reporter_patcher.start()
-        self.reporter_module.find_reporter.return_value = [{NAME_FIELD: "1234"}]
+        self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request( transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
         self.sms_player = SMSPlayer(self.dbm, self.submission_handler_mock)
@@ -32,14 +37,13 @@ class TestSMSPlayer(TestCase):
         self.assertEqual(1, self.submission_handler_mock.accept.call_count)
 
     def test_should_submit_if_submission_by_registered_reporter(self):
-        reporter = Mock(spec=Entity)
-        self.reporter_module.find_reporter_entity.return_value = reporter
 
         self.sms_player.accept(self.request)
 
         self.assertEqual(1, self.submission_handler_mock.accept.call_count)
+
         submission_request = self.submission_handler_mock.accept.call_args[0][0]
-        self.assertEqual(reporter, submission_request.reporter)
+        self.assertEqual(self.reporter_mock, submission_request.reporter)
 
     def test_should_check_if_submission_by_unregistered_reporter(self):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")

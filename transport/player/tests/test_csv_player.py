@@ -12,6 +12,8 @@ from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 class TestCsvPlayer(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
+        loc_tree = Mock()
+        loc_tree.get_hierarchy_path.return_value = None
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.parser = CsvParser()
         self.csv_data = """
@@ -25,7 +27,7 @@ class TestCsvPlayer(unittest.TestCase):
         self.original_code_generator = player._generate_short_code_if_registration_form
         player._generate_short_code_if_registration_form = Mock(spec=player._generate_short_code_if_registration_form)
         self.data = self.csv_data.split("\n")
-        self.player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser)
+        self.player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser, loc_tree)
 
     def tearDown(self):
         player._generate_short_code_if_registration_form = self.original_code_generator

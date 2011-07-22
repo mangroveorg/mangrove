@@ -24,6 +24,9 @@ class LocationTree(object):
     def get_hierarchy_path(self, location_name):
         return location_name
 
+    def get_location_hierarchy_for_geocode(self,lat, long ):
+        return ['madagascar']
+    
 
 class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
@@ -242,7 +245,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'l':None}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record_id)
 
@@ -280,9 +283,9 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(["dog"], actual_type)
 
     def test_should_accept_unicode_submissions(self):
-        text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45° 56`"
-        response = self.send_sms(text)
-        self.assertFalse(response.success)
+        text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45 56"
+        with self.assertRaises(EntityTypeDoesNotExistsException):
+            self.send_sms(text)
 
     def test_should_raise_exception_for_inactive_form_model(self):
         self.form_model.deactivate()

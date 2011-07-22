@@ -159,14 +159,16 @@ def get_submission_count_for_form(dbm, form_code, start_time, end_time):
 
 def get_submissions_made_for_form(dbm, form_code, start_time, end_time, page_number=0, page_size=20):
     assert is_string(form_code)
+    end = [form_code] if start_time is  None else [form_code, start_time]
+    start = [form_code,{}] if end_time  is None else [form_code, end_time, {}]
     if page_size is None:
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
-                                         startkey=[form_code, end_time, {}],
-                                         endkey=[form_code, start_time])
+                                         startkey=start,
+                                         endkey=end)
     else:
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
-                                         startkey=[form_code, end_time, {}],
-                                         endkey=[form_code, start_time], skip=page_number * page_size, limit=page_size)
+                                         startkey=start,
+                                         endkey=end, skip=page_number * page_size, limit=page_size)
     answers, ids = list(), list()
     for each in rows:
         answers.append(each.value)

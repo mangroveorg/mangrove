@@ -16,8 +16,6 @@ class TestSMSPlayer(TestCase):
         self.reporter_module.find_reporter_entity.return_value = self.reporter_mock, reporter_name
 
     def setUp(self):
-        loc_tree = Mock()
-        loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.reporter_patcher = patch('mangrove.transport.player.player.reporter')
@@ -25,7 +23,7 @@ class TestSMSPlayer(TestCase):
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request( transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
-        self.sms_player = SMSPlayer(self.dbm, self.submission_handler_mock, loc_tree)
+        self.sms_player = SMSPlayer(self.dbm, self.submission_handler_mock)
         self.generate_code_patcher = patch("mangrove.transport.player.player._generate_short_code_if_registration_form")
         self.generate_code_patcher.start()
 

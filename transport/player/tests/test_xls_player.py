@@ -11,8 +11,6 @@ import xlwt
 
 class TestXlsPlayer(unittest.TestCase):
     def setUp(self):
-        loc_tree = Mock()
-        loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.parser = XlsParser()
@@ -33,7 +31,7 @@ class TestXlsPlayer(unittest.TestCase):
             for col_number, val in enumerate(row.split(',')):
                 ws.write(row_number, col_number, val)
         wb.save(self.file_name)
-        self.player = XlsPlayer(self.dbm, self.submission_handler_mock, self.parser, loc_tree)
+        self.player = XlsPlayer(self.dbm, self.submission_handler_mock, self.parser)
         self.generate_code_patcher = patch("mangrove.transport.player.player._generate_short_code_if_registration_form")
         self.generate_code_patcher.start()
 

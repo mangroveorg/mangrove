@@ -149,9 +149,9 @@ def _get_row_count(rows):
 
 def get_submission_count_for_form(dbm, form_code, start_time, end_time):
     assert is_string(form_code)
-    rows = dbm.load_all_rows_in_view('submissionlog', startkey=[form_code, start_time], endkey=[form_code, end_time,
-            {}]
-                                     ,
+    start = [form_code] if start_time is  None else [form_code, start_time]
+    end = [form_code,{}] if end_time  is None else [form_code, end_time, {}]
+    rows = dbm.load_all_rows_in_view('submissionlog', startkey=start, endkey=end,
                                      group=True, group_level=1, reduce=True)
     count = _get_row_count(rows) if rows else 0
     return count

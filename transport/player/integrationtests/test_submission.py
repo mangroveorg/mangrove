@@ -19,6 +19,12 @@ from mangrove.transport.submissions import SubmissionHandler, get_submissions_ma
 from mangrove.datastore.datadict import DataDictType
 
 
+class LocationTree(object):
+
+    def get_hierarchy_path(self, location_name):
+        return location_name
+
+
 class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
         self.dbm = get_db_manager(database='mangrove-test')
@@ -68,7 +74,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.form_model__id = self.form_model.save()
 
         self.submission_handler = SubmissionHandler(self.dbm)
-        self.sms_player = SMSPlayer(self.dbm, self.submission_handler)
+        self.sms_player = SMSPlayer(self.dbm, self.submission_handler, LocationTree())
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)

@@ -103,9 +103,9 @@ class Player(object):
         display_location, geo_code = values.get(LOCATION_TYPE_FIELD_CODE), values.get(GEO_CODE)
         location_hierarchy = self._get_location_heirarchy_from_location_name(display_location)
         if location_hierarchy is None and geo_code is not None:
-            lat_string, long_string = tuple(geo_code.split())
             tree = self.location_tree
             try:
+                lat_string, long_string = tuple(geo_code.split())
                 location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string), long=float(long_string))
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)

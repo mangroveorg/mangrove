@@ -9,7 +9,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
@@ -285,6 +285,11 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_accept_unicode_submissions(self):
         text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45 56"
         with self.assertRaises(EntityTypeDoesNotExistsException):
+            self.send_sms(text)
+
+    def test_should_accept_unicode_submissions_and_invalidate_wrong_GPS(self):
+        text = "reg +s Āgra +n Agra +m 080 +t clinic +g 45Ö 56"
+        with self.assertRaises(GeoCodeFormatException):
             self.send_sms(text)
 
     def test_should_raise_exception_for_inactive_form_model(self):

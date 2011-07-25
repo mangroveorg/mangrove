@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import time
 from mangrove.datastore import entity
-from mangrove.errors.MangroveException import MangroveException
+from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
@@ -105,7 +105,10 @@ class Player(object):
         if location_hierarchy is None and geo_code is not None:
             lat_string, long_string = tuple(geo_code.split())
             tree = self.location_tree
-            location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string), long=float(long_string))
+            try:
+                location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string), long=float(long_string))
+            except ValueError as e:
+                raise GeoCodeFormatException(e.args)
         return location_hierarchy
 
 

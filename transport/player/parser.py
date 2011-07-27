@@ -120,8 +120,8 @@ class CsvParser(object):
         return False
 
     def _remove_trailing_empty_header_field(self, field_header):
-        for i in range(len(field_header)-1, -1, -1):
-            if is_empty(field_header[i]):
+        for field in field_header[::-1]:
+            if is_empty(field):
                 field_header.pop()
             else:
                 break
@@ -162,9 +162,17 @@ class XlsParser(object):
             raise XlsParserInvalidHeaderFormatException()
         return parsedData
 
+    def _remove_trailing_empty_header_field(self, field_header):
+        for field in field_header[::-1]:
+            if is_empty(field):
+                field_header.pop()
+            else:
+                break
+
     def _is_header_row(self, row):
         if is_empty(row[0]):
             return None, False
+        self._remove_trailing_empty_header_field(row)
         return [unicode(value).strip().lower() for value in row], True
 
     def _clean(self, row):

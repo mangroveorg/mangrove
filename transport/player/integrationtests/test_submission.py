@@ -9,7 +9,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
@@ -257,6 +257,13 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             text = "reg +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
             self.send_sms(text)
 
+    def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
+        with self.assertRaises(MultipleReportersForANumberException):
+            text = "reg +N buddy +T reporter +G 80 80 +M 1@23456"
+            self.send_sms(text)
+            text = "reg +N buddy2 +T reporter +L 80 80 +M 123456"
+            self.send_sms(text)
+
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):
             text = "reg +N buddy1 +S DOG3 +T cat +L 80 80 +D its another dog! +M 1234567"
@@ -315,3 +322,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.submission_id)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertTrue(submission_log.test)
+
+
+        

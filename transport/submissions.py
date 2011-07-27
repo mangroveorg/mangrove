@@ -1,8 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException
+from mangrove.form_model.form_model import get_form_model_by_code, MOBILE_NUMBER_FIELD_CODE, REPORTER
+from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException, MultipleReportersForANumberException, NumberNotRegisteredException
+from mangrove.transport.reporter import find_reporter_entity
 from mangrove.utils.types import is_string, sequence_to_str
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
@@ -86,6 +87,19 @@ class SubmissionHandler(object):
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
                                   processed_data=cleaned_data,is_registration = form.is_registration_form())
 
+    def _validate_unique_phone_number_for_reporter(self, submission):
+        if submission.entity_type == [REPORTER] and submission.form_model.is_registration_form():
+            phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
+            actual_number = self._get_telephone_number(phone_number)
+            try:
+                find_reporter_entity(self.dbm, actual_number)
+                raise MultipleReportersForANumberException(from_number=phone_number)
+            except NumberNotRegisteredException:
+                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = actual_number
+
+    def _get_telephone_number(self, number_as_given):
+        return "".join([num for num in number_as_given if num.isdigit()])
+
     def submit(self, form, values, submission_id):
         self._reject_submission_for_inactive_forms(form)
 
@@ -96,6 +110,7 @@ class SubmissionHandler(object):
         status = False
 
         if form_submission.is_valid:
+            self._validate_unique_phone_number_for_reporter(form_submission)
             entity = form_submission.to_entity(self.dbm)
             data_record_id = self.save_data(entity, form_submission, form, submission_id)
             status = True

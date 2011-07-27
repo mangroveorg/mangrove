@@ -1,10 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.form_model.form_model import get_form_model_by_code, MOBILE_NUMBER_FIELD_CODE, REPORTER
-from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException, MultipleReportersForANumberException, NumberNotRegisteredException
+from mangrove.form_model.form_model import get_form_model_by_code, MOBILE_NUMBER_FIELD_CODE, REPORTER, ENTITY_TYPE_FIELD_CODE
+from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException, MultipleReportersForANumberException, NumberNotRegisteredException, MobileNumberMissing
 from mangrove.transport.reporter import find_reporter_entity
-from mangrove.utils.types import is_string, sequence_to_str
+from mangrove.utils.types import is_string, sequence_to_str, is_empty
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
@@ -88,8 +88,10 @@ class SubmissionHandler(object):
                                   processed_data=cleaned_data,is_registration = form.is_registration_form())
 
     def _validate_unique_phone_number_for_reporter(self, submission):
-        if submission.entity_type == [REPORTER] and submission.form_model.is_registration_form():
+        if submission.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and submission.form_model.is_registration_form():
             phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
+            if is_empty(phone_number):
+                raise MobileNumberMissing()
             actual_number = self._get_telephone_number(phone_number)
             try:
                 find_reporter_entity(self.dbm, actual_number)
@@ -98,7 +100,9 @@ class SubmissionHandler(object):
                 submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = actual_number
 
     def _get_telephone_number(self, number_as_given):
-        return "".join([num for num in number_as_given if num.isdigit()])
+        if number_as_given is not None:
+            return "".join([num for num in number_as_given if num.isdigit()])
+        return number_as_given
 
     def submit(self, form, values, submission_id):
         self._reject_submission_for_inactive_forms(form)

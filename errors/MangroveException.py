@@ -251,3 +251,7 @@ class InactiveFormModelException(MangroveException):
 class SubmissionParseException(MangroveException):
     def __init__(self, form_code, message):
         MangroveException.__init__(self, message, (form_code,))
+
+class MobileNumberMissing(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, "Mobile number is missing", ('reg',))

@@ -7,6 +7,7 @@ from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeExce
     SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException
 from mangrove.utils.types import is_empty, is_string
 
+
 class SMSParser(object):
     MESSAGE_PREFIX = ur'^(\w+)\s+\+(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
@@ -70,16 +71,23 @@ class WebParser(object):
 
 
 class CsvParser(object):
+    EXTRA_VALUES = "extra_values"
+
+
     def _next_line(self, dict_reader):
         return dict_reader.next().values()[0]
 
     def _parse_header(self, dict_reader):
         field_header = dict_reader.fieldnames
-        while is_empty(field_header) or self._has_empty_values(field_header):
-            try:
-                field_header = self._next_line(dict_reader)
-            except StopIteration:
-                raise CSVParserInvalidHeaderFormatException()
+
+        if is_empty(field_header):
+            raise CSVParserInvalidHeaderFormatException()
+
+        self._remove_trailing_empty_header_field(field_header)
+
+        if self._has_empty_values(field_header):
+            raise CSVParserInvalidHeaderFormatException()
+
         return [field.strip().lower() for field in field_header]
 
     def _strip_field_values(self, row):
@@ -90,12 +98,14 @@ class CsvParser(object):
     def _parse_row(self, form_code_fieldname, row):
         result_row = dict(row)
         self._strip_field_values(result_row)
+        self._remove_extra_field_values(result_row)
         form_code = result_row.pop(form_code_fieldname).lower()
         return form_code, result_row
 
     def parse(self, csv_data):
-        assert not is_string(csv_data)
-        dict_reader = csv.DictReader(csv_data, restkey='extra_values')
+        assert is_string(csv_data)
+        csv_data = self._clean(csv_data)
+        dict_reader = csv.DictReader(self._to_list(csv_data), restkey=self.EXTRA_VALUES)
         dict_reader.fieldnames = self._parse_header(dict_reader)
         parsedData = []
         form_code_fieldname = dict_reader.fieldnames[0]
@@ -108,6 +118,23 @@ class CsvParser(object):
             if is_empty(value):
                 return True
         return False
+
+    def _remove_trailing_empty_header_field(self, field_header):
+        for i in range(len(field_header)-1, -1, -1):
+            if is_empty(field_header[i]):
+                field_header.pop()
+            else:
+                break
+
+    def _remove_extra_field_values(self, result_row):
+        if result_row.get(self.EXTRA_VALUES):
+            result_row.pop(self.EXTRA_VALUES)
+
+    def _clean(self, csv_data):
+        return csv_data.strip()
+
+    def _to_list(self, csv_data):
+        return csv_data.splitlines()
 
 
 class XlsParser(object):

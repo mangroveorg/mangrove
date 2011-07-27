@@ -10,12 +10,17 @@ from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 
 
 class TestCsvPlayer(unittest.TestCase):
+    def _mock_short_code_generator(self):
+        self.original_code_generator = player._generate_short_code_if_registration_form
+        player._generate_short_code_if_registration_form = Mock(spec=player._generate_short_code_if_registration_form)
+
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         loc_tree = Mock()
         loc_tree.get_hierarchy_path.return_value = None
         self.submission_handler_mock = Mock(spec=SubmissionHandler)
         self.parser = CsvParser()
+
         self.csv_data = """
                                 FORM_CODE,ID,BEDS,DIRECTOR,MEDS
                                 CLF1,CL001,10,Dr. A,201
@@ -24,16 +29,16 @@ class TestCsvPlayer(unittest.TestCase):
                                 CLF1,CL004,13,Dr. D,204
                                 CLF1,CL005,14,Dr. E,205
 """
-        self.original_code_generator = player._generate_short_code_if_registration_form
-        player._generate_short_code_if_registration_form = Mock(spec=player._generate_short_code_if_registration_form)
-        self.data = self.csv_data.split("\n")
+        self._mock_short_code_generator()
+
         self.player = CsvPlayer(self.dbm, self.submission_handler_mock, self.parser, loc_tree)
 
     def tearDown(self):
         player._generate_short_code_if_registration_form = self.original_code_generator
 
+
     def test_should_import_csv_string(self):
-        self.player.accept(self.data)
+        self.player.accept(self.csv_data)
 
         self.assertEqual(5, self.submission_handler_mock.accept.call_count)
 
@@ -46,7 +51,7 @@ class TestCsvPlayer(unittest.TestCase):
 
         self.submission_handler_mock.accept.side_effect = expected_side_effect
 
-        response = self.player.accept(self.data)
+        response = self.player.accept(self.csv_data)
         self.assertEqual(5, len(response))
         self.assertEqual(False, response[2].success)
 

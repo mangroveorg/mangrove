@@ -19,7 +19,7 @@ def find_reporter_entity(dbm, from_number):
     if len(reporter_list) > 1:
         raise MultipleReportersForANumberException(from_number)
     reporter_entity_id = reporter_list[0].keys()[0]
-    reporter_name = reporter_list[0][reporter_entity_id][NAME_FIELD]
+    reporter_name = reporter_list[0][reporter_entity_id].get(NAME_FIELD)
     return Entity.get(dbm, reporter_entity_id),reporter_name
 
 

@@ -12,7 +12,9 @@ from mangrove.transport.submissions import SubmissionHandler, SubmissionResponse
 class TestCsvPlayer(unittest.TestCase):
     def _mock_short_code_generator(self):
         self.original_code_generator = player._generate_short_code_if_registration_form
+        self.original_handler_for_reg_form = player.Player._handle_registration_form
         player._generate_short_code_if_registration_form = Mock(spec=player._generate_short_code_if_registration_form)
+        player.Player._handle_registration_form = Mock(spec = player.Player._handle_registration_form)
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
@@ -35,6 +37,7 @@ class TestCsvPlayer(unittest.TestCase):
 
     def tearDown(self):
         player._generate_short_code_if_registration_form = self.original_code_generator
+        player.Player._handle_registration_form = self.original_handler_for_reg_form
 
 
     def test_should_import_csv_string(self):

@@ -34,7 +34,7 @@ class TestXlsPlayer(unittest.TestCase):
                 ws.write(row_number, col_number, val)
         wb.save(self.file_name)
         self.player = XlsPlayer(self.dbm, self.submission_handler_mock, self.parser, loc_tree)
-        self.generate_code_patcher = patch("mangrove.transport.player.player._generate_short_code_if_registration_form")
+        self.generate_code_patcher = patch("mangrove.transport.player.player.Player._handle_registration_form")
         self.generate_code_patcher.start()
 
     def tearDown(self):

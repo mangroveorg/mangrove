@@ -66,12 +66,10 @@ def _generate_short_code(dbm, entity_type):
     return  entity_type_prefix % (current_count + 1)
 
 
-def _generate_short_code_if_registration_form(dbm, form_code, values):
-    form_model = get_form_model_by_code(dbm, form_code)
-    if form_model.is_registration_form():
-        entity_q_code = form_model.entity_question.code
-        if _short_code_not_in(entity_q_code, values):
-            values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
+def _generate_short_code_if_registration_form(dbm, form_model, values):
+    entity_q_code = form_model.entity_question.code
+    if _short_code_not_in(entity_q_code, values):
+        values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
 
 
 class Player(object):
@@ -81,9 +79,12 @@ class Player(object):
         self.submission_handler = submission_handler
         self.location_tree = location_tree
 
+    def _generate_location_hierarchy_if_registration_form(self, values):
+        location_hierarchy = self._get_location_hierarchy(values)
+        values[LOCATION_TYPE_FIELD_CODE] = location_hierarchy
+
     def submit(self, dbm, submission_handler, transportInfo, form_code, values, reporter_entity=None):
-        _generate_short_code_if_registration_form(dbm, form_code, values)
-        values[LOCATION_TYPE_FIELD_CODE] = self._get_location_hierarchy(values)
+        self._handle_registration_form(dbm, form_code, values)
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=transportInfo.transport,
                                                source=transportInfo.source, destination=transportInfo.destination,
                                                reporter=reporter_entity)
@@ -110,6 +111,12 @@ class Player(object):
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
         return location_hierarchy
+
+    def _handle_registration_form(self, dbm, form_code, values):
+        form_model = get_form_model_by_code(dbm, form_code)
+        if form_model.is_registration_form():
+            _generate_short_code_if_registration_form(dbm, form_model, values)
+            self._generate_location_hierarchy_if_registration_form(values)
 
 
 class SMSPlayer(Player):

@@ -107,8 +107,11 @@ class Player(object):
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
         if location_hierarchy is not None and geo_code is None:
-            translated_geo_code = tree.get_centroid(display_location,len(location_hierarchy)-1)
-            values[GEO_CODE] = "%s %s" % translated_geo_code
+            try:
+                translated_geo_code = tree.get_centroid(display_location.split(',')[0],len(location_hierarchy)-1)
+                values[GEO_CODE] = "%s %s" % translated_geo_code
+            except Exception:
+                pass
         values[LOCATION_TYPE_FIELD_CODE] = location_hierarchy
 
     def _handle_registration_form(self, dbm, form_code, values):

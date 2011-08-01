@@ -109,7 +109,7 @@ class Player(object):
         if location_hierarchy is not None and geo_code is None:
             try:
                 translated_geo_code = tree.get_centroid(display_location.split(',')[0],len(location_hierarchy)-1)
-                values[GEO_CODE] = "%s %s" % translated_geo_code
+                values[GEO_CODE] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
             except Exception:
                 pass
         values[LOCATION_TYPE_FIELD_CODE] = location_hierarchy

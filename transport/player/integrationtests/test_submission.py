@@ -26,6 +26,9 @@ class LocationTree(object):
 
     def get_location_hierarchy_for_geocode(self,lat, long ):
         return ['madagascar']
+
+    def get_centroid(self, location_name, level):
+        return 60, -12
     
 
 class TestShouldSaveSMSSubmission(unittest.TestCase):
@@ -251,10 +254,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
+        text = "reg +N buddy +S DOG3 +T dog +G 80 80 +D its a dog! +M 123456"
+        self.send_sms(text)
+        text = "reg +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
         with self.assertRaises(DataObjectAlreadyExists):
-            text = "reg +N buddy +S DOG3 +T dog +G 80 80 +D its a dog! +M 123456"
-            self.send_sms(text)
-            text = "reg +N buddy2 +S dog3 +T dog +L 80 80 +D its a dog! +M 123456"
             self.send_sms(text)
 
     def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
@@ -329,4 +332,43 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertTrue(submission_log.test)
 
 
-        
+    def test_should_register_entity_with_geo_code(self):
+        message1 = """reg +t dog +n Dog in Diégo–Suarez +g -12.35  49.3  +d This is a Dog in
+        Diégo–Suarez + m
+        87654325
+        """
+        response = self.send_sms(message1)
+        self.assertTrue(response.success)
+        self.assertIsNotNone(response.datarecord_id)
+        expected_short_code = 'dog1'
+        self.assertEqual(response.short_code, expected_short_code)
+        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual([-12.35 , 49.3] ,dog.geometry.get("coordinates"))
+
+    def test_should_register_entity_with_geocode_if_only_location_provided(self):
+        message1 = """reg +t dog +n Dog in AMPIZARANTANY +l AMPIZARANTANY +d This is a Dog in
+        AMPIZARANTANY + m
+        87654325
+        """
+        response = self.send_sms(message1)
+        self.assertTrue(response.success)
+        self.assertIsNotNone(response.datarecord_id)
+        expected_short_code = 'dog1'
+        self.assertEqual(response.short_code, expected_short_code)
+        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual([60, -12] ,dog.geometry.get("coordinates"))
+
+    def test_should_register_entity_with_geocode_and_location_provided(self):
+        message1 = """reg +t dog +n Dog in AMPIZARANTANY +l AMPIZARANTANY +g 10 10 +d This is a Dog in
+        AMPIZARANTANY + m
+        87654325
+        """
+        response = self.send_sms(message1)
+        self.assertTrue(response.success)
+        self.assertIsNotNone(response.datarecord_id)
+        expected_short_code = 'dog1'
+        self.assertEqual(response.short_code, expected_short_code)
+        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        self.assertEqual([10, 10] ,dog.geometry.get("coordinates"))
+        self.assertEqual(["AMPIZARANTANY"] ,dog.location_path)
+

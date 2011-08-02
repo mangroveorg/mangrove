@@ -307,11 +307,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         with self.assertRaises(GeoCodeFormatException):
             self.send_sms(text)
 
-    def test_should_accept_unicode_submissions_and_invalidate_wrong_location_data(self):
-        text = "reg +s Āgra +n Agra +m 080 +t clinic +g +l"
-        with self.assertRaises(GeoCodeFormatException):
-            self.send_sms(text)
-
     def test_should_raise_exception_for_inactive_form_model(self):
         self.form_model.deactivate()
         self.form_model.save()

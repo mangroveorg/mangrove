@@ -100,13 +100,13 @@ class Player(object):
         display_location, geo_code = values.get(LOCATION_TYPE_FIELD_CODE), values.get(GEO_CODE)
         location_hierarchy = self._get_location_heirarchy_from_location_name(display_location)
         tree = self.location_tree
-        if location_hierarchy is None and geo_code is not None:
+        if location_hierarchy is None and not is_empty(geo_code):
             try:
                 lat_string, long_string = tuple(geo_code.split())
                 location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string), long=float(long_string))
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
-        if location_hierarchy is not None and geo_code is None:
+        elif location_hierarchy is not None and is_empty(geo_code):
             try:
                 translated_geo_code = tree.get_centroid(display_location.split(',')[0],len(location_hierarchy)-1)
                 values[GEO_CODE] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])

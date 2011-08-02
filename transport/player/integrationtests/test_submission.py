@@ -356,7 +356,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-        self.assertEqual([60, -12] ,dog.geometry.get("coordinates"))
+        self.assertEqual([-12, 60] ,dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
         message1 = """reg +t dog +n Dog in AMPIZARANTANY +l AMPIZARANTANY +g 10 10 +d This is a Dog in

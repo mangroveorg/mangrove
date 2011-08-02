@@ -90,7 +90,11 @@ class Player(object):
     def _get_location_heirarchy_from_location_name(self, display_location):
         if is_empty(display_location):
             return None
-        lowest_level_location = display_location.split(',')[0]
+        display_location_list = display_location.lower().split(',')
+        if len(display_location_list) > 1:
+            display_location_list.reverse()
+            return display_location_list
+        lowest_level_location = display_location_list[0]
         tree = self.location_tree
         location_hierarchy = tree.get_hierarchy_path(lowest_level_location)
         return location_hierarchy

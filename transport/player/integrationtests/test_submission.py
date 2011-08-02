@@ -365,5 +365,5 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual([10, 10] ,dog.geometry.get("coordinates"))
-        self.assertEqual(["AMPIZARANTANY"] ,dog.location_path)
+        self.assertEqual(["ampizarantany"] ,dog.location_path)
 

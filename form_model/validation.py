@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange
+import re
+from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 
 from validate import is_string, is_float, VdtTypeError, VdtValueError
 
@@ -87,3 +88,14 @@ class GeoCodeConstraint(object):
         except VdtValueError:
             raise LongitudeNotInRange(longitude)
         return lat, long
+
+
+class RegexConstraint(object):
+
+    def __init__(self, reg):
+        self._pattern = reg
+
+    def validate(self, text):
+        if re.match(self._pattern, text):
+            return text
+        raise RegexMismatchException(self._pattern)

@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint
+from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint, RegexConstraint
 from mangrove.utils.types import is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -158,7 +158,7 @@ class TestLocationValidations(unittest.TestCase):
         with self.assertRaises(LongitudeNotFloat) as e:
             constraint = GeoCodeConstraint()
             constraint.validate("1.2", "asasasas")
-        self.assertEqual(("asasasas",), e.exception.data)
+        self.assertEqual(("asaresasas",), e.exception.data)
 
     def test_latitude_should_be_between_minus_90_and_90(self):
         with self.assertRaises(LatitudeNotInRange) as e:
@@ -187,3 +187,15 @@ class TestLocationValidations(unittest.TestCase):
         self.assertEqual((90.0, 130.0), constraint.validate("   90 ", " 130  "))
 
 
+class TestRegexValidations(unittest.TestCase):
+
+    def test_should_validate_values_within_regex(self):
+        constraint = RegexConstraint(reg="^[A-Za-z0-9]+$")
+        self.assertEqual("Hello1", constraint.validate("Hello1"))
+
+    def test_should_throw_error_on_invalid_value(self):
+        constraint = RegexConstraint(reg="^[A-Za-z0-9]+$")
+        with self.assertRaises(RegexMismatchException):
+            constraint.validate("Hello 1")
+
+        

@@ -56,19 +56,19 @@ class TestIntegerValidations(unittest.TestCase):
 
 class TestTextValidations(unittest.TestCase):
     def test_should_return_min_max_as_dictionary_for_integer(self):
-        expected_dict = {"min": 10, "max": 20}
+        expected_dict = ('length', {"min": 10, "max": 20})
         constraint = TextConstraint(min=10, max=20)
         actual_dict = constraint._to_json()
         self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_max_as_dictionary(self):
-        expected_dict = {"max": 20}
+        expected_dict = ('length', {'max': 20})
         constraint = TextConstraint(min=None, max=20)
         actual_dict = constraint._to_json()
         self.assertEqual(expected_dict, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
-        expected_dict = {"min": 1}
+        expected_dict = ('length', {'min': 1})
         constraint = TextConstraint(min=1)
         actual_dict = constraint._to_json()
         self.assertEqual(expected_dict, actual_dict)
@@ -158,7 +158,7 @@ class TestLocationValidations(unittest.TestCase):
         with self.assertRaises(LongitudeNotFloat) as e:
             constraint = GeoCodeConstraint()
             constraint.validate("1.2", "asasasas")
-        self.assertEqual(("asaresasas",), e.exception.data)
+        self.assertEqual(("asasasas",), e.exception.data)
 
     def test_latitude_should_be_between_minus_90_and_90(self):
         with self.assertRaises(LatitudeNotInRange) as e:
@@ -197,5 +197,11 @@ class TestRegexValidations(unittest.TestCase):
         constraint = RegexConstraint(reg="^[A-Za-z0-9]+$")
         with self.assertRaises(RegexMismatchException):
             constraint.validate("Hello 1")
+            
+    def test_should_return_valid_regex_dict(self):
+        pattern = "^[A-Za-z0-9]+$"
+        constraint = RegexConstraint(reg=pattern)
+        expected_json = ("regex", pattern)
+        self.assertEqual(expected_json, constraint._to_json())
 
         

@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.utils.types import is_empty
 
 from validate import is_string, is_float, VdtTypeError, VdtValueError
 
@@ -12,6 +13,7 @@ class ConstraintAttributes(object):
     MAX_LONG = 180
     MIN_LAT = -90
     MAX_LAT = 90
+    PATTERN = '_pattern'
 
 
 class NumericConstraint(object):
@@ -42,7 +44,7 @@ class TextConstraint(object):
             dict[ConstraintAttributes.MIN] = self.min
         if self.max is not None:
             dict[ConstraintAttributes.MAX] = self.max
-        return dict
+        return ("length", dict) if not is_empty(dict) else ()
 
     def validate(self, value):
         return is_string(value.strip(), min=self.min, max=self.max)
@@ -99,3 +101,6 @@ class RegexConstraint(object):
         if re.match(self._pattern, text):
             return text
         raise RegexMismatchException(self._pattern)
+
+    def _to_json(self):
+        return 'regex', self._pattern

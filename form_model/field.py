@@ -4,9 +4,9 @@ from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes, RegexConstraint
 
-from mangrove.utils.types import is_sequence
+from mangrove.utils.types import is_sequence, is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
 
 
@@ -199,22 +199,30 @@ class DateField(Field):
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
-    LENGTH = "length"
+    CONSTRAINTS = "constraints"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, code, label, ddtype, length=None, defaultValue=None, instruction=None,
+    def __init__(self, name, code, label, ddtype, constraints={}, defaultValue=None, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
+        assert isinstance(constraints, dict)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
-        self.constraint = length if length is not None else TextConstraint()
-        self._dict[self.LENGTH] = self.constraint._to_json()
+        self.constraints = constraints
+        if not is_empty(self.constraints):
+            for constraint in constraints.values():
+                constraint_type, constraint_data = constraint._to_json()
+                if constraint_data is not None:
+                    self._dict[self.CONSTRAINTS][constraint_type] = constraint_data
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
     def validate(self, value):
         try:
-            return self.constraint.validate(value)
+            value = value.strip()
+            for constraint in self.constraints.values():
+                constraint.validate(value)
+            return value
         except VdtValueTooLongError:
             raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtValueTooShortError:
@@ -223,6 +231,14 @@ class TextField(Field):
     @property
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
+
+    def _to_json_view(self):
+        json = self._to_json()
+        constraints = json.pop('constraints')
+        for name, constraint in constraints.items():
+            json[name] = constraint
+        return json
+
 
 
 class HierarchyField(Field):
@@ -307,11 +323,18 @@ class GeoCodeField(Field):
 
 
 def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction):
-    length_dict = dictionary.get("length")
-    length = TextConstraint(min=length_dict.get(ConstraintAttributes.MIN),
-                            max=length_dict.get(ConstraintAttributes.MAX))
+    constraints = dictionary.get("constraints")
+    constraints_dict = {}
+    if constraints is not None:
+        for constraint_type, constraint in constraints.items():
+            constraint_dict = constraints.get(constraint_type)
+            if constraint_type == 'length':
+                constraints_dict[constraint_type] = TextConstraint(min=constraint_dict.get(ConstraintAttributes.MIN),
+                                max=constraint_dict.get(ConstraintAttributes.MAX))
+            elif constraint_type == 'regex':
+                constraints_dict[constraint_type] = RegexConstraint(reg=constraint_dict.get(ConstraintAttributes.PATTERN))
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                     length=length, ddtype=ddtype, instruction=instruction)
+                     constraints=constraints_dict, ddtype=ddtype, instruction=instruction)
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):

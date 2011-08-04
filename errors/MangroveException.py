@@ -255,3 +255,7 @@ class SubmissionParseException(MangroveException):
 class MobileNumberMissing(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "Mobile number is missing", ('reg',))
+
+class RegexMismatchException(MangroveException):
+    def __init__(self, pattern):
+            MangroveException.__init__(self, "Patern should be %s", (pattern,))

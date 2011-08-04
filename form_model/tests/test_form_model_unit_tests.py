@@ -20,7 +20,7 @@ class TestFormModel(unittest.TestCase):
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
                               ddtype=self.ddtype_mock)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.ddtype_mock)
@@ -92,7 +92,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
-        expected_cleaned_data = {'ID': '1', "Q1": "My Name", "Q2": 40,
+        expected_cleaned_data = {'ID': '1', "Q1": "My Name", "Q2": 40.0,
                                  "Q3": ["RED"]}
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertTrue(len(errors) == 0)
@@ -130,7 +130,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_assert_activity_report(self):
 
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                         form_code="1", type='survey', fields=[question1])

@@ -67,7 +67,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(4, 15)),
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
@@ -115,7 +115,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(4, 15),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(4, 15)),
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)

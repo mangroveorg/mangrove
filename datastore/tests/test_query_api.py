@@ -717,35 +717,12 @@ class TestQueryApi(unittest.TestCase):
                                                aggregate_on=EntityAggregration(),
                                                aggregates=[Sum("patients"), Min('meds'), Max('beds'),Latest("director")],
                                                starttime="01-01-2011 00:00:00", endtime="31-12-2011 00:00:00")
-        #        values = aggregate_by_form_code_with_time_filter(dbm=self.manager, form_code='CL1', aggregate_on=EntityAggregration(),
-        #                                             aggregates={"director": data.reduce_functions.LATEST,
-        #                                                         "beds": data.reduce_functions.LATEST,
-        #                                                         "patients": data.reduce_functions.SUM,
-        #                                                         'meds': data.reduce_functions.MIN})
 
         self.assertEqual(len(values), 2)
         self.assertEqual(values[id1], {"patients": 30, 'meds': 10, 'beds': 300, 'director' : "Dr. A2"})
         self.assertEqual(values[id2], {"patients": 50, 'meds': 50, 'beds': 150, 'director' : "Dr. B1"})
 
-    #        self.assertEqual(values[id3], {"patients": 12, 'meds': 50})
-    #        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
-    #                                                         aggregate_on=EntityAggregration(),
-    #                                                         aggregates=[Sum("patients"), Min('meds')],
-    #                                                         starttime="")
-
-    #        self.assertEqual(values[id1], {"director": "Dr. A", "beds": 500, "patients": 30, 'meds': 20})
-    #        self.assertEqual(values[id2], {"director": "Dr. B2", "beds": 200, "patients": 70, 'meds': 250})
-    #        self.assertEqual(values[id3], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds': 50})
-
-    #        values = data.aggregate_by_form_code(dbm=self.manager, form_code='CL2', aggregate_on=EntityAggregration(),
-    #                                             aggregates={"doctors": data.reduce_functions.MAX,
-    #                                                         "beds": data.reduce_functions.SUM,
-    #                                                         'patients': data.reduce_functions.AVG})
-    #
-    #        self.assertEqual(len(values), 2)
-    #        self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
-    #        self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
-
+    
     def test_aggregation_factory(self):
         test_object = aggregation_factory("sum", "patients")
         self.assertEquals(6, test_object.reduce([1,2,3]))

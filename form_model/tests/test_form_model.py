@@ -166,7 +166,7 @@ class TestFormModel(unittest.TestCase):
                 "type": "text",
                 "ddtype": self.default_ddtype.to_json(),
                 "code": "eid",
-                "length": {"min": 1, "max": 10},
+                "constraints":{"length": {"min": 1, "max": 10}},
                 },
                 {
                 "range": {
@@ -204,7 +204,7 @@ class TestFormModel(unittest.TestCase):
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
                             label="Entity being reported on", entity_question_flag=True,
-                            length=TextConstraint(min=1, max=10), ddtype=self.default_ddtype)
+                            constraints=dict(length=TextConstraint(min=1, max=10)), ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
                             range=NumericConstraint(min=0, max=10), ddtype=self.default_ddtype)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
@@ -268,7 +268,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", length=TextConstraint(5, 10),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.default_ddtype)

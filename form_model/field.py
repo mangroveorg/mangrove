@@ -234,9 +234,12 @@ class TextField(Field):
 
     def _to_json_view(self):
         json = self._to_json()
-        constraints = json.pop('constraints')
-        for name, constraint in constraints.items():
-            json[name] = constraint
+        try:
+            constraints = json.pop('constraints')
+            for name, constraint in constraints.items():
+                json[name] = constraint
+        except KeyError:
+            pass
         return json
 
 
@@ -327,12 +330,12 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     constraints_dict = {}
     if constraints is not None:
         for constraint_type, constraint in constraints.items():
-            constraint_dict = constraints.get(constraint_type)
+            constraint = constraints.get(constraint_type)
             if constraint_type == 'length':
-                constraints_dict[constraint_type] = TextConstraint(min=constraint_dict.get(ConstraintAttributes.MIN),
-                                max=constraint_dict.get(ConstraintAttributes.MAX))
-            elif constraint_type == 'regex':
-                constraints_dict[constraint_type] = RegexConstraint(reg=constraint_dict.get(ConstraintAttributes.PATTERN))
+                constraints_dict[constraint_type] = TextConstraint(min=constraint.get(ConstraintAttributes.MIN),
+                                max=constraint.get(ConstraintAttributes.MAX))
+            if constraint_type == 'regex':
+                constraints_dict[constraint_type] = RegexConstraint(reg=constraint)
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                      constraints=constraints_dict, ddtype=ddtype, instruction=instruction)
 

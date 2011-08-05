@@ -8,6 +8,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField
+from mangrove.form_model.validation import TextConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -350,6 +351,10 @@ def _construct_registration_form(manager):
     name_type = get_or_create_data_dict(manager, name='Name', slug='name', primitive_type='string')
     entity_id_type = get_or_create_data_dict(manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
 
+    #constraints on questionnaire
+    mobile_number_length = TextConstraint(max=15)
+    mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+    mobile_constraints = dict(length=mobile_number_length, regex=mobile_number_pattern)
     #Create registration questionnaire
 
     question1 = HierarchyField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
@@ -370,8 +375,7 @@ def _construct_registration_form(manager):
                           defaultValue="some default value", language="eng", ddtype=description_type, instruction="Describe your subject in more details (optional)")
     question7 = TextField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                           label="What is the mobile number associated with the subject?",
-                          defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number")
+                          defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number", constraints=mobile_constraints)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model
-

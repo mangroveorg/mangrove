@@ -6,7 +6,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
-from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException
+from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException
 from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
@@ -483,7 +483,7 @@ class TestField(unittest.TestCase):
         with self.assertRaises(GeoCodeFormatException):
             field.validate(lat_long_string=None)
 
-    def test_should_convert_field_list_to_string(self):
+    def test_should_convert_field_without_constraints_list_to_string(self):
         field1 = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
         test_string = field_to_json(field1)
         expected_string = {"code": "AA", "name": "Test", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text"}
@@ -500,6 +500,7 @@ class TestField(unittest.TestCase):
         regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
         constraints = {"length":length_constraint, "regex":regex_constraint}
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
+
         self.assertEqual(constraints, field.constraints)
 
     def test_should_validate_text_data_based_on_list_of_constraints(self):
@@ -507,7 +508,11 @@ class TestField(unittest.TestCase):
         regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
         constraints = {"length":length_constraint, "regex":regex_constraint}
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
+
         self.assertEqual('validatable', field.validate('validatable'))
+        self.assertRaises(RegexMismatchException,field.validate,'!alidatabl!')
+        self.assertRaises(AnswerTooShortException,field.validate,'val')
+        self.assertRaises(AnswerTooLongException,field.validate,'val11111111111111')
 
     def test_should_return_constraints_as_dict(self):
         length_constraint = TextConstraint(min=10, max=12)

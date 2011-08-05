@@ -261,7 +261,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             self.send_sms(text)
 
     def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
-        text = "reg +N buddy +T reporter +G 80 80 +M 1@23456"
+        text = "reg +N buddy +T reporter +G 80 80 +M 123456"
         self.send_sms(text)
         with self.assertRaises(MultipleReportersForANumberException):
             text = "reg +N buddy2 +T reporter +L 80 80 +M 123456"

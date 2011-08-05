@@ -491,8 +491,8 @@ class TestField(unittest.TestCase):
     def test_should_convert_field_with_constraints_to_json(self):
         constraints = {"length": (TextConstraint(min=10, max=12)), "regex": (RegexConstraint("^[A-Za-z0-9]+$"))}
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
-        expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text",
-                         "constraints":{"length":{'max':12, 'min':10}, "regex":"^[A-Za-z0-9]+$"}}
+        expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None, "label": {"eng": "question"}, "ddtype": {"test": "test"}, "type": "text",
+                         "length":{'max':12, 'min':10}, "regex":"^[A-Za-z0-9]+$"}
 
         self.assertEqual(expected_json, field_to_json(field))
 

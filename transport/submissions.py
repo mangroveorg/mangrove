@@ -93,12 +93,11 @@ class SubmissionHandler(object):
             phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
                 raise MobileNumberMissing()
-            actual_number = self._get_telephone_number(phone_number)
             try:
-                find_reporter_entity(self.dbm, actual_number)
+                find_reporter_entity(self.dbm, phone_number)
                 raise MultipleReportersForANumberException(from_number=phone_number)
             except NumberNotRegisteredException:
-                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = actual_number
+                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
 
     def _strip_decimals(self, number_as_given):
         return unicode(long(number_as_given))

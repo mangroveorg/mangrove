@@ -258,4 +258,4 @@ class MobileNumberMissing(MangroveException):
 
 class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
-            MangroveException.__init__(self, "Patern should be %s", (pattern,))
+            MangroveException.__init__(self, "Patern should be %s" % (pattern,))

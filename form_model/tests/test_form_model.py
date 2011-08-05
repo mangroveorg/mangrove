@@ -8,7 +8,7 @@ from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
 from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.validation import NumericConstraint, TextConstraint
+from mangrove.form_model.validation import NumericConstraint, TextConstraint, RegexConstraint
 
 
 class TestFormModel(unittest.TestCase):
@@ -29,9 +29,13 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
     def test_get_form_model(self):
-        e = self.dbm.get(self.form_model__id, FormModel)
-        self.assertTrue(e.id)
-        self.assertTrue(e.type == "survey")
+        form = self.dbm.get(self.form_model__id, FormModel)
+        self.assertTrue(form.id)
+        self.assertTrue(form.type == "survey")
+        constraints = form.fields[1].constraints
+        self.assertEqual( 10, constraints['length'].max)
+        self.assertEqual( 5, constraints['length'].min)
+        self.assertEqual( "\w+", constraints['regex'].pattern)
 
 
     def test_should_add_name_of_form_model(self):
@@ -268,7 +272,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10),regex = RegexConstraint("\w+")),
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericConstraint(min=15, max=120), ddtype=self.default_ddtype)

@@ -198,10 +198,9 @@ class TestRegexValidations(unittest.TestCase):
         with self.assertRaises(RegexMismatchException):
             constraint.validate("Hello 1")
             
-    def test_should_return_valid_regex_dict(self):
+    def test_should_return_valid_regex_json(self):
         pattern = "^[A-Za-z0-9]+$"
         constraint = RegexConstraint(reg=pattern)
-        expected_json = ("regex", pattern)
-        self.assertEqual(expected_json, constraint._to_json())
+        self.assertEqual(("regex", pattern), constraint._to_json())
 
         

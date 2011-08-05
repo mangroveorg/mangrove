@@ -483,17 +483,23 @@ class TestField(unittest.TestCase):
         with self.assertRaises(GeoCodeFormatException):
             field.validate(lat_long_string=None)
 
-    def test_should_convert_field_without_constraints_list_to_string(self):
-        field1 = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
-        test_string = field_to_json(field1)
-        expected_string = {"code": "AA", "name": "Test", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text"}
-        self.assertEqual(expected_string, test_string)
+    def test_should_convert_field_without_constraints_to_json(self):
+        field = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
+        expected_json = {"code": "AA", "name": "Test", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text"}
+        self.assertEqual(expected_json, field_to_json(field))
 
-    def test_should_convert_field_list_with_apostrophe_to_string(self):
-        field1 = TextField(name="Test's", code="AA", label="test", ddtype=self.ddtype)
-        test_string = field_to_json(field1)
-        expected_string = {"code": "AA", "name": "Test\'s", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text"}
-        self.assertEqual(expected_string, test_string)
+    def test_should_convert_field_with_constraints_to_json(self):
+        constraints = {"length": (TextConstraint(min=10, max=12)), "regex": (RegexConstraint("^[A-Za-z0-9]+$"))}
+        field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
+        expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text",
+                         "constraints":{"length":{'max':12, 'min':10}, "regex":"^[A-Za-z0-9]+$"}}
+
+        self.assertEqual(expected_json, field_to_json(field))
+
+    def test_should_convert_field_with_apostrophe_to_json(self):
+        field = TextField(name="Test's", code="AA", label="test", ddtype=self.ddtype)
+        expected_json = {"code": "AA", "name": "Test\'s", "defaultValue": "", "instruction": None, "label": {"eng": "test"}, "ddtype": {"test": "test"}, "type": "text"}
+        self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_create_text_field_with_multiple_constraints(self):
         length_constraint = TextConstraint(min=10, max=12)
@@ -514,12 +520,4 @@ class TestField(unittest.TestCase):
         self.assertRaises(AnswerTooShortException,field.validate,'val')
         self.assertRaises(AnswerTooLongException,field.validate,'val11111111111111')
 
-    def test_should_return_constraints_as_dict(self):
-        length_constraint = TextConstraint(min=10, max=12)
-        regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
-        constraints = {"length":length_constraint, "regex":regex_constraint}
-        field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
-        view_json = field._to_json_view()
-        self.assertEqual({'max':12, 'min':10}, view_json['length'])
-        self.assertEqual("^[A-Za-z0-9]+$", view_json['regex'])
 

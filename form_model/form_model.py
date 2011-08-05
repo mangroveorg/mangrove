@@ -341,6 +341,14 @@ def create_default_reg_form_model(manager):
     return form_model
 
 
+def _create_constraints_for_mobile_number():
+    #constraints on questionnaire
+    mobile_number_length = TextConstraint(max=15)
+    mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+    mobile_constraints = dict(length=mobile_number_length, regex=mobile_number_pattern)
+    return mobile_constraints
+
+
 def _construct_registration_form(manager):
     location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='string')
     geo_code_type = get_or_create_data_dict(manager, name='GeoCode Type', slug='geo_code', primitive_type='geocode')
@@ -350,12 +358,6 @@ def _construct_registration_form(manager):
                                                  primitive_type='string')
     name_type = get_or_create_data_dict(manager, name='Name', slug='name', primitive_type='string')
     entity_id_type = get_or_create_data_dict(manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
-
-    #constraints on questionnaire
-    mobile_number_length = TextConstraint(max=15)
-    mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
-    mobile_constraints = dict(length=mobile_number_length, regex=mobile_number_pattern)
-    #Create registration questionnaire
 
     question1 = HierarchyField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
                                label="What is associated subject type?",
@@ -375,7 +377,8 @@ def _construct_registration_form(manager):
                           defaultValue="some default value", language="eng", ddtype=description_type, instruction="Describe your subject in more details (optional)")
     question7 = TextField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                           label="What is the mobile number associated with the subject?",
-                          defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number", constraints=mobile_constraints)
+                          defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number", constraints=(
+            _create_constraints_for_mobile_number()))
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model

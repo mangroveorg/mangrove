@@ -102,5 +102,9 @@ class RegexConstraint(object):
             return text
         raise RegexMismatchException(self._pattern)
 
+    @property
+    def pattern(self):
+        return self._pattern
+
     def _to_json(self):
         return 'regex', self._pattern

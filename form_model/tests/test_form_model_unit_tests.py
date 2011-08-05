@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, MobileNumberMissing
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
 
@@ -49,6 +49,13 @@ class TestFormModel(unittest.TestCase):
         form = _construct_registration_form(self.dbm)
         field = form.get_field_by_code("T")
         self.assertIsNotNone(field)
+    
+    def test_registration_form_should_have_multiple_constraints_on_mobile(self):
+        form = _construct_registration_form(self.dbm)
+        field = form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
+        self.assertEqual(15, field.constraints["length"].max)
+        self.assertEqual("^[0-9]+$", field.constraints["regex"].pattern)
+
 
 
     def test_should_validate_for_valid_integer_value(self):

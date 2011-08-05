@@ -234,12 +234,11 @@ class TextField(Field):
 
     def _to_json_view(self):
         json = self._to_json()
-        try:
+
+        if 'constraints' in json:
             constraints = json.pop('constraints')
             for name, constraint in constraints.items():
                 json[name] = constraint
-        except KeyError:
-            pass
         return json
 
 

@@ -1,9 +1,16 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
-from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ConstraintTypeUnknownException
 from mangrove.utils.types import is_empty
 
 from validate import is_string, is_float, VdtTypeError, VdtValueError
+
+class ConstraintTypes(object):
+    REGEX = 'regex'
+    SELECT = 'select'
+    RANGE = 'range'
+    LENGTH = 'length'
+    GEO = 'geo'
 
 
 class ConstraintAttributes(object):
@@ -16,7 +23,7 @@ class ConstraintAttributes(object):
     PATTERN = '_pattern'
 
 
-class NumericConstraint(object):
+class NumericRangeConstraint(object):
     def __init__(self, min=None, max=None):
         self.min = min
         self.max = max
@@ -33,7 +40,7 @@ class NumericConstraint(object):
         return is_float(value, min=self.min, max=self.max)
 
 
-class TextConstraint(object):
+class TextLengthConstraint(object):
     def __init__(self, min=None, max=None):
         self.min = min
         self.max = max
@@ -108,3 +115,23 @@ class RegexConstraint(object):
 
     def _to_json(self):
         return 'regex', self._pattern
+
+
+
+constraint_for = {
+    ConstraintTypes.LENGTH : TextLengthConstraint,
+    ConstraintTypes.RANGE : NumericRangeConstraint,
+    ConstraintTypes.SELECT : ChoiceConstraint,
+    ConstraintTypes.GEO : GeoCodeConstraint,
+    ConstraintTypes.REGEX : RegexConstraint,
+
+}
+
+def create_constraint(constraints):
+    all_constraints={}
+    for type, definition in constraints.items():
+            try:
+                all_constraints[type] = constraint_for[type](definition)
+            except KeyError:
+                raise ConstraintTypeUnknownException(type)
+    return all_constraints

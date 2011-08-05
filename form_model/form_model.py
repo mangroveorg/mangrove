@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField
-from mangrove.form_model.validation import TextConstraint, RegexConstraint
+from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -343,7 +343,7 @@ def create_default_reg_form_model(manager):
 
 def _create_constraints_for_mobile_number():
     #constraints on questionnaire
-    mobile_number_length = TextConstraint(max=15)
+    mobile_number_length = TextLengthConstraint(max=15)
     mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
     mobile_constraints = dict(length=mobile_number_length, regex=mobile_number_pattern)
     return mobile_constraints

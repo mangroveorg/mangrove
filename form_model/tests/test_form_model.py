@@ -8,7 +8,7 @@ from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
 from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, RegexConstraint
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
 
 
 class TestFormModel(unittest.TestCase):
@@ -208,9 +208,9 @@ class TestFormModel(unittest.TestCase):
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
                             label="Entity being reported on", entity_question_flag=True,
-                            constraints=dict(length=TextConstraint(min=1, max=10)), ddtype=self.default_ddtype)
+                            constraints=dict(length=TextLengthConstraint(min=1, max=10)), ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
-                            range=NumericConstraint(min=0, max=10), ddtype=self.default_ddtype)
+                            range=NumericRangeConstraint(min=0, max=10), ddtype=self.default_ddtype)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype)
@@ -272,10 +272,10 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10),regex = RegexConstraint("\w+")),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10),regex = RegexConstraint("\w+")),
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.default_ddtype)
+                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.default_ddtype)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",

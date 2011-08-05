@@ -13,7 +13,7 @@ from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTy
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
-from mangrove.form_model.validation import NumericConstraint, TextConstraint
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.transport.submissions import SubmissionHandler, get_submissions_made_for_form
 from mangrove.datastore.datadict import DataDictType
@@ -67,10 +67,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(4, 15)),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(4, 15)),
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
+                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.stock_type)
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
@@ -115,10 +115,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(4, 15)),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(4, 15)),
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.stock_type)
+                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.stock_type)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()

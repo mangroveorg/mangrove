@@ -6,7 +6,7 @@ from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, MobileNumberMissing
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
-from mangrove.form_model.validation import NumericConstraint, TextConstraint
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 
 
 class TestFormModel(unittest.TestCase):
@@ -20,10 +20,10 @@ class TestFormModel(unittest.TestCase):
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10)),
                               ddtype=self.ddtype_mock)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericConstraint(min=15, max=120), ddtype=self.ddtype_mock)
+                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype_mock)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
@@ -137,7 +137,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_assert_activity_report(self):
 
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextConstraint(5, 10)),
+                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10)),
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                         form_code="1", type='survey', fields=[question1])

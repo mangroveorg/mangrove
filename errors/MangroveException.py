@@ -259,3 +259,8 @@ class MobileNumberMissing(MangroveException):
 class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
             MangroveException.__init__(self, "Patern should be %s" % (pattern,))
+
+
+class ConstraintTypeUnknownException(MangroveException):
+    def __init__(self, name):
+            MangroveException.__init__(self, "Unknown constraint type: %s" % (name,))

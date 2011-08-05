@@ -4,7 +4,7 @@ from _collections import defaultdict
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
-from mangrove.form_model.validation import NumericConstraint, TextConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes, RegexConstraint
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes, RegexConstraint
 
 from mangrove.utils.types import is_sequence, is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
@@ -156,7 +156,7 @@ class IntegerField(Field):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction)
 
-        self.constraint = range if range is not None else NumericConstraint()
+        self.constraint = range if range is not None else NumericRangeConstraint()
         self._dict[self.RANGE] = self.constraint._to_json()
 
     def validate(self, value):
@@ -331,7 +331,7 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
         for constraint_type, constraint in constraints.items():
             constraint = constraints.get(constraint_type)
             if constraint_type == 'length':
-                constraints_dict[constraint_type] = TextConstraint(min=constraint.get(ConstraintAttributes.MIN),
+                constraints_dict[constraint_type] = TextLengthConstraint(min=constraint.get(ConstraintAttributes.MIN),
                                 max=constraint.get(ConstraintAttributes.MAX))
             if constraint_type == 'regex':
                 constraints_dict[constraint_type] = RegexConstraint(reg=constraint)
@@ -341,7 +341,7 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
     range_dict = dictionary.get("range")
-    range = NumericConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+    range = NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                               max=range_dict.get(ConstraintAttributes.MAX))
     return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype, instruction=instruction)
 

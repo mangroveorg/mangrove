@@ -74,6 +74,7 @@ class EntityDocument(DocumentBase):
     centroid = ListField(FloatField())
     gr_id = TextField()
     short_code = TextField()
+    data=DictField()
 
     def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None):
         DocumentBase.__init__(self, id=id, document_type='Entity')

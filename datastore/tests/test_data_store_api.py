@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, define_type, get_all_entity_types, get_all_entities
+from mangrove.datastore.entity import Entity, define_type, get_all_entity_types, get_all_entities, get_by_short_code
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
@@ -13,10 +13,6 @@ from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 # Adaptor methods to old api
 def get(dbm, id):
     return dbm.get(id, Entity)
-
-
-def get_entities(dbm, ids):
-    return dbm.get_many(ids, Entity)
 
 
 class TestDataStoreApi(unittest.TestCase):
@@ -123,28 +119,10 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertEqual(saved[self.uuid].type_string, "clinic")
         self.dbm.delete(e2)
 
-    def _create_clinic_and_reporter(self):
-        clinic_entity = Entity(self.dbm, entity_type="clinic",
-                               location=["India", "MH", "Pune"])
-        clinic_entity.save()
-        reporter_entity = Entity(self.dbm, entity_type="reporter")
-        reporter_entity.save()
-        return clinic_entity, reporter_entity
-
     def test_add_data_record_to_entity(self):
-        clinic_entity, reporter = self._create_clinic_and_reporter()
-        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',
-                                description='Number of medications')
-        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string',
-                                   description='Name of doctor')
-        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string',
-                                     description='Name of facility')
-        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime',
-                                   description='Date of opening')
-        med_type.save()
-        doctor_type.save()
-        facility_type.save()
-        opened_type.save()
+        clinic_entity, clinic_entity_short_code, reporter, reporter_entity_short_code = self._create_clinic_and_reporter()
+
+        doctor_type, facility_type, med_type, opened_type = self._create_data_dict_type()
         data_record = [('meds', 20, med_type),
                 ('doc', "aroj", doctor_type),
                 ('facility', 'clinic', facility_type),
@@ -166,6 +144,23 @@ class TestDataStoreApi(unittest.TestCase):
             #self.assertTrue(dd_type._doc.unwrap() == DataDictDocument(saved.data[label]['type']))
         self.assertEqual(saved.event_time, datetime(2011, 01, 02, tzinfo=UTC))
         self.assertEqual(saved.submission['submission_id'], "123456")
+
+    def test_latest_value_are_stored_in_entity(self):
+        clinic_entity, clinic_shortcode, reporter_entity, reporter_entity_short_code = self._create_clinic_and_reporter()
+        doctor_type, facility_type, med_type, opened_type = self._create_data_dict_type()
+        data_record = [('meds', 30, med_type),
+                ('doc', "asif", doctor_type),
+                ('facility', 'clinic', facility_type),
+                ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
+        data_record_id = clinic_entity.add_data(data=data_record,
+                                                event_time=datetime(2011, 01, 02, tzinfo=UTC),
+                                                submission=dict(submission_id="123456"))
+        self.assertTrue(data_record_id is not None)
+        updated_clinic_entity = get_by_short_code(dbm=self.dbm, short_code=clinic_shortcode,
+                                                  entity_type=['clinic'])
+        self.assertEqual(30, updated_clinic_entity.data['meds']['value'])
+        self.assertEqual('asif', updated_clinic_entity.data['doc']['value'])
+        self.assertEqual('clinic', updated_clinic_entity.data['facility']['value'])
 
     def test_should_create_entity_from_document(self):
         existing = self.dbm.get(self.uuid, Entity)
@@ -305,3 +300,32 @@ class TestDataStoreApi(unittest.TestCase):
 
         self.assertEqual(4, len(all_entities))
         self.assertEqual([uuid], [e['id'] for e in all_entities if e['id'] == uuid])
+
+    def _create_data_dict_type(self):
+        med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',
+                                description='Number of medications')
+        doctor_type = DataDictType(self.dbm, name='Doctor', slug='doc', primitive_type='string',
+                                   description='Name of doctor')
+        facility_type = DataDictType(self.dbm, name='Facility', slug='facility', primitive_type='string',
+                                     description='Name of facility')
+        opened_type = DataDictType(self.dbm, name='Opened on', slug='opened_on', primitive_type='datetime',
+                                   description='Date of opening')
+        med_type.save()
+        doctor_type.save()
+        facility_type.save()
+        opened_type.save()
+        return doctor_type, facility_type, med_type, opened_type
+
+    def _create_clinic_and_reporter(self):
+        clinic_entity_short_code = 'clinic01'
+        clinic_entity = Entity(self.dbm, entity_type="clinic",
+                               location=["India", "MH", "Pune"], short_code=clinic_entity_short_code)
+        clinic_entity.save()
+        reporter_entity_short_code = 'reporter01'
+        reporter_entity = Entity(self.dbm, entity_type="reporter", short_code=reporter_entity_short_code)
+        reporter_entity.save()
+        return clinic_entity, clinic_entity_short_code, reporter_entity, reporter_entity_short_code
+
+
+def get_entities(dbm, ids):
+    return dbm.get_many(ids, Entity)

@@ -4,7 +4,7 @@ from mangrove.datastore.data import  LocationAggregration, LocationFilter, Entit
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
-from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value
+from mangrove.datastore.entity import Entity, get_all_entity_types, define_type, get_entities_by_value, create_entity
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField, SelectField
@@ -161,6 +161,51 @@ class TestQueryApi(unittest.TestCase):
     #        self.assertEqual(values[id1],{ "director" : "Dr. A", "beds" : 300, "patients" : 10})
     #        self.assertEqual(values[id2],{ "director" : "Dr. B1", "beds" : 100, "patients" : 50})
     #        self.assertEqual(values[id3],{ "director" : "Dr. C", "beds" : 200, "patients" : 12})
+
+    def test_should_fetch_latest_per_entity(self):
+        # Aggregate across all data records for each entity
+
+        # Setup: Create clinic entities
+        dd_types = self.create_datadict_types()
+        ENTITY_TYPE = ["Health_Facility", "Clinic"]
+        define_type(self.manager,ENTITY_TYPE)
+
+        # create entity 1 and add datarecord
+        clinic01 = 'cl01'
+        e =create_entity(self.manager, entity_type=ENTITY_TYPE, short_code=clinic01)
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+
+        clinic02 = 'cl02'
+        e = create_entity(self.manager, entity_type=ENTITY_TYPE, short_code=clinic02)
+
+
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        clinic03 = 'cl03'
+        e =create_entity(self.manager, entity_type=ENTITY_TYPE, short_code=clinic03)
+
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                ("director", "Dr. C", dd_types['director']), ("patients", 12, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC))
+
+        values = data.get_latest(self.manager, entity_type=ENTITY_TYPE)
+
+        self.assertEqual(values[clinic01], {"director": "Dr. A", "beds": 500, "patients": 20, 'meds':20})
+        self.assertEqual(values[clinic02], {"director": "Dr. B2", "beds": 200, "patients": 20, 'meds':400})
+        self.assertEqual(values[clinic03], {"director": "Dr. C", "beds": 200, "patients": 12, 'meds':50})
+
 
     def test_should_filter_aggregate_per_entity_for_a_location(self):
         dd_types = self.create_datadict_types()
@@ -705,7 +750,7 @@ class TestQueryApi(unittest.TestCase):
         test_object = aggregation_factory("sum", "patients")
         self.assertEquals(6, test_object.reduce([1,2,3]))
         self.assertEquals("patients", test_object.field_name)
-        
+
     def create_entity_instance(self, ENTITY_TYPE, location):
         e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)
         id1 = e.save()

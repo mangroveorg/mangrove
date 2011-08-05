@@ -38,7 +38,7 @@ class TestShortCode(unittest.TestCase):
         self.assertEqual(saved_entity.id, entity.id)
 
         with self.assertRaises(DataObjectAlreadyExists):
-            create_entity(self.dbm, entity_type=["Reporter"], short_code="ABC")
+            create_entity(self.dbm, entity_type=["reporter"], short_code="ABC")
 
         with self.assertRaises(EntityTypeDoesNotExistsException):
             create_entity(self.dbm, entity_type=["Dog"], short_code="ABC")

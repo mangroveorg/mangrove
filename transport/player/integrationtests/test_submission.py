@@ -36,7 +36,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.dbm = get_db_manager(database='mangrove-test')
         initializer.run(self.dbm)
         define_type(self.dbm, ["dog"])
-        self.entity_type = ["HealthFacility", "Clinic"]
+        self.entity_type = ["healthfacility", "clinic"]
         define_type(self.dbm, self.entity_type)
         self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
@@ -50,7 +50,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity = create_entity(self.dbm, entity_type=["HealthFacility", "Clinic"],
+        self.entity = create_entity(self.dbm, entity_type=self.entity_type,
                                     location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
 

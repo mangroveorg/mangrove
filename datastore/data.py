@@ -51,6 +51,21 @@ class LocationFilter(object):
         self.location = location
 
 
+def _load_entity_attributes(dbm, entity_type):
+    view_name = "get_entity_attributes"
+    startkey = [entity_type]
+    endkey = [entity_type, {}]
+    rows = dbm.load_all_rows_in_view(view_name, startkey=startkey,
+                                     endkey=endkey)
+    values = {}
+    for row in rows:
+        values[row.key[1]] = row.value
+    return values
+
+def get_latest(dbm, entity_type):
+    return _load_entity_attributes(dbm, entity_type)
+
+
 def aggregate(dbm, entity_type, aggregates=None, aggregate_on=None,
               filter=None, starttime=None, endtime=None):
     """

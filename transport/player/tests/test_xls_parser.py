@@ -89,11 +89,6 @@ class TestXlsParser(TestCase):
             self.assertEqual("clf1", form_code)
             self.assertEqual({u"id": u'CL002', u'beds': u'', u'director': u'Dr. B', u'meds': u'202'}, values)
 
-    def test_should_convert_int_to_long_before_converting_to_unicode_in_clean(self):
-        row = ['test_info', 2.66123321435e+11, 'testing']
-        expected_value = [u'test_info', u'266123321435', u'testing']
-        actual_value = self.parser._clean(row)
-        self.assertEqual(expected_value, actual_value)
 
     def tearDown(self):
         os.remove(self.file_name)

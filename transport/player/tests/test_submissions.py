@@ -248,3 +248,18 @@ class TestSubmissions(TestCase):
         self.assertIsNotNone(response.datarecord_id)
         self.assertIsNotNone(response.submission_id)
 
+    def test_should_convert_mobile_number_to_string(self):
+        actual_value = self.submission_handler._get_telephone_number(u'2.66123321435e+11')
+        expected_value = unicode(266123321435)
+        self.assertEqual(expected_value, actual_value)
+
+        actual_value = self.submission_handler._get_telephone_number(u'266123321')
+        expected_value = u'266123321'
+        self.assertEqual(expected_value, actual_value)
+
+
+
+    def test_should_strip_non_numbers_from_mobile_number(self):
+        actual_value = self.submission_handler._get_telephone_number(u'26554-2123')
+        expected_value = u'265542123'
+        self.assertEqual(expected_value, actual_value)

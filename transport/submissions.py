@@ -5,6 +5,7 @@ from mangrove.form_model.form_model import get_form_model_by_code, MOBILE_NUMBER
 from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException, MultipleReportersForANumberException, NumberNotRegisteredException, MobileNumberMissing
 from mangrove.transport.reporter import find_reporter_entity
 from mangrove.utils.types import is_string, sequence_to_str, is_empty
+from validate import is_float
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
@@ -99,7 +100,14 @@ class SubmissionHandler(object):
             except NumberNotRegisteredException:
                 submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = actual_number
 
+    def _strip_decimals(self, number_as_given):
+        return unicode(long(number_as_given))
+
     def _get_telephone_number(self, number_as_given):
+        try:
+            number_as_given = self._strip_decimals(is_float(number_as_given))
+        except Exception:
+            pass
         if number_as_given is not None:
             return "".join([num for num in number_as_given if num.isdigit()])
         return number_as_given

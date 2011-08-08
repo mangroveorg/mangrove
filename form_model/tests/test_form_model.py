@@ -256,7 +256,7 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
 
     def test_to_html(self):
-        expected_html ="""<input id=id_entity_question name=entity_question class=class_entity_question type="text"/><input id=id_question1_Name name=question1_Name class=class_question1_Name type="text"/><input id=id_Father's age name=Father's age class=class_Father's age type="text"/><select name="Color"><option value="1">RED</option><option value="2">YELLOW</option></select>"""
+        expected_html ="""<input id=id_entity_question name=entity_question class=class_entity_question type="text"/><input id=id_question1_Name name=question1_Name class=class_question1_Name type="text"/><input id=id_Father's age name=Father's age class=class_Father's age type="text"/><select name="Color" ><option value="1">RED</option><option value="2">YELLOW</option></select>"""
         self.assertEqual(expected_html, to_html(self.form_model))
 
     def _create_form_model(self):

@@ -283,7 +283,8 @@ class SelectField(Field):
         options_html = ""
         for option in self.options:
             options_html += '<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
-        return '<select name="%s">%s</select>' % (self.name, options_html)
+        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE'
+        return '<select name="%s" %s>%s</select>' % (self.name, multiple_select, options_html)
 
 
 class GeoCodeField(Field):

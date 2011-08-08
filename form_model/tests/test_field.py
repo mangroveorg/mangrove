@@ -124,6 +124,13 @@ class TestField(unittest.TestCase):
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
+    def test_should_convert_multiple_select_field_to_html(self):
+        field = SelectField(name="color", code="Q3", label="What is your favorite color",
+                            language="eng", options=[("RED", 1), ("YELLOW", 2), ('green', 3)], single_select_flag=False,
+                            ddtype=self.ddtype, instruction="test_instruction")
+        print field.to_html()
+        pass
+
     def test_should_add_label_for_french_language(self):
         expected_json = {
             "defaultValue": "some default value",

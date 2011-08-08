@@ -176,6 +176,11 @@ class XlsParser(object):
         return [unicode(value).strip().lower() for value in row], True
 
     def _clean(self, row):
+        for index in range(0,len(row)):
+            try:
+                row[index] = long(row[index])
+            except Exception:
+                pass
         return [unicode(value).strip() for value in row]
 
     def _is_empty(self, row):

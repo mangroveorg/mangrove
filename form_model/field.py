@@ -142,6 +142,8 @@ class Field(object):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
         self._dict[self.LABEL][language_to_add] = label
 
+    def to_html(self):
+        return '<input id=%s name=%s class=%s type="text"/>' % ('id_' + self.name, self.name, 'class_' + self.name)
 
 class IntegerField(Field):
     RANGE = "range"
@@ -276,6 +278,12 @@ class SelectField(Field):
         dict['choices'] = option_list
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
+
+    def to_html(self):
+        options_html = ""
+        for option in self.options:
+            options_html += '<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
+        return '<select name="%s">%s</select>' % (self.name, options_html)
 
 
 class GeoCodeField(Field):

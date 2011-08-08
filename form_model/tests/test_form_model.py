@@ -6,7 +6,7 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
-from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE, to_html
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -254,6 +254,10 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
+
+    def test_to_html(self):
+        expected_html ="""<input id=id_entity_question name=entity_question class=class_entity_question type="text"/><input id=id_question1_Name name=question1_Name class=class_question1_Name type="text"/><input id=id_Father's age name=Father's age class=class_Father's age type="text"/><select name="Color"><option value="1">RED</option><option value="2">YELLOW</option></select>"""
+        self.assertEqual(expected_html, to_html(self.form_model))
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]

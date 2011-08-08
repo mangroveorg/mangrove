@@ -367,3 +367,12 @@ def _construct_registration_form(manager):
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model
+
+
+
+def to_html(form_model):
+    html = ""
+    for field in form_model.fields:
+        html += field.to_html()
+
+    return html

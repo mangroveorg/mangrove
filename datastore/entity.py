@@ -18,7 +18,7 @@ ENTITY_TYPE_TREE = u'entity_type_tree'
 
 def _check_if_exists(dbm, entity_type, short_code):
     try:
-        existing_entity = get_by_short_code(dbm, short_code, entity_type)
+        get_by_short_code(dbm, short_code, entity_type)
         return True
     except DataObjectNotFound:
         return False
@@ -480,8 +480,8 @@ class Entity(DataObject):
         assert isinstance(label, DataDictType) or is_string(label)
         if isinstance(label, DataDictType):
             label = label.slug
-
-        return self.values({label: u'latest'})[label]
+        field = self.data.get(label)
+        return field.get('value') if field is not None else None
 
     def values(self, aggregation_rules, asof=None):
         """

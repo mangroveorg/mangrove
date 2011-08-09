@@ -6,7 +6,7 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
-from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE, to_html
+from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericConstraint, TextConstraint
 
@@ -256,8 +256,8 @@ class TestFormModel(unittest.TestCase):
         form_model2.save()
 
     def test_to_html(self):
-        expected_html ="""<input id=id_entity_question name=entity_question class=class_entity_question type="text"/><input id=id_question1_Name name=question1_Name class=class_question1_Name type="text"/><input id=id_Father's age name=Father's age class=class_Father's age type="text"/><select name="Color" ><option value="1">RED</option><option value="2">YELLOW</option></select>"""
-        self.assertEqual(expected_html, to_html(self.form_model))
+        expected_html ="""<tr><th><label for="id_id">entity_question: </label></th><td><input id="id_id" name="id" class="class_id" type="text"/></td></tr><tr><th><label for="id_q1">question1_Name: </label></th><td><input id="id_q1" name="q1" class="class_q1" type="text"/></td></tr><tr><th><label for="id_q2">Father's age: </label></th><td><input id="id_q2" name="q2" class="class_q2" type="text"/></td></tr><tr><th><label for="q3">Color</label></th><td><select name="q3" ><option value="1">RED</option><option value="2">YELLOW</option></select></td></tr>"""
+        self.assertEqual(expected_html, self.form_model.to_html())
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]

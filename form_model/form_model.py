@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from django.utils.safestring import mark_safe
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
@@ -278,6 +279,12 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
+    def to_html(self):
+        html = ""
+        for field in self.fields:
+            html += field.to_html()
+
+        return mark_safe(html)
 
 class FormSubmission(object):
     def _to_three_tuple(self):
@@ -368,11 +375,3 @@ def _construct_registration_form(manager):
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model
 
-
-
-def to_html(form_model):
-    html = ""
-    for field in form_model.fields:
-        html += field.to_html()
-
-    return html

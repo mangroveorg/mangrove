@@ -143,7 +143,10 @@ class Field(object):
         self._dict[self.LABEL][language_to_add] = label
 
     def to_html(self):
-        return '<input id=%s name=%s class=%s type="text"/>' % ('id_' + self.name, self.name, 'class_' + self.name)
+        field_code = self.code.lower()
+        id = 'id_' + field_code
+        return u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text"/></td></tr>' % (
+        id,self.name , id, field_code, 'class_' + field_code)
 
 class IntegerField(Field):
     RANGE = "range"
@@ -282,9 +285,11 @@ class SelectField(Field):
     def to_html(self):
         options_html = ""
         for option in self.options:
-            options_html += '<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
-        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE'
-        return '<select name="%s" %s>%s</select>' % (self.name, multiple_select, options_html)
+            options_html += u'<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
+        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE size="%s"' % (len(self.options))
+        field_code = self.code.lower()
+        return u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
+        field_code, self.name, field_code, multiple_select, options_html)
 
 
 class GeoCodeField(Field):

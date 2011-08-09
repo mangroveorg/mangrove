@@ -345,7 +345,7 @@ def _create_constraints_for_mobile_number():
     #constraints on questionnaire
     mobile_number_length = TextLengthConstraint(max=15)
     mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
-    mobile_constraints = dict(length=mobile_number_length, regex=mobile_number_pattern)
+    mobile_constraints = [mobile_number_length, mobile_number_pattern]
     return mobile_constraints
 
 

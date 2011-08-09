@@ -305,8 +305,8 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     constraints_json = dictionary.get("constraints")
     constraints = list()
     if constraints_json is not None:
-        for constraint_type, constraint in constraints_json.items():
-            constraint = constraints_json.get(constraint_type)
+        for constraint_dict in constraints_json:
+            constraint_type, constraint = constraint_dict.items()[0]
             if constraint_type == 'length':
                 constraints.append(TextLengthConstraint(min=constraint.get(ConstraintAttributes.MIN),
                                 max=constraint.get(ConstraintAttributes.MAX)))

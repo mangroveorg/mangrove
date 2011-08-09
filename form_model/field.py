@@ -67,11 +67,18 @@ class field_attributes(object):
 class Field(object):
 
     def __init__(self, type = "", name = "", code = "", label = '', ddtype = None, instruction='',
-                 language=field_attributes.DEFAULT_LANGUAGE):
+                 language=field_attributes.DEFAULT_LANGUAGE, constraints=[]):
         self._dict = {}
         assert ddtype is not None
         self._dict = {'name':name, 'type':type, 'code':code, 'ddtype':ddtype, 'instruction':instruction}
         self._dict['label'] = {language: label}
+        self.constraints = constraints
+        if not is_empty(constraints):
+            self._dict['constraints'] = []
+            for constraint in constraints:
+                constraint_json = constraint._to_json()
+                if not is_empty(constraint_json):
+                    self._dict['constraints'].append(constraint_json)
 
     @property
     def name(self):
@@ -182,15 +189,8 @@ class TextField(Field):
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
-        self.constraints = constraints
-        if not is_empty(constraints):
-            self._dict[self.CONSTRAINTS] = []
-            for constraint in constraints:
-                constraint_json = constraint._to_json()
-                if not is_empty(constraint_json):
-                    self._dict[self.CONSTRAINTS].append(constraint_json)
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 

@@ -33,9 +33,9 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(form.id)
         self.assertTrue(form.type == "survey")
         constraints = form.fields[1].constraints
-        self.assertEqual( 10, constraints['length'].max)
-        self.assertEqual( 5, constraints['length'].min)
-        self.assertEqual( "\w+", constraints['regex'].pattern)
+        self.assertEqual( 10, constraints[0].max)
+        self.assertEqual( 5, constraints[0].min)
+        self.assertEqual( "\w+", constraints[1].pattern)
 
 
     def test_should_add_name_of_form_model(self):
@@ -170,7 +170,7 @@ class TestFormModel(unittest.TestCase):
                 "type": "text",
                 "ddtype": self.default_ddtype.to_json(),
                 "code": "eid",
-                "constraints":{"length": {"min": 1, "max": 10}},
+                "constraints":[("length", {"min": 1, "max": 10})],
                 },
                 {
                 "range": {
@@ -208,7 +208,7 @@ class TestFormModel(unittest.TestCase):
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
                             label="Entity being reported on", entity_question_flag=True,
-                            constraints=dict(length=TextLengthConstraint(min=1, max=10)), ddtype=self.default_ddtype)
+                            constraints=[TextLengthConstraint(min=1, max=10)], ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
                             range=NumericRangeConstraint(min=0, max=10), ddtype=self.default_ddtype)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
@@ -272,7 +272,7 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10),regex = RegexConstraint("\w+")),
+                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10),RegexConstraint("\w+")],
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericRangeConstraint(min=15, max=120), ddtype=self.default_ddtype)

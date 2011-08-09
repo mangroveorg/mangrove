@@ -124,7 +124,7 @@ class Field(object):
         if 'constraints' in json:
             constraints = json.pop('constraints')
             for constraint in constraints:
-                json[constraint.items()[0][0]] = constraint.items()[0][1]
+                json[constraint[0]] = constraint[1]
         return json
 
 
@@ -303,7 +303,7 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     constraints = list()
     if constraints_json is not None:
         for constraint_dict in constraints_json:
-            constraint_type, constraint = constraint_dict.items()[0]
+            constraint_type, constraint = constraint_dict
             if constraint_type == 'length':
                 constraints.append(TextLengthConstraint(min=constraint.get(ConstraintAttributes.MIN),
                                 max=constraint.get(ConstraintAttributes.MAX)))

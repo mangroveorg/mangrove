@@ -51,7 +51,7 @@ class TextLengthConstraint(object):
             dict[ConstraintAttributes.MIN] = self.min
         if self.max is not None:
             dict[ConstraintAttributes.MAX] = self.max
-        return {"length": dict} if not is_empty(dict) else {}
+        return ("length", dict) if not is_empty(dict) else ()
 
     def validate(self, value):
         return is_string(value.strip(), min=self.min, max=self.max)
@@ -114,7 +114,7 @@ class RegexConstraint(object):
         return self._pattern
 
     def _to_json(self):
-        return {'regex': self._pattern}
+        return ('regex', self._pattern)
 
 
 

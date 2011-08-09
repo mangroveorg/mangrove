@@ -20,7 +20,7 @@ class TestFormModel(unittest.TestCase):
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10)),
+                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
                               ddtype=self.ddtype_mock)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype_mock)
@@ -53,8 +53,8 @@ class TestFormModel(unittest.TestCase):
     def test_registration_form_should_have_multiple_constraints_on_mobile(self):
         form = _construct_registration_form(self.dbm)
         field = form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
-        self.assertEqual(15, field.constraints["length"].max)
-        self.assertEqual("^[0-9]+$", field.constraints["regex"].pattern)
+        self.assertEqual(15, field.constraints[0].max)
+        self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
 
 
 
@@ -137,7 +137,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_assert_activity_report(self):
 
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=dict(length=TextLengthConstraint(5, 10)),
+                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                         form_code="1", type='survey', fields=[question1])

@@ -189,7 +189,7 @@ class TestField(unittest.TestCase):
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
-            "constraints":{ "length":{"min": 1, "max": 10}},
+            "constraints":[{"length":{"min": 1, "max": 10}}] ,
             "entity_field_flag": True,
             "ddtype": self.ddtype,
             "instruction": "some instruction"

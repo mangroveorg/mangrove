@@ -36,12 +36,12 @@ class TestField(unittest.TestCase):
             "name": "field1_Name",
             "instruction": "Answer is word or phrase",
             "code": "Q1",
-            "constraints": {"length": {"min": 1, "max": 20}},
+            "constraints": [{"length": {"min": 1, "max": 20}}],
             "type": "text",
             "ddtype": self.DDTYPE_JSON,
             }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          defaultValue="some default value", constraints={"length":TextLengthConstraint(1, 20)}, language="eng",
+                          defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)], language="eng",
                           ddtype=self.ddtype, instruction="Answer is word or phrase")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -196,9 +196,9 @@ class TestField(unittest.TestCase):
         }
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, TextField)
-        self.assertIsInstance(created_field.constraints["length"], TextLengthConstraint)
-        self.assertEqual(created_field.constraints["length"].max, 10)
-        self.assertEqual(created_field.constraints["length"].min, 1)
+        self.assertIsInstance(created_field.constraints[0], TextLengthConstraint)
+        self.assertEqual(created_field.constraints[0].max, 10)
+        self.assertEqual(created_field.constraints[0].min, 1)
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertEqual(created_field.label, {"eng": "What is your name"})
         self.assertEqual(created_field.instruction, "some instruction")
@@ -291,7 +291,7 @@ class TestField(unittest.TestCase):
 
     def test_successful_text_length_validation(self):
         field = TextField(name="Name", code="Q2", label="What is your Name",
-                          language="eng", constraints=dict(length=TextLengthConstraint(min=4, max=15)), ddtype=self.ddtype)
+                          language="eng", constraints=[TextLengthConstraint(min=4, max=15)], ddtype=self.ddtype)
         field1 = TextField(name="Name", code="Q2", label="What is your Name",
                            language="eng", ddtype=self.ddtype)
         valid_value = field.validate("valid")
@@ -302,7 +302,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_max_value(self):
         with self.assertRaises(AnswerTooLongException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                              language="eng", constraints={"length":TextLengthConstraint(min=1, max=4)}, ddtype=self.ddtype)
+                              language="eng", constraints=[TextLengthConstraint(min=1, max=4)], ddtype=self.ddtype)
             valid_value = field.validate("long_answer")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
@@ -310,7 +310,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                              language="eng", constraints={'length':TextLengthConstraint(min=15, max=120)}, ddtype=self.ddtype)
+                              language="eng", constraints=[TextLengthConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
@@ -381,7 +381,7 @@ class TestField(unittest.TestCase):
     def test_should_create_field_with_datadict_type(self):
         nameType = Mock(spec=DataDictType)
         field1 = TextField(name="Name", code="Q1", label="What is your Name",
-                           language="eng", constraints=dict(length=TextLengthConstraint(min=4, max=15)), ddtype=nameType)
+                           language="eng", constraints=[TextLengthConstraint(min=4, max=15)], ddtype=nameType)
         self.assertEqual(nameType, field1.ddtype)
 
         ageType = Mock(spec=DataDictType)
@@ -489,7 +489,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_convert_field_with_constraints_to_json(self):
-        constraints = {"length": (TextLengthConstraint(min=10, max=12)), "regex": (RegexConstraint("^[A-Za-z0-9]+$"))}
+        constraints = [TextLengthConstraint(min=10, max=12), RegexConstraint("^[A-Za-z0-9]+$")]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
         expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None, "label": {"eng": "question"}, "ddtype": {"test": "test"}, "type": "text",
                          "length":{'max':12, 'min':10}, "regex":"^[A-Za-z0-9]+$"}
@@ -504,7 +504,7 @@ class TestField(unittest.TestCase):
     def test_should_create_text_field_with_multiple_constraints(self):
         length_constraint = TextLengthConstraint(min=10, max=12)
         regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
-        constraints = {"length":length_constraint, "regex":regex_constraint}
+        constraints = [length_constraint, regex_constraint]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
 
         self.assertEqual(constraints, field.constraints)
@@ -512,7 +512,7 @@ class TestField(unittest.TestCase):
     def test_should_validate_text_data_based_on_list_of_constraints(self):
         length_constraint = TextLengthConstraint(min=10, max=12)
         regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
-        constraints = {"length":length_constraint, "regex":regex_constraint}
+        constraints = [length_constraint,regex_constraint]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
 
         self.assertEqual('validatable', field.validate('validatable'))

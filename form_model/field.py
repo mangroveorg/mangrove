@@ -66,56 +66,33 @@ class field_attributes(object):
 
 
 class Field(object):
-    NAME = "name"
-    LABEL = "label"
-    TYPE = "type"
-    CODE = "code"
-    DDTYPE = "ddtype"
-    LANGUAGE = "language"
-    INSTRUCTION = "instruction"
 
-    _DEFAULT_VALUES = {
-        NAME: "",
-        TYPE: "",
-        CODE: "",
-        DDTYPE: None,
-        INSTRUCTION: ''
-    }
-
-    _DEFAULT_LANGUAGE_SPECIFIC_VALUES = {
-        LABEL: {},
-        }
-
-    def __init__(self, **kwargs):
-        self._dict = defaultdict(dict)
-        assert kwargs.get(self.DDTYPE) is not None
-        for k, default_value in self._DEFAULT_VALUES.items():
-            self._dict[k] = kwargs.get(k, default_value)
-
-        for k, default_langauge_specific_value in self._DEFAULT_LANGUAGE_SPECIFIC_VALUES.items():
-            a = kwargs.get(field_attributes.LANGUAGE, field_attributes.DEFAULT_LANGUAGE)
-            language_dict = {a: kwargs.get(k)}
-            self._dict[k] = language_dict
+    def __init__(self, type = "", name = "", code = "", label = '', ddtype = None, instruction='',
+                 language=field_attributes.DEFAULT_LANGUAGE):
+        self._dict = {}
+        assert ddtype is not None
+        self._dict = {'name':name, 'type':type, 'code':code, 'ddtype':ddtype, 'instruction':instruction}
+        self._dict['label'] = {language: label}
 
     @property
     def name(self):
-        return self._dict.get(self.NAME)
+        return self._dict.get("name")
 
     @property
     def label(self):
-        return self._dict.get(self.LABEL)
+        return self._dict.get('label')
 
     @property
     def type(self):
-        return self._dict.get(self.TYPE)
+        return self._dict.get('type')
 
     @property
     def code(self):
-        return self._dict.get(self.CODE)
+        return self._dict.get('code')
 
     @property
     def instruction(self):
-        return self._dict.get(self.INSTRUCTION)
+        return self._dict.get('instruction')
 
     @property
     def is_entity_field(self):
@@ -123,15 +100,15 @@ class Field(object):
 
     @property
     def ddtype(self):
-        return self._dict.get(self.DDTYPE)
+        return self._dict.get('ddtype')
 
     @property
     def language(self):
-        return self._dict.get(self.LANGUAGE) or field_attributes.DEFAULT_LANGUAGE
+        return self._dict.get('language') or field_attributes.DEFAULT_LANGUAGE
 
     def _to_json(self):
         dict = self._dict.copy()
-        dict['instruction'] = self._dict[self.INSTRUCTION]
+        dict['instruction'] = self._dict['instruction']
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
@@ -140,7 +117,7 @@ class Field(object):
 
     def add_or_edit_label(self, label, language=None):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
-        self._dict[self.LABEL][language_to_add] = label
+        self._dict['label'][language_to_add] = label
 
     def to_html(self):
         field_code = self.code.lower()
@@ -210,6 +187,7 @@ class TextField(Field):
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         self.constraints = constraints
         if not is_empty(self.constraints):
+            self._dict[self.CONSTRAINTS] = {}
             for constraint in constraints.values():
                 constraint_type, constraint_data = constraint._to_json()
                 if constraint_data is not None:

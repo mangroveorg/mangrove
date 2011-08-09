@@ -119,7 +119,14 @@ class Field(object):
         return dict
 
     def _to_json_view(self):
-        return self._to_json()
+        json = self._to_json()
+
+        if 'constraints' in json:
+            constraints = json.pop('constraints')
+            for constraint in constraints:
+                json[constraint.items()[0][0]] = constraint.items()[0][1]
+        return json
+
 
     def add_or_edit_label(self, label, language=None):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
@@ -208,16 +215,6 @@ class TextField(Field):
     @property
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
-
-    def _to_json_view(self):
-        json = self._to_json()
-
-        if 'constraints' in json:
-            constraints = json.pop('constraints')
-            for constraint in constraints:
-                json[constraint.items()[0][0]] = constraint.items()[0][1]
-        return json
-
 
 
 class HierarchyField(Field):

@@ -3,7 +3,7 @@
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
-from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, ConstraintAttributes, RegexConstraint
+from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
 from mangrove.utils.types import is_sequence, is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
@@ -292,31 +292,18 @@ class GeoCodeField(Field):
 
 
 def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction):
-    constraints_json = dictionary.get("constraints")
-    constraints = list()
+    constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
-        for constraint_dict in constraints_json:
-            constraint_type, constraint = constraint_dict
-            if constraint_type == 'length':
-                constraints.append(TextLengthConstraint(min=constraint.get(ConstraintAttributes.MIN),
-                                max=constraint.get(ConstraintAttributes.MAX)))
-            if constraint_type == 'regex':
-                constraints.append(RegexConstraint(reg=constraint))
+        constraints = constraints_factory(constraints_json)
 
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                      constraints=constraints, ddtype=ddtype, instruction=instruction)
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
-    constraint_list = dictionary.get('constraints')
-    range_dict = {}
-    constraints = []
+    constraints, constraint_list =[], dictionary.get('constraints')
     if constraint_list is not None:
-        for constraint in constraint_list:
-            if constraint[0] == 'range':
-                range_dict = constraint[1]
-        constraints = [NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
-                                max=range_dict.get(ConstraintAttributes.MAX))]
+        constraints = constraints_factory(constraint_list)
     return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,constraints=constraints)
 
 

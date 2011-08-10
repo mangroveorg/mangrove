@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ConstraintTypeUnknownException
-from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, RegexConstraint, ConstraintTypes, ConstraintAttributes, create_constraint
+from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, RegexConstraint, ConstraintTypes, ConstraintAttributes, constraints_factory
 from mangrove.utils.types import is_empty
 from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -206,20 +206,20 @@ class TestRegexValidations(unittest.TestCase):
 class TestCreationOfConstraints(unittest.TestCase):
 
     def test_should_create_a_constraint_dictionary(self):
-        constraint_info = {
-            ConstraintTypes.LENGTH: {ConstraintAttributes.MIN: 10, ConstraintAttributes.MAX: 20},
-            ConstraintTypes.REGEX:"^\w"
-        }
-        constraints = create_constraint(constraint_info)
-        self.assertTrue(constraints[ConstraintTypes.LENGTH] is not None)
-        self.assertTrue(constraints[ConstraintTypes.REGEX] is not None)
+        constraint_info = [
+            (ConstraintTypes.LENGTH, {ConstraintAttributes.MIN: 10, ConstraintAttributes.MAX: 20}),
+            (ConstraintTypes.REGEX,"^\w")
+        ]
+        constraints = constraints_factory(constraint_info)
+        self.assertEqual(2, len(constraints))
 
     def test_should_create_empty_constraint_dictionary_if_None(self):
-        constraint_info = {}
-        constraints = create_constraint(constraint_info)
-        self.assertEqual({},constraints)
+        constraint_info = []
+        constraints = constraints_factory(constraint_info)
+        self.assertEqual([],constraints)
 
     def test_should_throw_error_if_constraint_not_known(self):
-        constraint_info = {'nonsense': 'this should bomb'}
-        with self.assertRaises(ConstraintTypeUnknownException):
-            create_constraint(constraint_info)
+        constraint_info = [('nonsense', 'this should bomb'),('regex', '^$')]
+        constraints = constraints_factory(constraint_info)
+        self.assertEqual(1, len(constraints))
+        self.assertTrue(isinstance(constraints[0],RegexConstraint))

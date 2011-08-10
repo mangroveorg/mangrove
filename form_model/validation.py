@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
-from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ConstraintTypeUnknownException
+from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.utils.types import is_empty
 
 from validate import is_string, is_float, VdtTypeError, VdtValueError
@@ -24,9 +24,12 @@ class ConstraintAttributes(object):
 
 
 class NumericRangeConstraint(object):
-    def __init__(self, min=None, max=None):
+    def __init__(self, min=None, max=None, dict=None):
         self.min = min
         self.max = max
+        if dict is not None:
+            self.min = dict.get('min')
+            self.max = dict.get('max')
 
     def _to_json(self):
         dict = {}
@@ -40,10 +43,7 @@ class NumericRangeConstraint(object):
         return is_float(value, min=self.min, max=self.max)
 
 
-class TextLengthConstraint(object):
-    def __init__(self, min=None, max=None):
-        self.min = min
-        self.max = max
+class TextLengthConstraint(NumericRangeConstraint):
 
     def _to_json(self):
         dict = {}
@@ -56,9 +56,8 @@ class TextLengthConstraint(object):
     def validate(self, value):
         return is_string(value.strip(), min=self.min, max=self.max)
 
-
 class ChoiceConstraint(object):
-    def __init__(self, single_select_constraint, list_of_valid_choices, code):
+    def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
         self.single_select_constraint = single_select_constraint
         self.list_of_valid_choices = list_of_valid_choices
         self.code = code
@@ -101,8 +100,8 @@ class GeoCodeConstraint(object):
 
 class RegexConstraint(object):
 
-    def __init__(self, reg):
-        self._pattern = reg
+    def __init__(self, reg=None, dict=None):
+        self._pattern = dict if dict is not None else reg
 
     def validate(self, text):
         if re.match(self._pattern, text):
@@ -117,6 +116,13 @@ class RegexConstraint(object):
         return ('regex', self._pattern)
 
 
+def constraints_factory(constraints_json):
+    constraints = []
+    for constraint_type, constraint_json in constraints_json:
+        constraint_class = constraint_for.get(constraint_type)
+        if constraint_class is not None:
+            constraints.append(constraint_class(dict=constraint_json))
+    return constraints
 
 constraint_for = {
     ConstraintTypes.LENGTH : TextLengthConstraint,
@@ -126,12 +132,3 @@ constraint_for = {
     ConstraintTypes.REGEX : RegexConstraint,
 
 }
-
-def create_constraint(constraints):
-    all_constraints={}
-    for type, definition in constraints.items():
-            try:
-                all_constraints[type] = constraint_for[type](definition)
-            except KeyError:
-                raise ConstraintTypeUnknownException(type)
-    return all_constraints

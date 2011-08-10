@@ -21,7 +21,7 @@ class TestFormSubmission(TestCase):
         question2 = TextField(name="Name", code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng", ddtype=self.ddtype2)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype3)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype3)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype4)
 

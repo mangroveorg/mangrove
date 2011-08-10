@@ -70,7 +70,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                               defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.stock_type)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
 
@@ -118,7 +118,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                               defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.stock_type)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()

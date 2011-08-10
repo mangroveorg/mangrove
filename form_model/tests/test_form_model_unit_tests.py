@@ -3,7 +3,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, MobileNumberMissing
+from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
@@ -23,7 +23,7 @@ class TestFormModel(unittest.TestCase):
                               defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
                               ddtype=self.ddtype_mock)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype_mock)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)

@@ -310,12 +310,14 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
     constraint_list = dictionary.get('constraints')
     range_dict = {}
-    for constraint in constraint_list:
-        if constraint[0] == 'range':
-            range_dict = constraint[1]
-    constraints = NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
-                              max=range_dict.get(ConstraintAttributes.MAX))
-    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,constraints=[constraints])
+    constraints = []
+    if constraint_list is not None:
+        for constraint in constraint_list:
+            if constraint[0] == 'range':
+                range_dict = constraint[1]
+        constraints = [NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+                                max=range_dict.get(ConstraintAttributes.MAX))]
+    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,constraints=constraints)
 
 
 def _get_date_field(code, ddtype, dictionary, label, name, instruction):

@@ -63,10 +63,10 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_add_integer_field_with_constraints(self):
         integer_question = self.dbm.get(self.form_model__id, FormModel).fields[2]
-        range_constraint = integer_question.range
+        range_constraint = integer_question.constraints[0]
         self.assertTrue(integer_question.name == "Father's age")
-        self.assertTrue(range_constraint.get("min"), 15)
-        self.assertTrue(range_constraint.get("max"), 120)
+        self.assertTrue(range_constraint.min, 15)
+        self.assertTrue(range_constraint.max, 120)
 
     def test_should_add_select1_field(self):
         select_question = self.dbm.get(self.form_model__id, FormModel).fields[3]
@@ -173,10 +173,10 @@ class TestFormModel(unittest.TestCase):
                 "constraints":[("length", {"min": 1, "max": 10})],
                 },
                 {
-                "range": {
+                "constraints":[('range', {
                     "max": 10,
                     "min": 0
-                },
+                })],
                 "label": {"eng": ""},
                 "type": "integer",
                 "ddtype": self.default_ddtype.to_json(),
@@ -210,7 +210,7 @@ class TestFormModel(unittest.TestCase):
                             label="Entity being reported on", entity_question_flag=True,
                             constraints=[TextLengthConstraint(min=1, max=10)], ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
-                            range=NumericRangeConstraint(min=0, max=10), ddtype=self.default_ddtype)
+                            constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
                              options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype)
@@ -275,7 +275,7 @@ class TestFormModel(unittest.TestCase):
                               defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10),RegexConstraint("\w+")],
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 range=NumericRangeConstraint(min=15, max=120), ddtype=self.default_ddtype)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",

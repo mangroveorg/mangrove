@@ -9,27 +9,27 @@ from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLong
 
 class TestIntegerValidations(unittest.TestCase):
     def test_should_return_min_max_as_dictionary_for_integer(self):
-        expected_dict = {"min": 10, "max": 20}
+        expected_value = ('range', {"min": 10, "max": 20})
         constraint = NumericRangeConstraint(min=10, max=20)
-        actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict, actual_dict)
+        actual_value = constraint._to_json()
+        self.assertEqual(expected_value, actual_value)
 
     def test_should_return_max_as_dictionary(self):
-        expected_dict = {"max": 20}
+        expected_value = ('range', {"max": 20})
         constraint = NumericRangeConstraint(min=None, max=20)
-        actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict, actual_dict)
+        actual_value = constraint._to_json()
+        self.assertEqual(expected_value, actual_value)
 
     def test_should_return_min_as_dictionary(self):
-        expected_dict = {"min": 1}
+        expected_value = ('range', {"min": 1})
         constraint = NumericRangeConstraint(min=1)
-        actual_dict = constraint._to_json()
-        self.assertEqual(expected_dict, actual_dict)
+        actual_value = constraint._to_json()
+        self.assertEqual(expected_value, actual_value)
 
     def test_should_return_empty_dict_for_empty_integer_constraint(self):
-        constraint = NumericRangeConstraint()
-        actual_dict = constraint._to_json()
-        self.assertTrue(is_empty(actual_dict))
+        constraint = NumericRangeConstraint() #First off there should not be an empty NumericConstraint
+        actual_value = constraint._to_json()
+        self.assertTrue(is_empty(actual_value[1]))
 
     def test_should_validate_range(self):
         constraint = NumericRangeConstraint(min=10, max=20)

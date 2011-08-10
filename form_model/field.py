@@ -139,30 +139,23 @@ class Field(object):
         id,self.name , id, field_code, 'class_' + field_code)
 
 class IntegerField(Field):
-    RANGE = "range"
 
-    def __init__(self, name, code, label, ddtype, range=None, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, ddtype, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE, constraints=[]):
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
-
-        self.constraint = range if range is not None else NumericRangeConstraint()
-        self._dict[self.RANGE] = self.constraint._to_json()
+                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
 
     def validate(self, value):
         try:
-            return self.constraint.validate(value)
+            for constraint in self.constraints:
+                 constraint.validate(value)
+            return float(value)
         except VdtValueTooBigError:
             raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtValueTooSmallError:
             raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtTypeError:
             raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE], value)
-
-    @property
-    def range(self):
-        return self._dict.get(self.RANGE)
-
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
@@ -315,10 +308,14 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
-    range_dict = dictionary.get("range")
-    range = NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
+    constraint_list = dictionary.get('constraints')
+    range_dict = {}
+    for constraint in constraint_list:
+        if constraint[0] == 'range':
+            range_dict = constraint[1]
+    constraints = NumericRangeConstraint(min=range_dict.get(ConstraintAttributes.MIN),
                               max=range_dict.get(ConstraintAttributes.MAX))
-    return IntegerField(name=name, code=code, label=label, range=range, ddtype=ddtype, instruction=instruction)
+    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,constraints=[constraints])
 
 
 def _get_date_field(code, ddtype, dictionary, label, name, instruction):

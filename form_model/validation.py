@@ -34,7 +34,7 @@ class NumericRangeConstraint(object):
             dict[ConstraintAttributes.MIN] = self.min
         if self.max is not None:
             dict[ConstraintAttributes.MAX] = self.max
-        return dict
+        return ('range', dict)
 
     def validate(self, value):
         return is_float(value, min=self.min, max=self.max)

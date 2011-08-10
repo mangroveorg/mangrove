@@ -1,6 +1,4 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
-import json
-
 import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
@@ -66,7 +64,6 @@ class TestField(unittest.TestCase):
             "label": {"eng": "What is your age"},
             "name": "Age",
             "code": "Q2",
-            "range": {},
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
             "instruction": "test_instruction"
@@ -81,13 +78,13 @@ class TestField(unittest.TestCase):
             "label": {"eng": "What is your age"},
             "name": "Age",
             "code": "Q2",
-            "range": {"min": 15, "max": 120},
+            "constraints": [('range',{"min": 15, "max": 120})],
             "ddtype": self.DDTYPE_JSON,
             "type": "integer",
             "instruction": "test_instruction"
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="eng", range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype,
+                             language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype,
                              instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -212,15 +209,15 @@ class TestField(unittest.TestCase):
             "code": "Q1",
             "type": "integer",
             "ddtype": self.DDTYPE_JSON,
-            "range": {"min": 0, "max": 100},
+            'constraints':[("range", {"min": 0, "max": 100})],
             "entity_field_flag": False
         }
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, IntegerField)
-        self.assertEqual(created_field._dict["range"], {"min": 0, "max": 100})
-        self.assertIsInstance(created_field.constraint, NumericRangeConstraint)
-        self.assertEqual(created_field.constraint.max, 100)
-        self.assertEqual(created_field.constraint.min, 0)
+        self.assertEqual(created_field._dict["constraints"][0][1], {"min": 0, "max": 100})
+        self.assertIsInstance(created_field.constraints[0], NumericRangeConstraint)
+        self.assertEqual(created_field.constraints[0].max, 100)
+        self.assertEqual(created_field.constraints[0].min, 0)
         self.assertEqual(created_field.ddtype, self.ddtype)
 
     def test_should_create_select_field_with_options(self):
@@ -260,7 +257,7 @@ class TestField(unittest.TestCase):
 
     def test_should_return_error_for_integer_range_validation(self):
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="eng", range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype)
+                             language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
         valid_value = field.validate("120")
         self.assertEqual(valid_value, 120)
         valid_value = field.validate("25.5")
@@ -269,14 +266,14 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_wrong_type_for_integer(self):
         with self.assertRaises(AnswerWrongType) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="eng", range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
             field.validate("asas")
         self.assertEqual(e.exception.message, "Answer asas for question Q2 is of the wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="eng", range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate(150)
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer 150 for question Q2 is greater than allowed.")
@@ -284,7 +281,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="eng", range=NumericRangeConstraint(min=15, max=120), ddtype=self.ddtype)
+                                 language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate(11)
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer 11 for question Q2 is smaller than allowed.")
@@ -386,7 +383,7 @@ class TestField(unittest.TestCase):
 
         ageType = Mock(spec=DataDictType)
         field2 = IntegerField(name="Age", code="Q2", label="What is your age",
-                              language="eng", range=NumericRangeConstraint(min=4, max=15), ddtype=ageType)
+                              language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=ageType)
         self.assertEqual(ageType, field2.ddtype)
 
         selectType = Mock(spec=DataDictType)

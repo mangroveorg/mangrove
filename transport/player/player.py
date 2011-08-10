@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import time
+from datawinners.location.LocationTree import get_location_tree
 from mangrove.datastore import entity
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
@@ -7,6 +8,7 @@ from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
 from mangrove.transport.submissions import  SubmissionRequest
 from mangrove.utils.types import is_empty
+
 
 
 class Channel(object):
@@ -78,6 +80,8 @@ class Player(object):
         self.dbm = dbm
         self.submission_handler = submission_handler
         self.location_tree = location_tree
+        if self.location_tree is None:
+            self.location_tree=get_location_tree()
 
     def submit(self, dbm, submission_handler, transportInfo, form_code, values, reporter_entity=None):
         self._handle_registration_form(dbm, form_code, values)
@@ -126,7 +130,7 @@ class Player(object):
 
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, submission_handler, location_tree):
+    def __init__(self, dbm, submission_handler, location_tree=None):
         Player.__init__(self, dbm, submission_handler, location_tree)
 
     def _parse(self, request):
@@ -143,7 +147,7 @@ class SMSPlayer(Player):
 
 
 class WebPlayer(Player):
-    def __init__(self, dbm, submission_handler, location_tree):
+    def __init__(self, dbm, submission_handler, location_tree=None):
         Player.__init__(self, dbm, submission_handler, location_tree)
 
 
@@ -160,7 +164,7 @@ class WebPlayer(Player):
 
 
 class CsvPlayer(Player):
-    def __init__(self, dbm, submission_handler, parser, location_tree):
+    def __init__(self, dbm, submission_handler, parser, location_tree=None):
         Player.__init__(self, dbm, submission_handler, location_tree)
         self.parser = parser
 
@@ -184,7 +188,7 @@ class CsvPlayer(Player):
 
 
 class XlsPlayer(Player):
-    def __init__(self, dbm, submission_handler, parser, location_tree):
+    def __init__(self, dbm, submission_handler, parser, location_tree=None):
         Player.__init__(self, dbm, submission_handler, location_tree)
         self.parser = parser
 

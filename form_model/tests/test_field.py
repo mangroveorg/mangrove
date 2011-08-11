@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -517,4 +517,70 @@ class TestField(unittest.TestCase):
         self.assertRaises(AnswerTooShortException,field.validate,'val')
         self.assertRaises(AnswerTooLongException,field.validate,'val11111111111111')
 
+    def test_telephone_number_field_should_return_expected_json(self):
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+        expected_json = {
+            "label": {"eng": "question"},
+            "name": "test",
+            "code": "MC",
+            "ddtype": self.DDTYPE_JSON,
+            "type": "telephone_number",
+            "instruction": "",
+            "constraints": [('length', {'max': 15}), ('regex', '^[0-9]+$')],
+            'defaultValue': ''
+        }
+        self.assertEqual(expected_json, field._to_json())
+
+    def test_should_create_telephone_number_field_from_dictionary(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        field_json = {
+            "defaultValue": "",
+            "label": {"eng": "test"},
+            "name": "field1_Name",
+            "code": "Q1",
+            "type": "telephone_number",
+            "constraints":[("length",{"min": 1, "max": 10}), ('regex', '^[0-9]+$')] ,
+            "ddtype": self.ddtype,
+            "instruction": "some instruction"
+        }
+        created_field = field.create_question_from(field_json, self.dbm)
+
+        self.assertIsInstance(created_field, TelephoneNumberField)
+        self.assertIsInstance(created_field.constraints[0], TextLengthConstraint)
+        self.assertIsInstance(created_field.constraints[1], RegexConstraint)
+        self.assertEqual(created_field.constraints[0].max, 10)
+        self.assertEqual(created_field.constraints[0].min, 1)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertEqual(created_field.label, {"eng": "test"})
+        self.assertEqual(created_field.instruction, "some instruction")
+
+    def test_telephone_number_should_clean_value_to_remove_only_hyphen_from_the_given_value(self):
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+
+        self.assertEqual('1234321122', field._clean('123-4321122'))
+        self.assertEqual('123dsasa4321122', field._clean('123dsasa4321122'))
+
+    def test_should_convert_text_in_epsilon_format_to_expanded_text(self):
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+
+        self.assertEqual(u'266123321435', field._clean(u'2.66123321435e+11'))
+
+    def test_telephone_number_should_clean_before_validate(self):
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+
+        self.assertEqual(u'266123321435', field.validate(u'2.66123321435e+11'))
+        self.assertEqual(u'266123321435', field.validate(u'266-123321435'))
+        self.assertEqual(u'266123321435', field.validate(u'266123321435.0'))        
 

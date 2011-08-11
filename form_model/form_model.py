@@ -7,7 +7,7 @@ from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException
-from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField
+from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -375,7 +375,7 @@ def _construct_registration_form(manager):
                              language="eng", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3")
     question6 = TextField(name=DESCRIPTION_FIELD, code=DESCRIPTION_FIELD_CODE, label="Describe the subject",
                           defaultValue="some default value", language="eng", ddtype=description_type, instruction="Describe your subject in more details (optional)")
-    question7 = TextField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
+    question7 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                           label="What is the mobile number associated with the subject?",
                           defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()))

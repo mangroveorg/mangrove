@@ -9,7 +9,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing, RegexMismatchException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
@@ -270,7 +270,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
     def test_should_throw_error_if_mobile_phone_is_in_weird_pattern(self):
         text = "reg +N buddy +T reporter +G 80 80 +M 1234@5678"
         response = self.send_sms(text)
-        assert(response.success is False)
+        self.assertFalse(response.success)
         self.assertTrue(response.errors.get('m') is not None)
 
     def test_should_throw_error_if_mobile_phone_is_too_long(self):
@@ -379,4 +379,3 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual([10, 10] ,dog.geometry.get("coordinates"))
         self.assertEqual(["ampizarantany"] ,dog.location_path)
-

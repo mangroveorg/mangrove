@@ -6,7 +6,7 @@ from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSm
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
 from mangrove.utils.types import is_sequence, is_empty
-from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
+from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
 
 
 def create_question_from(dictionary, dbm):
@@ -36,6 +36,8 @@ def create_question_from(dictionary, dbm):
         return _get_select_field(code, ddtype, dictionary, label, name, type, instruction=instruction)
     elif type == field_attributes.LIST_FIELD:
         return _get_list_field(name, code, label, ddtype, instruction=instruction)
+    elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
+        return _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction=instruction)
     return None
 
 
@@ -54,6 +56,7 @@ class field_attributes(object):
     INSTRUCTION = "instruction"
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
+    TELEPHONE_NUMBER_FIELD = "telephone_number"
     SELECT_FIELD = 'select1'
     LOCATION_FIELD = "geocode"
     DATE_FIELD = 'date'
@@ -209,6 +212,39 @@ class TextField(Field):
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
+class TelephoneNumberField(TextField):
+
+    def __init__(self, name, code, label, ddtype, constraints=[], defaultValue=None, instruction=None,
+                 language=field_attributes.DEFAULT_LANGUAGE):
+        assert isinstance(constraints, list)
+        TextField.__init__(self, name=name, code=code, label=label, language=language, ddtype=ddtype,
+                           instruction=instruction, constraints=constraints, defaultValue=defaultValue)
+        self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
+
+
+    def _strip_decimals(self, number_as_given):
+        return unicode(long(number_as_given))
+
+    def _clean_epsilon_format(self, value):
+        try:
+            value = self._strip_decimals(is_float(value))
+        except Exception:
+            pass
+        return value
+
+    def _clean_digits(self, value):
+        if value is not None:
+            return "".join([num for num in value if num != '-'])
+        return value
+
+    def _clean(self, value):
+        value = self._clean_epsilon_format(value)
+        return self._clean_digits(value)
+
+    def validate(self, value):
+        value = self._clean(value)
+        return super(TelephoneNumberField, self).validate(value)
+
 
 class HierarchyField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None,
@@ -298,6 +334,13 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
 
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                      constraints=constraints, ddtype=ddtype, instruction=instruction)
+
+def _get_telephone_number_field(code, ddtype, dictionary,label, name, instruction):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+
+    return TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype, instruction=instruction)
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):

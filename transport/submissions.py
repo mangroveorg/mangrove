@@ -89,15 +89,17 @@ class SubmissionHandler(object):
                                   processed_data=cleaned_data,is_registration = form.is_registration_form())
 
     def _validate_unique_phone_number_for_reporter(self, submission):
+        #Todo Ask aroj, when to clean for excel and removing the hyphen
         if submission.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and submission.form_model.is_registration_form():
             phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
                 raise MobileNumberMissing()
+            actual_number = self._get_telephone_number(phone_number)
             try:
-                find_reporter_entity(self.dbm, phone_number)
+                find_reporter_entity(self.dbm, actual_number)
                 raise MultipleReportersForANumberException(from_number=phone_number)
             except NumberNotRegisteredException:
-                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
+                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = actual_number
 
     def _strip_decimals(self, number_as_given):
         return unicode(long(number_as_given))

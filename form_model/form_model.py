@@ -280,12 +280,20 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
-    def to_html(self):
-        html = ""
-        for field in self.fields:
-            html += field.to_html()
+    def bind(self, submission):
+        self.submission = submission
 
-        return mark_safe(html)
+    def is_valid(self):
+        is_valid = True
+        for field in self.fields:
+            try:
+                field.set_value(self.submission[field.code.lower()])
+                field.validate(self.submission[field.code.lower()])
+            except MangroveException as ex:
+                field.errors.append(ex.message)
+                is_valid = False
+        return True if is_valid else False
+
 
 class FormSubmission(object):
     def _to_three_tuple(self):

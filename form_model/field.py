@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
+from django.utils.safestring import mark_safe
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
@@ -76,6 +77,8 @@ class Field(object):
         self._dict = {'name':name, 'type':type, 'code':code, 'ddtype':ddtype, 'instruction':instruction}
         self._dict['label'] = {language: label}
         self.constraints = constraints
+        self.errors = []
+        self.value = '' #FIXME Should be defaultValue
         if not is_empty(constraints):
             self._dict['constraints'] = []
             for constraint in constraints:
@@ -135,11 +138,17 @@ class Field(object):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
         self._dict['label'][language_to_add] = label
 
-    def to_html(self):
+    def set_value(self, value):
+        self.value = value
+
+    def _to_html(self):
         field_code = self.code.lower()
         id = 'id_' + field_code
-        return u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text"/></td></tr>' % (
-        id,self.name , id, field_code, 'class_' + field_code)
+        return mark_safe(u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text" value="%s"/></td></tr>' % (
+        id,self.name , id, field_code, 'class_' + field_code, self.value))
+
+    def to_str(self):
+        return self._to_html()
 
 class IntegerField(Field):
 
@@ -196,6 +205,7 @@ class TextField(Field):
         self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
+        self.value = defaultValue
 
     def validate(self, value):
         try:
@@ -311,8 +321,8 @@ class SelectField(Field):
             options_html += u'<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
         multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE size="%s"' % (len(self.options))
         field_code = self.code.lower()
-        return u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
-        field_code, self.name, field_code, multiple_select, options_html)
+        return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
+        field_code, self.name, field_code, multiple_select, options_html))
 
 
 class GeoCodeField(Field):

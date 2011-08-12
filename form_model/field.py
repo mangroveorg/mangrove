@@ -226,6 +226,8 @@ class TelephoneNumberField(TextField):
         return unicode(long(number_as_given))
 
     def _clean_epsilon_format(self, value):
+        if value.startswith('0'):
+            return value
         try:
             value = self._strip_decimals(is_float(value))
         except Exception:

@@ -582,5 +582,18 @@ class TestField(unittest.TestCase):
 
         self.assertEqual(u'266123321435', field.validate(u'2.66123321435e+11'))
         self.assertEqual(u'266123321435', field.validate(u'266-123321435'))
-        self.assertEqual(u'266123321435', field.validate(u'266123321435.0'))        
+        self.assertEqual(u'266123321435', field.validate(u'266123321435.0'))
+
+    def test_telephone_number_should_not_trim_the_leading_zeroes(self):
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[], instruction='')
+        self.assertEqual(u'020', field.validate(u'020'))
+
+    def test_should_raise_regex_mismatch_exception_if_invalid_phone_number(self):
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+        with self.assertRaises(RegexMismatchException):
+            field.validate(u'020321dsa')
 

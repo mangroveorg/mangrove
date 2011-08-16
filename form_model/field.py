@@ -147,7 +147,7 @@ class Field(object):
         return mark_safe(u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text" value="%s"/></td></tr>' % (
         id,self.name , id, field_code, 'class_' + field_code, self.value))
 
-    def to_str(self):
+    def __unicode__(self):
         return self._to_html()
 
 class IntegerField(Field):
@@ -323,6 +323,9 @@ class SelectField(Field):
         field_code = self.code.lower()
         return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
         field_code, self.name, field_code, multiple_select, options_html))
+
+    def __unicode__(self):
+        return self.to_html()
 
 
 class GeoCodeField(Field):

@@ -259,10 +259,6 @@ class TestFormModel(unittest.TestCase):
         form_model2.form_code = "2"
         form_model2.save()
 
-    def test_to_html(self):
-        expected_html ="""<tr><th><label for="id_id">entity_question: </label></th><td><input id="id_id" name="id" class="class_id" type="text"/></td></tr><tr><th><label for="id_q1">question1_Name: </label></th><td><input id="id_q1" name="q1" class="class_q1" type="text"/></td></tr><tr><th><label for="id_q2">Father's age: </label></th><td><input id="id_q2" name="q2" class="class_q2" type="text"/></td></tr><tr><th><label for="q3">Color</label></th><td><select name="q3" ><option value="1">RED</option><option value="2">YELLOW</option></select></td></tr>"""
-        self.assertEqual(expected_html, self.form_model.to_html())
-
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.dbm, ["HealthFacility", "Clinic"])

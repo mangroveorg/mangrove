@@ -70,12 +70,13 @@ class field_attributes(object):
 
 class Field(object):
 
-    def __init__(self, type = "", name = "", code = "", label = '', ddtype = None, instruction='',
-                 language=field_attributes.DEFAULT_LANGUAGE, constraints=[]):
+    def __init__(self, type="", name="", code="", label='', ddtype=None, instruction='',
+                 language=field_attributes.DEFAULT_LANGUAGE, constraints=None):
+        if not constraints: constraints = []
         self._dict = {}
         assert ddtype is not None
-        self._dict = {'name':name, 'type':type, 'code':code, 'ddtype':ddtype, 'instruction':instruction}
-        self._dict['label'] = {language: label}
+        self._dict = {'name': name, 'type': type, 'code': code, 'ddtype': ddtype, 'instruction': instruction,
+                      'label': {language: label}}
         self.constraints = constraints
         self.errors = []
         self.value = '' #FIXME Should be defaultValue
@@ -152,8 +153,9 @@ class Field(object):
 
 class IntegerField(Field):
 
-    def __init__(self, name, code, label, ddtype, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE, constraints=[]):
+    def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
+                 constraints=None):
+        if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
 
@@ -197,15 +199,15 @@ class TextField(Field):
     CONSTRAINTS = "constraints"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
-    def __init__(self, name, code, label, ddtype, constraints=[], defaultValue=None, instruction=None,
+    def __init__(self, name, code, label, ddtype, constraints=None, defaultValue="", instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
+        if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
-        self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
+        self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
-        self.value = defaultValue
 
     def validate(self, value):
         try:
@@ -224,8 +226,9 @@ class TextField(Field):
 
 class TelephoneNumberField(TextField):
 
-    def __init__(self, name, code, label, ddtype, constraints=[], defaultValue=None, instruction=None,
+    def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE):
+        if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, language=language, ddtype=ddtype,
                            instruction=instruction, constraints=constraints, defaultValue=defaultValue)
@@ -319,7 +322,7 @@ class SelectField(Field):
         options_html = ""
         for option in self.options:
             options_html += u'<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
-        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE size="%s"' % (len(self.options))
+        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options))
         field_code = self.code.lower()
         return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
         field_code, self.name, field_code, multiple_select, options_html))

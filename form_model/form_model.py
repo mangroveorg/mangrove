@@ -1,5 +1,4 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from django.utils.safestring import mark_safe
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
@@ -287,8 +286,11 @@ class FormModel(DataObject):
         is_valid = True
         for field in self.fields:
             try:
-                field.set_value(self.submission[field.code.lower()])
-                field.validate(self.submission[field.code.lower()])
+                answer = self.submission.get(field.code.lower())
+                if is_empty(answer):
+                    continue
+                field.set_value(answer)
+                field.validate(answer)
             except MangroveException as ex:
                 field.errors.append(ex.message)
                 is_valid = False

@@ -318,12 +318,19 @@ class SelectField(Field):
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
+    def _create_default_option(self):
+        SELECTED = 'selected="true"' if is_empty(self.value) else ''
+        options_html = u'<option value="" %s>--None--</option>' % (SELECTED,)
+        return options_html
+
+    def _get_option_select_text(self, option):
+        return 'selected="true"' if option['val'] in self.value else ""
+
     def to_html(self):
-        SELECTED ='selected = "true"' if is_empty(self.value) else ''
-        options_html = u'<option value="" %s>--None--</option>' % (SELECTED)
+        options_html = self._create_default_option()
         for option in self.options:
-            SELECTED ='selected = "true"' if option['val'] in self.value else ""
-            options_html += u'<option value="%s" %s>%s</option>' % (option['val'], SELECTED, option['text']['eng'], )
+            options_html += u'<option value="%s" %s>%s</option>' % (option['val'],
+                                                                        (self._get_option_select_text(option)), option['text']['eng'], )
         multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options) + 1)
         field_code = self.code.lower()
         return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (

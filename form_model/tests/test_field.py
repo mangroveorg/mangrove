@@ -123,7 +123,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(actual_json, expected_json)
 
     def test_should_convert_multiple_select_field_to_html(self):
-        exptected_html = """<tr><th><label for="q3">color</label></th><td><select name="q3" MULTIPLE class="multiple_select" size="4"><option value="" >--None--</option><option value="a" >RED</option><option value="b" >YELLOW</option><option value="c" >green</option></select></td></tr>"""
+        exptected_html = """<tr><th><label for="q3">color</label></th><td><select name="q3" MULTIPLE class="multiple_select" size="4"><option value="" selected="true">--None--</option><option value="a" >RED</option><option value="b" >YELLOW</option><option value="c" >green</option></select></td></tr>"""
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             language="eng", options=[("RED", 'a'), ("YELLOW", 'b'), ('green', 'c')], single_select_flag=False,
                             ddtype=self.ddtype, instruction="test_instruction")

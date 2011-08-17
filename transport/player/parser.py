@@ -65,9 +65,17 @@ class SMSParser(object):
 
 
 class WebParser(object):
+    def _remove_csrf_token(self, message):
+        if 'csrfmiddlewaretoken' in message:
+            message.pop('csrfmiddlewaretoken')
+
+    def _fetch_string_value(self, message):
+        return {code: "".join(value) for code, value in message.iteritems()}
+
     def parse(self, message):
         form_code = message.pop('form_code')
-        return form_code, message
+        self._remove_csrf_token(message)
+        return form_code, self._fetch_string_value(message)
 
 
 class CsvParser(object):

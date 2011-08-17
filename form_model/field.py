@@ -145,8 +145,8 @@ class Field(object):
     def _to_html(self):
         field_code = self.code.lower()
         id = 'id_' + field_code
-        return mark_safe(u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text" value="%s"/></td></tr>' % (
-        id,self.name , id, field_code, 'class_' + field_code, self.value))
+        return mark_safe(u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text" value="%s"/><label class="error">%s</label></td></tr>' % (
+        id,self.name , id, field_code, 'class_' + field_code, self.value, ",".join(self.errors)))
 
     def __unicode__(self):
         return self._to_html()
@@ -319,10 +319,12 @@ class SelectField(Field):
         return dict
 
     def to_html(self):
-        options_html = ""
+        SELECTED ='selected = "true"' if is_empty(self.value) else ''
+        options_html = u'<option value="" %s>--None--</option>' % (SELECTED)
         for option in self.options:
-            options_html += u'<option value="%s">%s</option>' % (option['val'], option['text']['eng'], )
-        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options))
+            SELECTED ='selected = "true"' if option['val'] in self.value else ""
+            options_html += u'<option value="%s" %s>%s</option>' % (option['val'], SELECTED, option['text']['eng'], )
+        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options) + 1)
         field_code = self.code.lower()
         return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
         field_code, self.name, field_code, multiple_select, options_html))

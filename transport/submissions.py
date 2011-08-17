@@ -25,7 +25,7 @@ class SubmissionRequest(object):
 
 
 class SubmissionResponse(object):
-    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None,is_registration=False):
+    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None,is_registration=False,bound_form=None):
         assert success is not None
         assert submission_id is not None
 
@@ -36,6 +36,7 @@ class SubmissionResponse(object):
         self.short_code = short_code
         self.processed_data = processed_data
         self.is_registration = is_registration
+        self.bound_form = bound_form
 
 
 class SubmissionHandler(object):
@@ -69,15 +70,19 @@ class SubmissionHandler(object):
 
         form = get_form_model_by_code(self.dbm, form_code)
 
+        form.bind(values)
+
         if form.entity_defaults_to_reporter():
             self._set_entity_short_code(request.reporter.short_code, values)
 
         try:
             cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values, submission_id)
-        except InactiveFormModelException:
+        except InactiveFormModelException as e:
+            e.bound_form = form
             self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
             raise
         except MangroveException as e:
+            e.bound_form = form
             self.logger.update_submission_log(submission_id=submission_id,status=False,errors = e.message, in_test_mode=form.is_in_test_mode())
             raise
 
@@ -85,7 +90,7 @@ class SubmissionHandler(object):
                                           status=status, errors=errors, in_test_mode=form.is_in_test_mode())
 
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
-                                  processed_data=cleaned_data,is_registration = form.is_registration_form())
+                                  processed_data=cleaned_data,is_registration = form.is_registration_form(), bound_form=form)
 
     def _validate_unique_phone_number_for_reporter(self, submission):
         if submission.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and submission.form_model.is_registration_form():

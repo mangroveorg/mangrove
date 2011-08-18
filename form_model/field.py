@@ -79,7 +79,7 @@ class Field(object):
                       'label': {language: label}}
         self.constraints = constraints
         self.errors = []
-        self.value = '' #FIXME Should be defaultValue
+        self.value = None
         if not is_empty(constraints):
             self._dict['constraints'] = []
             for constraint in constraints:
@@ -324,7 +324,7 @@ class SelectField(Field):
         return options_html
 
     def _get_option_select_text(self, option):
-        return 'selected="true"' if option['val'] in self.value else ""
+        return 'selected="true"' if not is_empty(self.value) and option['val'] in self.value else ""
 
     def to_html(self):
         options_html = self._create_default_option()

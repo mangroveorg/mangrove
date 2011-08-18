@@ -279,8 +279,17 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
+    def _case_insensitive_lookup(self, field):
+        try:
+            return self.submission[field.code.lower()]
+        except Exception:
+            return self.submission.get(field.code)
+
     def bind(self, submission):
         self.submission = submission
+        for field in self.fields:
+            answer = self._case_insensitive_lookup(field)
+            field.set_value(answer)
 
     def is_valid(self):
         is_valid = True

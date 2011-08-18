@@ -29,12 +29,7 @@ class TestFormModel(unittest.TestCase):
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[#        expected_short_code = "dog3"
-#        self.assertEqual(response.short_code, expected_short_code)
-#        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-#        self.assertEqual(b.short_code, expected_short_code)
-
-                    q1, q2, q3, q4, q5])
+                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5])
 
 
     def tearDown(self):
@@ -169,6 +164,23 @@ class TestFormModel(unittest.TestCase):
         answers = {"s": "1", "t": ["Reporter"]}
         form_submission = registration_form.validate_submission(answers)
         self.assertEqual(["reporter"], form_submission.entity_type)
+
+    def _case_insensitive_lookup(self, answers, field):
+
+        try:
+            return answers[field.code.lower()]
+        except Exception:
+            return answers.get(field.code)
+
+
+    def test_should_bind_form_to_submission(self):
+        answers = {"ID": "1", "q1": "Asif", "q2": "200", "q3": "1", "q4" : ""}
+        self.form_model.bind(answers)
+        self.assertEqual(answers, self.form_model.submission)
+        for field in self.form_model.fields:
+            self.assertEqual(self._case_insensitive_lookup(answers, field),field.value,"No match for field %s" % (field.code,))
+
+
 
 
 

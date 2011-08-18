@@ -281,7 +281,7 @@ class SelectField(Field):
                  single_select_flag=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
-        self.SINGLE_SELECT_FLAG = single_select_flag
+        self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction)
         self._dict[self.OPTIONS] = []
@@ -331,7 +331,7 @@ class SelectField(Field):
         for option in self.options:
             options_html += u'<option value="%s" %s>%s</option>' % (option['val'],
                                                                         (self._get_option_select_text(option)), option['text']['eng'], )
-        multiple_select = '' if self.SINGLE_SELECT_FLAG else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options) + 1)
+        multiple_select = '' if self.single_select_flag else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options) + 1)
         field_code = self.code.lower()
         return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
         field_code, self.name, field_code, multiple_select, options_html))

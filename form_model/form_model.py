@@ -159,6 +159,7 @@ class FormModel(DataObject):
             value = field.validate(answer)
             return True, value
         except MangroveException as e:
+            field.errors.append(e.message)
             return False, e.message
 
     def _find_code(self, answers, code):
@@ -279,31 +280,17 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
-    def _case_insensitive_lookup(self, field):
+    def _case_insensitive_lookup(self, code):
         try:
-            return self.submission[field.code.lower()]
+            return self.submission[code.lower()]
         except Exception:
-            return self.submission.get(field.code)
+            return self.submission.get(code)
 
     def bind(self, submission):
         self.submission = submission
         for field in self.fields:
-            answer = self._case_insensitive_lookup(field)
+            answer = self._case_insensitive_lookup(field.code)
             field.set_value(answer)
-
-    def is_valid(self):
-        is_valid = True
-        for field in self.fields:
-            try:
-                answer = self.submission.get(field.code.lower())
-                if is_empty(answer):
-                    continue
-                field.set_value(answer)
-                field.validate(answer)
-            except MangroveException as ex:
-                field.errors.append(ex.message)
-                is_valid = False
-        return True if is_valid else False
 
 
 class FormSubmission(object):

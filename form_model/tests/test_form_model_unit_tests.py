@@ -180,6 +180,31 @@ class TestFormModel(unittest.TestCase):
         for field in self.form_model.fields:
             self.assertEqual(self._case_insensitive_lookup(answers, field),field.value,"No match for field %s" % (field.code,))
 
+    def test_should_set_error_on_field_validation_failure(self):
+        answers = {"id": "1", "q1" : "ab" , "q2": "200"}
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(['Answer 200 for question Q2 is greater than allowed.'],self.form_model.get_field_by_code("q2").errors)
+        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'],self.form_model.get_field_by_code("q1").errors)
+
+    def test_should_not_set_error_if_validation_success(self):
+        answers = {"id": "1", "q1" : "abcdef" , "q2": "100"}
+        cleaned_answers, errors = self.form_model._is_valid(answers)
+        self.assertEqual(len(errors), 0)
+        for field in self.form_model.fields:
+            self.assertEqual([],field.errors)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

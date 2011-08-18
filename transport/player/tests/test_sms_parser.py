@@ -1,12 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from unittest import TestCase
-import os
-from mangrove.errors.MangroveException import  CSVParserInvalidHeaderFormatException,\
-    XlsParserInvalidHeaderFormatException, SubmissionParseException
-
-from mangrove.transport.player.parser import SMSParser, WebParser, CsvParser, XlsParser
-import xlwt
+from mangrove.errors.MangroveException import SubmissionParseException
+from mangrove.transport.player.parser import SMSParser, WebParser
 
 
 class TestSMSParser(TestCase):
@@ -74,13 +70,5 @@ class TestSMSParser(TestCase):
         form_code, values = self.sms_parser.parse("WP +ID 1 + ++ +NAME FirstName LastName ++ +AGE 10 ++ ")
         self.assertEqual({"id": "1", "name": "FirstName LastName", "age": "10"}, values)
         self.assertEqual("wp", form_code)
-
-
-    def test_should_return_form_code_and_message_as_dict(self):
-        parser = WebParser()
-        message = {'form_code': 'X1', 'q1': 'a1', 'q2': 'a2'}
-        form_code, values = parser.parse(message)
-        self.assertEquals(form_code, 'X1')
-        self.assertEquals(values, {'q1': 'a1', 'q2': 'a2'})
 
 

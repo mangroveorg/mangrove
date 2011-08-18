@@ -70,12 +70,15 @@ class WebParser(object):
             message.pop('csrfmiddlewaretoken')
 
     def _fetch_string_value(self, message):
-        return {code: "".join(value) for code, value in message.iteritems()}
+        return {code: self._to_str(value) for code, value in message.iteritems()}
 
     def parse(self, message):
         form_code = message.pop('form_code')
         self._remove_csrf_token(message)
         return form_code, self._fetch_string_value(message)
+
+    def _to_str(self, value):
+        return "".join(value) if value is not None else None
 
 
 class CsvParser(object):

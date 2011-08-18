@@ -232,7 +232,7 @@ class TestField(unittest.TestCase):
             "entity_field_flag": False}
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, SelectField)
-        self.assertEqual(created_field.SINGLE_SELECT_FLAG, False)
+        self.assertEqual(created_field.single_select_flag, False)
         self.assertEqual(created_field.ddtype, self.ddtype)
 
 
@@ -251,7 +251,7 @@ class TestField(unittest.TestCase):
                 {"text": {"eng": "world"}, "value": "c2"}]
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, SelectField)
-        self.assertEqual(created_field.SINGLE_SELECT_FLAG, True)
+        self.assertEqual(created_field.single_select_flag, True)
         self.assertEqual(created_field.options, expected_option_list)
         self.assertEqual(created_field.ddtype, self.ddtype)
 

@@ -296,10 +296,10 @@ class TestDataStoreApi(unittest.TestCase):
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Nasik"], short_code='cli004')
         uuid = e.save()
 
-        all_entities = get_all_entities(self.dbm)
+        all_entities = get_all_entities(self.dbm, True)
 
         self.assertEqual(4, len(all_entities))
-        self.assertEqual([uuid], [e['id'] for e in all_entities if e['id'] == uuid])
+        self.assertEqual([uuid], [e.id for e in all_entities if e.id == uuid])
 
     def _create_data_dict_type(self):
         med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',

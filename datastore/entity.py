@@ -207,8 +207,11 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
 
 def get_all_entities(dbm, include_docs=False):
-    return dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
+    rows =  dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
+    return [_from_row_to_entity(dbm, row) for row in rows]
 
+def _from_row_to_entity(dbm, row):
+    return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
 class Entity(DataObject):
     """

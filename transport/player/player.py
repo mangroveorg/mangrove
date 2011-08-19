@@ -6,7 +6,7 @@ from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatEx
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
-from mangrove.transport.submissions import  SubmissionRequest
+from mangrove.transport.submissions import  SubmissionRequest, SubmissionHandler
 from mangrove.utils.types import is_empty
 
 
@@ -77,12 +77,10 @@ def _generate_short_code_if_registration_form(dbm, form_model, values):
 
 class Player(object):
 
-    def __init__(self, dbm, submission_handler, location_tree):
+    def __init__(self, dbm, submission_handler=None, location_tree=None):
         self.dbm = dbm
-        self.submission_handler = submission_handler
-        self.location_tree = location_tree
-        if self.location_tree is None:
-            self.location_tree=get_location_tree()
+        self.submission_handler = SubmissionHandler(dbm) if submission_handler is None else submission_handler
+        self.location_tree = get_location_tree() if location_tree is None else location_tree
 
     def submit(self, dbm, submission_handler, transportInfo, form_code, values, reporter_entity=None):
         self._handle_registration_form(dbm, form_code, values)
@@ -148,7 +146,7 @@ class SMSPlayer(Player):
 
 
 class WebPlayer(Player):
-    def __init__(self, dbm, submission_handler, location_tree=None):
+    def __init__(self, dbm, submission_handler=None, location_tree=None):
         Player.__init__(self, dbm, submission_handler, location_tree)
 
 

@@ -1,9 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase
-from mock import Mock, patch
+from mock import Mock
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.entity import Entity
-from mangrove.transport.player.player import Request, TransportInfo, Player
+from mangrove.transport.player.player import   Player
 from mangrove.transport.submissions import SubmissionHandler
 
 

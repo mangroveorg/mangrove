@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 from mangrove.errors.MangroveException import SubmissionParseException
-from mangrove.transport.player.parser import SMSParser, WebParser
+from mangrove.transport.player.parser import SMSParser
 
 
 class TestSMSParser(TestCase):

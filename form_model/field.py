@@ -1,7 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from django.utils.safestring import mark_safe
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
@@ -141,15 +140,6 @@ class Field(object):
 
     def set_value(self, value):
         self.value = value
-
-    def _to_html(self):
-        field_code = self.code.lower()
-        id = 'id_' + field_code
-        return mark_safe(u'<tr><th><label for="%s">%s: </label></th><td><input id="%s" name="%s" class="%s" type="text" value="%s"/><label class="error">%s</label></td></tr>' % (
-        id,self.name , id, field_code, 'class_' + field_code, self.value, ",".join(self.errors)))
-
-    def __unicode__(self):
-        return self._to_html()
 
 class IntegerField(Field):
 
@@ -317,27 +307,6 @@ class SelectField(Field):
         dict['choices'] = option_list
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
-
-    def _create_default_option(self):
-        SELECTED = 'selected="true"' if is_empty(self.value) else ''
-        options_html = u'<option value="" %s>--None--</option>' % (SELECTED,)
-        return options_html
-
-    def _get_option_select_text(self, option):
-        return 'selected="true"' if not is_empty(self.value) and option['val'] in self.value else ""
-
-    def to_html(self):
-        options_html = self._create_default_option()
-        for option in self.options:
-            options_html += u'<option value="%s" %s>%s</option>' % (option['val'],
-                                                                        (self._get_option_select_text(option)), option['text']['eng'], )
-        multiple_select = '' if self.single_select_flag else 'MULTIPLE class="multiple_select" size="%s"' % (len(self.options) + 1)
-        field_code = self.code.lower()
-        return mark_safe(u'<tr><th><label for="%s">%s</label></th><td><select name="%s" %s>%s</select></td></tr>' % (
-        field_code, self.name, field_code, multiple_select, options_html))
-
-    def __unicode__(self):
-        return self.to_html()
 
 
 class GeoCodeField(Field):

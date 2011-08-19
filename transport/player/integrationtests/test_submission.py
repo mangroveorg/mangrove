@@ -108,8 +108,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "CLINIC-MADA")
-        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
-        self.assertEquals(data_record_id, submission_log.data_record_id)
 
     def test_should_save_submitted_sms_for_activity_report(self):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
@@ -138,8 +136,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         data = self.reporter.values({"Name": "latest", "Arv stock": "latest"})
         self.assertEquals(data["Arv stock"], 50)
         self.assertEquals(data["Name"], "tester")
-        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
-        self.assertEquals(data_record_id, submission_log.data_record_id)
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = "clinic +EID %s +ARV 150 " % self.entity.id

@@ -26,7 +26,7 @@ class SubmissionRequest(object):
 class SubmissionResponse(object):
     def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None,is_registration=False,bound_form=None):
         assert success is not None
-        assert submission_id is not None
+#        assert submission_id is not None
 
         self.success = success
         self.submission_id = submission_id
@@ -37,65 +37,6 @@ class SubmissionResponse(object):
         self.is_registration = is_registration
         self.bound_form = bound_form
 
-
-class SubmissionHandler(object):
-    def __init__(self, dbm):
-        assert isinstance(dbm, DatabaseManager)
-        self.dbm = dbm
-        self.logger = SubmissionLogger(self.dbm)
-
-
-    def accept(self, request):
-        assert isinstance(request, SubmissionRequest)
-        form_code = request.form_code
-        values = request.submission
-
-        submission_id = self.logger.create_submission_log(request)
-
-        form = get_form_model_by_code(self.dbm, form_code)
-
-        form.bind(values)
-
-        if form.entity_defaults_to_reporter():
-            self._set_entity_short_code(request.reporter.short_code, values)
-
-        try:
-            form_submission = self._submit(form, values, submission_id)
-        except InactiveFormModelException as e:
-            e.bound_form = form
-            self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
-            raise
-        except MangroveException as e:
-            e.bound_form = form
-            self.logger.update_submission_log(submission_id=submission_id,status=False,errors = e.message, in_test_mode=form.is_in_test_mode())
-            raise
-
-        self.logger.update_submission_log(submission_id=submission_id, data_record_id=form_submission.data_record_id,
-                                          status=form_submission.saved, errors=form_submission.errors, in_test_mode=form.is_in_test_mode())
-
-        return SubmissionResponse(form_submission.saved, submission_id, form_submission.errors, form_submission.data_record_id, short_code=form_submission.short_code,
-                                  processed_data=form_submission.cleaned_data,is_registration = form.is_registration_form(), bound_form=form)
-
-
-    def _submit(self, form, values, submission_id):
-        self._reject_submission_for_inactive_forms(form)
-
-        form_submission = form.validate_submission(values)
-
-        if form_submission.is_valid:
-            form_submission.save(self.dbm, submission_id)
-
-        return form_submission
-
-    def _should_accept_submission(self, form):
-        return form.is_inactive()
-
-    def _reject_submission_for_inactive_forms(self, form):
-        if self._should_accept_submission(form):
-            raise InactiveFormModelException(form.form_code)
-
-    def _set_entity_short_code(self, short_code, values):
-        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
 
 class SubmissionLogger(object):
     def __init__(self, dbm):

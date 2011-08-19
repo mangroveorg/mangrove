@@ -2,11 +2,11 @@
 import time
 from datawinners.location.LocationTree import get_location_tree
 from mangrove.datastore import entity
-from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
+from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException, InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
-from mangrove.transport.submissions import  SubmissionRequest, SubmissionHandler
+from mangrove.transport.submissions import  SubmissionRequest, SubmissionHandler, SubmissionLogger, SubmissionResponse, ENTITY_QUESTION_DISPLAY_CODE
 from mangrove.utils.types import is_empty
 
 
@@ -81,14 +81,62 @@ class Player(object):
         self.dbm = dbm
         self.submission_handler = SubmissionHandler(dbm) if submission_handler is None else submission_handler
         self.location_tree = get_location_tree() if location_tree is None else location_tree
+        self.logger = SubmissionLogger(self.dbm)
 
     def submit(self, dbm, submission_handler, transportInfo, form_code, values, reporter_entity=None):
         self._handle_registration_form(dbm, form_code, values)
         submission_request = SubmissionRequest(form_code=form_code, submission=values, transport=transportInfo.transport,
                                                source=transportInfo.source, destination=transportInfo.destination,
                                                reporter=reporter_entity)
-        submission_response = submission_handler.accept(submission_request)
-        return submission_response
+        submission_id = self.logger.create_submission_log(submission_request)
+        try:
+            submission_response = self._accept(submission_request,submission_id)
+            self.logger.update_submission_log(submission_id=submission_id, data_record_id=submission_response.datarecord_id,
+                                              status=submission_response.success, errors=submission_response.errors, in_test_mode=self.form.is_in_test_mode())
+
+            submission_response.submission_id = submission_id
+            return submission_response
+        except MangroveException as e:
+            self.logger.update_submission_log(submission_id=submission_id,status=False,errors = e.message, in_test_mode=self.form.is_in_test_mode())
+            raise
+
+
+    def _accept(self, request,submission_id):
+        assert isinstance(request, SubmissionRequest)
+        form_code = request.form_code
+        values = request.submission
+
+        self.form = get_form_model_by_code(self.dbm, form_code)
+        self.form.bind(values)
+        if self.form.entity_defaults_to_reporter():
+            self._set_entity_short_code(request.reporter.short_code, values)
+
+        form_submission = self._submit(self.form, values, submission_id)
+
+        return SubmissionResponse(form_submission.saved, submission_id, form_submission.errors, form_submission.data_record_id, short_code=form_submission.short_code,
+                                  processed_data=form_submission.cleaned_data,is_registration = self.form.is_registration_form(), bound_form=self.form)
+
+
+    def _submit(self, form, values, submission_id):
+        self._reject_submission_for_inactive_forms(form)
+
+        form_submission = form.validate_submission(values)
+
+        if form_submission.is_valid:
+            form_submission.save(self.dbm, submission_id)
+
+        return form_submission
+
+    def _should_accept_submission(self, form):
+        return form.is_inactive()
+
+    def _reject_submission_for_inactive_forms(self, form):
+        if self._should_accept_submission(form):
+            raise InactiveFormModelException(form.form_code)
+
+    def _set_entity_short_code(self, short_code, values):
+        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
+
 
     def _get_location_heirarchy_from_location_name(self, display_location):
         if is_empty(display_location):

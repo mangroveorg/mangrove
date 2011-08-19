@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException
+    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, NumberNotRegisteredException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -316,7 +316,17 @@ class FormSubmission(object):
         return self.form_model.form_code
 
     def save(self, dbm, submission_id):
+        self._validate_unique_phone_number_for_reporter(dbm)
         return self._save_data(self._get_entity(dbm), submission_id)
+
+    def _validate_unique_phone_number_for_reporter(self,dbm):
+        if self.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and self.form_model.is_registration_form():
+            phone_number = self.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
+            if is_empty(phone_number):
+                raise MobileNumberMissing()
+            if self._exists_reporter_with_phone_number(dbm, phone_number):
+                raise MultipleReportersForANumberException(from_number=phone_number)
+            self.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
 
     def _get_entity_type(self, form_model):
         if form_model.is_registration_form():
@@ -354,6 +364,16 @@ class FormSubmission(object):
         data_record_id = entity.add_data(data=self._values, submission=submission_information)
         return data_record_id
 
+#    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
+    def _exists_reporter_with_phone_number(self, dbm, phone_number):
+        from mangrove.datastore import data
+
+        reporters = data.aggregate(dbm, entity_type=[REPORTER],
+                                      aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST},
+                                      aggregate_on=data.EntityAggregration()
+                                               )
+        from_reporter_list = [{id: reporters[id]} for id in reporters if reporters[id].get(MOBILE_NUMBER_FIELD) == phone_number]
+        return len(from_reporter_list) > 0
 
 def create_default_reg_form_model(manager):
     form_model = _construct_registration_form(manager)

@@ -88,7 +88,6 @@ class SubmissionHandler(object):
         status = False
 
         if form_submission.is_valid:
-            self._validate_unique_phone_number_for_reporter(form_submission)
             data_record_id = form_submission.save(self.dbm, submission_id)
             status = True
         else:
@@ -105,20 +104,6 @@ class SubmissionHandler(object):
 
     def _set_entity_short_code(self, short_code, values):
         values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
-
-
-    def _validate_unique_phone_number_for_reporter(self, submission):
-        if submission.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and submission.form_model.is_registration_form():
-            phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
-            if is_empty(phone_number):
-                raise MobileNumberMissing()
-            try:
-                find_reporter_entity(self.dbm, phone_number)
-                raise MultipleReportersForANumberException(from_number=phone_number)
-            except NumberNotRegisteredException:
-                submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
-
-
 
 class SubmissionLogger(object):
     def __init__(self, dbm):

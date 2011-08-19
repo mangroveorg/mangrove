@@ -1,10 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.form_model.form_model import get_form_model_by_code, MOBILE_NUMBER_FIELD_CODE, REPORTER, ENTITY_TYPE_FIELD_CODE
-from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException, MultipleReportersForANumberException, NumberNotRegisteredException, MobileNumberMissing
-from mangrove.transport.reporter import find_reporter_entity
-from mangrove.utils.types import is_string, sequence_to_str, is_empty
+from mangrove.form_model.form_model import get_form_model_by_code
+from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException
+from mangrove.utils.types import is_string, sequence_to_str
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
 
@@ -61,7 +60,7 @@ class SubmissionHandler(object):
             self._set_entity_short_code(request.reporter.short_code, values)
 
         try:
-            cleaned_data, data_record_id, short_code, status, errors = self._submit(form, values, submission_id)
+            form_submission = self._submit(form, values, submission_id)
         except InactiveFormModelException as e:
             e.bound_form = form
             self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
@@ -71,11 +70,11 @@ class SubmissionHandler(object):
             self.logger.update_submission_log(submission_id=submission_id,status=False,errors = e.message, in_test_mode=form.is_in_test_mode())
             raise
 
-        self.logger.update_submission_log(submission_id=submission_id, data_record_id=data_record_id,
-                                          status=status, errors=errors, in_test_mode=form.is_in_test_mode())
+        self.logger.update_submission_log(submission_id=submission_id, data_record_id=form_submission.data_record_id,
+                                          status=form_submission.saved, errors=form_submission.errors, in_test_mode=form.is_in_test_mode())
 
-        return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
-                                  processed_data=cleaned_data,is_registration = form.is_registration_form(), bound_form=form)
+        return SubmissionResponse(form_submission.saved, submission_id, form_submission.errors, form_submission.data_record_id, short_code=form_submission.short_code,
+                                  processed_data=form_submission.cleaned_data,is_registration = form.is_registration_form(), bound_form=form)
 
 
     def _submit(self, form, values, submission_id):
@@ -83,17 +82,10 @@ class SubmissionHandler(object):
 
         form_submission = form.validate_submission(values)
 
-        data_record_id = None
-        _errors = None
-        status = False
-
         if form_submission.is_valid:
-            data_record_id = form_submission.save(self.dbm, submission_id)
-            status = True
-        else:
-            _errors = form_submission.errors
+            form_submission.save(self.dbm, submission_id)
 
-        return form_submission.cleaned_data, data_record_id, form_submission.short_code, status, _errors
+        return form_submission
 
     def _should_accept_submission(self, form):
         return form.is_inactive()

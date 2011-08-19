@@ -306,6 +306,7 @@ class FormSubmission(object):
         self.is_valid = (errors is None or len(errors) == 0)
         self.errors = errors
         self.entity_type = self._get_entity_type(form_model)
+        self.data_record_id = None
 
     @property
     def cleaned_data(self):
@@ -314,6 +315,11 @@ class FormSubmission(object):
     @property
     def form_code(self):
         return self.form_model.form_code
+
+    @property
+    def saved(self):
+        return self.data_record_id is not None
+
 
     def save(self, dbm, submission_id):
         self._validate_unique_phone_number_for_reporter(dbm)
@@ -361,8 +367,8 @@ class FormSubmission(object):
 
     def _save_data(self, entity, submission_id=None):
         submission_information = dict(form_code=self.form_code, submission_id=submission_id)
-        data_record_id = entity.add_data(data=self._values, submission=submission_information)
-        return data_record_id
+        self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
+        return self.data_record_id
 
 #    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
     def _exists_reporter_with_phone_number(self, dbm, phone_number):

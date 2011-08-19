@@ -46,21 +46,6 @@ class SubmissionHandler(object):
         self.logger = SubmissionLogger(self.dbm)
 
 
-    def save_data(self, entity, form_submission, form, submission_id=None):
-        submission_information = dict(form_code=form.form_code, submission_id=submission_id)
-        data_record_id = entity.add_data(data=form_submission.values, submission=submission_information)
-        return data_record_id
-
-    def _should_accept_submission(self, form):
-        return form.is_inactive()
-
-    def _reject_submission_for_inactive_forms(self, form):
-        if self._should_accept_submission(form):
-            raise InactiveFormModelException(form.form_code)
-
-    def _set_entity_short_code(self, short_code, values):
-        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
-
     def accept(self, request):
         assert isinstance(request, SubmissionRequest)
         form_code = request.form_code
@@ -76,7 +61,7 @@ class SubmissionHandler(object):
             self._set_entity_short_code(request.reporter.short_code, values)
 
         try:
-            cleaned_data, data_record_id, short_code, status, errors = self.submit(form, values, submission_id)
+            cleaned_data, data_record_id, short_code, status, errors = self._submit(form, values, submission_id)
         except InactiveFormModelException as e:
             e.bound_form = form
             self.logger.update_submission_log(submission_id, False, 'Inactive form_model')
@@ -92,6 +77,36 @@ class SubmissionHandler(object):
         return SubmissionResponse(status, submission_id, errors, data_record_id, short_code=short_code,
                                   processed_data=cleaned_data,is_registration = form.is_registration_form(), bound_form=form)
 
+
+    def _submit(self, form, values, submission_id):
+        self._reject_submission_for_inactive_forms(form)
+
+        form_submission = form.validate_submission(values)
+
+        data_record_id = None
+        _errors = None
+        status = False
+
+        if form_submission.is_valid:
+            self._validate_unique_phone_number_for_reporter(form_submission)
+            data_record_id = form_submission.save(self.dbm, submission_id)
+            status = True
+        else:
+            _errors = form_submission.errors
+
+        return form_submission.cleaned_data, data_record_id, form_submission.short_code, status, _errors
+
+    def _should_accept_submission(self, form):
+        return form.is_inactive()
+
+    def _reject_submission_for_inactive_forms(self, form):
+        if self._should_accept_submission(form):
+            raise InactiveFormModelException(form.form_code)
+
+    def _set_entity_short_code(self, short_code, values):
+        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
+
+
     def _validate_unique_phone_number_for_reporter(self, submission):
         if submission.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and submission.form_model.is_registration_form():
             phone_number = submission.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
@@ -103,25 +118,6 @@ class SubmissionHandler(object):
             except NumberNotRegisteredException:
                 submission.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
 
-
-    def submit(self, form, values, submission_id):
-        self._reject_submission_for_inactive_forms(form)
-
-        form_submission = form.validate_submission(values)
-
-        data_record_id = None
-        _errors = None
-        status = False
-
-        if form_submission.is_valid:
-            self._validate_unique_phone_number_for_reporter(form_submission)
-            entity = form_submission.to_entity(self.dbm)
-            data_record_id = self.save_data(entity, form_submission, form, submission_id)
-            status = True
-        else:
-            _errors = form_submission.errors
-
-        return form_submission.cleaned_data, data_record_id, form_submission.short_code, status, _errors
 
 
 class SubmissionLogger(object):

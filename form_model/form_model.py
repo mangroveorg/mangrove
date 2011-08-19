@@ -294,6 +294,37 @@ class FormModel(DataObject):
 
 
 class FormSubmission(object):
+
+    def __init__(self, form_model, form_answers, errors=None):
+        assert errors is None or type(errors) == dict
+        assert form_answers is not None and type(form_answers) == dict
+
+        self.form_model = form_model
+        self._cleaned_data = form_answers
+        short_code = self._get_answer_for(form_model.entity_question.code)
+        self.short_code = short_code.lower() if short_code is not None else None
+        self.is_valid = (errors is None or len(errors) == 0)
+        self.errors = errors
+        self.entity_type = self._get_entity_type(form_model)
+
+    @property
+    def cleaned_data(self):
+        return self._cleaned_data
+
+    @property
+    def form_code(self):
+        return self.form_model.form_code
+
+    def save(self, dbm, submission_id):
+        return self._save_data(self._get_entity(dbm), submission_id)
+
+    def _get_entity_type(self, form_model):
+        if form_model.is_registration_form():
+            entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
+        else:
+            entity_type = self.form_model.entity_type
+        return [e_type.lower() for e_type in entity_type]
+
     def _to_three_tuple(self):
         return [(self.form_model.get_field_by_code(field).name, value, self.form_model.get_field_by_code(field).ddtype)
         for (field, value) in
@@ -305,33 +336,11 @@ class FormSubmission(object):
                 return self._cleaned_data[key]
         return None
 
-    def __init__(self, form_model, form_answers, errors=None):
-        assert errors is None or type(errors) == dict
-        assert form_answers is not None and type(form_answers) == dict
-
-        self.form_model = form_model
-        self._cleaned_data = form_answers
-        short_code = self._get_answer_for(form_model.entity_question.code)
-        self.short_code = short_code.lower() if short_code is not None else None
-        self.form_code = self.form_model.form_code
-        self.is_valid = (errors is None or len(errors) == 0)
-        self.errors = errors
-        if form_model.is_registration_form():
-            entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
-        else:
-            entity_type = self.form_model.entity_type
-        type_hierarchy = [e_type.lower() for e_type in entity_type]
-        self.entity_type = type_hierarchy
-
     @property
-    def values(self):
+    def _values(self):
         return self._to_three_tuple()
 
-    @property
-    def cleaned_data(self):
-        return self._cleaned_data
-
-    def to_entity(self, dbm):
+    def _get_entity(self, dbm):
         if self.form_model.is_registration_form():
             location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
             return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
@@ -339,6 +348,11 @@ class FormSubmission(object):
                                         short_code=self.short_code,
                                         geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
+
+    def _save_data(self, entity, submission_id=None):
+        submission_information = dict(form_code=self.form_code, submission_id=submission_id)
+        data_record_id = entity.add_data(data=self._values, submission=submission_information)
+        return data_record_id
 
 
 def create_default_reg_form_model(manager):

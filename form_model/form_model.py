@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, NumberNotRegisteredException
+    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -93,6 +93,28 @@ class FormModel(DataObject):
             raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
         except FormModelDoesNotExistsException:
             pass
+
+    def _should_accept_submission(self):
+        return self.is_inactive()
+
+    def _reject_submission_for_inactive_forms(self):
+        if self._should_accept_submission():
+            raise InactiveFormModelException(self.form_code)
+
+    def get_short_code(self,values):
+        return  self._case_insensitive_lookup(values,self.entity_question.code)
+
+    def submit(self,dbm,values, submission_id):
+        self.bind(values)
+
+        self._reject_submission_for_inactive_forms()
+
+        form_submission = self.validate_submission(values)
+
+        if form_submission.is_valid:
+            form_submission.save(dbm, submission_id)
+        return form_submission
+
 
     def save(self):
         # convert fields to json fields before save
@@ -280,16 +302,16 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
-    def _case_insensitive_lookup(self, code):
+    def _case_insensitive_lookup(self, values,code):
         try:
-            return self.submission[code.lower()]
+            return values[code.lower()]
         except Exception:
-            return self.submission.get(code)
+            return values.get(code)
 
     def bind(self, submission):
         self.submission = submission
         for field in self.fields:
-            answer = self._case_insensitive_lookup(field.code)
+            answer = self._case_insensitive_lookup(self.submission,field.code)
             field.set_value(answer)
 
 
@@ -298,7 +320,8 @@ class FormSubmission(object):
     def __init__(self, form_model, form_answers, errors=None):
         assert errors is None or type(errors) == dict
         assert form_answers is not None and type(form_answers) == dict
-
+        assert form_model is not None
+        
         self.form_model = form_model
         self._cleaned_data = form_answers
         short_code = self._get_answer_for(form_model.entity_question.code)
@@ -319,6 +342,10 @@ class FormSubmission(object):
     @property
     def saved(self):
         return self.data_record_id is not None
+
+    @property
+    def is_registration(self):
+        return self.form_model.is_registration_form()
 
 
     def save(self, dbm, submission_id):

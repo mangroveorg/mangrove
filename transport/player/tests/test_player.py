@@ -3,7 +3,6 @@ from unittest.case import TestCase
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
 from mangrove.transport.player.player import   Player
-from mangrove.transport.submissions import SubmissionHandler
 
 
 class TestSMSPlayer(TestCase):
@@ -12,16 +11,16 @@ class TestSMSPlayer(TestCase):
         self.loc_tree = Mock()
         self.loc_tree.get_hierarchy_path.return_value = ['hierarchy']
         self.dbm = Mock(spec=DatabaseManager)
-        self.submission_handler_mock = Mock(spec=SubmissionHandler)
-        self.player = Player(self.dbm, self.submission_handler_mock, self.loc_tree)
+        self.submission_handler_mock = Mock()
+        self.player = Player(self.dbm, self.loc_tree)
 
 
     def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
         values = dict(l='a,b,c',t='clinic')
-        self.player._get_location_data(values=values)
+        self.player._set_location_data(values=values)
         self.assertEqual(['c', 'b', 'a'],values['l'])
 
     def test_should_resolve_location_hierarchy_if_hierarchy_not_passed_in(self):
         values = dict(l='no_hierarchy',t='clinic')
-        self.player._get_location_data(values=values)
+        self.player._set_location_data(values=values)
         self.assertEqual(['hierarchy'],values['l'])

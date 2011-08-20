@@ -1,42 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
-from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import   InactiveFormModelException, MangroveException
 from mangrove.utils.types import is_string, sequence_to_str
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
-
-class SubmissionRequest(object):
-    def __init__(self, form_code, submission, transport, source, destination, reporter=None):
-        assert form_code is not None
-        assert submission is not None
-        assert transport is not None
-        assert source is not None
-        assert destination is not None
-
-        self.form_code = form_code
-        self.submission = submission
-        self.transport = transport
-        self.source = source
-        self.destination = destination
-        self.reporter = reporter
-
-
-class SubmissionResponse(object):
-    def __init__(self, success, submission_id, errors=None, datarecord_id=None, short_code=None, processed_data=None,is_registration=False,bound_form=None):
-        assert success is not None
-#        assert submission_id is not None
-
-        self.success = success
-        self.submission_id = submission_id
-        self.errors = {} if errors is None else errors
-        self.datarecord_id = datarecord_id
-        self.short_code = short_code
-        self.processed_data = processed_data
-        self.is_registration = is_registration
-        self.bound_form = bound_form
-
 
 class SubmissionLogger(object):
     def __init__(self, dbm):
@@ -65,12 +32,18 @@ class SubmissionLogger(object):
         log.test = in_test_mode
         self.dbm._save_document(log)
 
-    def create_submission_log(self, request):
-        return self.dbm._save_document(SubmissionLogDocument(channel=request.transport, source=request.source,
-                                                             destination=request.destination,
-                                                             form_code=request.form_code,
-                                                             values=request.submission, status=False,
+    def create_submission_log(self, transportInfo,form_code,values,reporter_entity):
+        return self.dbm._save_document(SubmissionLogDocument(channel=transportInfo.transport, source=transportInfo.source,
+                                                             destination=transportInfo.destination,
+                                                             form_code=form_code,
+                                                             values=values, status=False,
                                                              error_message="", voided=True, test=False))
+
+    def update_submission_log_from_form_submission(self, submission_id, form_submission):
+        self.update_submission_log(submission_id,form_submission.saved,
+                                   form_submission.errors,
+                                   form_submission.data_record_id,
+                                   form_submission.form_model.is_in_test_mode())
 
 
 def _get_row_count(rows):

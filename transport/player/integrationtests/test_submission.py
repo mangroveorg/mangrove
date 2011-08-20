@@ -15,7 +15,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
-from mangrove.transport.submissions import SubmissionHandler, get_submissions_made_for_form
+from mangrove.transport.submissions import  get_submissions_made_for_form
 from mangrove.datastore.datadict import DataDictType
 
 
@@ -79,8 +79,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
-        self.submission_handler = SubmissionHandler(self.dbm)
-        self.sms_player = SMSPlayer(self.dbm, self.submission_handler, LocationTree())
+        self.submission_handler = None
+        self.sms_player = SMSPlayer(self.dbm, LocationTree())
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
@@ -244,7 +244,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'l':None}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record_id)
 

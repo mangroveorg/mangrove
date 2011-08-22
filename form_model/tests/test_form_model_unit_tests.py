@@ -177,7 +177,7 @@ class TestFormModel(unittest.TestCase):
         self.form_model.bind(answers)
         self.assertEqual(answers, self.form_model.submission)
         for field in self.form_model.fields:
-            self.assertEqual(self._case_insensitive_lookup(answers, field),field.value,"No match for field %s" % (field.code,))
+            self.assertEqual(self._case_insensitive_lookup(answers, field.code),field.value,"No match for field %s" % (field.code,))
 
     def test_should_set_error_on_field_validation_failure(self):
         answers = {"id": "1", "q1" : "ab" , "q2": "200"}

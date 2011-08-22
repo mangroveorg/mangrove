@@ -3,7 +3,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
+from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, NoQuestionsSubmittedException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
@@ -165,12 +165,11 @@ class TestFormModel(unittest.TestCase):
         form_submission = registration_form.validate_submission(answers)
         self.assertEqual(["reporter"], form_submission.entity_type)
 
-    def _case_insensitive_lookup(self, answers, field):
-
-        try:
-            return answers[field.code.lower()]
-        except Exception:
-            return answers.get(field.code)
+    def _case_insensitive_lookup(self, values, code):
+        for fieldcode in values:
+            if fieldcode.lower() == code.lower():
+                return values[fieldcode]
+        return None
 
 
     def test_should_bind_form_to_submission(self):
@@ -193,6 +192,16 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 0)
         for field in self.form_model.fields:
             self.assertEqual([],field.errors)
+
+    def test_should_raise_exception_if_no_valid_fields_to_save(self):
+        answers = {"id": "1", "Unknown field 1": "Asif Momin", "Unknown field 2": ""}
+        with self.assertRaises(NoQuestionsSubmittedException):
+            cleaned_answers, errors = self.form_model._is_valid(answers)
+
+        answers = {"id": "1"}
+        with self.assertRaises(NoQuestionsSubmittedException):
+            cleaned_answers, errors = self.form_model._is_valid(answers)
+
 
 
 

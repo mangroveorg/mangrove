@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, ShortCodeTooLongException, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException
+    EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -67,7 +67,7 @@ class FormModel(DataObject):
 
         # Not made from existing doc, so build ourselves up
         self._form_fields = fields
-        self.validate_fields()
+        self._validate_fields()
 
         doc = FormModelDocument()
         doc.name = name
@@ -78,154 +78,6 @@ class FormModel(DataObject):
         doc.state = state
         doc.active_languages = language
         DataObject._set_document(self, doc)
-
-    def _set_document(self, document):
-        DataObject._set_document(self, document)
-
-        # make form_model level fields for any json fields in to
-        for json_field in document.json_fields:
-            f = field.create_question_from(json_field, self._dbm)
-            self._form_fields.append(f)
-
-    def _check_if_form_code_is_unique(self, value):
-        try:
-            get_form_model_by_code(self._dbm, value)
-            raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
-        except FormModelDoesNotExistsException:
-            pass
-
-    def _should_accept_submission(self):
-        return self.is_inactive()
-
-    def _reject_submission_for_inactive_forms(self):
-        if self._should_accept_submission():
-            raise InactiveFormModelException(self.form_code)
-
-    def get_short_code(self,values):
-        return  self._case_insensitive_lookup(values,self.entity_question.code)
-
-    def submit(self,dbm,values, submission_id):
-        self.bind(values)
-
-        self._reject_submission_for_inactive_forms()
-
-        form_submission = self.validate_submission(values)
-
-        if form_submission.is_valid:
-            form_submission.save(dbm, submission_id)
-        return form_submission
-
-
-    def save(self):
-        # convert fields to json fields before save
-        if self._doc.rev is None:
-            self._check_if_form_code_is_unique(self.form_code)
-        self._doc.json_fields = [f._to_json() for f in self._form_fields]
-        return DataObject.save(self)
-
-    def validate(self):
-        self.validate_fields()
-        return True
-
-    def validate_fields(self):
-        self.validate_existence_of_only_one_entity_field()
-        self.validate_uniqueness_of_field_codes()
-        return True
-
-    def get_field_by_name(self, name):
-        for field in self._form_fields:
-            if field.name == name:
-                return field
-        return None
-
-    def get_field_by_code(self, code):
-        for field in self._form_fields:
-            if field.code.lower() == code.lower():
-                return field
-        return None
-
-
-    def validate_uniqueness_of_field_codes(self):
-        """ Validate all question codes are unique
-        """
-        code_list = [f.code.lower() for f in self._form_fields]
-        code_list_without_duplicates = list(set(code_list))
-        if len(code_list) != len(code_list_without_duplicates):
-            raise QuestionCodeAlreadyExistsException("All question codes must be unique")
-
-    def validate_existence_of_only_one_entity_field(self):
-        """Validate only 1 entity question is there"""
-        entity_question_list = [f for f in self._form_fields if isinstance(f, TextField) and f.is_entity_field == True]
-        if len(entity_question_list) > 1:
-            raise EntityQuestionAlreadyExistsException("Entity Question already exists")
-
-    def add_field(self, field):
-        self._form_fields.append(field)
-        self.validate_fields()
-        return self._form_fields
-
-    def delete_field(self, code):
-        self._form_fields = [f for f in self._form_fields if f.code != code]
-        self.validate_fields()
-
-    def delete_all_fields(self):
-        self._form_fields = []
-
-    def add_language(self, language, label=None):
-        self._doc.active_languages = language
-        if label is not None:
-            self._doc.add_label(language, label)
-
-    def _validate_answer_for_field(self, answer, field):
-        try:
-            value = field.validate(answer)
-            return True, value
-        except MangroveException as e:
-            field.errors.append(e.message)
-            return False, e.message
-
-    def _find_code(self, answers, code):
-        for key in answers:
-            if key.lower() == code.lower():
-                return answers[key]
-        return None
-
-    def _is_valid(self, answers):
-        cleaned_answers = {}
-        errors = {}
-        short_code = self._find_code(answers, self.entity_question.code)
-        if self.is_registration_form():
-            entity_code = self._find_code(answers, ENTITY_TYPE_FIELD_CODE)
-            if is_empty(entity_code):
-                raise EntityTypeCodeNotSubmitted()
-            if short_code is not None and len(short_code) > 12:
-                raise ShortCodeTooLongException()
-        else:
-            if is_empty(short_code):
-                raise EntityQuestionCodeNotSubmitted()
-        for key in answers:
-            field = self.get_field_by_code(key)
-            if field is None:
-                continue
-            answer = answers[key]
-            if is_empty(answer):
-                continue
-            is_valid, result = self._validate_answer_for_field(answer, field)
-            if is_valid:
-                cleaned_answers[field.code] = result
-            else:
-                errors[key] = result
-        return cleaned_answers, errors
-
-    def validate_submission(self, values):
-        if values is None or len(values) == 1:
-            raise NoQuestionsSubmittedException()
-        cleaned_answers, errors = self._is_valid(values)
-        return FormSubmission(self, cleaned_answers, errors)
-
-    @property
-    def cleaned_data(self):
-        return {}
 
     @property
     def name(self):
@@ -278,6 +130,62 @@ class FormModel(DataObject):
     def activeLanguages(self):
         return self._doc.active_languages
 
+    def get_short_code(self, values):
+        return  self._case_insensitive_lookup(values, self.entity_question.code)
+
+    def get_entity_type(self, values):
+        return self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
+
+    def submit(self, dbm, values, submission_id):
+        self.bind(values)
+        self._reject_submission_for_inactive_forms()
+        form_submission = self.validate_submission(values)
+        if form_submission.is_valid:
+            form_submission.save(dbm, submission_id)
+        return form_submission
+
+    def save(self):
+        # convert fields to json fields before save
+        if self._doc.rev is None:
+            self._check_if_form_code_is_unique(self.form_code)
+        self._doc.json_fields = [f._to_json() for f in self._form_fields]
+        return DataObject.save(self)
+
+
+    def get_field_by_name(self, name):
+        for field in self._form_fields:
+            if field.name == name:
+                return field
+        return None
+
+    def get_field_by_code(self, code):
+        for field in self._form_fields:
+            if field.code.lower() == code.lower():
+                return field
+        return None
+
+    def add_field(self, field):
+        self._form_fields.append(field)
+        self._validate_fields()
+        return self._form_fields
+
+    def delete_field(self, code):
+        self._form_fields = [f for f in self._form_fields if f.code != code]
+        self._validate_fields()
+
+    def delete_all_fields(self):
+        self._form_fields = []
+
+    def add_language(self, language, label=None):
+        self._doc.active_languages = language
+        if label is not None:
+            self._doc.add_label(language, label)
+
+    def validate_submission(self, values):
+        cleaned_answers, errors = self._is_valid(values)
+        return FormSubmission(self, cleaned_answers, errors)
+
+
     def is_registration_form(self):
         return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
 
@@ -302,26 +210,116 @@ class FormModel(DataObject):
     def set_test_mode(self):
         self._doc.state = attributes.TEST_STATE
 
-    def _case_insensitive_lookup(self, values,code):
-        try:
-            return values[code.lower()]
-        except Exception:
-            return values.get(code)
-
     def bind(self, submission):
         self.submission = submission
         for field in self.fields:
-            answer = self._case_insensitive_lookup(self.submission,field.code)
+            answer = self._case_insensitive_lookup(self.submission, field.code)
             field.set_value(answer)
+
+    def _validate_fields(self):
+        self._validate_existence_of_only_one_entity_field()
+        self._validate_uniqueness_of_field_codes()
+
+
+    def _validate_uniqueness_of_field_codes(self):
+        """ Validate all question codes are unique
+        """
+        code_list = [f.code.lower() for f in self._form_fields]
+        code_list_without_duplicates = list(set(code_list))
+        if len(code_list) != len(code_list_without_duplicates):
+            raise QuestionCodeAlreadyExistsException("All question codes must be unique")
+
+    def _validate_existence_of_only_one_entity_field(self):
+        """Validate only 1 entity question is there"""
+        entity_question_list = [f for f in self._form_fields if isinstance(f, TextField) and f.is_entity_field == True]
+        if len(entity_question_list) > 1:
+            raise EntityQuestionAlreadyExistsException("Entity Question already exists")
+
+    def _validate_answer_for_field(self, answer, field):
+        try:
+            value = field.validate(answer)
+            return True, value
+        except MangroveException as e:
+            field.errors.append(e.message)
+            return False, e.message
+
+    def _set_document(self, document):
+        DataObject._set_document(self, document)
+
+        # make form_model level fields for any json fields in to
+        for json_field in document.json_fields:
+            f = field.create_question_from(json_field, self._dbm)
+            self._form_fields.append(f)
+
+    def _check_if_form_code_is_unique(self, value):
+        try:
+            get_form_model_by_code(self._dbm, value)
+            raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
+        except FormModelDoesNotExistsException:
+            pass
+
+    def _should_accept_submission(self):
+        return self.is_inactive()
+
+    def _reject_submission_for_inactive_forms(self):
+        if self._should_accept_submission():
+            raise InactiveFormModelException(self.form_code)
+
+    def _find_code(self, answers, code):
+        for key in answers:
+            if key.lower() == code.lower():
+                return answers[key]
+        return None
+
+    def _validate_mandatory_fields_have_values(self, values):
+        short_code = self.get_short_code(values)
+        if is_empty(short_code):
+            raise EntityQuestionCodeNotSubmitted()
+        if self.is_registration_form() and is_empty(self.get_entity_type(values)):
+            raise EntityTypeCodeNotSubmitted()
+        if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(self._case_insensitive_lookup(values,MOBILE_NUMBER_FIELD_CODE)):
+            raise MobileNumberMissing()
+
+    def _remove_empty_values(self, answers):
+        return {k: v for k, v in answers.items() if not is_empty(v)}
+
+    def _remove_unknown_fields(self, answers):
+        return {k: v for k, v in answers.items() if self.get_field_by_code(k) is not None}
+
+    def _validate_if_valid_values_left_to_be_saved(self, values):
+        if values is None or len(values) <= 1:
+            raise NoQuestionsSubmittedException()
+
+    def _is_valid(self, values):
+        assert values is not None
+        cleaned_values = {}
+        errors = {}
+        self._validate_mandatory_fields_have_values(values)
+        values = self._remove_empty_values(values)
+        values = self._remove_unknown_fields(values)
+        self._validate_if_valid_values_left_to_be_saved(values)
+        for key in values:
+            field = self.get_field_by_code(key)
+            is_valid, result = self._validate_answer_for_field(values[key], field)
+            if is_valid:
+                cleaned_values[field.code] = result
+            else:
+                errors[key] = result
+        return cleaned_values, errors
+
+    def _case_insensitive_lookup(self, values, code):
+        for fieldcode in values:
+            if fieldcode.lower() == code.lower():
+                return values[fieldcode]
+        return None
 
 
 class FormSubmission(object):
-
     def __init__(self, form_model, form_answers, errors=None):
         assert errors is None or type(errors) == dict
         assert form_answers is not None and type(form_answers) == dict
         assert form_model is not None
-        
+
         self.form_model = form_model
         self._cleaned_data = form_answers
         short_code = self._get_answer_for(form_model.entity_question.code)
@@ -352,11 +350,14 @@ class FormSubmission(object):
         self._validate_unique_phone_number_for_reporter(dbm)
         return self._save_data(self._get_entity(dbm), submission_id)
 
-    def _validate_unique_phone_number_for_reporter(self,dbm):
+    def _save_data(self, entity, submission_id=None):
+        submission_information = dict(form_code=self.form_code, submission_id=submission_id)
+        self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
+        return self.data_record_id
+
+    def _validate_unique_phone_number_for_reporter(self, dbm):
         if self.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and self.form_model.is_registration_form():
             phone_number = self.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
-            if is_empty(phone_number):
-                raise MobileNumberMissing()
             if self._exists_reporter_with_phone_number(dbm, phone_number):
                 raise MultipleReportersForANumberException(from_number=phone_number)
             self.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
@@ -392,21 +393,19 @@ class FormSubmission(object):
                                         geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
-    def _save_data(self, entity, submission_id=None):
-        submission_information = dict(form_code=self.form_code, submission_id=submission_id)
-        self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
-        return self.data_record_id
 
-#    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
+    #    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
     def _exists_reporter_with_phone_number(self, dbm, phone_number):
         from mangrove.datastore import data
 
         reporters = data.aggregate(dbm, entity_type=[REPORTER],
-                                      aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST},
-                                      aggregate_on=data.EntityAggregration()
-                                               )
-        from_reporter_list = [{id: reporters[id]} for id in reporters if reporters[id].get(MOBILE_NUMBER_FIELD) == phone_number]
+                                   aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST},
+                                   aggregate_on=data.EntityAggregration()
+        )
+        from_reporter_list = [{id: reporters[id]} for id in reporters if
+                                                  reporters[id].get(MOBILE_NUMBER_FIELD) == phone_number]
         return len(from_reporter_list) > 0
+
 
 def create_default_reg_form_model(manager):
     form_model = _construct_registration_form(manager)
@@ -437,20 +436,24 @@ def _construct_registration_form(manager):
                                language="eng", ddtype=entity_id_type, instruction="Enter a type for the subject")
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
-                          defaultValue="some default value", language="eng", ddtype=name_type, instruction="Enter a subject name")
+                          defaultValue="some default value", language="eng", ddtype=name_type,
+                          instruction="Enter a subject name")
     question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
-                          defaultValue="some default value", language="eng", ddtype=name_type, instruction="Enter a id, or allow us to generate it",
-                          entity_question_flag=True)
+                          defaultValue="some default value", language="eng", ddtype=name_type,
+                          instruction="Enter a id, or allow us to generate it",
+                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12)])
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
                                language="eng", ddtype=location_type, instruction="Enter a region, district, or commune")
     question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
                              language="eng", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3")
     question6 = TextField(name=DESCRIPTION_FIELD, code=DESCRIPTION_FIELD_CODE, label="Describe the subject",
-                          defaultValue="some default value", language="eng", ddtype=description_type, instruction="Describe your subject in more details (optional)")
+                          defaultValue="some default value", language="eng", ddtype=description_type,
+                          instruction="Describe your subject in more details (optional)")
     question7 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
-                          label="What is the mobile number associated with the subject?",
-                          defaultValue="some default value", language="eng", ddtype=mobile_number_type, instruction="Enter the subject's number", constraints=(
+                                     label="What is the mobile number associated with the subject?",
+                                     defaultValue="some default value", language="eng", ddtype=mobile_number_type,
+                                     instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()))
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])

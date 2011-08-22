@@ -65,14 +65,14 @@ class NoQuestionsSubmittedException(MangroveException):
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):
         MangroveException.__init__(self, (u"Sorry, this number %s is not registered with us.") % (from_number,),
-                (from_number,))
+            (from_number,))
 
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
         MangroveException.__init__(self,
                                    (u"Sorry, the telephone number %s has already been registered") % (from_number,),
-                (from_number,))
+            (from_number,))
 
 
 class MultipleSubmissionsForSameCodeException(MangroveException):
@@ -86,7 +86,7 @@ class EntityTypeDoesNotExistsException(MangroveException):
         entity_type_short_name = entity_type[-1]
         MangroveException.__init__(self,
                                    (u"Entity type %s doesnt exist.") % (entity_type_full_name,),
-                (entity_type_short_name,))
+            (entity_type_short_name,))
 
 
 class InvalidAnswerSubmissionException(MangroveException):
@@ -252,15 +252,17 @@ class SubmissionParseException(MangroveException):
     def __init__(self, form_code, message):
         MangroveException.__init__(self, message, (form_code,))
 
+
 class MobileNumberMissing(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "Mobile number is missing", ('reg',))
 
+
 class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
-            MangroveException.__init__(self, "Patern should be %s" % (pattern,))
+        MangroveException.__init__(self, "Patern should be %s" % (pattern,))
 
 
 class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):
-            MangroveException.__init__(self, "Unknown constraint type: %s" % (name,))
+        MangroveException.__init__(self, "Unknown constraint type: %s" % (name,))

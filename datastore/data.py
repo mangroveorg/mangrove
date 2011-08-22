@@ -62,6 +62,7 @@ def _load_entity_attributes(dbm, entity_type):
         values[row.key[1]] = row.value
     return values
 
+
 def get_latest(dbm, entity_type):
     return _load_entity_attributes(dbm, entity_type)
 

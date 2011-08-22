@@ -6,7 +6,6 @@ from mangrove.transport.player.player import   Player
 
 
 class TestSMSPlayer(TestCase):
-
     def setUp(self):
         self.loc_tree = Mock()
         self.loc_tree.get_hierarchy_path.return_value = ['hierarchy']
@@ -16,11 +15,11 @@ class TestSMSPlayer(TestCase):
 
 
     def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
-        values = dict(l='a,b,c',t='clinic')
+        values = dict(l='a,b,c', t='clinic')
         self.player._set_location_data(values=values)
-        self.assertEqual(['c', 'b', 'a'],values['l'])
+        self.assertEqual(['c', 'b', 'a'], values['l'])
 
     def test_should_resolve_location_hierarchy_if_hierarchy_not_passed_in(self):
-        values = dict(l='no_hierarchy',t='clinic')
+        values = dict(l='no_hierarchy', t='clinic')
         self.player._set_location_data(values=values)
-        self.assertEqual(['hierarchy'],values['l'])
+        self.assertEqual(['hierarchy'], values['l'])

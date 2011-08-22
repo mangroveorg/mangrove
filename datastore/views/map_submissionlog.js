@@ -3,6 +3,6 @@ function(doc) {
         return !((o === undefined) || (o == null));
     };
     if (doc.document_type == 'SubmissionLog' && isNotNull(doc.form_code)) {
-	    emit([doc.form_code, Date.parse(doc.created) ], doc);
+        emit([doc.form_code, Date.parse(doc.created) ], doc);
     }
 }

@@ -32,15 +32,16 @@ class SubmissionLogger(object):
         log.test = in_test_mode
         self.dbm._save_document(log)
 
-    def create_submission_log(self, transportInfo,form_code,values,reporter_entity):
-        return self.dbm._save_document(SubmissionLogDocument(channel=transportInfo.transport, source=transportInfo.source,
-                                                             destination=transportInfo.destination,
-                                                             form_code=form_code,
-                                                             values=values, status=False,
-                                                             error_message="", voided=True, test=False))
+    def create_submission_log(self, transportInfo, form_code, values, reporter_entity):
+        return self.dbm._save_document(
+            SubmissionLogDocument(channel=transportInfo.transport, source=transportInfo.source,
+                                  destination=transportInfo.destination,
+                                  form_code=form_code,
+                                  values=values, status=False,
+                                  error_message="", voided=True, test=False))
 
     def update_submission_log_from_form_submission(self, submission_id, form_submission):
-        self.update_submission_log(submission_id,form_submission.saved,
+        self.update_submission_log(submission_id, form_submission.saved,
                                    form_submission.errors,
                                    form_submission.data_record_id,
                                    form_submission.form_model.is_in_test_mode())
@@ -56,7 +57,7 @@ def _get_row_count(rows):
 def get_submission_count_for_form(dbm, form_code, start_time, end_time):
     assert is_string(form_code)
     start = [form_code] if start_time is  None else [form_code, start_time]
-    end = [form_code,{}] if end_time  is None else [form_code, end_time, {}]
+    end = [form_code, {}] if end_time  is None else [form_code, end_time, {}]
     rows = dbm.load_all_rows_in_view('submissionlog', startkey=start, endkey=end,
                                      group=True, group_level=1, reduce=True)
     count = _get_row_count(rows) if rows else 0
@@ -66,7 +67,7 @@ def get_submission_count_for_form(dbm, form_code, start_time, end_time):
 def get_submissions_made_for_form(dbm, form_code, start_time, end_time, page_number=0, page_size=20):
     assert is_string(form_code)
     end = [form_code] if start_time is  None else [form_code, start_time]
-    start = [form_code,{}] if end_time  is None else [form_code, end_time, {}]
+    start = [form_code, {}] if end_time  is None else [form_code, end_time, {}]
     if page_size is None:
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
                                          startkey=start,

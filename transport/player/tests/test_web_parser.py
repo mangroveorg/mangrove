@@ -5,7 +5,6 @@ from mangrove.transport.player.parser import WebParser
 
 
 class TestWebParser(TestCase):
-
     def setUp(self):
         self.web_parser = WebParser()
 
@@ -28,16 +27,17 @@ class TestWebParser(TestCase):
         self.assertEquals(values, {'q1': 'a1', 'q2': ""})
 
     def test_should_convert_list_value_to_string(self):
-        message = {'form_code': 'X1', 'q1': ['a1','a2'], 'q2': [""], 'q3' : []}
+        message = {'form_code': 'X1', 'q1': ['a1', 'a2'], 'q2': [""], 'q3': []}
         form_code, values = self.web_parser.parse(message)
         self.assertEquals(form_code, 'X1')
-        self.assertEquals(values, {'q1': 'a1a2', 'q2': "", 'q3' : ''})
+        self.assertEquals(values, {'q1': 'a1a2', 'q2': "", 'q3': ''})
 
     def test_should_remove_csrf_token_if_it_exists(self):
-        message = {'form_code': 'X1', 'q1': ['a1','a2'], 'q2': [""], 'q3' : [], 'csrfmiddlewaretoken' : 'some csrf token'}
+        message = {'form_code': 'X1', 'q1': ['a1', 'a2'], 'q2': [""], 'q3': [],
+                   'csrfmiddlewaretoken': 'some csrf token'}
         form_code, values = self.web_parser.parse(message)
         self.assertEquals(form_code, 'X1')
-        self.assertEquals(values, {'q1': 'a1a2', 'q2': "", 'q3' : ''})
+        self.assertEquals(values, {'q1': 'a1a2', 'q2': "", 'q3': ''})
 
 
 

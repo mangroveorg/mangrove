@@ -10,7 +10,6 @@ from mangrove.transport.submissions import SubmissionLogger, ENTITY_QUESTION_DIS
 from mangrove.utils.types import is_empty
 
 
-
 class Channel(object):
     SMS = "sms"
     WEB = "web"
@@ -38,7 +37,7 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, reporters, submission_id,form_submission):
+    def __init__(self, reporters, submission_id, form_submission):
         self.reporters = reporters if reporters is not None else []
         self.success = False
         self.errors = {}
@@ -50,6 +49,7 @@ class Response(object):
             self.short_code = form_submission.short_code
             self.processed_data = form_submission.cleaned_data
             self.is_registration = form_submission.is_registration
+
 
 def _short_code_not_in(entity_q_code, values):
     return is_empty(values.get(entity_q_code))
@@ -73,20 +73,21 @@ def _set_short_code(dbm, form_model, values):
 
 
 class Player(object):
-
-    def __init__(self, dbm,location_tree=None,submission_logger=None):
+    def __init__(self, dbm, location_tree=None, submission_logger=None):
         self.dbm = dbm
         self.location_tree = get_location_tree() if location_tree is None else location_tree
         self.submission_logger = SubmissionLogger(self.dbm) if submission_logger is None else submission_logger
 
-    def submit(self,transportInfo, form_code, values, reporter_entity=None):
-        submission_id = self.submission_logger.create_submission_log(transportInfo,form_code,values,reporter_entity)
+    def submit(self, transportInfo, form_code, values, reporter_entity=None):
+        submission_id = self.submission_logger.create_submission_log(transportInfo, form_code, values, reporter_entity)
         try:
-            form_submission = self._save_submission(form_code,values,reporter_entity,submission_id)
+            form_submission = self._save_submission(form_code, values, reporter_entity, submission_id)
             self.submission_logger.update_submission_log_from_form_submission(submission_id, form_submission)
-            return submission_id,form_submission
+            return submission_id, form_submission
         except MangroveException as exception:
-            self.submission_logger.update_submission_log(submission_id=submission_id,status=False,errors = exception.message, in_test_mode=self.form.is_in_test_mode())
+            self.submission_logger.update_submission_log(submission_id=submission_id, status=False,
+                                                         errors=exception.message,
+                                                         in_test_mode=self.form.is_in_test_mode())
             raise
 
 
@@ -94,7 +95,7 @@ class Player(object):
         if self.form.entity_defaults_to_reporter():
             self._set_entity_short_code(reporter_entity.short_code, values)
 
-    def _update_submission_with_short_code_if_not_submitted(self, reporter_entity, form,values):
+    def _update_submission_with_short_code_if_not_submitted(self, reporter_entity, form, values):
         if self._short_code_submitted(form, values):
             return
         self._update_submission_with_short_code_if_activity_report(reporter_entity, values)
@@ -104,7 +105,7 @@ class Player(object):
         self._update_submission_with_short_code_if_not_submitted(reporter_entity, self.form, values)
         self._update_submission_with_location_if_registration_form(self.form, values)
 
-    def _save_submission(self,form_code,values,reporter_entity,submission_id):
+    def _save_submission(self, form_code, values, reporter_entity, submission_id):
         self.form = get_form_model_by_code(self.dbm, form_code)
         self._update_submission_if_required(reporter_entity, values)
         form_submission = self.form.submit(self.dbm, values, submission_id)
@@ -133,12 +134,13 @@ class Player(object):
         if location_hierarchy is None and not is_empty(geo_code):
             try:
                 lat_string, long_string = tuple(geo_code.split())
-                location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string), long=float(long_string))
+                location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string),
+                                                                             long=float(long_string))
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
         elif location_hierarchy is not None and is_empty(geo_code):
             try:
-                translated_geo_code = tree.get_centroid(display_location.split(',')[0],len(location_hierarchy)-1)
+                translated_geo_code = tree.get_centroid(display_location.split(',')[0], len(location_hierarchy) - 1)
                 values[GEO_CODE] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
             except Exception:
                 pass
@@ -155,9 +157,10 @@ class Player(object):
     def _short_code_submitted(self, form, values):
         return not is_empty(form.get_short_code(values))
 
+
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None,submission_logger=None):
-        Player.__init__(self, dbm, location_tree,submission_logger)
+    def __init__(self, dbm, location_tree=None, submission_logger=None):
+        Player.__init__(self, dbm, location_tree, submission_logger)
 
     def _parse(self, request):
         sms_parser = SMSParser()
@@ -166,15 +169,16 @@ class SMSPlayer(Player):
 
     def accept(self, request):
         assert request is not None
-        reporter_entity,reporter_name = reporter.find_reporter_entity(self.dbm, request.transport.source)
+        reporter_entity, reporter_name = reporter.find_reporter_entity(self.dbm, request.transport.source)
         form_code, values = self._parse(request)
-        submission_id,form_submission = self.submit(request.transport, form_code, values, reporter_entity)
-        return Response(reporters=[{ NAME_FIELD : reporter_name}], submission_id=submission_id,form_submission=form_submission)
+        submission_id, form_submission = self.submit(request.transport, form_code, values, reporter_entity)
+        return Response(reporters=[{NAME_FIELD: reporter_name}], submission_id=submission_id,
+                        form_submission=form_submission)
 
 
 class WebPlayer(Player):
-    def __init__(self, dbm, location_tree=None,submission_logger=None):
-        Player.__init__(self, dbm, location_tree,submission_logger)
+    def __init__(self, dbm, location_tree=None, submission_logger=None):
+        Player.__init__(self, dbm, location_tree, submission_logger)
 
 
     def _parse(self, request):
@@ -185,13 +189,13 @@ class WebPlayer(Player):
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request)
-        submission_id,form_submission = self.submit(request.transport, form_code, values)
-        return Response(reporters=[], submission_id=submission_id,form_submission=form_submission)
+        submission_id, form_submission = self.submit(request.transport, form_code, values)
+        return Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
 
 
 class CsvPlayer(Player):
-    def __init__(self, dbm, parser, location_tree=None,submission_logger=None):
-        Player.__init__(self, dbm, location_tree,submission_logger)
+    def __init__(self, dbm, parser, location_tree=None, submission_logger=None):
+        Player.__init__(self, dbm, location_tree, submission_logger)
         self.parser = parser
 
     def accept(self, csv_data):
@@ -200,13 +204,13 @@ class CsvPlayer(Player):
         for (form_code, values) in submissions:
             try:
                 transport_info = TransportInfo(transport=Channel.CSV, source=Channel.CSV, destination="")
-                submission_id,form_submission = self.submit(transport_info, form_code, values)
-                response = Response(reporters=[], submission_id=submission_id,form_submission=form_submission)
+                submission_id, form_submission = self.submit(transport_info, form_code, values)
+                response = Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
                 if not form_submission.saved:
                     response.errors = dict(error=form_submission.errors.values(), row=values)
                 responses.append(response)
             except MangroveException as e:
-                response = Response(reporters=[], submission_id=None,form_submission=None)
+                response = Response(reporters=[], submission_id=None, form_submission=None)
                 response.success = False
                 response.errors = dict(error=e.message, row=values)
                 responses.append(response)
@@ -214,8 +218,8 @@ class CsvPlayer(Player):
 
 
 class XlsPlayer(Player):
-    def __init__(self, dbm, parser, location_tree=None,submission_logger=None):
-        Player.__init__(self, dbm, location_tree,submission_logger)
+    def __init__(self, dbm, parser, location_tree=None, submission_logger=None):
+        Player.__init__(self, dbm, location_tree, submission_logger)
         self.parser = parser
 
     def accept(self, file_contents):
@@ -224,13 +228,13 @@ class XlsPlayer(Player):
         for (form_code, values) in submissions:
             try:
                 transport_info = TransportInfo(transport=Channel.XLS, source=Channel.XLS, destination="")
-                submission_id,form_submission = self.submit(transport_info, form_code, values)
-                response = Response(reporters=[], submission_id=submission_id,form_submission=form_submission)
+                submission_id, form_submission = self.submit(transport_info, form_code, values)
+                response = Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
                 if not form_submission.saved:
                     response.errors = dict(error=form_submission.errors.values(), row=values)
                 responses.append(response)
             except MangroveException as e:
-                response = Response(reporters=[], submission_id=None,form_submission=None)
+                response = Response(reporters=[], submission_id=None, form_submission=None)
                 response.success = False
                 response.errors = dict(error=e.message, row=values)
                 responses.append(response)

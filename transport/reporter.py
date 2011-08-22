@@ -20,7 +20,7 @@ def find_reporter_entity(dbm, from_number):
         raise MultipleReportersForANumberException(from_number)
     reporter_entity_id = reporter_list[0].keys()[0]
     reporter_name = reporter_list[0][reporter_entity_id].get(NAME_FIELD)
-    return Entity.get(dbm, reporter_entity_id),reporter_name
+    return Entity.get(dbm, reporter_entity_id), reporter_name
 
 
 def find_reporters_by_from_number(dbm, from_number):

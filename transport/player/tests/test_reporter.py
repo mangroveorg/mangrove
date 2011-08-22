@@ -26,17 +26,17 @@ class TestReporter(TestCase):
         #Register Reporter
         self.register(self.manager, entity_type=["reporter"],
                       data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                              (NAME_FIELD, "A", self.first_name_type)],
+                          (NAME_FIELD, "A", self.first_name_type)],
                       location=[],
                       source="sms", short_code="REP1")
         self.register(self.manager, entity_type=["reporter"],
                       data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
-                              (NAME_FIELD, "B", self.first_name_type)],
+                          (NAME_FIELD, "B", self.first_name_type)],
                       location=[],
                       source="sms", short_code="rep5")
         self.register(self.manager, entity_type=["reporter"],
                       data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                              (NAME_FIELD, "B", self.first_name_type)],
+                          (NAME_FIELD, "B", self.first_name_type)],
                       location=[],
                       source="sms", short_code="REP2")
 

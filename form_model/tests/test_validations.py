@@ -141,7 +141,6 @@ class TestChoiceValidations(unittest.TestCase):
 
 class TestLocationValidations(unittest.TestCase):
     def test_latitude_and_longitude_is_float(self):
-
         constraint = GeoCodeConstraint()
         expected_response = (90.0, 130.0)
         actual_response = constraint.validate("90", "130")
@@ -188,7 +187,6 @@ class TestLocationValidations(unittest.TestCase):
 
 
 class TestRegexValidations(unittest.TestCase):
-
     def test_should_validate_values_within_regex(self):
         constraint = RegexConstraint(reg="^[A-Za-z0-9]+$")
         self.assertEqual("Hello1", constraint.validate("Hello1"))
@@ -197,18 +195,18 @@ class TestRegexValidations(unittest.TestCase):
         constraint = RegexConstraint(reg="^[A-Za-z0-9]+$")
         with self.assertRaises(RegexMismatchException):
             constraint.validate("Hello 1")
-            
+
     def test_should_return_valid_regex_json(self):
         pattern = "^[A-Za-z0-9]+$"
         constraint = RegexConstraint(reg=pattern)
         self.assertEqual(("regex", pattern), constraint._to_json())
 
-class TestCreationOfConstraints(unittest.TestCase):
 
+class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_a_constraint_dictionary(self):
         constraint_info = [
             (ConstraintTypes.LENGTH, {ConstraintAttributes.MIN: 10, ConstraintAttributes.MAX: 20}),
-            (ConstraintTypes.REGEX,"^\w")
+            (ConstraintTypes.REGEX, "^\w")
         ]
         constraints = constraints_factory(constraint_info)
         self.assertEqual(2, len(constraints))
@@ -216,10 +214,10 @@ class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_empty_constraint_dictionary_if_None(self):
         constraint_info = []
         constraints = constraints_factory(constraint_info)
-        self.assertEqual([],constraints)
+        self.assertEqual([], constraints)
 
     def test_should_throw_error_if_constraint_not_known(self):
-        constraint_info = [('nonsense', 'this should bomb'),('regex', '^$')]
+        constraint_info = [('nonsense', 'this should bomb'), ('regex', '^$')]
         constraints = constraints_factory(constraint_info)
         self.assertEqual(1, len(constraints))
-        self.assertTrue(isinstance(constraints[0],RegexConstraint))
+        self.assertTrue(isinstance(constraints[0], RegexConstraint))

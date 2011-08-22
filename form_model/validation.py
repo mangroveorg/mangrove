@@ -44,7 +44,6 @@ class NumericRangeConstraint(object):
 
 
 class TextLengthConstraint(NumericRangeConstraint):
-
     def _to_json(self):
         dict = {}
         if self.min is not None:
@@ -55,6 +54,7 @@ class TextLengthConstraint(NumericRangeConstraint):
 
     def validate(self, value):
         return is_string(value.strip(), min=self.min, max=self.max)
+
 
 class ChoiceConstraint(object):
     def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
@@ -99,7 +99,6 @@ class GeoCodeConstraint(object):
 
 
 class RegexConstraint(object):
-
     def __init__(self, reg=None, dict=None):
         self._pattern = dict if dict is not None else reg
 
@@ -125,10 +124,10 @@ def constraints_factory(constraints_json):
     return constraints
 
 constraint_for = {
-    ConstraintTypes.LENGTH : TextLengthConstraint,
-    ConstraintTypes.RANGE : NumericRangeConstraint,
-    ConstraintTypes.SELECT : ChoiceConstraint,
-    ConstraintTypes.GEO : GeoCodeConstraint,
-    ConstraintTypes.REGEX : RegexConstraint,
+    ConstraintTypes.LENGTH: TextLengthConstraint,
+    ConstraintTypes.RANGE: NumericRangeConstraint,
+    ConstraintTypes.SELECT: ChoiceConstraint,
+    ConstraintTypes.GEO: GeoCodeConstraint,
+    ConstraintTypes.REGEX: RegexConstraint,
 
-}
+    }

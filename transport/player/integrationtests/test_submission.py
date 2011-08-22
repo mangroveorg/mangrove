@@ -9,7 +9,7 @@ from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,  InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
@@ -20,16 +20,15 @@ from mangrove.datastore.datadict import DataDictType
 
 
 class LocationTree(object):
-
     def get_hierarchy_path(self, location_name):
         return location_name
 
-    def get_location_hierarchy_for_geocode(self,lat, long ):
+    def get_location_hierarchy_for_geocode(self, lat, long ):
         return ['madagascar']
 
     def get_centroid(self, location_name, level):
         return 60, -12
-    
+
 
 class TestShouldSaveSMSSubmission(unittest.TestCase):
     def setUp(self):
@@ -62,12 +61,13 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                                       )
 
         self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-                (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
+            (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(4, 15)],
+                              defaultValue="some default value", language="eng",
+                              constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
@@ -103,7 +103,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
         self.assertEqual("clinic", data_record.submission['form_code'])
-        self.assertEqual(u"Test_reporter",response.reporters[0].get(NAME_FIELD))
+        self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
 
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
@@ -113,7 +113,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(4, 15)],
+                              defaultValue="some default value", language="eng",
+                              constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
@@ -126,7 +127,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(text)
 
         self.assertTrue(response.success)
-        self.assertEqual(u"Test_reporter",response.reporters[0].get(NAME_FIELD))
+        self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
@@ -347,7 +348,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-        self.assertEqual([-12.35 , 49.3] ,dog.geometry.get("coordinates"))
+        self.assertEqual([-12.35, 49.3], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_if_only_location_provided(self):
         message1 = """reg +t dog +n Dog in AMPIZARANTANY +l AMPIZARANTANY +d This is a Dog in
@@ -360,7 +361,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-        self.assertEqual([-12, 60] ,dog.geometry.get("coordinates"))
+        self.assertEqual([-12, 60], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
         message1 = """reg +t dog +n Dog in AMPIZARANTANY +l AMPIZARANTANY +g 10 10 +d This is a Dog in
@@ -373,5 +374,5 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
-        self.assertEqual([10, 10] ,dog.geometry.get("coordinates"))
-        self.assertEqual(["ampizarantany"] ,dog.location_path)
+        self.assertEqual([10, 10], dog.geometry.get("coordinates"))
+        self.assertEqual(["ampizarantany"], dog.location_path)

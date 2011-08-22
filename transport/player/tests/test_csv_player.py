@@ -15,7 +15,8 @@ class TestCsvPlayer(unittest.TestCase):
         self.original_code_generator = player._set_short_code
         self.original_handler_for_reg_form = player.Player._update_submission_with_short_code_if_registration_form
         player._set_short_code = Mock(spec=player._set_short_code)
-        player.Player._update_submission_with_short_code_if_registration_form = Mock(spec = player.Player._update_submission_with_short_code_if_registration_form)
+        player.Player._update_submission_with_short_code_if_registration_form = Mock(
+            spec=player.Player._update_submission_with_short_code_if_registration_form)
 
     def _mock_form_model(self):
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
@@ -40,7 +41,7 @@ class TestCsvPlayer(unittest.TestCase):
         self._mock_short_code_generator()
         self._mock_form_model()
         self.submission_logger = Mock(spec=SubmissionLogger)
-        self.player = CsvPlayer(self.dbm, self.parser, loc_tree,self.submission_logger)
+        self.player = CsvPlayer(self.dbm, self.parser, loc_tree, self.submission_logger)
 
     def tearDown(self):
         player._set_short_code = self.original_code_generator
@@ -57,8 +58,8 @@ class TestCsvPlayer(unittest.TestCase):
             if values.get('id') == 'CL003':
                 raise FormModelDoesNotExistsException('')
             form_submission_mock = Mock()
-            form_submission_mock.saved.return_value  = True
-            form_submission_mock.errors  = {}
+            form_submission_mock.saved.return_value = True
+            form_submission_mock.errors = {}
             return form_submission_mock
 
         self.form_model_mock.submit.side_effect = expected_side_effect

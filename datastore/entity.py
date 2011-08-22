@@ -24,8 +24,6 @@ def _check_if_exists(dbm, entity_type, short_code):
         return False
 
 
-
-
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """
     Initialize and save an entity to the database. Return the entity
@@ -37,7 +35,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     type_hierarchy = [e_type for e_type in entity_type]
     if not entity_type_already_defined(dbm, type_hierarchy):
         raise EntityTypeDoesNotExistsException(entity_type)
-    if _check_if_exists(dbm,type_hierarchy,short_code):
+    if _check_if_exists(dbm, type_hierarchy, short_code):
         raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
     e = Entity(dbm, entity_type=type_hierarchy, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
@@ -105,8 +103,8 @@ def generate_short_code(dbm, entity_type):
 
 
 def get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view(u"by_short_codes",descending = True,
-                                     startkey=[[entity_type], {}], endkey=[[entity_type]], group_level = 1)
+    rows = dbm.load_all_rows_in_view(u"by_short_codes", descending=True,
+                                     startkey=[[entity_type], {}], endkey=[[entity_type]], group_level=1)
     return rows[0][u"value"] if len(rows) else 0
 
 
@@ -207,11 +205,13 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
 
 def get_all_entities(dbm, include_docs=False):
-    rows =  dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
+    rows = dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
     return [_from_row_to_entity(dbm, row) for row in rows]
+
 
 def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
+
 
 class Entity(DataObject):
     """
@@ -298,8 +298,6 @@ class Entity(DataObject):
         Returns a copy of the path
         """
         return list(self._doc.location) if self._doc.location is not None else []
-
-
 
 
     @property
@@ -395,7 +393,7 @@ class Entity(DataObject):
             )
             return self._dbm._save_document(data_record_doc)
 
-    def update_latest_data(self,data):
+    def update_latest_data(self, data):
         for (label, value, dd_type) in data:
             self.data[label] = {'value': value, 'type': dd_type._doc.unwrap()}
         self.save()

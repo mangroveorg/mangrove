@@ -33,9 +33,9 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(form.id)
         self.assertTrue(form.type == "survey")
         constraints = form.fields[1].constraints
-        self.assertEqual( 10, constraints[0].max)
-        self.assertEqual( 5, constraints[0].min)
-        self.assertEqual( "\w+", constraints[1].pattern)
+        self.assertEqual(10, constraints[0].max)
+        self.assertEqual(5, constraints[0].min)
+        self.assertEqual("\w+", constraints[1].pattern)
 
 
     def test_should_add_name_of_form_model(self):
@@ -170,10 +170,10 @@ class TestFormModel(unittest.TestCase):
                 "type": "text",
                 "ddtype": self.default_ddtype.to_json(),
                 "code": "eid",
-                "constraints":[("length", {"min": 1, "max": 10})],
+                "constraints": [("length", {"min": 1, "max": 10})],
                 },
                 {
-                "constraints":[('range', {
+                "constraints": [('range', {
                     "max": 10,
                     "min": 0
                 })],
@@ -268,7 +268,8 @@ class TestFormModel(unittest.TestCase):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10),RegexConstraint("\w+")],
+                              defaultValue="some default value", language="eng",
+                              constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)

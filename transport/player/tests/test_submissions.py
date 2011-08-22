@@ -84,14 +84,12 @@ class TestSubmissions(TestCase):
         self.assertFalse(response.is_registration)
 
 
-
     def test_should_save_data_record_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
         self.submission_handler.accept(self.submission_request)
 
         self.assertTrue(self.form_submission_entity_module.get_by_short_code.called)
-
 
 
     def test_should_not_save_data_record_if_in_valid_form_submission(self):

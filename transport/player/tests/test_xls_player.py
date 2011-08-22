@@ -11,7 +11,6 @@ import xlwt
 from mangrove.transport.submissions import SubmissionLogger
 
 class TestXlsPlayer(unittest.TestCase):
-
     def _mock_form_model(self):
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
         get_form_model_mock = self.get_form_model_mock_patcher.start()
@@ -42,8 +41,9 @@ class TestXlsPlayer(unittest.TestCase):
             for col_number, val in enumerate(row.split(',')):
                 ws.write(row_number, col_number, val)
         wb.save(self.file_name)
-        self.player = XlsPlayer(self.dbm, self.parser, loc_tree,self.submission_logger)
-        self.generate_code_patcher = patch("mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
+        self.player = XlsPlayer(self.dbm, self.parser, loc_tree, self.submission_logger)
+        self.generate_code_patcher = patch(
+            "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
         self.generate_code_patcher.start()
 
     def tearDown(self):
@@ -59,8 +59,8 @@ class TestXlsPlayer(unittest.TestCase):
             if values.get('id') == 'CL003':
                 raise FormModelDoesNotExistsException('')
             form_submission_mock = Mock()
-            form_submission_mock.saved.return_value  = True
-            form_submission_mock.errors  = {}
+            form_submission_mock.saved.return_value = True
+            form_submission_mock.errors = {}
             return form_submission_mock
 
         self.form_model_mock.submit.side_effect = expected_side_effect

@@ -1,5 +1,5 @@
 import datetime
-from mangrove.datastore.database import get_db_manager, \
+from mangrove.datastore.database import get_db_manager,\
     _delete_db_and_remove_db_manager
 from mangrove.datastore.views import find_views
 from pytz import UTC
@@ -10,7 +10,6 @@ from collections import defaultdict
 
 
 class ViewGenerationTimer(object):
-
     def _set_db_manager(self):
         self.manager = get_db_manager('http://localhost:5984/',
                                       'mangrove-test')
@@ -42,14 +41,14 @@ class ViewGenerationTimer(object):
             ['India', 'Karnataka', 'Bangalore'],
             ['India', 'Karnataka', 'Hubli'],
             ['India', 'Kerala', 'Kochi'],
-            ]
+        ]
         aggregation_paths = [
             ["Director", "Med_Supervisor", "Surgeon"],
             ["Director", "Med_Supervisor", "Nurse"],
             ["Director", "Med_Officer", "Doctor"],
             ["Director", "Med_Officer", "Surgeon"],
             ["Director", "Med_Officer", "Nurse"],
-            ]
+        ]
 
         self.entities = []
         for i in range(self._number_of_entities):
@@ -100,7 +99,7 @@ class ViewGenerationTimer(object):
                     e.add_data(
                         data=[(slug, value, self.dd_types[slug])],
                         event_time=event_time
-                        )
+                    )
 
     def print_csv_of_view_generation_times(self):
         iterations = [20, 40, 60, 80, 100]
@@ -117,6 +116,7 @@ class ViewGenerationTimer(object):
     def print_view_generation_times(self):
         times = self._calculate_view_generation_time(100, 8)
         import operator
+
         sorted_times = sorted(times.iteritems(), key=operator.itemgetter(1))
         for view_name, generation_time in sorted_times:
             print view_name + ": " + str(generation_time)

@@ -18,14 +18,14 @@ class TestFormModel(unittest.TestCase):
         self.datadict_mock.return_value = self.ddtype_mock
 
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
+                       language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
-                              ddtype=self.ddtype_mock)
+                       defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
+                       ddtype=self.ddtype_mock)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock)
+                          constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
+                         options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
@@ -44,13 +44,12 @@ class TestFormModel(unittest.TestCase):
         form = _construct_registration_form(self.dbm)
         field = form.get_field_by_code("T")
         self.assertIsNotNone(field)
-    
+
     def test_registration_form_should_have_multiple_constraints_on_mobile(self):
         form = _construct_registration_form(self.dbm)
         field = form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
         self.assertEqual(15, field.constraints[0].max)
         self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
-
 
 
     def test_should_validate_for_valid_integer_value(self):
@@ -130,12 +129,12 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(1, len(form_submission.errors))
 
     def test_should_assert_activity_report(self):
-
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
+                              defaultValue="some default value", language="eng",
+                              constraints=[TextLengthConstraint(5, 10)],
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
-                                        form_code="1", type='survey', fields=[question1])
+                                    form_code="1", type='survey', fields=[question1])
         self.assertTrue(activity_report.entity_defaults_to_reporter())
 
     def test_form_model_is_active_when_created(self):
@@ -173,25 +172,28 @@ class TestFormModel(unittest.TestCase):
 
 
     def test_should_bind_form_to_submission(self):
-        answers = {"ID": "1", "q1": "Asif", "q2": "200", "q3": "1", "q4" : ""}
+        answers = {"ID": "1", "q1": "Asif", "q2": "200", "q3": "1", "q4": ""}
         self.form_model.bind(answers)
         self.assertEqual(answers, self.form_model.submission)
         for field in self.form_model.fields:
-            self.assertEqual(self._case_insensitive_lookup(answers, field.code),field.value,"No match for field %s" % (field.code,))
+            self.assertEqual(self._case_insensitive_lookup(answers, field.code), field.value,
+                             "No match for field %s" % (field.code,))
 
     def test_should_set_error_on_field_validation_failure(self):
-        answers = {"id": "1", "q1" : "ab" , "q2": "200"}
+        answers = {"id": "1", "q1": "ab", "q2": "200"}
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertEqual(len(errors), 2)
-        self.assertEqual(['Answer 200 for question Q2 is greater than allowed.'],self.form_model.get_field_by_code("q2").errors)
-        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'],self.form_model.get_field_by_code("q1").errors)
+        self.assertEqual(['Answer 200 for question Q2 is greater than allowed.'], self.form_model.get_field_by_code(
+            "q2").errors)
+        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'], self.form_model.get_field_by_code(
+            "q1").errors)
 
     def test_should_not_set_error_if_validation_success(self):
-        answers = {"id": "1", "q1" : "abcdef" , "q2": "100"}
+        answers = {"id": "1", "q1": "abcdef", "q2": "100"}
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertEqual(len(errors), 0)
         for field in self.form_model.fields:
-            self.assertEqual([],field.errors)
+            self.assertEqual([], field.errors)
 
     def test_should_raise_exception_if_no_valid_fields_to_save(self):
         answers = {"id": "1", "Unknown field 1": "Asif Momin", "Unknown field 2": ""}

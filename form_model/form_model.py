@@ -277,7 +277,8 @@ class FormModel(DataObject):
             raise EntityQuestionCodeNotSubmitted()
         if self.is_registration_form() and is_empty(self.get_entity_type(values)):
             raise EntityTypeCodeNotSubmitted()
-        if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(self._case_insensitive_lookup(values,MOBILE_NUMBER_FIELD_CODE)):
+        if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
+            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             raise MobileNumberMissing()
 
     def _remove_empty_values(self, answers):

@@ -68,7 +68,6 @@ class field_attributes(object):
 
 
 class Field(object):
-
     def __init__(self, type="", name="", code="", label='', ddtype=None, instruction='',
                  language=field_attributes.DEFAULT_LANGUAGE, constraints=None):
         if not constraints: constraints = []
@@ -139,12 +138,12 @@ class Field(object):
 
     def set_value(self, value):
         self.value = value
-        
+
     def get_constraint_text(self):
         return ""
 
-class IntegerField(Field):
 
+class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
                  constraints=None):
         if not constraints: constraints = []
@@ -154,7 +153,7 @@ class IntegerField(Field):
     def validate(self, value):
         try:
             for constraint in self.constraints:
-                 constraint.validate(value)
+                constraint.validate(value)
             return float(value)
         except VdtValueTooBigError:
             raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE], value)
@@ -183,6 +182,7 @@ class IntegerField(Field):
             min = constraint.min
             max = constraint.max
         return max, min
+
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
@@ -256,8 +256,8 @@ class TextField(Field):
                 return constraint_text
         return ""
 
-class TelephoneNumberField(TextField):
 
+class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE):
         if not constraints: constraints = []
@@ -379,19 +379,22 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                      constraints=constraints, ddtype=ddtype, instruction=instruction)
 
-def _get_telephone_number_field(code, ddtype, dictionary,label, name, instruction):
+
+def _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
 
-    return TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype, instruction=instruction)
+    return TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype,
+                                instruction=instruction)
 
 
 def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
-    constraints, constraint_list =[], dictionary.get('constraints')
+    constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
         constraints = constraints_factory(constraint_list)
-    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,constraints=constraints)
+    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,
+                        constraints=constraints)
 
 
 def _get_date_field(code, ddtype, dictionary, label, name, instruction):

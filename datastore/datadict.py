@@ -10,18 +10,19 @@ def get_datadict_type(dbm, id):
     assert isinstance(dbm, DatabaseManager)
     return dbm.get(id, DataDictType)
 
-def get_datadict_type_by_slug(dbm,slug):
+
+def get_datadict_type_by_slug(dbm, slug):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(slug)
 
-    rows = dbm.load_all_rows_in_view('by_datadict_type', key=slug,include_docs='true')
+    rows = dbm.load_all_rows_in_view('by_datadict_type', key=slug, include_docs='true')
     if not len(rows):
-        raise DataObjectNotFound("DataDictType","slug",slug)
+        raise DataObjectNotFound("DataDictType", "slug", slug)
     assert len(rows) == 1, "More than one item found for slug %s" % (slug,)
 
     #  include_docs = 'true' returns the doc as a dict, which has to be wrapped into a DataDictDocument, and then into a DataDictType
     _doc = DataDictDocument.wrap(rows[0].doc)
-    return DataDictType.new_from_doc(dbm,_doc)
+    return DataDictType.new_from_doc(dbm, _doc)
 
 
 def get_datadict_types(dbm, ids):
@@ -51,7 +52,6 @@ class DataDictType(DataObject):
 
     def __init__(self, dbm, name=None, slug=None, primitive_type=None, description=None,
                  constraints=None, tags=None, id=None, **kwargs):
-
         """Create a new DataDictType.
 
         This represents a type of data that can be used to coordinate data collection and interoperability.
@@ -87,7 +87,7 @@ class DataDictType(DataObject):
         return self._doc.description
 
     @description.setter
-    def description(self,value):
+    def description(self, value):
         self._doc.description = value
 
     @property
@@ -106,9 +106,9 @@ class DataDictType(DataObject):
         return self._doc.unwrap()
 
     @classmethod
-    def create_from_json(cls, json,dbm):
+    def create_from_json(cls, json, dbm):
         doc = DataDictDocument.wrap(json)
-        return DataDictType.new_from_doc(dbm,doc)
+        return DataDictType.new_from_doc(dbm, doc)
 
     def update_record_caches(self):
         """This function will update the cached version of this type in all assosciated datarecords."""

@@ -24,10 +24,11 @@ class TestSMSPlayer(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        self.request = Request( transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
+        self.request = Request(transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
         self.submission_logger = Mock(spec=SubmissionLogger)
-        self.sms_player = SMSPlayer(self.dbm,  loc_tree,self.submission_logger)
-        self.generate_code_patcher = patch("mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
+        self.sms_player = SMSPlayer(self.dbm, loc_tree, self.submission_logger)
+        self.generate_code_patcher = patch(
+            "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
         self.generate_code_patcher.start()
 
     def _mock_form_model(self):
@@ -45,10 +46,9 @@ class TestSMSPlayer(TestCase):
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 
-#    TODO: Rewrite below test, skipping for now
+    #    TODO: Rewrite below test, skipping for now
     @SkipTest
     def test_should_submit_if_submission_by_registered_reporter(self):
-
         self.sms_player.accept(self.request)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)

@@ -119,7 +119,7 @@ class TestCsvParser(TestCase):
         results = csv_parser.parse(csv_data)
 
         self.assertEqual(5, len(results))
-        
+
         self._assert_results(results)
 
 

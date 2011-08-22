@@ -124,9 +124,9 @@ class TestDataStoreApi(unittest.TestCase):
 
         doctor_type, facility_type, med_type, opened_type = self._create_data_dict_type()
         data_record = [('meds', 20, med_type),
-                ('doc', "aroj", doctor_type),
-                ('facility', 'clinic', facility_type),
-                ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
+            ('doc', "aroj", doctor_type),
+            ('facility', 'clinic', facility_type),
+            ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
         data_record_id = clinic_entity.add_data(data=data_record,
                                                 event_time=datetime(2011, 01, 02, tzinfo=UTC),
                                                 submission=dict(submission_id="123456"))
@@ -149,9 +149,9 @@ class TestDataStoreApi(unittest.TestCase):
         clinic_entity, clinic_shortcode, reporter_entity, reporter_entity_short_code = self._create_clinic_and_reporter()
         doctor_type, facility_type, med_type, opened_type = self._create_data_dict_type()
         data_record = [('meds', 30, med_type),
-                ('doc', "asif", doctor_type),
-                ('facility', 'clinic', facility_type),
-                ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
+            ('doc', "asif", doctor_type),
+            ('facility', 'clinic', facility_type),
+            ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), opened_type)]
         data_record_id = clinic_entity.add_data(data=data_record,
                                                 event_time=datetime(2011, 01, 02, tzinfo=UTC),
                                                 submission=dict(submission_id="123456"))
@@ -258,8 +258,8 @@ class TestDataStoreApi(unittest.TestCase):
         e = Entity(self.dbm, entity_type='foo')
         e.save()
         data_record = [('meds', 20, med_type),
-                ('doc', "aroj", doctor_type),
-                ('facility', 'clinic', facility_type)]
+            ('doc', "aroj", doctor_type),
+            ('facility', 'clinic', facility_type)]
         e.add_data(data_record)
         # med (tag in list)
         types = [typ.slug for typ in e.data_types(['med'])]

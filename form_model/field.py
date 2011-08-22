@@ -133,13 +133,15 @@ class Field(object):
                 json[constraint[0]] = constraint[1]
         return json
 
-
     def add_or_edit_label(self, label, language=None):
         language_to_add = language if language is not None else field_attributes.DEFAULT_LANGUAGE
         self._dict['label'][language_to_add] = label
 
     def set_value(self, value):
         self.value = value
+        
+    def get_constraint_text(self):
+        return ""
 
 class IntegerField(Field):
 
@@ -160,6 +162,27 @@ class IntegerField(Field):
             raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtTypeError:
             raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE], value)
+
+    def get_constraint_text(self):
+        max, min = self._get_max_min()
+        if min is not None and max is None:
+            constraint_text = "Minimum %s" % min
+            return constraint_text
+        if min is None and max is not None:
+            constraint_text = "Upto %s" % max
+            return constraint_text
+        elif min is not None and max is not None:
+            constraint_text = "%s -- %s" % (min, max)
+            return constraint_text
+        return ""
+
+    def _get_max_min(self):
+        max = min = None
+        if len(self.constraints) > 0:
+            constraint = self.constraints[0]
+            min = constraint.min
+            max = constraint.max
+        return max, min
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
@@ -182,6 +205,9 @@ class DateField(Field):
     @property
     def date_format(self):
         return self._dict.get(self.DATE_FORMAT)
+
+    def get_constraint_text(self):
+        return self.date_format
 
 
 class TextField(Field):
@@ -213,6 +239,22 @@ class TextField(Field):
     @property
     def is_entity_field(self):
         return self._dict.get(self.ENTITY_QUESTION_FLAG)
+
+    def get_constraint_text(self):
+        if not is_empty(self.constraints):
+            length_constraint = self.constraints[0]
+            min = length_constraint.min
+            max = length_constraint.max
+            if min is not None and max is None:
+                constraint_text = "Minimum %s characters" % min
+                return constraint_text
+            if min is None and max is not None:
+                constraint_text = "Upto %s characters" % max
+                return constraint_text
+            elif min is not None and max is not None:
+                constraint_text = "Between %s -- %s characters" % (min, max)
+                return constraint_text
+        return ""
 
 class TelephoneNumberField(TextField):
 
@@ -308,6 +350,9 @@ class SelectField(Field):
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 
+    def get_constraint_text(self):
+        return [option["text"][self.language] for option in self.options]
+
 
 class GeoCodeField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
@@ -321,6 +366,9 @@ class GeoCodeField(Field):
         if len(lat_long) < 2:
             raise GeoCodeFormatException(self.code)
         return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
+
+    def get_constraint_text(self):
+        return "xx.xxxx yy.yyyy"
 
 
 def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction):

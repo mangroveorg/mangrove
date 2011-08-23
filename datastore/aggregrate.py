@@ -3,10 +3,10 @@
 
 from _collections import defaultdict
 import time
-from mangrove.datastore.data import BY_VALUES_FORM_CODE_INDEX, BY_VALUES_EVENT_TIME_INDEX
+from mangrove.datastore.data import BY_VALUES_FORM_CODE_INDEX, BY_VALUES_EVENT_TIME_INDEX, EntityAggregration
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.dates import convert_to_epoch
-from mangrove.utils.types import is_string
+from mangrove.utils.types import is_string, is_empty
 
 class Sum(object):
     def __init__(self, field_name):
@@ -14,7 +14,10 @@ class Sum(object):
 
     def reduce(self, list_of_values):
         assert isinstance(list_of_values, list)
-        return sum(list_of_values)
+        try:
+            return sum(list_of_values)
+        except TypeError:
+            return None
 
 
 class Min(object):
@@ -70,16 +73,16 @@ def aggregation_factory(key, field_name):
 
 
 def aggregate_by_form_code_python(dbm, form_code, aggregates=None, aggregate_on=None, filter=None,
-                                  starttime=None, endtime=None):
+                                  starttime=None, endtime=None,include_grand_totals = False):
     assert is_string(form_code)
     aggregates = [] if aggregates is None else aggregates
 
     form = get_form_model_by_code(dbm, form_code)
-    values = _map(dbm, form.entity_type, BY_VALUES_FORM_CODE_INDEX, form_code, starttime, endtime)
+    values = _map(dbm, form.entity_type, BY_VALUES_FORM_CODE_INDEX, form_code, starttime, endtime, aggregate_on, include_grand_totals)
     return _reduce(aggregates, values)
 
 
-def _map(dbm, type_path, group_level, form_code=None, start_time=None, end_time=None):
+def _map(dbm, type_path, group_level, form_code=None, start_time=None, end_time=None, aggregate_on=None, include_grand_totals=False):
 # currently it assumes one to one mapping between form code and entity type and hence only filter on form code
     view_name = "by_form_code_time"
     epoch_start = convert_to_epoch(start_time)
@@ -90,7 +93,10 @@ def _map(dbm, type_path, group_level, form_code=None, start_time=None, end_time=
     values = []
     for row in rows:
         form_code, timestamp, entity_id, field = row.key
-        values.append(([entity_id, field], row.value))
+        if include_grand_totals or aggregate_on is None:
+            values.append((['GrandTotals', field], row.value))
+        if isinstance(aggregate_on, EntityAggregration):
+            values.append(([entity_id, field], row.value))
 
     transformed_values = defaultdict(list)
     for key, value in values:
@@ -99,13 +105,21 @@ def _map(dbm, type_path, group_level, form_code=None, start_time=None, end_time=
     return transformed_values
 
 
+def _get_aggregate_for_field(aggregates, field_name):
+    aggregate_functions = [aggregate for aggregate in aggregates if aggregate.field_name == field_name]
+    return aggregate_functions[0] if not is_empty(aggregate_functions) else None
+
+
 def _reduce(aggregates, values):
     result = defaultdict(dict)
-    for key, value_list in values.items():
-        aggregate_funcs = [aggregate for aggregate in aggregates if aggregate.field_name == key[1]]
-        if aggregate_funcs:
-            aggregate = aggregate_funcs[0]
-            result[key[0]][key[1]] = aggregate.reduce(value_list)
+    for (result_key,field_name), value_list in values.items():
+        if result_key == 'GrandTotals':
+            aggregate_func = Sum('')
+        else:
+            aggregate_func = _get_aggregate_for_field(aggregates, field_name)
+        if aggregate_func:
+            aggregate = aggregate_func
+            result[result_key][field_name] = aggregate.reduce(value_list)
     return result
 
 

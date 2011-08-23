@@ -653,6 +653,50 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[id1], {"doctors": 20, "beds": 500, 'patients': 15})
         self.assertEqual(values[id2], {'doctors': 50, "beds": 420, 'patients': 35})
 
+    def _add_data_for_form_1(self, dd_types, e):
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL1'))
+        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL1'))
+        e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
+                ("director", "Dr. A1", dd_types['director']), ("patients", 10, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='1', form_code='CL1'))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 10, dd_types['meds']),
+                ("patients", 20, dd_types['patients']), ("director", "Dr. A2", dd_types['director'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL1'))
+
+    def _add_data_for_form_2(self, dd_types, e):
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
+                ("patients", 45, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 04, 01, tzinfo=UTC),
+                   submission=dict(submission_id='2', form_code='CL2'))
+
+    def _add_data_for_form_1_entity_2(self, dd_types, e):
+        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL1'))
+        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL1'))
+        e.add_data(data=[("beds", 150, dd_types['beds']), ("meds", 50, dd_types['meds']),
+                ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
+                   submission=dict(submission_id='3', form_code='CL1'))
+
+    def _add_data_form_2_entity_2(self, dd_types, e):
+        e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
+                ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
+                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
+                   submission=dict(submission_id='4', form_code='CL2'))
+
     def test_should_aggregate_per_entity_per_form_model_with_time_filter(self):
         ENTITY_TYPE = ["HealthFacility", "Clinic"]
         self.create_clinic_type(ENTITY_TYPE)
@@ -661,49 +705,14 @@ class TestQueryApi(unittest.TestCase):
         dd_types = self.create_datadict_types()
         e, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
 
-        e.add_data(data=[("beds", 300, dd_types['beds']), ("meds", 20, dd_types['meds']),
-            ("director", "Dr. A", dd_types['director']), ("patients", 10, dd_types['patients'])],
-                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='1', form_code='CL1'))
-        e.add_data(data=[("beds", 500, dd_types['beds']), ("meds", 50, dd_types['meds']),
-            ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
-                   submission=dict(submission_id='2', form_code='CL1'))
+        self._add_data_for_form_1(dd_types, e)
 
-        e.add_data(data=[("beds", 300, dd_types['beds']), ("doctors", 20, dd_types['doctors']),
-            ("director", "Dr. A1", dd_types['director']), ("patients", 10, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='1', form_code='CL1'))
-
-        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 10, dd_types['meds']),
-            ("patients", 20, dd_types['patients']), ("director", "Dr. A2", dd_types['director'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
-                   submission=dict(submission_id='2', form_code='CL1'))
-
-        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 20, dd_types['meds']),
-            ("patients", 45, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 04, 01, tzinfo=UTC),
-                   submission=dict(submission_id='2', form_code='CL2'))
+        self._add_data_for_form_2(dd_types, e)
 
         e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
 
-        e.add_data(data=[("beds", 100, dd_types['beds']), ("meds", 250, dd_types['meds']),
-            ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
-                   event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='3', form_code='CL1'))
-        e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 400, dd_types['meds']),
-            ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
-                   submission=dict(submission_id='4', form_code='CL1'))
-
-        e.add_data(data=[("beds", 150, dd_types['beds']), ("meds", 50, dd_types['meds']),
-            ("director", "Dr. B1", dd_types['director']), ("patients", 50, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
-                   submission=dict(submission_id='3', form_code='CL1'))
-        e.add_data(data=[("beds", 270, dd_types['beds']), ("doctors", 40, dd_types['doctors']),
-            ("director", "Dr. B2", dd_types['director']), ("patients", 20, dd_types['patients'])],
-                   event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
-                   submission=dict(submission_id='4', form_code='CL2'))
+        self._add_data_for_form_1_entity_2(dd_types, e)
+        self._add_data_form_2_entity_2(dd_types, e)
 
         e, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'])
         e.add_data(data=[("beds", 200, dd_types['beds']), ("meds", 50, dd_types['meds']),
@@ -755,3 +764,65 @@ class TestQueryApi(unittest.TestCase):
                                     form_code=form_code, type='survey', fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
+
+
+    def test_should_return_grand_total_for_all_records(self):
+        ENTITY_TYPE = ["HealthFacility", "Clinic"]
+        self.create_clinic_type(ENTITY_TYPE)
+        self._create_form_model("CL2")
+        self._create_form_model("CL1")
+        dd_types = self.create_datadict_types()
+        e, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
+
+        self._add_data_for_form_1(dd_types, e)
+
+        self._add_data_for_form_2(dd_types, e)
+
+        e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
+
+        self._add_data_for_form_1_entity_2(dd_types, e)
+        self._add_data_form_2_entity_2(dd_types, e)
+
+        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
+                                               aggregate_on=None,
+                                               aggregates=[Sum("patients"), Sum('meds'), Sum('beds')],
+                                               )
+
+        self.assertEqual(dict(GrandTotals = {'patients': 180, 'meds': 780, 'beds': 1750, 'director': None, 'doctors':20 }) ,values)
+
+
+    def test_should_return_grand_total_and_aggregate_per_entity(self):
+        ENTITY_TYPE = ["HealthFacility", "Clinic"]
+        self.create_clinic_type(ENTITY_TYPE)
+        self._create_form_model("CL2")
+        self._create_form_model("CL1")
+        dd_types = self.create_datadict_types()
+        e, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
+
+        self._add_data_for_form_1(dd_types, e)
+
+        self._add_data_for_form_2(dd_types, e)
+
+        e, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
+
+        self._add_data_for_form_1_entity_2(dd_types, e)
+        self._add_data_form_2_entity_2(dd_types, e)
+
+        values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
+                                               aggregate_on=EntityAggregration(),
+                                               aggregates=[Sum("patients"), Min('meds'), Max('beds'),
+                                                           Latest("director")],
+                                               include_grand_totals = True
+                                               )
+
+
+        self.assertEqual(len(values), 3)
+        self.assertEqual({"patients": 60, 'meds': 10, 'beds': 500, 'director': "Dr. A2"},values[id1])
+        self.assertEqual({"patients": 120, 'meds': 50, 'beds': 200, 'director': "Dr. B1"},values[id2])
+        self.assertEqual({'patients': 180, 'meds': 780, 'beds': 1750, 'director': None, 'doctors': 20 },values["GrandTotals"])
+
+
+
+
+
+

@@ -49,6 +49,7 @@ class Response(object):
             self.short_code = form_submission.short_code
             self.processed_data = form_submission.cleaned_data
             self.is_registration = form_submission.is_registration
+            self.entity_type = form_submission.entity_type
 
 
 def _short_code_not_in(entity_q_code, values):

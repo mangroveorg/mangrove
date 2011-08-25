@@ -6,7 +6,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player import player
 from mangrove.transport.player.parser import CsvParser
-from mangrove.transport.player.player import CsvPlayer
+from mangrove.transport.player.player import FilePlayer, Channel
 from mangrove.transport.submissions import SubmissionLogger
 
 
@@ -41,7 +41,7 @@ class TestCsvPlayer(unittest.TestCase):
         self._mock_short_code_generator()
         self._mock_form_model()
         self.submission_logger = Mock(spec=SubmissionLogger)
-        self.player = CsvPlayer(self.dbm, self.parser, loc_tree, self.submission_logger)
+        self.player = FilePlayer(self.dbm, self.parser, Channel.CSV, loc_tree, self.submission_logger)
 
     def tearDown(self):
         player._set_short_code = self.original_code_generator

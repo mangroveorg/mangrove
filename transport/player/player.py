@@ -192,42 +192,18 @@ class WebPlayer(Player):
         submission_id, form_submission = self.submit(request.transport, form_code, values)
         return Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
 
-
-class CsvPlayer(Player):
-    def __init__(self, dbm, parser, location_tree=None, submission_logger=None):
+class FilePlayer(Player):
+    def __init__(self, dbm, parser, channel_name, location_tree=None, submission_logger=None):
         Player.__init__(self, dbm, location_tree, submission_logger)
         self.parser = parser
-
-    def accept(self, csv_data):
-        responses = []
-        submissions = self.parser.parse(csv_data)
-        for (form_code, values) in submissions:
-            try:
-                transport_info = TransportInfo(transport=Channel.CSV, source=Channel.CSV, destination="")
-                submission_id, form_submission = self.submit(transport_info, form_code, values)
-                response = Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
-                if not form_submission.saved:
-                    response.errors = dict(error=form_submission.errors.values(), row=values)
-                responses.append(response)
-            except MangroveException as e:
-                response = Response(reporters=[], submission_id=None, form_submission=None)
-                response.success = False
-                response.errors = dict(error=e.message, row=values)
-                responses.append(response)
-        return responses
-
-
-class XlsPlayer(Player):
-    def __init__(self, dbm, parser, location_tree=None, submission_logger=None):
-        Player.__init__(self, dbm, location_tree, submission_logger)
-        self.parser = parser
+        self.channel_name = channel_name
 
     def accept(self, file_contents):
         responses = []
         submissions = self.parser.parse(file_contents)
         for (form_code, values) in submissions:
             try:
-                transport_info = TransportInfo(transport=Channel.XLS, source=Channel.XLS, destination="")
+                transport_info = TransportInfo(transport=self.channel_name, source=self.channel_name, destination="")
                 submission_id, form_submission = self.submit(transport_info, form_code, values)
                 response = Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
                 if not form_submission.saved:

@@ -8,9 +8,9 @@ from mangrove.utils.types import is_empty, is_string
 
 
 class SMSParser(object):
-    MESSAGE_PREFIX = ur'^(\w+)\s+\+(\w+)\s+(\w+)'
+    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
-    SEPARATOR = u"+"
+    SEPARATOR = u" ."
 
     def __init__(self):
         pass
@@ -29,7 +29,17 @@ class SMSParser(object):
         tokens.remove(tokens[0])
         return form_code
 
+    def _get_token(self,token):
+        """
+            handling the tokens with only separators
+        """
+        token_without_separator = "".join(token.split("."))
+        if is_empty(token_without_separator):
+            return token_without_separator
+        return token
+
     def _parse_tokens(self, tokens):
+        tokens = [ self._get_token(token) for token in tokens if token]
         tokens = [token.strip() for token in tokens if token]
         submission = {}
         for token in tokens:

@@ -24,7 +24,7 @@ class TestSMSPlayer(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        self.request = Request(transportInfo=self.transport, message="FORM_CODE +ID 1 +M hello world")
+        self.request = Request(transportInfo=self.transport, message="FORM_CODE .ID 1 .M hello world")
         self.submission_logger = Mock(spec=SubmissionLogger)
         self.sms_player = SMSPlayer(self.dbm, loc_tree, self.submission_logger)
         self.generate_code_patcher = patch(
@@ -72,7 +72,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        self.request = Request(transportInfo=transport, message="cli001 +na tester1 +na tester2")
+        self.request = Request(transportInfo=transport, message="cli001 .na tester1 .na tester2")
         with self.assertRaises(SubmissionParseException):
             self.sms_player.accept(self.request)
 

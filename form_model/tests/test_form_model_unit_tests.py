@@ -3,7 +3,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, NoQuestionsSubmittedException
+from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, NoQuestionsSubmittedException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
@@ -163,6 +163,13 @@ class TestFormModel(unittest.TestCase):
         answers = {"s": "1", "t": ["Reporter"], "g": "1 1"}
         form_submission = registration_form.validate_submission(answers)
         self.assertEqual(["reporter"], form_submission.entity_type)
+
+    def test_should_throw_exception_if_no_location_field_provided_while_registering_an_entity(self):
+        answers = {"s": "1", "t": "Reporter"}
+        registration_form = _construct_registration_form(self.dbm)
+        with self.assertRaises(LocationFieldNotPresentException):
+            registration_form.validate_submission(answers)
+
 
     def _case_insensitive_lookup(self, values, code):
         for fieldcode in values:

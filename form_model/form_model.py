@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException
+    EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -280,6 +280,9 @@ class FormModel(DataObject):
         if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
             self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             raise MobileNumberMissing()
+        if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(
+            self._case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
+            raise LocationFieldNotPresentException()
 
     def _remove_empty_values(self, answers):
         return {k: v for k, v in answers.items() if not is_empty(v)}

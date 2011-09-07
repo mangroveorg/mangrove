@@ -155,12 +155,12 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(self.form_model.is_in_test_mode())
 
     def test_create_form_submission_with_entity_type_as_lowercase_list_of_string(self):
-        answers = {"s": "1", "t": "Reporter"}
+        answers = {"s": "1", "t": "Reporter", "g": "1 1"}
         registration_form = _construct_registration_form(self.dbm)
         form_submission = registration_form.validate_submission(answers)
         self.assertEqual(["reporter"], form_submission.entity_type)
 
-        answers = {"s": "1", "t": ["Reporter"]}
+        answers = {"s": "1", "t": ["Reporter"], "g": "1 1"}
         form_submission = registration_form.validate_submission(answers)
         self.assertEqual(["reporter"], form_submission.entity_type)
 

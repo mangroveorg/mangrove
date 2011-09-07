@@ -235,7 +235,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
-        request = Request(transportInfo=transport_info, message="reg .N buddy .S DOG3 .T dog")
+        request = Request(transportInfo=transport_info, message="reg .N buddy .S DOG3 .T dog .G 1 1")
 
         response = self.sms_player.accept(request)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
@@ -245,7 +245,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'g': '1 1'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record_id)
 

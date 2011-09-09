@@ -44,24 +44,6 @@ def get_form_model_by_code(dbm, code):
     form = FormModel.new_from_doc(dbm, doc)
     return form
 
-def submission_count(dbm, form_code, from_time, to_time):
-    startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    rows = dbm.load_all_rows_in_view('submissionlog', descending=True, startkey=startkey, endkey = endkey )
-    return rows[0]['value']['count']
-
-def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size=None):
-    startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    if page_size is None:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
-                                              startkey=startkey,
-                                              endkey=endkey)
-    else:
-        rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
-                                              startkey=startkey,
-                                              endkey=endkey, skip=page_number * page_size, limit=page_size)
-    submissions = [Submission.new_from_doc(dbm=dbm, doc = Submission.__document_class__.wrap(row['value'])) for row in rows]
-    return submissions
-
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
@@ -480,9 +462,3 @@ def _construct_registration_form(manager):
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model
-
-
-def _get_start_and_end_key(form_code, from_time, to_time):
-    end = [form_code] if from_time is  None else [form_code, from_time]
-    start = [form_code,{}] if to_time  is None else [form_code, to_time]
-    return start, end

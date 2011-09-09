@@ -12,10 +12,11 @@ from mangrove.datastore.entity import define_type, get_by_short_code, create_ent
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, get_submissions
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.datastore.datadict import DataDictType
+from mangrove.transport.submissions import get_submissions
 
 
 class LocationTree(object):

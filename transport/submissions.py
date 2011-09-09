@@ -10,7 +10,7 @@ ENTITY_QUESTION_DISPLAY_CODE = "eid"
 def submission_count(dbm, form_code, from_time, to_time):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
     rows = dbm.load_all_rows_in_view('submissionlog', descending=True, startkey=startkey, endkey = endkey )
-    return rows[0]['value']['count']
+    return 0 if len(rows) == 0 else rows[0]['value']['count']
 
 def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size=None):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)

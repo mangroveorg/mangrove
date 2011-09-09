@@ -110,9 +110,18 @@ class DataObject(object):
     def delete(self):
         self._dbm.delete(self)
 
+    def void(self):
+        if self._doc is not None:
+            self._doc.void = True
+            self.save()
+
     @property
     def id(self):
         return self._doc.id if self._doc is not None else None
+
+    @property
+    def created(self):
+        return self._doc.created
 
 
 class DatabaseManager(object):

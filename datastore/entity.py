@@ -212,6 +212,12 @@ def get_all_entities(dbm, include_docs=False):
 def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
+class DataRecord(DataObject):
+    __document_class__ = DataRecordDocument
+
+    def __init__(self, dbm):
+        assert isinstance(dbm, DatabaseManager)
+        DataObject.__init__(self, dbm)
 
 class Entity(DataObject):
     """

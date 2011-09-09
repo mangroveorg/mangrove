@@ -6,7 +6,6 @@ from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SubmissionParseException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
-from mangrove.transport.submissions import SubmissionLogger
 
 
 class TestSMSPlayer(TestCase):
@@ -25,8 +24,7 @@ class TestSMSPlayer(TestCase):
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request(transportInfo=self.transport, message="FORM_CODE .ID 1 .M hello world")
-        self.submission_logger = Mock(spec=SubmissionLogger)
-        self.sms_player = SMSPlayer(self.dbm, loc_tree, self.submission_logger)
+        self.sms_player = SMSPlayer(self.dbm, loc_tree)
         self.generate_code_patcher = patch(
             "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
         self.generate_code_patcher.start()

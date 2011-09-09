@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from copy import copy
 import time
 from datawinners.location.LocationTree import get_location_tree
 from mangrove.datastore import entity
@@ -6,7 +7,7 @@ from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatEx
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
-from mangrove.transport.submissions import SubmissionLogger, ENTITY_QUESTION_DISPLAY_CODE
+from mangrove.transport.submissions import ENTITY_QUESTION_DISPLAY_CODE, Submission
 from mangrove.utils.types import is_empty
 
 
@@ -74,21 +75,20 @@ def _set_short_code(dbm, form_model, values):
 
 
 class Player(object):
-    def __init__(self, dbm, location_tree=None, submission_logger=None):
+    def __init__(self, dbm, location_tree=None):
         self.dbm = dbm
         self.location_tree = get_location_tree() if location_tree is None else location_tree
-        self.submission_logger = SubmissionLogger(self.dbm) if submission_logger is None else submission_logger
 
     def submit(self, transportInfo, form_code, values, reporter_entity=None):
-        submission_id = self.submission_logger.create_submission_log(transportInfo, form_code, values, reporter_entity)
+        submission = Submission(self.dbm, transportInfo, form_code, copy(values))
+        submission.save()
         try:
-            form_submission = self._save_submission(form_code, values, reporter_entity, submission_id)
-            self.submission_logger.update_submission_log_from_form_submission(submission_id, form_submission)
-            return submission_id, form_submission
+            form_submission = self._save_submission(form_code, values, reporter_entity, submission.uuid)
+            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
+                              form_submission.form_model.is_in_test_mode())
+            return submission.uuid, form_submission
         except MangroveException as exception:
-            self.submission_logger.update_submission_log(submission_id=submission_id, status=False,
-                                                         errors=exception.message,
-                                                         in_test_mode=self.form.is_in_test_mode())
+            submission.update(status=False, errors=exception.message, is_test_mode=self.form.is_in_test_mode())
             raise
 
 
@@ -160,8 +160,8 @@ class Player(object):
 
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None, submission_logger=None):
-        Player.__init__(self, dbm, location_tree, submission_logger)
+    def __init__(self, dbm, location_tree=None):
+        Player.__init__(self, dbm, location_tree)
 
     def _parse(self, request):
         sms_parser = SMSParser()
@@ -178,8 +178,8 @@ class SMSPlayer(Player):
 
 
 class WebPlayer(Player):
-    def __init__(self, dbm, location_tree=None, submission_logger=None):
-        Player.__init__(self, dbm, location_tree, submission_logger)
+    def __init__(self, dbm, location_tree=None):
+        Player.__init__(self, dbm, location_tree)
 
 
     def _parse(self, request):
@@ -194,8 +194,8 @@ class WebPlayer(Player):
         return Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
 
 class FilePlayer(Player):
-    def __init__(self, dbm, parser, channel_name, location_tree=None, submission_logger=None):
-        Player.__init__(self, dbm, location_tree, submission_logger)
+    def __init__(self, dbm, parser, channel_name, location_tree=None):
+        Player.__init__(self, dbm, location_tree)
         self.parser = parser
         self.channel_name = channel_name
 

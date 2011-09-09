@@ -8,7 +8,6 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import XlsParser
 from mangrove.transport.player.player import FilePlayer, Channel
 import xlwt
-from mangrove.transport.submissions import SubmissionLogger
 
 class TestXlsPlayer(unittest.TestCase):
     def _mock_form_model(self):
@@ -22,7 +21,6 @@ class TestXlsPlayer(unittest.TestCase):
         loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self._mock_form_model()
-        self.submission_logger = Mock(spec=SubmissionLogger)
         self.parser = XlsParser()
         self.xls_data = """
                                 FORM_CODE,ID,BEDS,DIRECTOR,MEDS
@@ -41,7 +39,7 @@ class TestXlsPlayer(unittest.TestCase):
             for col_number, val in enumerate(row.split(',')):
                 ws.write(row_number, col_number, val)
         wb.save(self.file_name)
-        self.player = FilePlayer(self.dbm, self.parser, Channel.XLS, loc_tree, self.submission_logger)
+        self.player = FilePlayer(self.dbm, self.parser, Channel.XLS, loc_tree)
         self.generate_code_patcher = patch(
             "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
         self.generate_code_patcher.start()

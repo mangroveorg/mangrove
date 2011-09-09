@@ -9,7 +9,6 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, N
 
 from mangrove.form_model.form_model import FormModel, FormSubmission
 from mangrove.transport.player.player import   Channel
-from mangrove.transport.submissions import SubmissionLogger
 
 #TODO: Now that submission handler has been deleted, move these tests to the player.
 @SkipTest
@@ -21,15 +20,10 @@ class TestSubmissions(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.form_model_patcher = patch('mangrove.transport.submissions.get_form_model_by_code')
         self.form_submission_entity_patcher = patch('mangrove.form_model.form_model.entity')
-        self.SubmissionLogger_class_patcher = patch('mangrove.transport.submissions.SubmissionLogger', )
 
         self.get_form_model_mock = self.form_model_patcher.start()
         self.form_submission_entity_module = self.form_submission_entity_patcher.start()
-        self.SubmissionLogger_mock_class = self.SubmissionLogger_class_patcher.start()
-        self.submissionLogger = Mock(spec=SubmissionLogger)
-        self.SubmissionLogger_mock_class.return_value = self.submissionLogger
         self.SUBMISSION_ID = "SUBMISSION_ID"
-        self.submissionLogger.create_submission_log.return_value = self.SUBMISSION_ID
 
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_registration_form.return_value = False
@@ -46,7 +40,6 @@ class TestSubmissions(TestCase):
 
         reporter = Mock(spec=Entity)
         reporter.short_code.return_value = "REP1"
-        self.submission_handler = SubmissionHandler(self.dbm)
         self.submission_request = None
 
     def tearDown(self):
@@ -107,39 +100,6 @@ class TestSubmissions(TestCase):
             self.submission_handler.accept(self.submission_request)
 
 
-    def test_should_create_new_submission_log(self):
-        form_submission = self._valid_form_submission()
-        self.form_model_mock.validate_submission.return_value = form_submission
-
-        self.submission_handler.accept(self.submission_request)
-
-        self.assertTrue(self.submissionLogger.create_submission_log.called)
-
-
-    def test_should_update_submission_log_on_success(self):
-        form_submission = self._valid_form_submission()
-        self.form_model_mock.validate_submission.return_value = form_submission
-
-        response = self.submission_handler.accept(self.submission_request)
-
-        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=None,
-                                                                            data_record_id=response.datarecord_id,
-                                                                            in_test_mode=False)
-
-
-    def test_should_update_submission_log_on_failure(self):
-        form_submission = self._invalid_form_submission()
-        self.form_model_mock.validate_submission.return_value = form_submission
-
-        self.submission_handler.accept(self.submission_request)
-
-        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=False,
-                                                                            data_record_id=None,
-                                                                            errors=form_submission.errors,
-                                                                            in_test_mode=False)
-
     def test_should_fail_submission_if_invalid_form_code(self):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
 
@@ -156,13 +116,6 @@ class TestSubmissions(TestCase):
         with self.assertRaises(DataObjectNotFound):
             self.submission_handler.accept(self.submission_request)
 
-        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=False,
-                                                                            errors=u'Entity with id = short_code not found.'
-                                                                            ,
-                                                                            in_test_mode=False)
-
-
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
         self.form_model_mock.is_registration_form.return_value = True
@@ -177,11 +130,6 @@ class TestSubmissions(TestCase):
         .ENTITY_TYPE,
                                                                                  location=None,
                                                                                  short_code="cid001", geometry=None)
-        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=True, errors=None,
-                                                                            data_record_id=response.datarecord_id,
-                                                                            in_test_mode=False)
-
 
     def test_should_not_register_entity_if_form_submission_invalid(self):
         form_submission = self._invalid_form_submission()
@@ -194,11 +142,6 @@ class TestSubmissions(TestCase):
         self.assertEqual({"field": "Invalid"}, response.errors)
         self.assertTrue(response.is_registration)
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
-        self.submissionLogger.update_submission_log.assert_called_once_with(submission_id=self.SUBMISSION_ID,
-                                                                            status=False,
-                                                                            data_record_id=None,
-                                                                            errors=form_submission.errors,
-                                                                            in_test_mode=False)
 
     def test_should_return_expanded_response(self):
         form_submission = self._valid_form_submission_with_choices()

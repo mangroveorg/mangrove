@@ -138,7 +138,8 @@ class FormModel(DataObject):
 
     def submit(self, dbm, values, submission_id):
         self.bind(values)
-        self._reject_submission_for_inactive_forms()
+        if self.is_inactive():
+            raise InactiveFormModelException(self.form_code)
         form_submission = self.validate_submission(values)
         if form_submission.is_valid:
             form_submission.save(dbm, submission_id)
@@ -257,13 +258,6 @@ class FormModel(DataObject):
             raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
         except FormModelDoesNotExistsException:
             pass
-
-    def _should_accept_submission(self):
-        return self.is_inactive()
-
-    def _reject_submission_for_inactive_forms(self):
-        if self._should_accept_submission():
-            raise InactiveFormModelException(self.form_code)
 
     def _find_code(self, answers, code):
         for key in answers:

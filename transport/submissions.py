@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import datetime
-from mangrove.datastore.database import DatabaseManager, DataObject
+from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence

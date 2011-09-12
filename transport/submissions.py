@@ -1,5 +1,4 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-import datetime
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord
@@ -81,6 +80,13 @@ class Submission(DataObject):
         self._doc.data_record_id = None #This is because the existing functionality that when you void a submission it's link with a data record is dis-associated.
         self._doc.void = True
         self.save()
+
+    def delete(self):
+        data_record_id = self._doc.data_record_id
+        if data_record_id is not None:
+            data_record = DataRecord.get(self._dbm, data_record_id)
+            data_record.delete()
+        super(Submission, self).delete()
 
     def update(self, status, errors, data_record_id = None, is_test_mode = False):
         self._doc.status = status

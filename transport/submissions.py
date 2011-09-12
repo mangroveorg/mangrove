@@ -44,6 +44,10 @@ class Submission(DataObject):
         return self._doc.data_record_id
 
     @property
+    def data_record(self):
+        return DataRecord.get(self._dbm, self._doc.data_record_id) if self._doc.data_record_id is not None else None
+
+    @property
     def destination(self):
         return self._doc.destination
 

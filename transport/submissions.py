@@ -81,9 +81,7 @@ class Submission(DataObject):
             data_record = DataRecord.get(self._dbm, data_record_id)
             data_record.void()
 
-        self._doc.data_record_id = None #This is because the existing functionality that when you void a submission it's link with a data record is dis-associated.
-        self._doc.void = True
-        self.save()
+        DataObject.void(self)
 
     def delete(self):
         data_record_id = self._doc.data_record_id

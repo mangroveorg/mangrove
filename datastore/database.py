@@ -115,6 +115,9 @@ class DataObject(object):
             self._doc.void = True
             self.save()
 
+    def is_void(self):
+        return self._doc.void
+
     @property
     def id(self):
         return self._doc.id if self._doc is not None else None

@@ -171,7 +171,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(2, len(submissions))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
-        self.assertListEqual(['1234567', '2345678'], [submissions[0].data_record_id, submissions[1].data_record_id])
 
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "clinic .EID %s .ARV 150 " % self.entity.id

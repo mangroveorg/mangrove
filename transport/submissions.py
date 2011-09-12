@@ -39,9 +39,6 @@ class Submission(DataObject):
 
             DataObject._set_document(self, doc)
 
-    @property
-    def data_record_id(self):
-        return self._doc.data_record_id
 
     @property
     def data_record(self):

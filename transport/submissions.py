@@ -72,13 +72,13 @@ class Submission(DataObject):
     def errors(self):
         return self._doc.error_message
 
-    def void(self):
+    def void(self, void = True):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:
             data_record = DataRecord.get(self._dbm, data_record_id)
-            data_record.void()
+            data_record.void(void)
 
-        DataObject.void(self)
+        DataObject.void(self, void)
 
     def delete(self):
         data_record_id = self._doc.data_record_id

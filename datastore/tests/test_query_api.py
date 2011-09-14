@@ -700,7 +700,6 @@ class TestQueryApi(unittest.TestCase):
 
     def test_should_aggregate_per_entity_per_form_model_with_time_filter(self):
         test_data = TestData(self.manager)
-        test_data.setup()
 
         values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
                                                aggregate_on=EntityAggregration(),
@@ -709,8 +708,8 @@ class TestQueryApi(unittest.TestCase):
                                                starttime="01-01-2011 00:00:00", endtime="31-12-2011 00:00:00")
 
         self.assertEqual(len(values), 2)
-        self.assertEqual(values[test_data.id1], {"patients": 30, 'meds': 10, 'beds': 300, 'director': "Dr. A2"})
-        self.assertEqual(values[test_data.id2], {"patients": 50, 'meds': 50, 'beds': 150, 'director': "Dr. B1"})
+        self.assertEqual(values[test_data.entity1.id], {"patients": 30, 'meds': 10, 'beds': 300, 'director': "Dr. A2"})
+        self.assertEqual(values[test_data.entity2.id], {"patients": 50, 'meds': 50, 'beds': 150, 'director': "Dr. B1"})
 
 
     def test_aggregation_factory(self):
@@ -773,13 +772,9 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(dict(GrandTotals = {'patients': 180, 'meds': 780, 'beds': 1750, 'director': None, 'doctors':20 }) ,values)
 
 
-    def _create_test_data(self):
-        test_data = TestData(self.manager)
-        test_data.setup()
-        return test_data
 
     def test_should_return_grand_total_and_aggregate_per_entity(self):
-        test_data=self._create_test_data()
+        test_data=TestData(self.manager)
 
         values = aggregate_by_form_code_python(dbm=self.manager, form_code='CL1',
                                                aggregate_on=EntityAggregration(),
@@ -791,9 +786,9 @@ class TestQueryApi(unittest.TestCase):
 
         print values
         self.assertEqual(len(values), 4)
-        self.assertEqual({"patients": 60, 'meds': 10, 'beds': 500, 'director': "Dr. A2"},values[test_data.id1])
-        self.assertEqual({"patients": 120, 'meds': 50, 'beds': 200, 'director': "Dr. B1"},values[test_data.id2])
-        self.assertEqual({"patients": 12, 'meds': 50, 'beds': 200, 'director': "Dr. C"},values[test_data.id3])
+        self.assertEqual({"patients": 60, 'meds': 10, 'beds': 500, 'director': "Dr. A2"},values[test_data.entity1.id])
+        self.assertEqual({"patients": 120, 'meds': 50, 'beds': 200, 'director': "Dr. B1"},values[test_data.entity2.id])
+        self.assertEqual({"patients": 12, 'meds': 50, 'beds': 200, 'director': "Dr. C"},values[test_data.entity3.id])
         self.assertEqual({'patients': 192, 'meds': 830, 'beds': 1950, 'director': None, 'doctors': 20 },values["GrandTotals"])
 
 

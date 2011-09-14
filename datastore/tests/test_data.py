@@ -10,6 +10,7 @@ from mangrove.form_model.form_model import FormModel
 class TestData(object):
     def __init__(self,manager):
         self.manager=manager
+        self.setup()
         
     def setup(self):
 #        Two forms with data for two months with monthly frequency
@@ -18,26 +19,26 @@ class TestData(object):
         self._create_form_model("CL2")
         self._create_form_model("CL1")
         self.dd_types = self.create_datadict_types()
-        entity1, self.id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'])
+        self.entity1, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'],"1")
 
-        self._add_data_for_form_1(entity1)
+        self._add_data_for_form_1_entity_1(self.entity1)
 
-        self._add_data_for_form_2(entity1)
+        self._add_data_for_form_2_entity_1(self.entity1)
 
-        entity2, self.id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'])
+        self.entity2, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'],"2")
 
-        self._add_data_for_form_1_entity_2( entity2)
-        self._add_data_form_2_entity_2( entity2)
+        self._add_data_for_form_1_entity_2( self.entity2)
+        self._add_data_form_2_entity_2( self.entity2)
 
-        e, self.id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'])
-        e.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
+        self.entity3, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'],"3")
+        self.entity3.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
             ("director", "Dr. C", self.dd_types['director']), ("patients", 12, self.dd_types['patients'])],
                    event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='5', form_code='CL1'))
 
 
-    def create_entity_instance(self, ENTITY_TYPE, location):
-        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location)
+    def create_entity_instance(self, ENTITY_TYPE, location,short_code):
+        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location,short_code=short_code)
         id1 = e.save()
         return e, id1
 
@@ -77,7 +78,7 @@ class TestData(object):
             dd_type.save()
         return dd_types
     
-    def _add_data_for_form_1(self,  e):
+    def _add_data_for_form_1_entity_1(self,  e):
         e.add_data(data=[("beds", 300, self.dd_types['beds']), ("meds", 20, self.dd_types['meds']),
                 ("director", "Dr. A", self.dd_types['director']), ("patients", 10, self.dd_types['patients'])],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
@@ -95,7 +96,7 @@ class TestData(object):
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL1'))
 
-    def _add_data_for_form_2(self, e):
+    def _add_data_for_form_2_entity_1(self, e):
         e.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 20, self.dd_types['meds']),
                 ("patients", 45, self.dd_types['patients'])],
                    event_time=datetime.datetime(2011, 04, 01, tzinfo=UTC),

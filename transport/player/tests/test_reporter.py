@@ -5,7 +5,10 @@ from mangrove.datastore.entity import create_entity, define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
-from mangrove.transport.reporter import find_reporter
+from mangrove.transport.player.player import TransportInfo
+from mangrove.transport.reporter import find_reporter, reporters_submitted_data
+from mangrove.transport.submissions import Submission
+from mangrove.utils.types import sequence_to_str
 
 
 class TestReporter(TestCase):
@@ -60,4 +63,9 @@ class TestReporter(TestCase):
         self.assertTrue({NAME_FIELD: "A", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
 
+    def test_should_return_reporter_submitted_data_in_a_time_period(self):
+        Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test').save()
+        reporters = reporters_submitted_data(self.manager, 'test')
+        self.assertEqual(1,len(reporters))
+        self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 

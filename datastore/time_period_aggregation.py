@@ -163,10 +163,23 @@ def _latest_aggregation_required(aggregates):
     return not is_empty(result)
 
 
+GRAND_TOTALS = "GrandTotals"
+
+def _calculate_grand_total(statsdict):
+    intermediate_dict=defaultdict(int)
+    for key,value in statsdict.items():
+        for key,value in value.items():
+            intermediate_dict[key]+=value
+
+    statsdict[GRAND_TOTALS]=intermediate_dict
+
 def aggregate_for_time_period(dbm, form_code, period, aggregates=None, aggregate_on=None, filter=None,
                               include_grand_totals=False):
     form_model = get_form_model_by_code(dbm, form_code)
     statsdict = _get_stats_aggregation(aggregates, dbm, form_model, period)
+
+    if include_grand_totals is True:
+        _calculate_grand_total(statsdict)
 
     if _latest_aggregation_required(aggregates):
         latestdict = _get_latest_aggregation(aggregates, dbm, form_model, period)
@@ -175,10 +188,17 @@ def aggregate_for_time_period(dbm, form_code, period, aggregates=None, aggregate
     return statsdict
 
 
+def _merge_grand_total(resultdict, statsdict):
+    grand_total = statsdict.get(GRAND_TOTALS)
+    if grand_total is not None:
+        resultdict[GRAND_TOTALS] = grand_total
+
+
 def _merge(statsdict, latestdict):
     resultdict = defaultdict(dict)
     for key in latestdict:
         resultdict[key] = latestdict[key]
         if key in statsdict:
             resultdict[key].update(statsdict[key])
+    _merge_grand_total(resultdict, statsdict)
     return resultdict

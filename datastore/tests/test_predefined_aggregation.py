@@ -66,5 +66,19 @@ class TestTimeGroupedAggregation(MangroveTestCase):
         self.assertEqual(values[self.test_data.entity3.short_code], {"patients": 12, "beds": 200,'director':'Dr. C'})
 
 
+    def test_grandtotal(self):
+        values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',
+                                           aggregate_on=EntityAggregration(),
+                                           aggregates=[Min("patients"), Latest("director"),Sum("beds")
+                                                       ],
+                                           period=Year(2010),include_grand_totals=True)
+
+        self.assertEqual(len(values), 4)
+        self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 10, "beds": 800,'director':'Dr. A'})
+        self.assertEqual(values[self.test_data.entity2.short_code], {"patients": 20, "beds": 300,'director':'Dr. B2'})
+        self.assertEqual(values[self.test_data.entity3.short_code], {"patients": 12, "beds": 200,'director':'Dr. C'})
+
+
+        self.assertEqual({'patients': 42, 'beds': 1300},values["GrandTotals"])
 
 

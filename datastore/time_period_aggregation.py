@@ -44,16 +44,29 @@ class Month(object):
         return "monthly_aggregate_stats"
 
     @property
+    def period(self):
+        return self.month
+
+    @property
     def latest_view(self):
         return "monthly_aggregate_latest"
 
+class Week(object):
+    def __init__(self, week,year):
+        self.week = week
+        self.year = year
 
-class TimePeriodViewFinder(object):
-    pass
+    @property
+    def period(self):
+        return self.week
 
+    @property
+    def stats_view(self):
+        return "weekly_aggregate_stats"
 
-def get_aggregate_view(period):
-    pass
+    @property
+    def latest_view(self):
+        return "weekly_aggregate_latest"
 
 
 def _get_aggregates_for_field(field_name,aggregates,row):
@@ -64,7 +77,7 @@ def _get_aggregates_for_field(field_name,aggregates,row):
 
 
 def _load_aggregate_view(dbm, form_model, period):
-    startkey = [period.year, period.month, form_model.form_code, form_model.entity_type]
+    startkey = [period.year, period.period, form_model.form_code, form_model.entity_type]
     rows = dbm.load_all_rows_in_view(period.stats_view, group=True,
                                      startkey=startkey,
                                      endkey=startkey + [{}])
@@ -81,6 +94,7 @@ def _get_field_name(row):
     return field_name
 
 
+
 def _get_stats_aggregation(aggregates, dbm, form_model, period):
     rows = _load_aggregate_view(dbm, form_model, period)
     results = defaultdict(dict)
@@ -94,7 +108,7 @@ def _get_stats_aggregation(aggregates, dbm, form_model, period):
 
 
 def _load_latest_view(dbm, form_model, period):
-    startkey = [period.year, period.month, form_model.form_code, form_model.entity_type]
+    startkey = [period.year, period.period, form_model.form_code, form_model.entity_type]
     rows = dbm.load_all_rows_in_view(period.latest_view, group=True,
                                      startkey=startkey,
                                      endkey=startkey + [{}])

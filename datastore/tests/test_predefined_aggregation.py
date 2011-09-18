@@ -41,3 +41,14 @@ class TestTimeGroupedAggregation(MangroveTestCase):
 
         self.assertEqual(len(values), 1)
         self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'beds':450})
+
+    def test_weekly_time_aggregation_with_latest(self):
+        self.test_data.add_weekly_data_for_entity1()
+        values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',
+                                           aggregate_on=EntityAggregration(),
+                                           aggregates=[Min("patients"), Latest("director")
+                                                       ],
+                                           period=Week(52, 2009))
+
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'director':'Dr. B2'})

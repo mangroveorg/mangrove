@@ -8,9 +8,6 @@ class TestTimeGroupedAggregation(MangroveTestCase):
         MangroveTestCase.setUp(self)
         self.test_data = TestData(self.manager)
 
-    def tearDown(self):
-        pass
-
 
     def test_monthly_time_aggregation(self):
         values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',

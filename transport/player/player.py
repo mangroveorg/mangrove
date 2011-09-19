@@ -2,6 +2,7 @@
 from copy import copy
 import time
 from mangrove.datastore import entity
+from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
@@ -63,7 +64,7 @@ def _epoch_last_three_digit():
 
 
 def _generate_short_code(dbm, entity_type):
-    current_count = entity.get_entity_count_for_type(dbm, entity_type)
+    current_count = get_entity_count_for_type(dbm, entity_type)
     entity_type_prefix = entity_type[:3] + "%s"
     return  entity_type_prefix % (current_count + 1)
 

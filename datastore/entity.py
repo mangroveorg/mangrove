@@ -7,6 +7,7 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.entity_type import entity_type_already_defined
+from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
@@ -54,16 +55,12 @@ def generate_short_code(dbm, entity_type):
     return _make_short_code(entity_type, count + 1)
 
 
-def get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.view.by_short_codes(descending=True,
-                                     startkey=[[entity_type], {}], endkey=[[entity_type]], group_level=1)
-    return rows[0][u"value"] if len(rows) else 0
 
 
 def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    rows = dbm.load_all_rows_in_view("by_short_codes", key=[entity_type, short_code], reduce=False)
+    rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False)
     if is_empty(rows):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
     doc_id = rows[0].id

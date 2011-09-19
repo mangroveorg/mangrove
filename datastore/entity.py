@@ -43,20 +43,6 @@ def _check_if_exists(dbm, entity_type, short_code):
         return False
 
 
-def generate_short_code(dbm, entity_type):
-    # todo: couchdb cannot guarantee uniqueness, so short codes should
-    # be assigned from an application using the mangrove
-    # library. ideally, we would put a short code onto an entity using
-    # the add_data method and then there should be a view that can
-    # easily find all entities with a particular short code.
-    assert is_sequence(entity_type)
-    count = get_entity_count_for_type(dbm, entity_type=entity_type)
-    assert count >= 0
-    return _make_short_code(entity_type, count + 1)
-
-
-
-
 def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
@@ -94,19 +80,6 @@ def _make_short_code(entity_type, num):
     return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
-def get_entities_by_type(dbm, entity_type):
-    """
-    Return a list of all entities with this type.
-    """
-    # TODO: change this?  for now it assumes _type is
-    # non-heirarchical. Might also benefit from using get_many.
-    assert isinstance(dbm, DatabaseManager)
-    assert is_string(entity_type)
-
-    rows = dbm.load_all_rows_in_view(u'by_type', key=entity_type)
-    entities = dbm.get_many([row.id for row in rows], Entity)
-
-    return entities
 
 
 def get_entities_by_value(dbm, label, value, as_of=None):

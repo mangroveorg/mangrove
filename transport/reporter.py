@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.data import EntityAggregration
 from mangrove.datastore.entity import Entity
+from mangrove.datastore.queries import get_entities_by_type
 
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MultipleReportersForANumberException
 from mangrove.datastore import data, entity
@@ -38,6 +39,6 @@ def find_reporters_by_from_number(dbm, from_number):
 def reporters_submitted_data(dbm, form_code, from_time=None, to_time=None):
     submissions = get_submissions(dbm, form_code, from_time, to_time)
     source_ids = set([submission.source for submission in submissions])
-    all_reporters = entity.get_entities_by_type(dbm, 'reporter')
+    all_reporters = get_entities_by_type(dbm, 'reporter')
     reporters = [reporter for reporter in all_reporters if reporter.value(MOBILE_NUMBER_FIELD) in source_ids]
     return reporters

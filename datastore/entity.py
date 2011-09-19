@@ -7,7 +7,6 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.entity_type import entity_type_already_defined
-from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string

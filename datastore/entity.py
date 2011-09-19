@@ -7,20 +7,12 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
 from mangrove.datastore.entity_type import entity_type_already_defined
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow
 from database import DatabaseManager, DataObject
 
-
-
-def _check_if_exists(dbm, entity_type, short_code):
-    try:
-        get_by_short_code(dbm, short_code, entity_type)
-        return True
-    except DataObjectNotFound:
-        return False
 
 
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
@@ -42,9 +34,12 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     return e
 
 
-
-
-
+def _check_if_exists(dbm, entity_type, short_code):
+    try:
+        get_by_short_code(dbm, short_code, entity_type)
+        return True
+    except DataObjectNotFound:
+        return False
 
 
 def generate_short_code(dbm, entity_type):
@@ -60,7 +55,7 @@ def generate_short_code(dbm, entity_type):
 
 
 def get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.load_all_rows_in_view(u"by_short_codes", descending=True,
+    rows = dbm.view.by_short_codes(descending=True,
                                      startkey=[[entity_type], {}], endkey=[[entity_type]], group_level=1)
     return rows[0][u"value"] if len(rows) else 0
 
@@ -169,12 +164,14 @@ def get_all_entities(dbm, include_docs=False):
 def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
+
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument
 
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         DataObject.__init__(self, dbm)
+
 
 class Entity(DataObject):
     """

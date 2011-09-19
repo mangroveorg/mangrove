@@ -126,6 +126,27 @@ class DataObject(object):
     def created(self):
         return self._doc.created
 
+class View(object):
+    def __init__(self,database):
+        self.database=database
+
+    def _load_all_rows_in_view(self, **values):
+        full_view_name = self.name + '/' + self.name
+        print '[DEBUG] loading view: %s' % full_view_name
+        start = datetime.now()
+        rows = self.database.view(full_view_name, **values).rows
+        end = datetime.now()
+        delta_t = (end - start)
+        print "[DEBUG] --- took %s.%s seconds (%s rows)" %\
+              (delta_t.seconds, delta_t.microseconds, len(rows))
+        return rows
+
+    def _execute(self,**values):
+        return self._load_all_rows_in_view(**values)
+
+    def __getattr__(self, name):
+        self.name=name
+        return self._execute
 
 class DatabaseManager(object):
     def __init__(self, server=None, database=None):
@@ -145,6 +166,8 @@ class DatabaseManager(object):
         if self.database is not None:
             self.create_default_views()
 
+        self.view= View(self.database)
+
 
     def __unicode__(self):
         return u"Connected on %s - working on %s" % (self.url, self.database_name)
@@ -155,6 +178,9 @@ class DatabaseManager(object):
     def __repr__(self):
         return repr(self.database)
 
+    def __getattr__(self, name):
+        setattr(self,name,View(self.database,name))
+        return getattr(self,name)
 
     def load_all_rows_in_view(self, view_name, **values):
         full_view_name = view_name + '/' + view_name

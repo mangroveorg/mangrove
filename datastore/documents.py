@@ -174,28 +174,6 @@ class DataDictDocument(DocumentBase):
             self[arg] = value
 
 
-class RawSubmissionLogDocument(DocumentBase):
-    """
-    The raw submission log document. Will contain metadata about the submission. (Eg: source, submitted_on etc.)
-    along with the raw sms string that came in
-    """
-
-    submitted_on = TZAwareDateTimeField()
-    source = TextField()
-    destination = TextField()
-    channel = TextField()
-    message = TextField()
-
-    def __init__(self, source, channel=None, destination=None, message=None, id=None):
-        assert is_string(source)
-        DocumentBase.__init__(self, id, 'RawSubmissionLog')
-        self.source = source
-        self.submitted_on = utcnow()
-        self.channel = channel
-        self.destination = destination
-        self.message = message
-
-
 class FormModelDocument(DocumentBase):
     metadata = DictField()
     name = TextField()

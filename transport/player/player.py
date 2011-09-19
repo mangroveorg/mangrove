@@ -1,7 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 import time
-from datawinners.location.LocationTree import get_location_tree
 from mangrove.datastore import entity
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
@@ -77,7 +76,7 @@ def _set_short_code(dbm, form_model, values):
 class Player(object):
     def __init__(self, dbm, location_tree=None):
         self.dbm = dbm
-        self.location_tree = get_location_tree() if location_tree is None else location_tree
+        self.location_tree = location_tree
 
     def submit(self, transportInfo, form_code, values, reporter_entity=None):
         submission = Submission(self.dbm, transportInfo, form_code, copy(values))

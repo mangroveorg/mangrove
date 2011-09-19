@@ -125,11 +125,11 @@ class TestData(object):
     def add_weekly_data_for_entity1(self):
         self.entity1.add_data(data=[("beds", 100, self.dd_types['beds']), ("meds", 250, self.dd_types['meds']),
                 ("director", "Dr. B1", self.dd_types['director']), ("patients", 50, self.dd_types['patients'])],
-                   event_time=datetime.datetime(2009, 12, 29, tzinfo=UTC),
+                   event_time=datetime.datetime(2009, 12, 23, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='CL1'))
         self.entity1.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 400, self.dd_types['meds']),
                 ("director", "Dr. B2", self.dd_types['director']), ("patients", 20, self.dd_types['patients'])],
-                   event_time=datetime.datetime(2009, 12, 30, tzinfo=UTC),
+                   event_time=datetime.datetime(2009, 12, 24, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code='CL1'))
         self.entity1.add_data(data=[("beds", 150, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
                 ("director", "Dr. B1", self.dd_types['director']), ("patients", 70, self.dd_types['patients'])],

@@ -8,6 +8,10 @@ class TestTimeGroupedAggregation(MangroveTestCase):
         MangroveTestCase.setUp(self)
         self.test_data = TestData(self.manager)
 
+    def tearDown(self):
+        pass
+
+
     def test_monthly_time_aggregation(self):
         values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',
                                            aggregate_on=EntityAggregration(),
@@ -51,7 +55,7 @@ class TestTimeGroupedAggregation(MangroveTestCase):
                                            period=Week(52, 2009))
 
         self.assertEqual(len(values), 1)
-        self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'director':'Dr. B2'})
+        self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'director':'Dr. B1'})
 
     def test_yearly_time_aggregation_with_latest(self):
         values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',

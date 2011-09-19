@@ -6,6 +6,7 @@ from time import mktime
 from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
+from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined, DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string

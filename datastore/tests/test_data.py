@@ -2,7 +2,8 @@
 import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, define_type
+from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity_type import define_type
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
 

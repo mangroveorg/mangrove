@@ -1,7 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
-from mangrove.datastore.entity import create_entity, define_type
+from mangrove.datastore.entity import create_entity
+from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD

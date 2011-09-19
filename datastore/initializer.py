@@ -1,5 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.datastore.entity import define_type
+from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.views import  sync_views
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.transport.reporter import REPORTER_ENTITY_TYPE

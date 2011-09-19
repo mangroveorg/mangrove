@@ -8,7 +8,8 @@ import datetime
 from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
-from mangrove.datastore.entity import define_type, get_by_short_code, create_entity
+from mangrove.datastore.entity import get_by_short_code, create_entity
+from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, GeoCodeFormatException, MultipleReportersForANumberException, MobileNumberMissing
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField

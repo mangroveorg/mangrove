@@ -3,7 +3,7 @@
 import unittest
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.datastore.entity import  define_type
+from mangrove.datastore.entity_type import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
 from mangrove.form_model.form_model import FormModel, create_default_reg_form_model, REGISTRATION_FORM_CODE

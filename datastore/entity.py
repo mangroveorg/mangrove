@@ -33,15 +33,6 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     e.save()
     return e
 
-
-def _check_if_exists(dbm, entity_type, short_code):
-    try:
-        get_by_short_code(dbm, short_code, entity_type)
-        return True
-    except DataObjectNotFound:
-        return False
-
-
 def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
@@ -50,36 +41,6 @@ def get_by_short_code(dbm, short_code, entity_type):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
     doc_id = rows[0].id
     return Entity.get(dbm, doc_id)
-
-
-def _generate_new_code(entity_type, count):
-    # todo: remove
-    short_code = _make_short_code(entity_type, count + 1)
-    return _make_doc_id(entity_type, short_code)
-
-
-def _make_doc_id(entity_type, short_code):
-    # todo: remove
-    ENTITY_ID_FORMAT = "%s/%s"
-    _entity_type = ".".join(entity_type)
-    return ENTITY_ID_FORMAT % (_entity_type, short_code)
-
-
-def _make_short_code(entity_type, num):
-    # todo: remove
-    SHORT_CODE_FORMAT = "%s%s"
-    entity_prefix = entity_type[-1].upper()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix, num)
-
-
-def _make_short_code(entity_type, num):
-    # todo: remove
-    SHORT_CODE_FORMAT = "%s%s"
-    entity_prefix = entity_type[-1].lower()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix, num)
-
-
-
 
 def get_entities_by_value(dbm, label, value, as_of=None):
     assert isinstance(dbm, DatabaseManager)
@@ -128,11 +89,6 @@ def get_entities_in(dbm, geo_path, type_path=None):
 def get_all_entities(dbm, include_docs=False):
     rows = dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
     return [_from_row_to_entity(dbm, row) for row in rows]
-
-
-def _from_row_to_entity(dbm, row):
-    return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
-
 
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument
@@ -452,3 +408,44 @@ class Entity(DataObject):
     def _translate(self, aggregate_fn):
         view_names = {u"latest": u"by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
+
+
+def _check_if_exists(dbm, entity_type, short_code):
+    try:
+        get_by_short_code(dbm, short_code, entity_type)
+        return True
+    except DataObjectNotFound:
+        return False
+
+
+def _generate_new_code(entity_type, count):
+    # todo: remove
+    short_code = _make_short_code(entity_type, count + 1)
+    return _make_doc_id(entity_type, short_code)
+
+
+def _make_doc_id(entity_type, short_code):
+    # todo: remove
+    ENTITY_ID_FORMAT = "%s/%s"
+    _entity_type = ".".join(entity_type)
+    return ENTITY_ID_FORMAT % (_entity_type, short_code)
+
+
+def _make_short_code(entity_type, num):
+    # todo: remove
+    SHORT_CODE_FORMAT = "%s%s"
+    entity_prefix = entity_type[-1].upper()[:3]
+    return   SHORT_CODE_FORMAT % (entity_prefix, num)
+
+
+def _make_short_code(entity_type, num):
+    # todo: remove
+    SHORT_CODE_FORMAT = "%s%s"
+    entity_prefix = entity_type[-1].lower()[:3]
+    return   SHORT_CODE_FORMAT % (entity_prefix, num)
+
+
+def _from_row_to_entity(dbm, row):
+    return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
+
+

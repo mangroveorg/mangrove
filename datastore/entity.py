@@ -14,7 +14,6 @@ from mangrove.utils.dates import utcnow
 from database import DatabaseManager, DataObject
 
 
-
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """
     Initialize and save an entity to the database. Return the entity
@@ -32,6 +31,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     e.save()
     return e
 
+
 def get_by_short_code(dbm, short_code, entity_type):
     """
     Finds Entity with a given short code
@@ -46,7 +46,6 @@ def get_by_short_code(dbm, short_code, entity_type):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
     doc_id = rows[0].id
     return Entity.get(dbm, doc_id)
-
 
 
 def get_entities_in(dbm, geo_path, type_path=None):
@@ -88,7 +87,6 @@ def get_all_entities(dbm):
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 
-
 def get_entities_by_value(dbm, label, value, as_of=None):
     """
     Returns all entities with the given value for a label(DataDict)
@@ -103,6 +101,16 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     entities = dbm.get_many([row[u'value'] for row in rows], Entity)
 
     return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
+
+
+def get_data_record(dbm, data_record_id):
+    """
+    Get the datarecord corresponding to the id.
+    Arguments:
+        data_record_id: data record uuid
+    """
+    return dbm._load_document(data_record_id, document_class=DataRecordDocument)
+
 
 class Entity(DataObject):
     """
@@ -423,6 +431,14 @@ class Entity(DataObject):
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
 
 
+class DataRecord(DataObject):
+    __document_class__ = DataRecordDocument
+
+    def __init__(self, dbm):
+        assert isinstance(dbm, DatabaseManager)
+        DataObject.__init__(self, dbm)
+
+
 def _check_if_entity_exists(dbm, entity_type, short_code):
     try:
         get_by_short_code(dbm, short_code, entity_type)
@@ -462,9 +478,3 @@ def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
 
-class DataRecord(DataObject):
-    __document_class__ = DataRecordDocument
-
-    def __init__(self, dbm):
-        assert isinstance(dbm, DatabaseManager)
-        DataObject.__init__(self, dbm)

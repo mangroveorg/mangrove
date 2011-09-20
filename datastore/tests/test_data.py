@@ -73,7 +73,10 @@ class TestData(object):
             'meds': DataDictType(self.manager, name='meds', slug='meds', primitive_type='number'),
             'patients': DataDictType(self.manager, name='patients', slug='patients', primitive_type='number'),
             'doctors': DataDictType(self.manager, name='doctors', slug='doctors', primitive_type='number'),
-            'director': DataDictType(self.manager, name='director', slug='director', primitive_type='string')
+            'director': DataDictType(self.manager, name='director', slug='director', primitive_type='string'),
+            'facility' : DataDictType(self.manager, name='Facility', slug='facility', primitive_type='string',
+                                         description='Name of facility')
+
         }
         for label, dd_type in dd_types.items():
             dd_type.save()
@@ -136,3 +139,5 @@ class TestData(object):
                 ("director", "Dr. B1", self.dd_types['director']), ("patients", 70, self.dd_types['patients'])],
                    event_time=datetime.datetime(2009, 12, 27, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='CL1'))
+
+

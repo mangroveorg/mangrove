@@ -21,6 +21,35 @@ class TestShortCode(unittest.TestCase):
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)
 
+    def test_create_entity(self):
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
+        uuid = e.save()
+        self.assertTrue(uuid)
+        self.dbm.delete(e)
+
+    def test_create_entity_with_id(self):
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")
+        uuid = e.save()
+        self.assertEqual(uuid, "-1000")
+        self.dbm.delete(e)
+
+    def test_get_entity(self):
+        e = get(self.dbm, self.reporter1.id)
+        self.assertTrue(e.id)
+        self.assertTrue(e.type_string == self.reporter_entity_type[0])
+
+    def test_should_add_location_hierarchy_on_create(self):
+        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        self.assertEqual(saved.location_path, ["India", "MH", "Pune"])
+
+    def test_should_return_empty_list_if_location_path_is_not_stored(self):
+        e = Entity(self.dbm, entity_type="clinic")
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        self.assertEqual(saved.location_path, [])
+
     def test_should_create_entity_with_short_code(self):
         with self.assertRaises(AssertionError):
             entity = create_entity(self.dbm, entity_type=["reporter"], short_code=None)
@@ -109,6 +138,44 @@ class TestShortCode(unittest.TestCase):
         self.assertEqual(saved[self.reporter1.id].type_string, self.reporter_entity_type[0])
         self.dbm.delete(e2)
 
+    def test_should_add_passed_in_hierarchy_path_on_create(self):
+        e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"],
+                   aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
+                                      "levels": ["Lead Consultant", "Sr. Consultant", "Consultant"]})
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        hpath = saved._doc.aggregation_paths
+        self.assertEqual(hpath["org"], ["TW_Global", "TW_India", "TW_Pune"])
+        self.assertEqual(hpath["levels"], ["Lead Consultant", "Sr. Consultant", "Consultant"])
+
+    def test_should_add_entity_type_on_create(self):
+        e = Entity(self.dbm, entity_type=["healthfacility", "clinic"])
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        self.assertEqual(saved.type_path, ["healthfacility", "clinic"])
+
+    def test_should_add_entity_type_on_create_as_aggregation_tree(self):
+        e = Entity(self.dbm, entity_type="health_facility")
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        self.assertEqual(saved.type_path, ["health_facility"])
+
+    def test_should_add_passed_in_hierarchy_path_on_create(self):
+        e = Entity(self.dbm, entity_type=["HealthFacility", "Clinic"], location=["India", "MH", "Pune"],
+                   aggregation_paths={"org": ["TW_Global", "TW_India", "TW_Pune"],
+                                      "levels": ["Lead Consultant", "Sr. Consultant", "Consultant"]})
+        uuid = e.save()
+        saved = get(self.dbm, uuid)
+        hpath = saved._doc.aggregation_paths
+        self.assertEqual(hpath["org"], ["TW_Global", "TW_India", "TW_Pune"])
+        self.assertEqual(hpath["levels"], ["Lead Consultant", "Sr. Consultant", "Consultant"])
+
+    def test_should_create_entity_from_document(self):
+        existing = self.dbm.get(self.reporter1.id, Entity)
+        e = Entity.new_from_doc(self.dbm, existing._doc)
+        self.assertTrue(e._doc is not None)
+        self.assertEqual(e.id, existing.id)
+        self.assertEqual(e.type_path, existing.type_path)
 
 def get_entities(dbm, ids):
     return dbm.get_many(ids, Entity)

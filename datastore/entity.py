@@ -23,12 +23,11 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     """
     assert is_string(short_code) and not is_empty(short_code)
     assert type(entity_type) is list and not is_empty(entity_type)
-    type_hierarchy = [e_type for e_type in entity_type]
-    if not entity_type_already_defined(dbm, type_hierarchy):
+    if not entity_type_already_defined(dbm, entity_type):
         raise EntityTypeDoesNotExistsException(entity_type)
-    if _check_if_exists(dbm, type_hierarchy, short_code):
+    if _check_if_exists(dbm, entity_type, short_code):
         raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
-    e = Entity(dbm, entity_type=type_hierarchy, location=location,
+    e = Entity(dbm, entity_type=entity_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
     e.save()
     return e

@@ -33,6 +33,12 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     return e
 
 def get_by_short_code(dbm, short_code, entity_type):
+    """
+    Finds Entity with a given short code
+    :param dbm: DatabaseManager
+    :param short_code: short code of the Entity
+    :param entity_type: hierarchical list of entity types
+    """
     assert is_string(short_code)
     assert is_sequence(entity_type)
     rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False)
@@ -75,12 +81,18 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
 
 def get_all_entities(dbm):
+    """
+    Returns all the entities in the Database
+    """
     rows = dbm.view.by_short_codes(reduce=False, include_docs=True)
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 
 
 def get_entities_by_value(dbm, label, value, as_of=None):
+    """
+    Returns all entities with the given value for a label(DataDict)
+    """
     assert isinstance(dbm, DatabaseManager)
     assert isinstance(label, DataDictType) or is_string(label)
     assert as_of is None or isinstance(as_of, datetime)
@@ -110,7 +122,11 @@ class Entity(DataObject):
 
         If _couch_document is passed, the other args are ignored
 
-        entity_type may be a string (flat type) or sequence (hierarchical type)
+        :param entity_type: may be a string (flat type) or sequence (hierarchical type)
+        :param location: hierarchical list of location names
+        :pram aggregation_paths: hierarchical list of aggregation path
+        :pram geometry: hierarchical list of aggregation path
+        :pram short_code: code for the entity
         """
         assert isinstance(dbm, DatabaseManager)
         assert entity_type is None or is_sequence(entity_type) or is_string(entity_type)
@@ -202,6 +218,9 @@ class Entity(DataObject):
 
     @property
     def geometry(self):
+        """
+        Returns the Geometry of the Entity
+        """
         return self._doc.geometry
 
     @property

@@ -74,49 +74,6 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertEqual(hpath["org"], ["TW_Global", "TW_India", "TW_Pune"])
         self.assertEqual(hpath["levels"], ["Lead Consultant", "Sr. Consultant", "Consultant"])
 
-    def test_hierarchy_addition(self):
-        e = get(self.dbm, self.uuid)
-        org_hierarchy = ["TWGlobal", "TW-India", "TW-Pune"]
-        e.set_aggregation_path("org", org_hierarchy)
-        e.save()
-        saved = get(self.dbm, self.uuid)
-        self.assertTrue(saved.aggregation_paths["org"] == ["TWGlobal", "TW-India", "TW-Pune"])
-
-    def test_hierarchy_addition_should_clone_tree(self):
-        e = get(self.dbm, self.uuid)
-        org_hierarchy = ["TW", "PS", "IS"]
-        e.set_aggregation_path("org", org_hierarchy)
-        org_hierarchy[0] = ["NewValue"]
-        e.save()
-        saved = get(self.dbm, self.uuid)
-        self.assertTrue(saved.aggregation_paths["org"] == ["TW", "PS", "IS"])
-
-    def test_save_aggregation_path_only_via_api(self):
-        e = get(self.dbm, self.uuid)
-        e.location_path[0] = "US"
-        e.save()
-        saved = get(self.dbm, self.uuid)
-        self.assertTrue(saved.location_path == ["India", "MH", "Pune"])  # Hierarchy has not changed.
-
-    def test_should_save_hierarchy_tree_only_through_api(self):
-        e = get(self.dbm, self.uuid)
-        org_hierarchy = ["TW", "PS", "IS"]
-        e.set_aggregation_path("org", org_hierarchy)
-        e.save()
-        e.aggregation_paths['org'][0] = "XYZ"
-        e.save()
-        saved = get(self.dbm, self.uuid)
-        self.assertEqual(saved.aggregation_paths["org"], ["TW", "PS", "IS"])
-
-    def test_get_entities(self):
-        e2 = Entity(self.dbm, "hospital", ["India", "TN", "Chennai"])
-        id2 = e2.save()
-        entities = get_entities(self.dbm, [self.uuid, id2])
-        self.assertEqual(len(entities), 2)
-        saved = dict([(e.id, e) for e in entities])
-        self.assertEqual(saved[id2].type_string, "hospital")
-        self.assertEqual(saved[self.uuid].type_string, "clinic")
-        self.dbm.delete(e2)
 
     def test_add_data_record_to_entity(self):
         clinic_entity, clinic_entity_short_code, reporter, reporter_entity_short_code = self._create_clinic_and_reporter()

@@ -1,13 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-from mangrove.datastore.entity import Entity, get_all_entities, get_by_short_code
+from mangrove.datastore.entity import Entity, get_by_short_code
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.datadict import DataDictType
 from pytz import UTC
 import unittest
-from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 
 
 # Adaptor methods to old api
@@ -206,8 +205,6 @@ class TestDataStoreApi(unittest.TestCase):
             self.assertTrue(self.dbm._load_document(id).void)
 
 
-
-
     def test_should_return_data_types(self):
         med_type = DataDictType(self.dbm,
                                 name='Medicines',
@@ -260,20 +257,6 @@ class TestDataStoreApi(unittest.TestCase):
         reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP999")
         self.assertEqual(reporter.short_code, "REP999")
 
-    def test_should_get_all_entities(self):
-        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Mumbai"], short_code='cli002')
-        e.save()
-
-        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Jalgaon"], short_code='cli003')
-        e.save()
-
-        e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Nasik"], short_code='cli004')
-        uuid = e.save()
-
-        all_entities = get_all_entities(self.dbm, True)
-
-        self.assertEqual(4, len(all_entities))
-        self.assertEqual([uuid], [e.id for e in all_entities if e.id == uuid])
 
     def _create_data_dict_type(self):
         med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',

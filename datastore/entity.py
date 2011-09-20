@@ -25,7 +25,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     assert type(entity_type) is list and not is_empty(entity_type)
     if not entity_type_already_defined(dbm, entity_type):
         raise EntityTypeDoesNotExistsException(entity_type)
-    if _check_if_exists(dbm, entity_type, short_code):
+    if _check_if_entity_exists(dbm, entity_type, short_code):
         raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
     e = Entity(dbm, entity_type=entity_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
@@ -41,17 +41,6 @@ def get_by_short_code(dbm, short_code, entity_type):
     doc_id = rows[0].id
     return Entity.get(dbm, doc_id)
 
-def get_entities_by_value(dbm, label, value, as_of=None):
-    assert isinstance(dbm, DatabaseManager)
-    assert isinstance(label, DataDictType) or is_string(label)
-    assert as_of is None or isinstance(as_of, datetime)
-    if isinstance(label, DataDictType):
-        label = label.slug
-
-    rows = dbm.load_all_rows_in_view(u'by_label_value', key=[label, value])
-    entities = dbm.get_many([row[u'value'] for row in rows], Entity)
-
-    return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
 
 
 def get_entities_in(dbm, geo_path, type_path=None):
@@ -85,17 +74,23 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-def get_all_entities(dbm, include_docs=False):
-    rows = dbm.load_all_rows_in_view("by_short_codes", reduce=False, include_docs=include_docs)
+def get_all_entities(dbm):
+    rows = dbm.view.by_short_codes(reduce=False, include_docs=True)
     return [_from_row_to_entity(dbm, row) for row in rows]
 
-class DataRecord(DataObject):
-    __document_class__ = DataRecordDocument
 
-    def __init__(self, dbm):
-        assert isinstance(dbm, DatabaseManager)
-        DataObject.__init__(self, dbm)
 
+def get_entities_by_value(dbm, label, value, as_of=None):
+    assert isinstance(dbm, DatabaseManager)
+    assert isinstance(label, DataDictType) or is_string(label)
+    assert as_of is None or isinstance(as_of, datetime)
+    if isinstance(label, DataDictType):
+        label = label.slug
+
+    rows = dbm.load_all_rows_in_view(u'by_label_value', key=[label, value])
+    entities = dbm.get_many([row[u'value'] for row in rows], Entity)
+
+    return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
 
 class Entity(DataObject):
     """
@@ -409,7 +404,7 @@ class Entity(DataObject):
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
 
 
-def _check_if_exists(dbm, entity_type, short_code):
+def _check_if_entity_exists(dbm, entity_type, short_code):
     try:
         get_by_short_code(dbm, short_code, entity_type)
         return True
@@ -448,3 +443,9 @@ def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
 
+class DataRecord(DataObject):
+    __document_class__ = DataRecordDocument
+
+    def __init__(self, dbm):
+        assert isinstance(dbm, DatabaseManager)
+        DataObject.__init__(self, dbm)

@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 
@@ -55,6 +55,13 @@ class TestShortCode(unittest.TestCase):
 
         with self.assertRaises(DataObjectNotFound):
             entity = get_by_short_code(self.dbm, short_code="ABC", entity_type=["Waterpoint"])
+
+    def test_should_get_all_entities(self):
+        entities = get_all_entities(self.dbm)
+        self.assertEqual(3,len(entities))
+        self.assertEqual("REP1",entities[0].short_code)
+        self.assertEqual("REP2",entities[1].short_code)
+        self.assertEqual("REPX",entities[2].short_code)
 
 
 

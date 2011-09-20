@@ -5,7 +5,7 @@ for example Clinic, Hospital, Waterpoints, School etc are entity types
 """
 
 import mangrove.datastore.aggregationtree as atree
-from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 
@@ -19,8 +19,7 @@ def define_type(dbm, entity_type):
     """
     assert is_not_empty(entity_type)
     assert is_sequence(entity_type)
-    type_path = ([entity_type] if is_string(entity_type) else entity_type)
-    type_path = [item.strip() for item in type_path]
+    type_path = [item.strip() for item in entity_type]
     if entity_type_already_defined(dbm, type_path):
         raise EntityTypeAlreadyDefined(u"Type: %s is already defined" % u'.'.join(entity_type))
         # now make the new one

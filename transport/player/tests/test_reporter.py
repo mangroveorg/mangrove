@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from datetime import date, datetime, timedelta
 from unittest.case import TestCase
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import create_entity
@@ -9,7 +10,7 @@ from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.player.player import TransportInfo
 from mangrove.transport.reporter import find_reporter, reporters_submitted_data
 from mangrove.transport.submissions import Submission
-from mangrove.utils.types import sequence_to_str
+from mangrove.utils.dates import convert_to_epoch
 
 
 class TestReporter(TestCase):
@@ -44,6 +45,12 @@ class TestReporter(TestCase):
                       location=[],
                       source="sms", short_code="REP2")
 
+        self.register(self.manager, entity_type=["reporter"],
+                      data=[(MOBILE_NUMBER_FIELD, "1234567891", self.phone_number_type),
+                          (NAME_FIELD, "C", self.first_name_type)],
+                      location=[],
+                      source="sms", short_code="REP3")
+
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.manager)
 
@@ -64,9 +71,24 @@ class TestReporter(TestCase):
         self.assertTrue({NAME_FIELD: "A", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
 
-    def test_should_return_reporter_submitted_data_in_a_time_period(self):
+    def test_should_return_reporter_submitted_data(self):
         Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test').save()
         reporters = reporters_submitted_data(self.manager, 'test')
+        self.assertEqual(1,len(reporters))
+        self.assertEqual('8888567890', reporters[0].value('mobile_number'))
+
+    def test_should_return_reporter_submitted_data_in_a_time_period(self):
+        submission1= Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test')
+        submission1._doc.created = datetime(2011,2,2)
+        submission1.save()
+
+        submission2 = Submission(self.manager, TransportInfo('sms', '1234567891', '123'), 'test')
+        submission2._doc.created = datetime(2011,1,1)
+        submission2.save()
+
+        from_time = datetime(2011,2,1).strftime('%d-%m-%Y %H:%M:%S')
+        to_time = datetime(2011,2,27).strftime('%d-%m-%Y %H:%M:%S')
+        reporters = reporters_submitted_data(self.manager, 'test',convert_to_epoch(from_time),convert_to_epoch(to_time))
         self.assertEqual(1,len(reporters))
         self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 

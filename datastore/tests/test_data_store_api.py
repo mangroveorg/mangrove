@@ -128,10 +128,6 @@ class TestDataStoreApi(unittest.TestCase):
         self.assertTrue(doctor_type.slug in types)
         self.assertTrue(facility_type.slug in types)
 
-    def test_should_create_entity_with_short_code(self):
-        reporter = Entity(self.dbm, entity_type="Reporter", location=["Pune", "India"], short_code="REP999")
-        self.assertEqual(reporter.short_code, "REP999")
-
 
     def _create_data_dict_type(self):
         med_type = DataDictType(self.dbm, name='Medicines', slug='meds', primitive_type='number',

@@ -15,23 +15,24 @@ class TestData(object):
         
     def setup(self):
 #        Two forms with data for two months with monthly frequency
-        ENTITY_TYPE = ["Health_Facility", "Clinic"]
-        self.create_clinic_type(ENTITY_TYPE)
+        self.ENTITY_TYPE = ["Health_Facility", "Clinic"]
+        self.entity_type_string="Health_Facility.Clinic"
+        self.create_clinic_type(self.ENTITY_TYPE)
         self._create_form_model("CL2")
         self._create_form_model("CL1")
         self.dd_types = self.create_datadict_types()
-        self.entity1, id1 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Pune'],"1")
+        self.entity1, id1 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'MH', 'Pune'],"1")
 
         self._add_data_for_form_1_entity_1(self.entity1)
 
         self._add_data_for_form_2_entity_1(self.entity1)
 
-        self.entity2, id2 = self.create_entity_instance(ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'],"2")
+        self.entity2, id2 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'],"2")
 
         self._add_data_for_form_1_entity_2( self.entity2)
         self._add_data_form_2_entity_2( self.entity2)
 
-        self.entity3, id3 = self.create_entity_instance(ENTITY_TYPE, ['India', 'MH', 'Mumbai'],"3")
+        self.entity3, id3 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'MH', 'Mumbai'],"3")
         self.entity3.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
             ("director", "Dr. C", self.dd_types['director']), ("patients", 12, self.dd_types['patients'])],
                    event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),

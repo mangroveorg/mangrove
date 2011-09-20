@@ -120,6 +120,7 @@ class Entity(DataObject):
 
     __document_class__ = EntityDocument
 
+
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
                  geometry=None, centroid=None, gr_id=None, id=None, short_code=None):
         """
@@ -151,35 +152,7 @@ class Entity(DataObject):
             return
 
         # Not made from existing doc, so create a new one
-        doc = EntityDocument(id)
-        self._set_document(doc)
-
-        # add aggregation paths
-        if is_string(entity_type):
-            entity_type = [entity_type]
-        doc.entity_type = entity_type
-
-        if location is not None:
-            doc.location = location
-
-        if geometry is not None:
-            doc.geometry = geometry
-
-        if centroid is not None:
-            doc.centroid = centroid
-
-        if gr_id is not None:
-            doc.gr_id = gr_id
-
-        if short_code is not None:
-            doc.short_code = short_code
-
-        if aggregation_paths is not None:
-            reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
-            for name in aggregation_paths.keys():
-                if name in reserved_names:
-                    raise ValueError(u'Attempted to add an aggregation path with a reserved name')
-                self.set_aggregation_path(name, aggregation_paths[name])
+        self._create_new_entity_doc(aggregation_paths, centroid, entity_type, geometry, gr_id, id, location, short_code)
 
     @property
     def aggregation_paths(self):
@@ -325,20 +298,7 @@ class Entity(DataObject):
         for id in self._get_data_ids():
             self.invalidate_data(id)
 
-    def _get_data_ids(self):
-        """
-        Returns a list of all data documents ids for this entity.
-        This should only be used internally to perform update actions on data records as necessary.
-        """
-        rows = self._get_rows()
-        return [row.id for row in rows]
 
-    def _get_rows(self):
-        """
-        Return a list of all the data records associated with this
-        entity.
-        """
-        return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
 
     def get_all_data(self):
         """
@@ -430,6 +390,45 @@ class Entity(DataObject):
         view_names = {u"latest": u"by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
 
+    def _get_data_ids(self):
+        """
+        Returns a list of all data documents ids for this entity.
+        This should only be used internally to perform update actions on data records as necessary.
+        """
+        rows = self._get_rows()
+        return [row.id for row in rows]
+
+    def _get_rows(self):
+        """
+        Return a list of all the data records associated with this
+        entity.
+        """
+        return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
+
+    def _create_new_entity_doc(self, aggregation_paths, centroid, entity_type, geometry, gr_id, id, location,
+                               short_code):
+        doc = EntityDocument(id)
+        self._set_document(doc)
+        # add aggregation paths
+        if is_string(entity_type):
+            entity_type = [entity_type]
+        doc.entity_type = entity_type
+        if location is not None:
+            doc.location = location
+        if geometry is not None:
+            doc.geometry = geometry
+        if centroid is not None:
+            doc.centroid = centroid
+        if gr_id is not None:
+            doc.gr_id = gr_id
+        if short_code is not None:
+            doc.short_code = short_code
+        if aggregation_paths is not None:
+            reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
+            for name in aggregation_paths.keys():
+                if name in reserved_names:
+                    raise ValueError(u'Attempted to add an aggregation path with a reserved name')
+                self.set_aggregation_path(name, aggregation_paths[name])
 
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument

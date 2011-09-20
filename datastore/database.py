@@ -90,8 +90,8 @@ class DataObject(object):
         return me
 
     @classmethod
-    def get(cls, dbm, id):
-        return dbm.get(id, cls)
+    def get(cls, dbm, id, get_or_create=False):
+        return dbm.get(id, cls, get_or_create)
 
     def __init__(self, dbm):
         self._doc = None

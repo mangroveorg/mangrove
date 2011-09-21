@@ -2,7 +2,7 @@
 import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
@@ -48,6 +48,10 @@ class TestData(object):
         self.entity_type = entity_type
         define_type(self.manager, entity_type)
 
+    def create_water_point_entity(self):
+        water_point_type = ["waterpoint"]
+        define_type(self.manager, water_point_type)
+        create_entity(self.manager,entity_type=water_point_type,short_code="4")
 
     def _create_form_model(self, form_code):
         self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',

@@ -3,6 +3,8 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
+from mangrove.datastore.entity import get_all_entities
+from mangrove.datastore.entity_type import get_all_entity_types
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
@@ -393,15 +395,12 @@ class FormSubmission(object):
 
     #    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
     def _exists_reporter_with_phone_number(self, dbm, phone_number):
-        from mangrove.datastore import data
 
-        reporters = data.aggregate(dbm, entity_type=[REPORTER],
-                                   aggregates={MOBILE_NUMBER_FIELD: data.reduce_functions.LATEST},
-                                   aggregate_on=data.EntityAggregration()
-        )
-        from_reporter_list = [{id: reporters[id]} for id in reporters if
-                                                  reporters[id].get(MOBILE_NUMBER_FIELD) == phone_number]
-        return len(from_reporter_list) > 0
+        reporters = get_all_entities(dbm, entity_type=[REPORTER])
+        def is_mobilenumber_same(reporter):return reporter.value(MOBILE_NUMBER_FIELD)==phone_number
+
+
+        return not is_empty(filter(is_mobilenumber_same,reporters))
 
 
 def create_default_reg_form_model(manager):

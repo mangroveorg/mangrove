@@ -217,44 +217,6 @@ def aggregate_for_form(dbm, form_code, aggregates=None, aggregate_on=None, filte
     return result
 
 
-def fetch(dbm, entity_type, aggregates=None, aggregate_on=None, starttime=None, endtime=None, filter=None):
-    result = {}
-    aggregates = {} if aggregates is None else aggregates
-    aggregate_on = {} if aggregate_on is None else aggregate_on
-    if aggregate_on:
-        values = _load_all_fields_by_aggregation_path(dbm, entity_type, aggregate_on)
-    else:
-        values = _load_all_fields_aggregated(dbm, entity_type, filter)
-
-    interested_keys = None
-    if filter:
-        location = filter.get("location")
-        form_code = filter.get("form_code")
-        if location is not None:
-            interested_keys = _get_interested_keys_for_location(aggregate_on, dbm, entity_type, location)
-        if form_code is not None:
-            interested_keys = _get_interested_keys_for_form_code(values, form_code)
-
-    _parse_key = _get_key_strategy(aggregate_on, filter)
-
-    for key, val in values:
-        result_key, field, filter_key = _parse_key(key)
-        if filter and filter_key not in interested_keys:
-            continue
-        interested_aggregate = None
-        if field in aggregates:
-            interested_aggregate = aggregates.get(field)
-            #        * overrides field specific aggregation, returns the aggregation for all fields.
-        if "*" in aggregates:
-            interested_aggregate = aggregates.get("*")
-        if interested_aggregate:
-            try:
-                result.setdefault(result_key, {})[field] = val[interested_aggregate]
-            except KeyError:
-                raise AggregationNotSupportedForTypeException(field, interested_aggregate)
-    return result
-
-
 def _get_interested_keys_for_form_code(values, form_code):
     interested_keys = []
     for k, d in values:

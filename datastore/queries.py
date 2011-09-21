@@ -23,3 +23,4 @@ def get_entities_by_type(dbm, entity_type):
 
     return entities
 
+

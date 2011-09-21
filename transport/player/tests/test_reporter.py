@@ -82,7 +82,7 @@ class TestReporter(TestCase):
         submission1.save()
 
         submission2 = Submission(self.manager, TransportInfo('sms', '1234567891', '123'), 'test')
-        submission2._doc.event_time = datetime(2011,1,1)
+        submission2._doc.event_time = datetime(2011,1,2)
         submission2.save()
 
         from_time = datetime(2011,2,1)

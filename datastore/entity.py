@@ -79,12 +79,15 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-def get_all_entities(dbm):
+
+def get_all_entities(dbm,entity_type=None):
     """
     Returns all the entities in the Database
     """
-    rows = dbm.view.by_short_codes(reduce=False, include_docs=True)
-    return [_from_row_to_entity(dbm, row) for row in rows]
+    if entity_type is not None:
+        return _get_all_entities_of_type(dbm, entity_type)
+    else:
+        return _get_all_entities(dbm)
 
 
 def get_entities_by_value(dbm, label, value, as_of=None):
@@ -205,6 +208,9 @@ class Entity(DataObject):
 
     @property
     def data(self):
+        return self._doc.data
+
+    def data_value(self):
         return self._doc.data
 
     def set_aggregation_path(self, name, path):
@@ -360,6 +366,9 @@ class Entity(DataObject):
             result[field] = self._get_aggregate_value(field, view_name, asof)
         return result
 
+    def latest_values(self):
+        return {field_name:values['value'] for field_name,values in self.data.items()}
+
     def _get_aggregate_value(self, field, aggregate_fn, date):
         entity_id = self._doc.id
         time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
@@ -479,6 +488,16 @@ def _make_short_code(entity_type, num):
     entity_prefix = entity_type[-1].lower()[:3]
     return   SHORT_CODE_FORMAT % (entity_prefix, num)
 
+
+def _get_all_entities(dbm):
+    rows= dbm.view.by_short_codes(reduce=False, include_docs=True)
+    return [_from_row_to_entity(dbm, row) for row in rows]
+
+def _get_all_entities_of_type(dbm, entity_type):
+    startkey = [entity_type]
+    endkey = [entity_type, {}]
+    rows=dbm.view.by_short_codes(reduce=False, include_docs=True, startkey=startkey, endkey=endkey)
+    return [_from_row_to_entity(dbm, row) for row in rows]
 
 def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))

@@ -86,6 +86,15 @@ class TestEntity(MangroveTestCase):
         self.assertEqual(test_data.entity2.short_code, entities[1].short_code)
         self.assertEqual(test_data.entity3.short_code, entities[2].short_code)
 
+    def test_should_get_all_entities_of_type(self):
+        test_data = TestData(self.manager)
+        test_data.create_water_point_entity()
+        entities = get_all_entities(self.manager,test_data.ENTITY_TYPE)
+        self.assertEqual(3, len(entities))
+        self.assertEqual(test_data.entity1.short_code, entities[0].short_code)
+        self.assertEqual(test_data.entity2.short_code, entities[1].short_code)
+        self.assertEqual(test_data.entity3.short_code, entities[2].short_code)
+
     def test_hierarchy_addition(self):
         test_data = TestData(self.manager)
         e = get(self.manager, test_data.entity1.id)
@@ -269,6 +278,19 @@ class TestEntity(MangroveTestCase):
         self.assertTrue(med_type.slug in types)
         self.assertTrue(doctor_type.slug in types)
         self.assertTrue(facility_type.slug in types)
+
+    def test_latest_values_for_entity(self):
+        test_data = TestData(self.manager)
+        test_data.entity1.add_data(
+            data=[("beds", 10, test_data.dd_types['beds']), ("meds", 20, test_data.dd_types['meds']), ("doctors", 2, test_data.dd_types['doctors'])])
+        test_data.entity1.add_data(data=[("beds", 15, test_data.dd_types['beds']), ("doctors", 2, test_data.dd_types['doctors'])])
+        test_data.entity1.add_data(
+            data=[("beds", 20, test_data.dd_types['beds']), ("meds", 05, test_data.dd_types['meds']), ("doctors", 2, test_data.dd_types['doctors'])])
+
+        data_fetched = test_data.entity1.latest_values()
+        self.assertEqual(data_fetched["beds"], 20)
+        self.assertEqual(data_fetched["meds"], 05)
+        self.assertEqual(data_fetched["doctors"], 2)
 
 
 def get_entities(dbm, ids):

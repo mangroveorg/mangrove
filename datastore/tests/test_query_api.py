@@ -456,22 +456,6 @@ class TestQueryApi(unittest.TestCase):
         self.assertEqual(values[("Director", "Med_Officer", "Nurse")], {"patients": 12})
         self.assertEqual(values[("Director", "Med_Supervisor", "Surgeon")], {"patients": 70})
 
-    def test_should_load_all_entity_types(self):
-        define_type(self.manager, ["HealthFacility", "Clinic"])
-        define_type(self.manager, ["HealthFacility", "Hospital"])
-        define_type(self.manager, ["WaterPoint", "Lake"])
-        define_type(self.manager, ["WaterPoint", "Dam"])
-        entity_types = get_all_entity_types(self.manager)
-
-        expected = [['HealthFacility'],
-            ['HealthFacility', 'Clinic'],
-            ['HealthFacility', 'Hospital'],
-            ['WaterPoint'],
-            ['WaterPoint', 'Lake'],
-            ['WaterPoint', 'Dam']]
-
-        for e in expected:
-            self.assertIn(e, entity_types)
 
     def test_should_fetch_aggregate_per_entity_for_all_fields_in_entity(self):
         # Aggregate across all data records for each entity for all fields

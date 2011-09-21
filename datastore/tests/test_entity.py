@@ -1,5 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities
+from datetime import datetime
+from pytz import UTC
+from mangrove.datastore.datadict import DataDictType
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, get_data_record
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -52,7 +55,7 @@ class TestEntity(MangroveTestCase):
         with self.assertRaises(AssertionError):
             entity = create_entity(self.manager, entity_type=("reporter"), short_code="BLAH")
 
-        define_type(self.manager,["reporter"])
+        define_type(self.manager, ["reporter"])
         entity = create_entity(self.manager, entity_type=["reporter"], short_code="ABC")
         saved_entity = get_by_short_code(self.manager, short_code="ABC", entity_type=["reporter"])
         self.assertEqual(saved_entity.id, entity.id)
@@ -171,6 +174,101 @@ class TestEntity(MangroveTestCase):
         self.assertTrue(e._doc is not None)
         self.assertEqual(e.id, existing.id)
         self.assertEqual(e.type_path, existing.type_path)
+
+    def test_latest_value_are_stored_in_entity(self):
+        test_data = TestData(self.manager)
+        data_record = [('meds', 30, test_data.dd_types['meds']),
+            ('doc', "asif", test_data.dd_types['doctors']),
+            ('facility', 'clinic', test_data.dd_types['facility']),
+            ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), test_data.dd_types['facility'])]
+        data_record_id = test_data.entity1.add_data(data=data_record,
+                                                    event_time=datetime(2011, 01, 02, tzinfo=UTC),
+                                                    submission=dict(submission_id="123456"))
+        self.assertTrue(data_record_id is not None)
+        updated_clinic_entity = get_by_short_code(dbm=self.manager, short_code=test_data.entity1.short_code,
+                                                  entity_type=test_data.ENTITY_TYPE)
+        self.assertEqual(30, updated_clinic_entity.data['meds']['value'])
+        self.assertEqual('asif', updated_clinic_entity.data['doc']['value'])
+        self.assertEqual('clinic', updated_clinic_entity.data['facility']['value'])
+
+    def test_invalidate_data(self):
+        test_data = TestData(self.manager)
+        data_record_id = test_data.entity1.add_data([('arv', 20, test_data.dd_types['meds'])])
+        valid_doc = get_data_record(self.manager, data_record_id)
+        self.assertFalse(valid_doc.void)
+        test_data.entity1.invalidate_data(data_record_id)
+        invalid_doc = get_data_record(self.manager, data_record_id)
+        self.assertTrue(invalid_doc.void)
+
+    def test_all_data_record_are_invalidated_when_entity_is_invalidated(self):
+        e = Entity(self.manager, entity_type='store', location=['nyc'])
+        e.save()
+        self.assertFalse(e._doc.void)
+        apple_type = DataDictType(self.manager, name='Apples', slug='apples', primitive_type='number')
+        orange_type = DataDictType(self.manager, name='Oranges', slug='oranges', primitive_type='number')
+        apple_type.save()
+        orange_type.save()
+        data = [
+            [('apples', 20, apple_type), ('oranges', 30, orange_type)],
+            [('apples', 10, apple_type), ('oranges', 20, orange_type)]
+        ]
+        data_ids = []
+        for d in data:
+            id = e.add_data(d)
+            self.assertFalse(self.manager._load_document(id).void)
+            data_ids.append(id)
+        e.invalidate()
+        self.assertTrue(e._doc.void)
+        for id in data_ids:
+            self.assertTrue(self.manager._load_document(id).void)
+
+    def test_should_return_data_types(self):
+        med_type = DataDictType(self.manager,
+                                name='Medicines',
+                                slug='meds',
+                                primitive_type='number',
+                                description='Number of medications',
+                                tags=['med'])
+        med_type.save()
+        doctor_type = DataDictType(self.manager,
+                                   name='Doctor',
+                                   slug='doc',
+                                   primitive_type='string',
+                                   description='Name of doctor',
+                                   tags=['doctor', 'med'])
+        doctor_type.save()
+        facility_type = DataDictType(self.manager,
+                                     name='Facility',
+                                     slug='facility',
+                                     primitive_type='string',
+                                     description='Name of facility')
+        facility_type.save()
+        e = Entity(self.manager, entity_type='foo')
+        e.save()
+        data_record = [('meds', 20, med_type),
+            ('doc', "aroj", doctor_type),
+            ('facility', 'clinic', facility_type)]
+        e.add_data(data_record)
+        # med (tag in list)
+        types = [typ.slug for typ in e.data_types(['med'])]
+        self.assertTrue(med_type.slug in types)
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(facility_type.slug not in types)
+        # doctor (tag as string)
+        types = [typ.slug for typ in e.data_types('doctor')]
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(med_type.slug not in types)
+        self.assertTrue(facility_type.slug not in types)
+        # med and doctor (more than one tag)
+        types = [typ.slug for typ in e.data_types(['med', 'doctor'])]
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(med_type.slug not in types)
+        self.assertTrue(facility_type.slug not in types)
+        # no tags
+        types = [typ.slug for typ in e.data_types()]
+        self.assertTrue(med_type.slug in types)
+        self.assertTrue(doctor_type.slug in types)
+        self.assertTrue(facility_type.slug in types)
 
 
 def get_entities(dbm, ids):

@@ -103,15 +103,6 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
 
 
-def get_data_record(dbm, data_record_id):
-    """
-    Get the datarecord corresponding to the id.
-    Arguments:
-        data_record_id: data record uuid
-    """
-    return dbm._load_document(data_record_id, document_class=DataRecordDocument)
-
-
 class Entity(DataObject):
     """
     The Entity class is the primary way for a developer to add save
@@ -436,6 +427,22 @@ class DataRecord(DataObject):
     def __init__(self, dbm):
         assert isinstance(dbm, DatabaseManager)
         DataObject.__init__(self, dbm)
+
+    @property
+    def data(self):
+        return self._doc.data
+
+    @property
+    def event_time(self):
+        return self._doc.event_time
+
+    @property
+    def submission(self):
+        return self._doc.submission
+
+    @property
+    def voided(self):
+        return self._doc.void
 
 
 def _check_if_entity_exists(dbm, entity_type, short_code):

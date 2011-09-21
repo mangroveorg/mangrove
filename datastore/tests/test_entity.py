@@ -2,7 +2,7 @@
 from datetime import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, get_data_record
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -194,11 +194,11 @@ class TestEntity(MangroveTestCase):
     def test_invalidate_data(self):
         test_data = TestData(self.manager)
         data_record_id = test_data.entity1.add_data([('arv', 20, test_data.dd_types['meds'])])
-        valid_doc = get_data_record(self.manager, data_record_id)
-        self.assertFalse(valid_doc.void)
+        valid_doc = DataRecord.get(self.manager, data_record_id)
+        self.assertFalse(valid_doc.voided)
         test_data.entity1.invalidate_data(data_record_id)
-        invalid_doc = get_data_record(self.manager, data_record_id)
-        self.assertTrue(invalid_doc.void)
+        invalid_doc = DataRecord.get(self.manager, data_record_id)
+        self.assertTrue(invalid_doc.voided)
 
     def test_all_data_record_are_invalidated_when_entity_is_invalidated(self):
         e = Entity(self.manager, entity_type='store', location=['nyc'])

@@ -12,7 +12,7 @@ class TestSMSPlayer(TestCase):
     def _mock_reporter(self):
         self.reporter_mock = Mock(spec=Entity)
         reporter_name = "1234"
-        self.reporter_module.find_reporter_entity.return_value = self.reporter_mock
+        self.reporter_module.find_reporter_entity.return_value = self.reporter_mock, reporter_name
 
     def setUp(self):
         loc_tree = Mock()

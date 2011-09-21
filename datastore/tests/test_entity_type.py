@@ -42,20 +42,3 @@ class TestEntityType(unittest.TestCase):
         define_type(self.dbm, ["Clinic"])
         entity_types = get_all_entity_types(self.dbm)
         self.assertListEqual(entity_types, [["Clinic"]])
-
-    def test_should_load_all_entity_types(self):
-        define_type(self.dbm, ["HealthFacility", "Clinic"])
-        define_type(self.dbm, ["HealthFacility", "Hospital"])
-        define_type(self.dbm, ["WaterPoint", "Lake"])
-        define_type(self.dbm, ["WaterPoint", "Dam"])
-        entity_types = get_all_entity_types(self.dbm)
-
-        expected = [['HealthFacility'],
-            ['HealthFacility', 'Clinic'],
-            ['HealthFacility', 'Hospital'],
-            ['WaterPoint'],
-            ['WaterPoint', 'Lake'],
-            ['WaterPoint', 'Dam']]
-
-        for e in expected:
-            self.assertIn(e, entity_types)

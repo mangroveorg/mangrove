@@ -170,10 +170,10 @@ class SMSPlayer(Player):
 
     def accept(self, request):
         assert request is not None
-        reporter_entity, reporter_name = reporter.find_reporter_entity(self.dbm, request.transport.source)
+        reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         form_code, values = self._parse(request)
         submission_id, form_submission = self.submit(request.transport, form_code, values, reporter_entity)
-        return Response(reporters=[{NAME_FIELD: reporter_name}], submission_id=submission_id,
+        return Response(reporters=[{NAME_FIELD: reporter_entity.value(NAME_FIELD)}], submission_id=submission_id,
                         form_submission=form_submission)
 
 

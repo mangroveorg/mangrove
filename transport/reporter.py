@@ -4,9 +4,9 @@ from mangrove.datastore.entity import Entity
 from mangrove.datastore.queries import get_entities_by_type
 
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MultipleReportersForANumberException
-from mangrove.datastore import data, entity
+from mangrove.datastore import data
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
-from mangrove.transport.submissions import get_submissions
+from mangrove.transport.submissions import  get_submissions_for_activity_period
 
 REPORTER_ENTITY_TYPE = ["reporter"]
 
@@ -37,8 +37,8 @@ def find_reporters_by_from_number(dbm, from_number):
     return from_reporter_list
 
 def reporters_submitted_data(dbm, form_code, from_time=None, to_time=None):
-    submissions = get_submissions(dbm, form_code, from_time, to_time)
-    source_ids = set([submission.source for submission in submissions])
+    submissions = get_submissions_for_activity_period(dbm, form_code, from_time, to_time)
+    source_mobile_numbers = set([submission.source for submission in submissions])
     all_reporters = get_entities_by_type(dbm, 'reporter')
-    reporters = [reporter for reporter in all_reporters if reporter.value(MOBILE_NUMBER_FIELD) in source_ids]
+    reporters = [reporter for reporter in all_reporters if reporter.value(MOBILE_NUMBER_FIELD) in source_mobile_numbers]
     return reporters

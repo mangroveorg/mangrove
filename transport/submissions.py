@@ -2,6 +2,7 @@
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord
+from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence
 
 ENTITY_QUESTION_DISPLAY_CODE = "eid"
@@ -21,6 +22,17 @@ def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size
         rows = dbm.load_all_rows_in_view('submissionlog', reduce=False, descending=True,
                                          startkey=startkey,
                                          endkey=endkey, skip=page_number * page_size, limit=page_size)
+    submissions = [Submission.new_from_doc(dbm=dbm, doc = Submission.__document_class__.wrap(row['value'])) for row in rows]
+    return submissions
+
+def get_submissions_for_activity_period(dbm, form_code, from_time, to_time):
+    from_time_in_epoch = convert_date_time_to_epoch(from_time) if from_time is not None else None
+    to_time_in_epoch = convert_date_time_to_epoch(to_time) if to_time is not None else None
+    startkey, endkey = _get_start_and_end_key(form_code, from_time_in_epoch, to_time_in_epoch)
+    
+    rows = dbm.load_all_rows_in_view('submission_for_activity_period', descending=True,
+                                         startkey=startkey,
+                                         endkey=endkey)
     submissions = [Submission.new_from_doc(dbm=dbm, doc = Submission.__document_class__.wrap(row['value'])) for row in rows]
     return submissions
 
@@ -71,6 +83,10 @@ class Submission(DataObject):
     @property
     def errors(self):
         return self._doc.error_message
+
+    @property
+    def event_time(self):
+        return self._doc.event_time
 
     def void(self, void = True):
         data_record_id = self._doc.data_record_id

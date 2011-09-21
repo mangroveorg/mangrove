@@ -218,9 +218,10 @@ class SubmissionLogDocument(DocumentBase):
     form_code = TextField()
     data_record_id = TextField()
     test = BooleanField()
+    event_time = TZAwareDateTimeField()
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None, data_record_id=None, test=None):
+                 error_message=None, form_code=None, data_record_id=None, test=None, event_time=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
@@ -232,6 +233,7 @@ class SubmissionLogDocument(DocumentBase):
         self.error_message = error_message
         self.data_record_id = data_record_id
         self.test = test
+        self.event_time = event_time if event_time is not None else self.created
 
 
 class AggregationTreeDocument(DocumentBase):

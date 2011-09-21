@@ -63,3 +63,7 @@ import time
 
 def convert_to_epoch(end_time):
     return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None
+
+def convert_date_time_to_epoch(end_time):
+    assert isinstance(end_time,datetime)
+    return int(time.mktime(end_time.timetuple())) * 1000

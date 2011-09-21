@@ -17,7 +17,7 @@ from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions
+from mangrove.transport.submissions import get_submissions, Submission, get_submissions_for_activity_period
 
 
 class LocationTree(object):
@@ -373,3 +373,23 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
         self.assertEqual(["ampizarantany"], dog.location_path)
+
+    def test_get_submissions_for_form_for_an_activity_period(self):
+        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans1', 'Q2': 'ans2'},
+                                                      status=False, error_message="", data_record_id='2345678',event_time=datetime.datetime(2011,9,1)))
+        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans12', 'Q2': 'ans22'},
+                                                      status=False, error_message="", data_record_id='1234567',event_time=datetime.datetime(2011,3,3)))
+        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+                                                      destination=12345, form_code="abc",
+                                                      values={'Q1': 'ans12', 'Q2': 'defans22'},
+                                                      status=False, error_message="", data_record_id='345678',event_time=datetime.datetime(2011,3,10)))
+
+        from_time = datetime.datetime(2011,3,1)
+        end_time = datetime.datetime(2011,3,30)
+
+        submissions = get_submissions_for_activity_period(self.dbm, "abc", from_time, end_time)
+        self.assertEquals(2, len(submissions))

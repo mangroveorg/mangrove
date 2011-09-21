@@ -12,7 +12,7 @@ from mangrove.transport.player.player import   Channel
 
 #TODO: Now that submission handler has been deleted, move these tests to the player.
 @SkipTest
-class TestSubmissions(TestCase):
+class TestSubmissionHandler(TestCase):
     def setUp(self):
         self.FORM_CODE = "QR1"
         self.VALUES = {"EID": "100", "Q1": "20"}

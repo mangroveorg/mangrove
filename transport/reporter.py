@@ -36,7 +36,7 @@ def find_reporters_by_from_number(dbm, from_number):
         raise NumberNotRegisteredException(from_number)
     return from_reporter_list
 
-def reporters_submitted_data(dbm, form_code, from_time=None, to_time=None):
+def reporters_submitted_data_for_activity_period(dbm, form_code, from_time=None, to_time=None):
     submissions = get_submissions_for_activity_period(dbm, form_code, from_time, to_time)
     source_mobile_numbers = set([submission.source for submission in submissions])
     all_reporters = get_entities_by_type(dbm, 'reporter')

@@ -82,10 +82,16 @@ class FormModel(DataObject):
 
     @property
     def name(self):
+        """
+        Returns the name of the FormModel
+        """
         return self._doc.name
 
     @name.setter
     def name(self, value):
+        """
+        Sets the name of the FormModel
+        """
         self._doc.name = value
 
     @property

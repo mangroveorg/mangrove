@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.player.player import TransportInfo
-from mangrove.transport.reporter import find_reporter, reporters_submitted_data_for_activity_period
+from mangrove.transport.reporter import find_reporter, get_reporters_who_submitted_data_for_frequency_period
 from mangrove.transport.submissions import Submission
 
 
@@ -72,7 +72,7 @@ class TestReporter(TestCase):
 
     def test_should_return_reporter_submitted_data(self):
         Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test').save()
-        reporters = reporters_submitted_data_for_activity_period(self.manager, 'test')
+        reporters = get_reporters_who_submitted_data_for_frequency_period(self.manager, 'test')
         self.assertEqual(1,len(reporters))
         self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 
@@ -87,7 +87,7 @@ class TestReporter(TestCase):
 
         from_time = datetime(2011,2,1)
         to_time = datetime(2011,2,27)
-        reporters = reporters_submitted_data_for_activity_period(self.manager, 'test',from_time,to_time)
+        reporters = get_reporters_who_submitted_data_for_frequency_period(self.manager, 'test',from_time,to_time)
         self.assertEqual(1,len(reporters))
         self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 

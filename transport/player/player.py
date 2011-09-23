@@ -113,7 +113,7 @@ class Player(object):
         return form_submission
 
     def _set_entity_short_code(self, short_code, values):
-        values[ENTITY_QUESTION_DISPLAY_CODE] = short_code
+        values[self.form.entity_question.code] = short_code
 
     def _get_location_hierarchy_from_location_name(self, display_location):
         if is_empty(display_location):

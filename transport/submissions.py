@@ -5,7 +5,7 @@ from mangrove.datastore.entity import DataRecord
 from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence
 
-ENTITY_QUESTION_DISPLAY_CODE = "eid"
+ENTITY_QUESTION_DISPLAY_CODE = "q1"
 
 def submission_count(dbm, form_code, from_time, to_time):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)

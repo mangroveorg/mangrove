@@ -45,7 +45,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_add_label(self):
         saved = self.dbm.get(self.form_model__id, FormModel)
-        self.assertTrue(saved.label['eng'] == "Aids form_model")
+        self.assertTrue(saved.label['en'] == "Aids form_model")
 
     def test_should_add_short_ids(self):
         saved = self.dbm.get(self.form_model__id, FormModel)
@@ -93,14 +93,14 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_add_english_as_default_langauge(self):
         activeLangauges = self.form_model.activeLanguages
-        self.assertTrue("eng" in activeLangauges)
+        self.assertTrue("en" in activeLangauges)
 
     def test_should_add_language_to_form_model(self):
-        self.form_model.add_language(language="fra", label="French Aids form_model")
+        self.form_model.add_language(language="fr", label="French Aids form_model")
         activeLangauges = self.form_model.activeLanguages
         self.assertEquals(len(activeLangauges), 2)
-        self.assertTrue("fra" in activeLangauges)
-        self.assertEquals(self.form_model.label['fra'], u'French Aids form_model')
+        self.assertTrue("fr" in activeLangauges)
+        self.assertEquals(self.form_model.label['fr'], u'French Aids form_model')
 
     def test_should_delete_all_fields_from_document(self):
         form_model = self.dbm.get(self.form_model__id, FormModel)
@@ -164,7 +164,7 @@ class TestFormModel(unittest.TestCase):
                 "name": "What are you reporting on?",
                 "defaultValue": "",
                 "label": {
-                    "eng": "Entity being reported on"
+                    "en": "Entity being reported on"
                 },
                 "entity_question_flag": True,
                 "type": "text",
@@ -177,7 +177,7 @@ class TestFormModel(unittest.TestCase):
                     "max": 10,
                     "min": 0
                 })],
-                "label": {"eng": ""},
+                "label": {"en": ""},
                 "type": "integer",
                 "ddtype": self.default_ddtype.to_json(),
                 "name": "What is your age?",
@@ -186,13 +186,13 @@ class TestFormModel(unittest.TestCase):
                 {
                 "choices": [
                         {
-                        "text": {"eng": "Pune"}
+                        "text": {"en": "Pune"}
                     },
                         {
-                        "text": {"eng": "Bangalore"}
+                        "text": {"en": "Bangalore"}
                     }
                 ],
-                "label": {"eng": ""},
+                "label": {"en": ""},
                 "type": "select",
                 "ddtype": self.default_ddtype.to_json(),
                 "name": "Where do you live?",
@@ -212,7 +212,7 @@ class TestFormModel(unittest.TestCase):
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
                             constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
-                             options=[{"text": {"eng": "Pune"}}, {"text": {"eng": "Bangalore"}}],
+                             options=[{"text": {"en": "Pune"}}, {"text": {"en": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype)
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel.new_from_doc(self.dbm, document)
@@ -234,7 +234,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
@@ -243,7 +243,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                 form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -252,7 +252,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_not_raise_exception_if_form_code_is_updated(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                 form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -266,9 +266,9 @@ class TestFormModel(unittest.TestCase):
                                            primitive_type='string')
         self.default_ddtype.save()
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng",
+                              defaultValue="some default value", language="en",
                               constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",

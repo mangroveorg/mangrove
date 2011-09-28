@@ -61,7 +61,7 @@ class field_attributes(object):
     LOCATION_FIELD = "geocode"
     DATE_FIELD = 'date'
     MULTISELECT_FIELD = 'select'
-    DEFAULT_LANGUAGE = "eng"
+    DEFAULT_LANGUAGE = "en"
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
     NAME = "name"
     LIST_FIELD = "list"

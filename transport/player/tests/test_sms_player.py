@@ -3,7 +3,7 @@ from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.errors.MangroveException import  NumberNotRegisteredException, SubmissionParseException
+from mangrove.errors.MangroveException import  NumberNotRegisteredException, SubmissionParseException, SMSParserInvalidFormatException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
@@ -62,7 +62,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_not_submit_if_parsing_is_not_successful(self):
         self.request = Request(transportInfo=self.transport, message="invalid format")
-        with self.assertRaises(SubmissionParseException):
+        with self.assertRaises(SMSParserInvalidFormatException):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
 from mangrove.utils.types import is_sequence, is_empty
@@ -20,24 +20,25 @@ def create_question_from(dictionary, dbm):
     is_entity_question = dictionary.get("entity_question_flag")
     label_dict = dictionary.get("label")
     instruction = dictionary.get("instruction")
+    required = dictionary.get("required")
     label = None
     if label_dict is not None:
         label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction=instruction)
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, ddtype, dictionary, label, name, instruction=instruction)
+        return _get_integer_field(code, ddtype, dictionary, label, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, ddtype, dictionary, label, name, instruction=instruction)
+        return _get_date_field(code, ddtype, dictionary, label, name, instruction, required)
     elif type == field_attributes.LOCATION_FIELD:
-        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction)
+        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction, required=required)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, ddtype, dictionary, label, name, type, instruction=instruction)
+        return _get_select_field(code, ddtype, dictionary, label, name, type, instruction, required)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, ddtype, instruction=instruction)
+        return _get_list_field(name, code, label, ddtype, instruction, required)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction=instruction)
+        return _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required)
     return None
 
 
@@ -69,12 +70,12 @@ class field_attributes(object):
 
 class Field(object):
     def __init__(self, type="", name="", code="", label='', ddtype=None, instruction='',
-                 language=field_attributes.DEFAULT_LANGUAGE, constraints=None):
+                 language=field_attributes.DEFAULT_LANGUAGE, constraints=None,required=True):
         if not constraints: constraints = []
         self._dict = {}
         assert ddtype is not None
         self._dict = {'name': name, 'type': type, 'code': code, 'ddtype': ddtype, 'instruction': instruction,
-                      'label': {language: label}}
+                      'label': {language: label},'required':required}
         self.constraints = constraints
         self.errors = []
         self.value = None
@@ -109,6 +110,7 @@ class Field(object):
     def is_entity_field(self):
         return False
 
+
     @property
     def ddtype(self):
         return self._dict.get('ddtype')
@@ -142,15 +144,23 @@ class Field(object):
     def get_constraint_text(self):
         return ""
 
+    def is_required(self):
+        return self._dict['required']
+
+    def validate(self, value):
+        if self.is_required() and is_empty(value):
+            raise RequiredFieldNotPresentException(self.code)
+
 
 class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
-                 constraints=None):
+                 constraints=None, required=True):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
 
     def validate(self, value):
+        Field.validate(self,value)
         try:
             for constraint in self.constraints:
                 constraint.validate(value)
@@ -188,13 +198,14 @@ class DateField(Field):
     DATE_FORMAT = "date_format"
 
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE):
+                 language=field_attributes.DEFAULT_LANGUAGE, required=True):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction, required=required)
 
         self._dict[self.DATE_FORMAT] = date_format
 
     def validate(self, value):
+        Field.validate(self,value)
         DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
         try:
             datetime.strptime(value.strip(), DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
@@ -216,16 +227,17 @@ class TextField(Field):
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue="", instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False):
+                 language=field_attributes.DEFAULT_LANGUAGE, entity_question_flag=False,required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction, constraints=constraints,required=required)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
     def validate(self, value):
+        Field.validate(self,value)
         try:
             value = value.strip()
             for constraint in self.constraints:
@@ -257,13 +269,14 @@ class TextField(Field):
         return ""
 
 
+
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE):
+                 language=field_attributes.DEFAULT_LANGUAGE, required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, language=language, ddtype=ddtype,
-                           instruction=instruction, constraints=constraints, defaultValue=defaultValue)
+                           instruction=instruction, constraints=constraints, defaultValue=defaultValue, required=required)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
 
@@ -295,11 +308,12 @@ class TelephoneNumberField(TextField):
 
 class HierarchyField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE):
+                 language=field_attributes.DEFAULT_LANGUAGE,required=True):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction,required=required)
 
     def validate(self, value):
+        Field.validate(self,value)
         if is_sequence(value) or value is None:
             return value
         return [value]
@@ -310,12 +324,12 @@ class SelectField(Field):
 
     def __init__(self, name, code, label, options, ddtype, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE,
-                 single_select_flag=True):
+                 single_select_flag=True,required=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction,required=required)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -334,6 +348,7 @@ class SelectField(Field):
     SINGLE_SELECT_FLAG = 'single_select_flag'
 
     def validate(self, value):
+        Field.validate(self,value)
         return self.constraint.validate(answer=value)
 
     @property
@@ -355,13 +370,12 @@ class SelectField(Field):
 
 
 class GeoCodeField(Field):
-    def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE):
+    def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,required=True):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
-                       label=label, language=language, ddtype=ddtype, instruction=instruction)
+                       label=label, language=language, ddtype=ddtype, instruction=instruction,required=required)
 
     def validate(self, lat_long_string):
-        if lat_long_string is None:
-            raise GeoCodeFormatException(self.code)
+        Field.validate(self,lat_long_string)
         lat_long = lat_long_string.strip().split()
         if len(lat_long) < 2:
             raise GeoCodeFormatException(self.code)
@@ -371,44 +385,44 @@ class GeoCodeField(Field):
         return "xx.xxxx yy.yyyy"
 
 
-def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction):
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
 
     return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                     constraints=constraints, ddtype=ddtype, instruction=instruction)
+                     constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
 
 
-def _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction):
+def _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
 
     return TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype,
-                                instruction=instruction)
+                                instruction=instruction, required=required)
 
 
-def _get_integer_field(code, ddtype, dictionary, label, name, instruction):
+def _get_integer_field(code, ddtype, dictionary, label, name, instruction, required):
     constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
         constraints = constraints_factory(constraint_list)
     return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,
-                        constraints=constraints)
+                        constraints=constraints, required=required)
 
 
-def _get_date_field(code, ddtype, dictionary, label, name, instruction):
+def _get_date_field(code, ddtype, dictionary, label, name, instruction, required):
     date_format = dictionary.get("date_format")
     return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype,
-                     instruction=instruction)
+                     instruction=instruction, required=required)
 
 
-def _get_select_field(code, ddtype, dictionary, label, name, type, instruction):
+def _get_select_field(code, ddtype, dictionary, label, name, type, instruction, required):
     choices = dictionary.get("choices")
     single_select = True if type == field_attributes.SELECT_FIELD else False
     return SelectField(name=name, code=code, label=label, options=choices,
-                       single_select_flag=single_select, ddtype=ddtype, instruction=instruction)
+                       single_select_flag=single_select, ddtype=ddtype, instruction=instruction, required=required)
 
 
-def _get_list_field(name, code, label, ddtype, instruction):
-    return HierarchyField(name, code, label, ddtype, instruction=instruction)
+def _get_list_field(name, code, label, ddtype, instruction, required):
+    return HierarchyField(name, code, label, ddtype, instruction=instruction, required=required)

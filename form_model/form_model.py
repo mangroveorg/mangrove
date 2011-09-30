@@ -4,7 +4,6 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.datastore.entity import get_all_entities
-from mangrove.datastore.entity_type import get_all_entity_types
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
     EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException

@@ -161,43 +161,47 @@ class TestFormModel(unittest.TestCase):
     def test_should_create_a_questionnaire_from_dictionary(self):
         fields = [
                 {
-                "name": "What are you reporting on?",
-                "defaultValue": "",
-                "label": {
-                    "en": "Entity being reported on"
-                },
-                "entity_question_flag": True,
-                "type": "text",
-                "ddtype": self.default_ddtype.to_json(),
-                "code": "eid",
-                "constraints": [("length", {"min": 1, "max": 10})],
+                    "name": "What are you reporting on?",
+                    "defaultValue": "",
+                    "label": {
+                        "en": "Entity being reported on"
+                       },
+                    "entity_question_flag": True,
+                    "type": "text",
+                    "ddtype": self.default_ddtype.to_json(),
+                    "code": "eid",
+                    "constraints": [("length", {"min": 1, "max": 10})],
+                    "required":True
                 },
                 {
-                "constraints": [('range', {
-                    "max": 10,
-                    "min": 0
-                })],
-                "label": {"en": ""},
-                "type": "integer",
-                "ddtype": self.default_ddtype.to_json(),
-                "name": "What is your age?",
-                "code": "AGE"
-            },
+                    "constraints": [('range', {
+                        "max": 10,
+                        "min": 0
+                        })],
+                    "label": {"en": ""},
+                    "type": "integer",
+                    "ddtype": self.default_ddtype.to_json(),
+                    "name": "What is your age?",
+                    "code": "AGE",
+                    "required":False
+                },
                 {
-                "choices": [
-                        {
-                        "text": {"en": "Pune"}
-                    },
-                        {
-                        "text": {"en": "Bangalore"}
+                    "choices": [
+                            {
+                            "text": {"en": "Pune"}
+                            },
+                            {
+                            "text": {"en": "Bangalore"}
+                        }
+                    ],
+                    "label": {"en": ""},
+                    "type": "select",
+                    "ddtype": self.default_ddtype.to_json(),
+                    "name": "Where do you live?",
+                    "code": "PLC",
+                    "required":False
                     }
-                ],
-                "label": {"en": ""},
-                "type": "select",
-                "ddtype": self.default_ddtype.to_json(),
-                "name": "Where do you live?",
-                "code": "PLC"
-            }]
+                ]
         document = FormModelDocument()
         document.json_fields = fields
         document.entity_type = ["Reporter"]
@@ -210,10 +214,10 @@ class TestFormModel(unittest.TestCase):
                             label="Entity being reported on", entity_question_flag=True,
                             constraints=[TextLengthConstraint(min=1, max=10)], ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
-                            constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype)
+                            constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype,required=False)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
                              options=[{"text": {"en": "Pune"}}, {"text": {"en": "Bangalore"}}],
-                             single_select_flag=False, ddtype=self.default_ddtype)
+                             single_select_flag=False, ddtype=self.default_ddtype,required=False)
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel.new_from_doc(self.dbm, document)
         self.maxDiff = None

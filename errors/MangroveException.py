@@ -267,6 +267,10 @@ class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):
         MangroveException.__init__(self, "Unknown constraint type: %s" % (name,))
 
+class RequiredFieldNotPresentException(MangroveException):
+    def __init__(self, code):
+        MangroveException.__init__(self, "Mandatory Field with code: %s is not present" % (code,))
+
 class LocationFieldNotPresentException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "Please fill out atleast one location field")

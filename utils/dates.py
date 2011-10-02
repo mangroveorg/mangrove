@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
-from datetime import datetime
+from datetime import datetime, date
 import iso8601
 import pytz
 from types import is_empty, is_string
@@ -65,5 +65,5 @@ def convert_to_epoch(end_time):
     return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None
 
 def convert_date_time_to_epoch(date_time):
-    assert isinstance(date_time,datetime)
+    assert isinstance(date_time,date)
     return int(time.mktime(date_time.timetuple())) * 1000

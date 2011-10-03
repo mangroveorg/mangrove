@@ -286,19 +286,10 @@ class FormModel(DataObject):
             raise LocationFieldNotPresentException()
 
     def _remove_empty_values(self, answers):
-        od = OrderedDict()
-        for k,v in answers.items():
-            if not is_empty(v):
-                od[k] = v
-
-        return od
+        return OrderedDict([(k,v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_unknown_fields(self, answers):
-        od = OrderedDict()
-        for k,v in answers.items():
-            if self.get_field_by_code(k) is not None:
-                od[k] = v
-        return od
+        return OrderedDict([(k,v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
     def _validate_if_valid_values_left_to_be_saved(self, values):
         if values is None or len(values) <= 1:

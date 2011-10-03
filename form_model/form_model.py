@@ -307,7 +307,7 @@ class FormModel(DataObject):
             field = self.get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:
-                cleaned_values[key] = result
+                cleaned_values[field.code] = result
             else:
                 errors[key] = result
         return cleaned_values, errors

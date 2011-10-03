@@ -63,18 +63,18 @@ class TestFormModel(unittest.TestCase):
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
-        self.assertEqual(OrderedDict([('id', '1')]), cleaned_answers)
+        self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
-        expected_result = OrderedDict([('q1', 'Asif Momin'), ('q2', 20.0), ('id', '1')])
+        expected_result = OrderedDict([('Q1', 'Asif Momin'), ('Q2', 20.0), ('ID', '1')])
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_ignore_field_validation_if_the_answer_blank(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
-        expected_result = OrderedDict([('q1', 'Asif Momin'), ('id', '1')])
+        expected_result = OrderedDict([('Q1', 'Asif Momin'), ('ID', '1')])
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
@@ -90,11 +90,11 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 2)
         self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
                           'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
-        self.assertEqual(OrderedDict([('q3', ['RED']), ('id', '1')]), cleaned_answers)
+        self.assertEqual(OrderedDict([('Q3', ['RED']), ('ID', '1')]), cleaned_answers)
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
-        expected_cleaned_data = OrderedDict([('q1', 'My Name'), ('q3', ['RED']), ('q2', 40.0), ('id', '1')])
+        expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1')])
         cleaned_answers, errors = self.form_model._is_valid(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))

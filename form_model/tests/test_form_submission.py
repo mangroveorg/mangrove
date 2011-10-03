@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from collections import OrderedDict
 from unittest.case import TestCase
 from mock import Mock
 from mangrove.datastore.database import DatabaseManager
@@ -33,7 +34,7 @@ class TestFormSubmission(TestCase):
         pass
 
     def test_should_create_form_submission_with_entity_id(self):
-        answers = {"id": "1", "q1": "My Name", "q2": "40", "q3": "RED"}
+        answers = OrderedDict({"id": "1", "q1": "My Name", "q2": "40", "q3": "RED"})
 
         form_submission = FormSubmission(self.form_model, answers)
 

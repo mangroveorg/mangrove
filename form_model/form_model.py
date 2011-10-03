@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from collections import OrderedDict
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
@@ -296,8 +297,8 @@ class FormModel(DataObject):
 
     def _is_valid(self, values):
         assert values is not None
-        cleaned_values = {}
-        errors = {}
+        cleaned_values = OrderedDict()
+        errors = OrderedDict()
         self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
@@ -320,8 +321,8 @@ class FormModel(DataObject):
 
 class FormSubmission(object):
     def __init__(self, form_model, form_answers, errors=None):
-        assert errors is None or type(errors) == dict
-        assert form_answers is not None and type(form_answers) == dict
+        assert errors is None or type(errors) == OrderedDict
+        assert form_answers is not None and type(form_answers) == OrderedDict
         assert form_model is not None
 
         self.form_model = form_model

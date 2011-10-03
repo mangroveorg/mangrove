@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from collections import OrderedDict
 import csv
 import re
 import xlrd
@@ -41,7 +42,7 @@ class SMSParser(object):
     def _parse_tokens(self, tokens):
         tokens = [ self._get_token(token) for token in tokens if token]
         tokens = [token.strip() for token in tokens if token]
-        submission = {}
+        submission = OrderedDict()
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)

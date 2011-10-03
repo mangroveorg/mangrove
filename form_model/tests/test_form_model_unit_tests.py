@@ -22,12 +22,12 @@ class TestFormModel(unittest.TestCase):
                        language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                        defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
-                       ddtype=self.ddtype_mock)
+                       ddtype=self.ddtype_mock, required=False)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                          constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock)
+                          constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock, required=False)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                         options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock)
-        q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock)
+                         options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock, required=False)
+        q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[q1, q2, q3, q4, q5])

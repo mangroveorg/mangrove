@@ -17,7 +17,7 @@ from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions, Submission, get_submissions_for_activity_period
+from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
 
 
 class LocationTree(object):
@@ -69,11 +69,11 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng",
                               constraints=[TextLengthConstraint(4, 15)],
-                              ddtype=self.name_type)
+                              ddtype=self.name_type, required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type, required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type)
+                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
 
         self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="clinic", type='survey', fields=[question1, question2, question3])

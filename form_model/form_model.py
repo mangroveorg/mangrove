@@ -6,10 +6,11 @@ from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.datastore.entity import get_all_entities
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, EntityQuestionCodeNotSubmitted,\
-    EntityTypeCodeNotSubmitted, NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
+    NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
+from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -49,7 +50,7 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", state=attributes.ACTIVE_STATE):
+                 language="en", state=attributes.ACTIVE_STATE, validators=[MandatoryValidator(), EntityQuestionAnsweredValidator()]):
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
@@ -61,7 +62,7 @@ class FormModel(DataObject):
 
         self._form_fields = []
         self.errors = []
-
+        self.validators = validators
         # Are we being constructed from scratch or existing doc?
         if name is None:
             return
@@ -273,11 +274,11 @@ class FormModel(DataObject):
         return None
 
     def _validate_mandatory_fields_have_values(self, values):
-        short_code = self.get_short_code(values)
-        if is_empty(short_code):
-            raise EntityQuestionCodeNotSubmitted()
-        if self.is_registration_form() and is_empty(self.get_entity_type(values)):
-            raise EntityTypeCodeNotSubmitted()
+#        short_code = self.get_short_code(values)
+#        if is_empty(short_code):
+#            raise EntityQuestionCodeNotSubmitted()
+#        if self.is_registration_form() and is_empty(self.get_entity_type(values)):
+#            raise EntityTypeCodeNotSubmitted()
         if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
             self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             raise MobileNumberMissing()
@@ -299,6 +300,8 @@ class FormModel(DataObject):
         assert values is not None
         cleaned_values = OrderedDict()
         errors = OrderedDict()
+        for validator in self.validators:
+            errors.update(validator.validate(values, self.fields))
         self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
@@ -443,20 +446,20 @@ def _construct_registration_form(manager):
     question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", language="en", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",
-                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12)])
+                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12)], required=False)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
-                               language="en", ddtype=location_type, instruction="Enter a region, district, or commune")
+                               language="en", ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
     question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
-                             language="en", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3")
+                             language="en", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3", required=False)
     question6 = TextField(name=DESCRIPTION_FIELD, code=DESCRIPTION_FIELD_CODE, label="Describe the subject",
                           defaultValue="some default value", language="en", ddtype=description_type,
-                          instruction="Describe your subject in more details (optional)")
+                          instruction="Describe your subject in more details (optional)", required=False)
     question7 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                                      label="What is the mobile number associated with the subject?",
                                      defaultValue="some default value", language="en", ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
-            _create_constraints_for_mobile_number()))
+            _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
     return form_model

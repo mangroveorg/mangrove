@@ -4,7 +4,7 @@ from mock import Mock
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField
-from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator
+from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator, MobileNumberMandatoryForReporterRegistrationValidator
 
 class TestMandatoryValidator(unittest.TestCase):
 
@@ -39,12 +39,24 @@ class TestEntityQuestionNotAnsweredValidator(unittest.TestCase):
         self.field3 = TextField('c','c','c',Mock(spec=DataDictType))
         self.fields = [self.field1,self.field2,self.field3]
 
-    def test_should_raise_exception_if_entity_question_not_answered(self):
+    def test_should_return_error_dict_if_entity_question_not_answered(self):
         values = dict(b='test2',c='test4')
-        with self.assertRaises(EntityQuestionCodeNotSubmitted):
-            self.validator.validate(values,self.fields)
+        errors = self.validator.validate(values,self.fields)
+        self.assertEqual(1, len(errors.keys()))
+        self.assertTrue('a' in errors.keys())
+        self.assertFalse('c' in errors.keys())
 
-    def test_should_not_raise_exception_if_entity_question_is_answered(self):
-        values = dict(b='test2',c='test4', a='test1')
-        self.validator.validate(values,self.fields)
+class TestMobileNumberMandatoryForReporterRegistrationValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.validator = MobileNumberMandatoryForReporterRegistrationValidator()
+        self.field1 = TextField('t','t','t',Mock(spec=DataDictType), entity_question_flag=True)
+        self.field2 = TextField('m','m','m',Mock(spec=DataDictType))
+        self.fields = [self.field1,self.field2]
+
+    def test_should_return_error_dict_if_mobile_number_field_missing(self):
+        values = dict(b='test2', t='reporter')
+        error_dict = self.validator.validate(values,self.fields)
+        self.assertEqual(1, len(error_dict))
+        self.assertTrue('m' in error_dict.keys())
 

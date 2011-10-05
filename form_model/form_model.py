@@ -7,10 +7,10 @@ from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.datastore.entity import get_all_entities
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
-    NoQuestionsSubmittedException, MobileNumberMissing, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
+    NoQuestionsSubmittedException, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
-from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator
+from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator, MobileNumberMandatoryForReporterRegistrationValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -279,9 +279,9 @@ class FormModel(DataObject):
 #            raise EntityQuestionCodeNotSubmitted()
 #        if self.is_registration_form() and is_empty(self.get_entity_type(values)):
 #            raise EntityTypeCodeNotSubmitted()
-        if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
-            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
-            raise MobileNumberMissing()
+#        if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
+#            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
+#            raise MobileNumberMissing()
         if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(
             self._case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
             raise LocationFieldNotPresentException()
@@ -461,5 +461,5 @@ def _construct_registration_form(manager):
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
+        question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"], validators=[MandatoryValidator(), EntityQuestionAnsweredValidator(), MobileNumberMandatoryForReporterRegistrationValidator()])
     return form_model

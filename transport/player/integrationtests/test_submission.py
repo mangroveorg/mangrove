@@ -274,13 +274,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         assert(response.success is False)
         self.assertTrue(response.errors.get('m') is not None)
 
-    @SkipTest
     def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):
-#        with self.assertRaises(MobileNumberMissing):
-        text = "reg .N buddy2 .T reporter .L 80 80"
-        response = self.send_sms(text)
-        self.assertFalse(response.success)
-        self.assertTrue(response.errors.get('m') is not None)
+        with self.assertRaises(MobileNumberMissing):
+            text = "reg .N buddy2 .T reporter .L 80 80"
+            self.send_sms(text)
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):

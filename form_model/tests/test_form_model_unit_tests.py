@@ -99,12 +99,7 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))
         self.assertEqual(cleaned_answers, expected_cleaned_data)
-
-    def test_give_error_for_no_entity_short_code(self):
-        with self.assertRaises(EntityQuestionCodeNotSubmitted):
-            answers = {"Q2": "10"}
-            self.form_model._is_valid(answers)
-
+        
     def test_should_validate_field_case_insensitive(self):
         answers = {"Id": "1", "Q1": "Asif Momin", "q2": "40"}
         cleaned_answers, errors = self.form_model._is_valid(answers)

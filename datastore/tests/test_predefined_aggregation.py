@@ -1,6 +1,6 @@
 from mangrove.datastore.data import EntityAggregration
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.datastore.time_period_aggregation import aggregate_for_time_period, Sum, Min, Max, Month, Latest, Week, Year
+from mangrove.datastore.time_period_aggregation import aggregate_for_time_period, Sum, Min, Max, Month, Latest, Week, Year, Day
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 class TestTimeGroupedAggregation(MangroveTestCase):
@@ -53,6 +53,18 @@ class TestTimeGroupedAggregation(MangroveTestCase):
 
         self.assertEqual(len(values), 1)
         self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'director':'Dr. B1'})
+
+    def test_day_time_aggregation_with_latest(self):
+        self.test_data.add_weekly_data_for_entity1()
+        values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',
+                                           aggregate_on=EntityAggregration(),
+                                           aggregates=[Min("patients"), Latest("director")
+                                                       ],
+                                           period=Day(24,12,2009))
+
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[self.test_data.entity1.short_code], {"patients": 20, 'director':'Dr. B2'})
+
 
     def test_yearly_time_aggregation_with_latest(self):
         values = aggregate_for_time_period(dbm=self.manager, form_code='CL1',

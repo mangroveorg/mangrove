@@ -183,6 +183,28 @@ class Week(object):
     def startkey_start(self):
         return [self.year,self.week]
 
+class Day(object):
+    def __init__(self, day, month,year):
+        self.day= day
+        self.month= month
+        self.year = year
+
+    @property
+    def period(self):
+        return self.day
+
+    @property
+    def stats_view(self):
+        return "daily_aggregate_stats"
+
+    @property
+    def latest_view(self):
+        return "daily_aggregate_latest"
+
+    @property
+    def startkey_start(self):
+        return [self.year,self.month,self.day]
+
 
 def _get_aggregates_for_field(field_name, aggregates, row):
     for aggregate in aggregates:

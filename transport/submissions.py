@@ -115,7 +115,7 @@ class Submission(DataObject):
         if is_string(errors):
             return errors
         if isinstance(errors, dict):
-            return ', '.join([key + ': ' + str(value)  for key,value in errors.items()])
+            return sequence_to_str(errors.values())
         if is_sequence(errors):
             return sequence_to_str(errors)
         return None

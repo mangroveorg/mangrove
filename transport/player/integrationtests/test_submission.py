@@ -181,7 +181,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         tomorrow = datetime.datetime.now() + oneDay
         submissions= get_submissions(self.dbm, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(submissions))
-        self.assertEquals(u"arv: Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
+        self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
 
 
     def test_should_register_new_entity(self):

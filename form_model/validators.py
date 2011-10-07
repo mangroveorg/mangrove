@@ -1,5 +1,4 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.form_model.field import TextField
 from collections import OrderedDict
 from mangrove.utils.types import is_empty
 
@@ -17,7 +16,7 @@ class MandatoryValidator(object):
 
     def validate(self,values,fields):
         mandatory_fields = self.get_mandatory_fields(fields)
-        return OrderedDict({str(field.code):"This field is required" for field in mandatory_fields if is_empty(case_insensitive_lookup(values, field.code))})
+        return OrderedDict({str(field.code):"Answer for question " + str(field.code) + " is required" for field in mandatory_fields if is_empty(case_insensitive_lookup(values, field.code))})
 
 class MobileNumberMandatoryForReporterRegistrationValidator(object):
 
@@ -25,7 +24,6 @@ class MobileNumberMandatoryForReporterRegistrationValidator(object):
         from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE
 
         field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
-
         if case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE) == REPORTER and is_empty(case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             return OrderedDict({str(field_code):'Mobile number is missing'})
         return OrderedDict({})

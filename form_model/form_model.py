@@ -10,7 +10,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     NoQuestionsSubmittedException, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException, MobileNumberMissing
 from mangrove.form_model.field import TextField, GeoCodeField, HierarchyField, TelephoneNumberField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
-from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator, MobileNumberMandatoryForReporterRegistrationValidator
+from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -50,7 +50,7 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", state=attributes.ACTIVE_STATE, validators=[MandatoryValidator(), EntityQuestionAnsweredValidator()]):
+                 language="en", state=attributes.ACTIVE_STATE, validators=[MandatoryValidator()]):
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)

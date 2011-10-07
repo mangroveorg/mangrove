@@ -1,5 +1,4 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted
 from mangrove.form_model.field import TextField
 from collections import OrderedDict
 from mangrove.utils.types import is_empty
@@ -19,16 +18,6 @@ class MandatoryValidator(object):
     def validate(self,values,fields):
         mandatory_fields = self.get_mandatory_fields(fields)
         return OrderedDict({str(field.code):"This field is required" for field in mandatory_fields if is_empty(case_insensitive_lookup(values, field.code))})
-
-
-class EntityQuestionAnsweredValidator(object):
-
-    def validate(self,values,fields):
-        entity_question = [field for field in fields if isinstance(field,TextField) and field.is_entity_field][0]
-        if is_empty(case_insensitive_lookup(values, entity_question.code)):
-            return OrderedDict({str(entity_question.code):"This field is required"})
-        return OrderedDict({})
-
 
 class MobileNumberMandatoryForReporterRegistrationValidator(object):
 

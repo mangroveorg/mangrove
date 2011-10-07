@@ -3,7 +3,7 @@ import unittest
 from mock import Mock
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField
-from mangrove.form_model.validators import MandatoryValidator, EntityQuestionAnsweredValidator, MobileNumberMandatoryForReporterRegistrationValidator
+from mangrove.form_model.validators import MandatoryValidator, MobileNumberMandatoryForReporterRegistrationValidator
 
 class TestMandatoryValidator(unittest.TestCase):
 
@@ -28,22 +28,6 @@ class TestMandatoryValidator(unittest.TestCase):
         self.assertEqual(1, len(errors.keys()))
         self.assertTrue('c' in errors.keys())
         self.assertFalse('a' in errors.keys())
-
-class TestEntityQuestionNotAnsweredValidator(unittest.TestCase):
-
-    def setUp(self):
-        self.validator = EntityQuestionAnsweredValidator()
-        self.field1 = TextField('a','a','a',Mock(spec=DataDictType), entity_question_flag=True)
-        self.field2 = TextField('b','b','b',Mock(spec=DataDictType), required=False)
-        self.field3 = TextField('c','c','c',Mock(spec=DataDictType))
-        self.fields = [self.field1,self.field2,self.field3]
-
-    def test_should_return_error_dict_if_entity_question_not_answered(self):
-        values = dict(b='test2',c='test4')
-        errors = self.validator.validate(values,self.fields)
-        self.assertEqual(1, len(errors.keys()))
-        self.assertTrue('a' in errors.keys())
-        self.assertFalse('c' in errors.keys())
 
 class TestMobileNumberMandatoryForReporterRegistrationValidator(unittest.TestCase):
 

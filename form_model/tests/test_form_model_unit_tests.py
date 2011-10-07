@@ -197,16 +197,6 @@ class TestFormModel(unittest.TestCase):
         for field in self.form_model.fields:
             self.assertEqual([], field.errors)
 
-    def test_should_raise_exception_if_no_valid_fields_to_save(self):
-        answers = {"id": "1", "Unknown field 1": "Asif Momin", "Unknown field 2": ""}
-        with self.assertRaises(NoQuestionsSubmittedException):
-            cleaned_answers, errors = self.form_model._is_valid(answers)
-
-        answers = {"id": "1"}
-        with self.assertRaises(NoQuestionsSubmittedException):
-            cleaned_answers, errors = self.form_model._is_valid(answers)
-
-
 
 
 

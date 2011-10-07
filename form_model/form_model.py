@@ -274,11 +274,6 @@ class FormModel(DataObject):
         return None
 
     def _validate_mandatory_fields_have_values(self, values):
-#        short_code = self.get_short_code(values)
-#        if is_empty(short_code):
-#            raise EntityQuestionCodeNotSubmitted()
-#        if self.is_registration_form() and is_empty(self.get_entity_type(values)):
-#            raise EntityTypeCodeNotSubmitted()
         if self.is_registration_form() and self.get_entity_type(values) == REPORTER and is_empty(
             self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             raise MobileNumberMissing()
@@ -305,7 +300,8 @@ class FormModel(DataObject):
         self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
-        self._validate_if_valid_values_left_to_be_saved(values)
+#TODO removing this check as every field required in datawinners. Also This check should be introduced when we introduce form level errors and should not throw exception
+#        self._validate_if_valid_values_left_to_be_saved(values)
         for key in values:
             field = self.get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)

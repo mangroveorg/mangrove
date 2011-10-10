@@ -71,7 +71,10 @@ def _generate_short_code(dbm, entity_type):
 
 def _set_short_code(dbm, form_model, values):
     entity_q_code = form_model.entity_question.code
-    values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
+    try:
+        values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
+    except KeyError:
+        raise MangroveException(ENTITY_TYPE_FIELD_CODE + " should be present")
 
 
 class Player(object):

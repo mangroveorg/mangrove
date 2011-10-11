@@ -1,13 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 import time
-from mangrove.datastore import entity
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import SMSParser, WebParser
-from mangrove.transport.submissions import ENTITY_QUESTION_DISPLAY_CODE, Submission
+from mangrove.transport.submissions import  Submission
 from mangrove.utils.types import is_empty
 
 

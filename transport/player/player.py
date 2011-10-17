@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 import time
+from datawinners.location.LocationTree import get_location_hierarchy
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
@@ -125,8 +126,7 @@ class Player(object):
             display_location_list.reverse()
             return display_location_list
         lowest_level_location = display_location_list[0]
-        tree = self.location_tree
-        location_hierarchy = tree.get_hierarchy_path(lowest_level_location)
+        location_hierarchy = get_location_hierarchy(lowest_level_location)
         return location_hierarchy
 
 
@@ -134,14 +134,14 @@ class Player(object):
         display_location, geo_code = values.get(LOCATION_TYPE_FIELD_CODE), values.get(GEO_CODE)
         location_hierarchy = self._get_location_hierarchy_from_location_name(display_location)
         tree = self.location_tree
-        if location_hierarchy is None and not is_empty(geo_code):
+        if location_hierarchy is [] and not is_empty(geo_code):
             try:
                 lat_string, long_string = tuple(geo_code.split())
                 location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string),
                                                                              long=float(long_string))
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
-        elif location_hierarchy is not None and is_empty(geo_code):
+        elif location_hierarchy is not [] and is_empty(geo_code):
             try:
                 translated_geo_code = tree.get_centroid(display_location.split(',')[0], len(location_hierarchy) - 1)
                 values[GEO_CODE] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])

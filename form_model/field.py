@@ -21,6 +21,7 @@ def create_question_from(dictionary, dbm):
     label_dict = dictionary.get("label")
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
+    is_event_time_field = dictionary.get("event_time_field_flag")
     label = None
     if label_dict is not None:
         label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
@@ -30,7 +31,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.INTEGER_FIELD:
         return _get_integer_field(code, ddtype, dictionary, label, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, ddtype, dictionary, label, name, instruction, required)
+        return _get_date_field(code, ddtype, dictionary, label, name, instruction, required, is_event_time_field)
     elif type == field_attributes.LOCATION_FIELD:
         return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction, required=required)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
@@ -198,11 +199,13 @@ class DateField(Field):
     DATE_FORMAT = "date_format"
 
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
-                 language=field_attributes.DEFAULT_LANGUAGE, required=True):
+                 language=field_attributes.DEFAULT_LANGUAGE, required=True, event_time_field_flag=False):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
                        label=label, language=language, ddtype=ddtype, instruction=instruction, required=required)
 
         self._dict[self.DATE_FORMAT] = date_format
+        if event_time_field_flag:
+            self._dict['event_time_field_flag'] = event_time_field_flag
 
     def validate(self, value):
         Field.validate(self,value)
@@ -219,6 +222,9 @@ class DateField(Field):
 
     def get_constraint_text(self):
         return self.date_format
+
+    def is_event_time_field(self):
+        return self._dict.get('event_time_field_flag')
 
 
 class TextField(Field):
@@ -411,10 +417,10 @@ def _get_integer_field(code, ddtype, dictionary, label, name, instruction, requi
                         constraints=constraints, required=required)
 
 
-def _get_date_field(code, ddtype, dictionary, label, name, instruction, required):
+def _get_date_field(code, ddtype, dictionary, label, name, instruction, required, is_event_time_field):
     date_format = dictionary.get("date_format")
     return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype,
-                     instruction=instruction, required=required)
+                     instruction=instruction, required=required, event_time_field_flag=is_event_time_field)
 
 
 def _get_select_field(code, ddtype, dictionary, label, name, type, instruction, required):

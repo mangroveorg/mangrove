@@ -657,3 +657,41 @@ class TestField(unittest.TestCase):
             field.validate("  ")
 
 
+    def test_should_create_date_field_with_event_time_flag(self):
+        field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', Mock(spec=DataDictType), event_time_field_flag=True)
+        self.assertTrue(field.is_event_time_field())
+
+    def test_should_create_date_field_with_event_time_flag_from_json(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        field_json = {
+            "defaultValue": "",
+            "label": {"en": "What is your birth date"},
+            "name": "Birth_date",
+            "code": "Q1",
+            "type": "date",
+            "date_format": "%m.%Y",
+            "ddtype": self.DDTYPE_JSON,
+            "required": False,
+            'event_time_field_flag': True
+            }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, DateField)
+        self.assertEqual(created_field.date_format, "%m.%Y")
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertFalse(created_field.is_required())
+        self.assertTrue(created_field.is_event_time_field())
+
+    def test_date_field_with_event_time_flag_should_return_expected_json(self):
+        field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', self.ddtype, event_time_field_flag=True)
+        expected_json = {
+            "instruction": None,
+            "label": {"en": "event_time"},
+            "name": "event_time",
+            "code": "et",
+            "type": "date",
+            "date_format": "%m.%d.%Y",
+            "ddtype": self.DDTYPE_JSON,
+            "required": True,
+            'event_time_field_flag': True
+            }
+        self.assertEqual(expected_json, field._to_json())

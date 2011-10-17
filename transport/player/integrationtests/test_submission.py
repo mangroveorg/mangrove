@@ -22,9 +22,6 @@ from mangrove.transport.submissions import get_submissions, get_submissions_for_
 
 
 class LocationTree(object):
-    def get_hierarchy_path(self, location_name):
-        return location_name
-
     def get_location_hierarchy_for_geocode(self, lat, long ):
         return ['madagascar']
 
@@ -360,7 +357,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual([-12, 60], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
-        message1 = """reg .t dog .n Dog in AMPIZARANTANY .l AMPIZARANTANY .g 10 10 .d This is a Dog in
+        message1 = """reg .t dog .n Dog in AMPIZARANTANY .l ARANTANY .g 10 10 .d This is a Dog in
         AMPIZARANTANY . m
         87654325
         """
@@ -371,7 +368,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(response.short_code, expected_short_code)
         dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
-        self.assertEqual(["ampizarantany"], dog.location_path)
+        self.assertEqual([u'arantany'], dog.location_path)
 
     def test_get_submissions_for_form_for_an_activity_period(self):
         self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,

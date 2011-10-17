@@ -22,4 +22,4 @@ class TestSMSPlayer(TestCase):
     def test_should_resolve_location_hierarchy_if_hierarchy_not_passed_in(self):
         values = dict(l='no_hierarchy', t='clinic')
         self.player._set_location_data(values=values)
-        self.assertEqual(['hierarchy'], values['l'])
+        self.assertEqual(['no_hierarchy'], values['l'])

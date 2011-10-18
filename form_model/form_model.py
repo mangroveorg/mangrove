@@ -143,7 +143,7 @@ class FormModel(DataObject):
 
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
-        return entity_type.lower if is_not_empty(entity_type) else None
+        return entity_type.lower() if is_not_empty(entity_type) else None
 
     def submit(self, dbm, values, submission_id):
         self.bind(values)

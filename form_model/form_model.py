@@ -142,7 +142,8 @@ class FormModel(DataObject):
         return  self._case_insensitive_lookup(values, self.entity_question.code)
 
     def get_entity_type(self, values):
-        return self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
+        entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
+        return entity_type.lower if is_not_empty(entity_type) else None
 
     def submit(self, dbm, values, submission_id):
         self.bind(values)
@@ -274,7 +275,7 @@ class FormModel(DataObject):
         return None
 
     def _validate_mandatory_fields_have_values(self, values):
-        if self.is_registration_form() and self.get_entity_type(values).lower() == REPORTER.lower() and is_empty(
+        if self.is_registration_form() and self.get_entity_type(values) == REPORTER.lower() and is_empty(
             self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
             raise MobileNumberMissing()
         if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(

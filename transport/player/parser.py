@@ -82,9 +82,27 @@ class SMSParser(object):
             submission = self._parse_tokens(tokens)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise MultipleSubmissionsForSameCodeException(ex.data[0])
         except MangroveException as ex:
             raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
+
+    def form_code(self, message):
+        #TODO This is terrible, we need to fix it asap, this would need change in the workflow of the player.
+        assert is_string(message)
+        form_code = None
+        try:
+            message = self._clean(message)
+            tokens = message.split(self.SEPARATOR)
+            form_code = self._pop_form_code(tokens)
+        except SMSParserInvalidFormatException as ex:
+            raise SMSParserInvalidFormatException(ex.data)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise MultipleSubmissionsForSameCodeException(ex.data[0])
+        except MangroveException as ex:
+            raise SubmissionParseException(form_code, ex.message)
+        return form_code
 
     def parse_without_field_id(self, message):
         assert is_string(message)

@@ -15,8 +15,12 @@ class MandatoryValidator(object):
 
 
     def validate(self,values,fields):
+        errors = OrderedDict()
         mandatory_fields = self.get_mandatory_fields(fields)
-        return OrderedDict({str(field.code):"Answer for question " + str(field.code) + " is required" for field in mandatory_fields if is_empty(case_insensitive_lookup(values, field.code))})
+        for field in mandatory_fields:
+            if is_empty(case_insensitive_lookup(values, field.code)):
+                errors[field.code] = "Answer for question " + str(field.code) + " is required"
+        return errors
 
 class MobileNumberMandatoryForReporterRegistrationValidator(object):
 

@@ -14,7 +14,7 @@ class TestSMSParser(TestCase):
     def test_should_return_all_answers_in_lower_case(self):
         message = "QUESTIONNAIRE_CODE id_1 FirstName age_10"
         values = self.sms_parser.parse_without_field_id(message)
-        field_ids_and_answers = {".q1": "id_1", ".q2": "FirstName", ".q3" : "age_10"}
+        field_ids_and_answers = {"q1": "id_1", "q2": "FirstName", "q3" : "age_10"}
         expected = ("questionnaire_code", field_ids_and_answers)
         self.assertEqual(expected, values)
 
@@ -33,9 +33,9 @@ class TestSMSParser(TestCase):
         tokens = ["id_1", "FirstName", "age_10"]
         answers = self.sms_parser._parse_tokens_without_field_id(tokens)
         expected_answers = OrderedDict()
-        expected_answers['.q1'] = "id_1"
-        expected_answers['.q2'] = "FirstName"
-        expected_answers['.q3'] = "age_10"
+        expected_answers['q1'] = "id_1"
+        expected_answers['q2'] = "FirstName"
+        expected_answers['q3'] = "age_10"
         self.assertEqual(expected_answers, answers)
 
     def test_should_return_all_field_codes_in_lower_case(self):

@@ -9,10 +9,12 @@ from mangrove.utils.types import is_empty, is_string
 
 
 class SMSParser(object):
-    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
+    MESSAGE_PREFIX_WITH_FIELD_ID = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
+    MESSAGE_PREFIX_NO_FIELD_ID = ur'^(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."
     SEPARATOR_FOR_NO_FIELD_ID = u" "
+    QUESTION_CODE_DECORATOR = u'q'
 
     def __init__(self):
         pass
@@ -56,7 +58,8 @@ class SMSParser(object):
         for i in range(len(tokens)):
             token = tokens[i]
             if is_empty(token): continue
-            token = '.q'+str(i+1) + ' ' + token
+            question_number = str(i + 1)
+            token = self.QUESTION_CODE_DECORATOR + question_number + self.SEPARATOR_FOR_NO_FIELD_ID + token
             field_code, answer = self._parse_token(token)
             submission[field_code] = answer
         return submission
@@ -68,7 +71,7 @@ class SMSParser(object):
         return field_code.lower(), value.strip()
 
     def _validate_format(self, message):
-        if not re.match(self.MESSAGE_PREFIX, message, flags=re.UNICODE):
+        if not re.match(self.MESSAGE_PREFIX_WITH_FIELD_ID, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
 
     def parse(self, message):

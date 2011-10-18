@@ -12,6 +12,7 @@ class SMSParser(object):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."
+    SEPARATOR_FOR_NO_FIELD_ID = u" "
 
     def __init__(self):
         pass
@@ -30,18 +31,16 @@ class SMSParser(object):
         tokens.remove(tokens[0])
         return form_code
 
-    def _get_token(self,token):
-        """
-            handling the tokens with only separators
-        """
-        token_without_separator = "".join(token.split("."))
-        if is_empty(token_without_separator):
-            return token_without_separator
-        return token
+    def _handle_tokens_with_only_separators(self,tokens):
+        new_tokens = []
+        for token in tokens:
+            if is_empty(token): continue
+            if is_empty("".join(token.split("."))): continue
+            new_tokens.append(token.strip())
+        return new_tokens
 
     def _parse_tokens(self, tokens):
-        tokens = [ self._get_token(token) for token in tokens if token]
-        tokens = [token.strip() for token in tokens if token]
+        tokens = self._handle_tokens_with_only_separators(tokens)
         submission = OrderedDict()
         for token in tokens:
             if is_empty(token): continue
@@ -50,6 +49,18 @@ class SMSParser(object):
                 raise MultipleSubmissionsForSameCodeException(field_code)
             submission[field_code] = answer
         return submission
+
+    def _parse_tokens_without_field_id(self, tokens):
+        tokens = self._handle_tokens_with_only_separators(tokens)
+        submission = OrderedDict()
+        for i in range(len(tokens)):
+            token = tokens[i]
+            if is_empty(token): continue
+            token = '.q'+str(i+1) + ' ' + token
+            field_code, answer = self._parse_token(token)
+            submission[field_code] = answer
+        return submission
+
 
     def _parse_token(self, token):
         m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
@@ -73,6 +84,15 @@ class SMSParser(object):
             raise SMSParserInvalidFormatException(ex.data)
         except MangroveException as ex:
             raise SubmissionParseException(form_code, ex.message)
+        return form_code, submission
+
+    def parse_without_field_id(self, message):
+        assert is_string(message)
+        message = self._clean(message)
+        tokens = message.split(self.SEPARATOR_FOR_NO_FIELD_ID)
+        form_code = self._pop_form_code(tokens)
+        submission = self._parse_tokens_without_field_id(tokens)
+
         return form_code, submission
 
 

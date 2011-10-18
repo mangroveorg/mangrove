@@ -659,7 +659,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_date_field_with_event_time_flag(self):
         field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', Mock(spec=DataDictType), event_time_field_flag=True)
-        self.assertTrue(field.is_event_time_field())
+        self.assertTrue(field.is_event_time_field)
 
     def test_should_create_date_field_with_event_time_flag_from_json(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
@@ -679,7 +679,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.date_format, "%m.%Y")
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertFalse(created_field.is_required())
-        self.assertTrue(created_field.is_event_time_field())
+        self.assertTrue(created_field.is_event_time_field)
 
     def test_date_field_with_event_time_flag_should_return_expected_json(self):
         field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', self.ddtype, event_time_field_flag=True)

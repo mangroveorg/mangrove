@@ -223,8 +223,9 @@ class DateField(Field):
     def get_constraint_text(self):
         return self.date_format
 
+    @property
     def is_event_time_field(self):
-        return self._dict.get('event_time_field_flag')
+        return self._dict.get('event_time_field_flag',False)
 
 
 class TextField(Field):

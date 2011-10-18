@@ -310,6 +310,12 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "reg .s Āgra .n Agra .m 080 .t clinic .g 45O 56"
         self.assertEqual(False, self.send_sms(text).success)
 
+    def test_should_reject_registration_sms_if_type_not_provided(self):
+        text = "reg .s Āgra .n Agra .m 080 .g 45 56"
+        response = self.send_sms(text)
+        self.assertFalse(response.success)
+        self.assertTrue('t' in response.errors)
+
     def test_should_raise_exception_for_inactive_form_model(self):
         self.form_model.deactivate()
         self.form_model.save()
@@ -389,3 +395,4 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         submissions = get_submissions_for_activity_period(self.dbm, "abc", from_time, end_time)
         self.assertEquals(2, len(submissions))
+

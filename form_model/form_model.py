@@ -371,7 +371,7 @@ class FormSubmission(object):
             entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
         else:
             entity_type = self.form_model.entity_type
-        return [e_type.lower() for e_type in entity_type]
+        return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
     def _to_three_tuple(self):
         return [(self.form_model.get_field_by_code(field).name, value, self.form_model.get_field_by_code(field).ddtype)

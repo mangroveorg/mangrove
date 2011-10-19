@@ -210,7 +210,7 @@ class FilePlayer(Player):
                 submission_id, form_submission = self.submit(transport_info, form_code, values)
                 response = Response(reporters=[], submission_id=submission_id, form_submission=form_submission)
                 if not form_submission.saved:
-                    response.errors = dict(error=form_submission.errors.values(), row=values)
+                    response.errors = dict(error=form_submission.errors, row=values)
                 responses.append(response)
             except MangroveException as e:
                 response = Response(reporters=[], submission_id=None, form_submission=None)

@@ -187,14 +187,12 @@ class ShortCodeTooLongException(MangroveException):
 
 class LatitudeNotFloat(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, (u'The answer %s should be float') %
-                                         (lat,), data=(lat,))
+        MangroveException.__init__(self, (u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(lat,))
 
 
 class LongitudeNotFloat(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, (u'The answer %s should be float') %
-                                         (long,), data=(long,))
+        MangroveException.__init__(self, (u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(long,))
 
 
 class LongitudeNotInRange(MangroveException):

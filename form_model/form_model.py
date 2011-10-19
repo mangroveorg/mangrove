@@ -138,6 +138,10 @@ class FormModel(DataObject):
     def activeLanguages(self):
         return self._doc.active_languages
 
+    @activeLanguages.setter
+    def activeLanguages(self, value):
+        self._doc.active_languages = value
+
     def get_short_code(self, values):
         return  self._case_insensitive_lookup(values, self.entity_question.code)
 

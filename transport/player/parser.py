@@ -92,18 +92,35 @@ class SMSParser(object):
             submission = self._parse_tokens(tokens)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise MultipleSubmissionsForSameCodeException(ex.data[0])
         except MangroveException as ex:
             raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
 
     def _parse_sms_without_field_id(self, message):
+        assert is_string(message)
         message = self._clean(message)
         tokens = message.split(self.SEPARATOR_FOR_NO_FIELD_ID)
         form_code = self._pop_form_code(tokens)
         submission = self._parse_tokens_without_field_id(tokens)
-
         return form_code, submission
 
+    def form_code(self, message):
+        #TODO This is terrible, we need to fix it asap, this would need change in the workflow of the player.
+        assert is_string(message)
+        form_code = None
+        try:
+            message = self._clean(message)
+            tokens = message.split(self.SEPARATOR)
+            form_code = self._pop_form_code(tokens)
+        except SMSParserInvalidFormatException as ex:
+            raise SMSParserInvalidFormatException(ex.data)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise MultipleSubmissionsForSameCodeException(ex.data[0])
+        except MangroveException as ex:
+            raise SubmissionParseException(form_code, ex.message)
+        return form_code
 
 class WebParser(object):
     def _remove_csrf_token(self, message):

@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from calendar import timegm
 
 from datetime import datetime, date
 import iso8601
@@ -66,4 +67,7 @@ def convert_to_epoch(end_time):
 
 def convert_date_time_to_epoch(date_time):
     assert isinstance(date_time,date)
-    return int(time.mktime(date_time.timetuple())) * 1000
+    if is_naive_datetime(date_time):
+        return int(time.mktime(date_time.timetuple())) * 1000 + date_time.microsecond / 1000.
+    else:
+        return int(timegm(date_time.astimezone(pytz.UTC).timetuple())) * 1000 + date_time.microsecond / 1000.

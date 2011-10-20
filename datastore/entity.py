@@ -2,7 +2,6 @@
 
 import copy
 from datetime import datetime
-from time import mktime
 from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from datadict import DataDictType, get_datadict_types
@@ -10,7 +9,7 @@ from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
-from mangrove.utils.dates import utcnow
+from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
 from database import DatabaseManager, DataObject
 
 
@@ -371,10 +370,11 @@ class Entity(DataObject):
 
     def _get_aggregate_value(self, field, aggregate_fn, date):
         entity_id = self._doc.id
-        time_since_epoch_of_date = int(mktime(date.timetuple())) * 1000
+        time_since_epoch_of_date = convert_date_time_to_epoch(date)
         rows = self._dbm.load_all_rows_in_view(aggregate_fn, group_level=3, descending=False,
                                                startkey=[self.type_path, entity_id, field],
                                                endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
+
         # The above will return rows in the format described:
         # Row key=['clinic', 'e4540e0ae93042f4b583b54b6fa7d77a'],
         #   value={'beds': {'timestamp_for_view': 1420070400000, 'value': '15'},

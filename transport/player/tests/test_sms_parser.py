@@ -5,24 +5,28 @@ from mangrove.errors.MangroveException import SubmissionParseException, SMSParse
 from mangrove.transport.player.parser import SMSParser
 from nose.tools import nottest
 from simplejson import OrderedDict
+from datawinners import settings
 
 
 class TestSMSParser(TestCase):
     def setUp(self):
         self.sms_parser = SMSParser()
+        settings.USE_ORDERED_SMS_PARSER = False
 
     def test_should_return_all_answers_in_lower_case(self):
         message = "QUESTIONNAIRE_CODE id_1 FirstName age_10"
-        values = self.sms_parser.parse_without_field_id(message)
+        settings.USE_ORDERED_SMS_PARSER = True
+        values = self.sms_parser.parse(message)
         field_ids_and_answers = {"q1": "id_1", "q2": "FirstName", "q3" : "age_10"}
         expected = ("questionnaire_code", field_ids_and_answers)
         self.assertEqual(expected, values)
 
     def test_should_accept_only_strings_parsing_without_field(self):
+        settings.USE_ORDERED_SMS_PARSER = True
         with self.assertRaises(AssertionError):
-            self.sms_parser.parse_without_field_id(10)
+            self.sms_parser.parse(10)
         with self.assertRaises(AssertionError):
-            self.sms_parser.parse_without_field_id(None)
+            self.sms_parser.parse(None)
 
     def test_should_return_form_code(self):
         tokens = ["QUESTIONNAIRE_CODE", "id_1", "FirstName"]

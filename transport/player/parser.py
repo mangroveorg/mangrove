@@ -6,6 +6,7 @@ import xlrd
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
     SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException
 from mangrove.utils.types import is_empty, is_string
+from datawinners import settings
 
 
 class SMSParser(object):
@@ -76,6 +77,12 @@ class SMSParser(object):
 
     def parse(self, message):
         assert is_string(message)
+        if settings.USE_ORDERED_SMS_PARSER:
+            return self._parse_sms_without_field_id(message)
+        else:
+            return self._parse_sms_with_field(message)
+
+    def _parse_sms_with_field(self, message):
         form_code = None
         try:
             message = self._clean(message)
@@ -89,8 +96,7 @@ class SMSParser(object):
             raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
 
-    def parse_without_field_id(self, message):
-        assert is_string(message)
+    def _parse_sms_without_field_id(self, message):
         message = self._clean(message)
         tokens = message.split(self.SEPARATOR_FOR_NO_FIELD_ID)
         form_code = self._pop_form_code(tokens)

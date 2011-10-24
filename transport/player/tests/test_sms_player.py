@@ -9,7 +9,7 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
 def _mock_get_question_codes_from_couchdb(dbm, form_code):
-    return ["ID", "M"]
+    return ["form_code","ID", "M"]
 
 class TestSMSPlayer(TestCase):
     def _mock_reporter(self):

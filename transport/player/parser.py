@@ -30,7 +30,7 @@ class SMSParser(object):
         tokens.remove(tokens[0])
         return form_code
 
-    def _handle_tokens_with_only_separators(self,tokens):
+    def _handle_tokens_with_only_separators(self, tokens):
         new_tokens = []
         for token in tokens:
             if is_empty(token): continue
@@ -40,7 +40,7 @@ class SMSParser(object):
 
     def _parse_tokens(self, tokens):
         tokens = self._handle_tokens_with_only_separators(tokens)
-        submission = OrderedDict()
+        submission = dict()
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
@@ -52,15 +52,13 @@ class SMSParser(object):
     def _parse_tokens_without_field_id(self, tokens, question_codes):
         submission = dict()
 
-        if len(tokens) != len(question_codes):
-            print len(tokens),len(question_codes)
-            print tokens, question_codes
+        if len(tokens) != len(question_codes)-1:
             raise SMSParserWrongNumberOfAnswersException()
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
             if is_empty(token): continue
-            submission[question_codes[token_index]] = token.lower()
+            submission[question_codes[token_index+1]] = token.lower()
         return submission
 
 
@@ -69,24 +67,25 @@ class SMSParser(object):
         field_code, value = m.groups()
         return field_code.lower(), value.strip()
 
-    def _validate_format(self, message):
-        if not re.match(self.MESSAGE_PREFIX_WITH_FIELD_ID, message, flags=re.UNICODE):
+    def _validate_format(self, message_prefix_regex, message):
+        if not re.match(message_prefix_regex, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
 
-    def parse(self, message):
+    def parse(self, message, question_codes=None):
         assert is_string(message)
-        return self._parse_sms_with_field(message)
+        return self._parse_sms_with_field(message, question_codes)
 
     def parse_ordered_sms(self, message, question_codes):
         assert is_string(message)
         return self._parse_ordered_sms(message, question_codes)
 
-    def _parse_sms_with_field(self, message):
+    def _parse_sms_with_field(self, message, question_codes=None):
         form_code = None
         try:
             message = self._clean(message)
-            self._validate_format(message)
+            self._validate_format(self.MESSAGE_PREFIX_WITH_FIELD_ID,message)
             tokens = message.split(self.SEPARATOR)
+            
             form_code = self._pop_form_code(tokens)
             submission = self._parse_tokens(tokens)
         except SMSParserInvalidFormatException as ex:
@@ -96,10 +95,10 @@ class SMSParser(object):
         return form_code, submission
 
     def _parse_ordered_sms(self, message, question_codes):
-        assert is_string(message)
         form_code = None
         try:
             message = self._clean(message)
+            self._validate_format(self.MESSAGE_PREFIX_NO_FIELD_ID,message)
             tokens = message.split()
             form_code = self._pop_form_code(tokens)
             submission = self._parse_tokens_without_field_id(tokens, question_codes)
@@ -118,7 +117,7 @@ class SMSParser(object):
         try:
             message = self._clean(message)
             if(settings.USE_ORDERED_SMS_PARSER):
-                tokens = message.split(self.SEPARATOR_FOR_NO_FIELD_ID)
+                tokens = message.split()
             else:
                 tokens = message.split(self.SEPARATOR)
             form_code = self._pop_form_code(tokens)

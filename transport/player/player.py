@@ -176,7 +176,7 @@ class SMSPlayer(Player):
         if (settings.USE_ORDERED_SMS_PARSER):
             form_code = sms_parser.form_code(request.message)
             question_code_list = questionCodeFunction(self.dbm, form_code)
-            form_code, values = sms_parser.parse_ordered(request.message, question_code_list)
+            form_code, values = sms_parser.parse_ordered_sms(request.message, question_code_list)
         else:
             form_code, values = sms_parser.parse(request.message)
         return form_code, values

@@ -3,10 +3,8 @@ from collections import OrderedDict
 import csv
 import re
 import xlrd
-from mangrove.datastore.database import get_db_manager, DatabaseManager
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
-    SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException, FormModelDoesNotExistsException
-from mangrove.form_model.form_model import get_form_model_by_code
+    SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException, FormModelDoesNotExistsException, SMSParserWrongNumberOfAnswersException
 from mangrove.utils.types import is_empty, is_string
 from datawinners import settings
 
@@ -17,7 +15,6 @@ class SMSParser(object):
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."
     SEPARATOR_FOR_NO_FIELD_ID = u" "
-    QUESTION_CODE_DECORATOR = u'q'
 
     def _to_unicode(self, message):
         if type(message) is not unicode:
@@ -53,18 +50,17 @@ class SMSParser(object):
         return submission
 
     def _parse_tokens_without_field_id(self, tokens, question_codes):
-        tokens = self._handle_tokens_with_only_separators(tokens)
-        submission = OrderedDict()
-        for i in range(len(tokens)):
-            print i
-            token = tokens[i]
+        submission = dict()
+
+        if len(tokens) != len(question_codes):
+            print len(tokens),len(question_codes)
+            print tokens, question_codes
+            raise SMSParserWrongNumberOfAnswersException()
+
+        for token_index in range(len(tokens)):
+            token = tokens[token_index]
             if is_empty(token): continue
-            question_number = str(i + 1)
-            #This is assuming all question codes for a questionnaire are q# (i.e. q1, q2, q3)
-            #In reality, the question codes are not.
-            token = question_codes[i] + self.SEPARATOR_FOR_NO_FIELD_ID + token
-            field_code, answer = self._parse_token(token)
-            submission[field_code] = answer
+            submission[question_codes[token_index]] = token.lower()
         return submission
 
 
@@ -81,9 +77,9 @@ class SMSParser(object):
         assert is_string(message)
         return self._parse_sms_with_field(message)
 
-    def parse_ordered(self, message, question_codes):
+    def parse_ordered_sms(self, message, question_codes):
         assert is_string(message)
-        return self._parse_sms_without_field_id(message, question_codes)
+        return self._parse_ordered_sms(message, question_codes)
 
     def _parse_sms_with_field(self, message):
         form_code = None
@@ -97,21 +93,23 @@ class SMSParser(object):
             raise SMSParserInvalidFormatException(ex.data)
         except MultipleSubmissionsForSameCodeException as ex:
             raise MultipleSubmissionsForSameCodeException(ex.data[0])
-        except MangroveException as ex:
-            raise SubmissionParseException(form_code, ex.message)
         return form_code, submission
 
-    def _parse_sms_without_field_id(self, message, question_codes):
+    def _parse_ordered_sms(self, message, question_codes):
         assert is_string(message)
-        message = self._clean(message)
-        tokens = message.split(self.SEPARATOR_FOR_NO_FIELD_ID)
-        form_code = self._pop_form_code(tokens)
-        submission = self._parse_tokens_without_field_id(tokens, question_codes)
-        return form_code, submission
+        form_code = None
+        try:
+            message = self._clean(message)
+            tokens = message.split()
+            form_code = self._pop_form_code(tokens)
+            submission = self._parse_tokens_without_field_id(tokens, question_codes)
 
-    def get_form_code(self, message, separator):
-        tokens = message.split(separator)
-        return self._pop_form_code(tokens)
+        except SMSParserInvalidFormatException as ex:
+            raise SMSParserInvalidFormatException(ex.data)
+        except MultipleSubmissionsForSameCodeException as ex:
+            raise MultipleSubmissionsForSameCodeException(ex.data[0])
+
+        return form_code, submission
 
     def form_code(self, message):
         #TODO This is terrible, we need to fix it asap, this would need change in the workflow of the player.
@@ -131,6 +129,7 @@ class SMSParser(object):
         except MangroveException as ex:
             raise SubmissionParseException(form_code, ex.message)
         return form_code
+
 
 class WebParser(object):
     def _remove_csrf_token(self, message):

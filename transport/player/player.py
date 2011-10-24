@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 import time
+from datawinners import settings
 from datawinners.location.LocationTree import get_location_hierarchy
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
@@ -76,6 +77,12 @@ def _set_short_code(dbm, form_model, values):
     except KeyError:
         raise MangroveException(ENTITY_TYPE_FIELD_CODE + " should be present")
 
+def _get_question_codes_from_couchdb(dbm, form_code):
+    questionnaire_code = get_form_model_by_code(dbm, form_code)
+    question_codes = []
+    for aField in questionnaire_code.fields:
+        question_codes.append(aField.code)
+    return question_codes
 
 class Player(object):
     def __init__(self, dbm, location_tree=None):
@@ -93,7 +100,6 @@ class Player(object):
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=self.form.is_in_test_mode())
             raise
-
 
     def _update_submission_with_short_code_if_activity_report(self, reporter_entity, values):
         if self.form.entity_defaults_to_reporter():
@@ -165,15 +171,21 @@ class SMSPlayer(Player):
     def __init__(self, dbm, location_tree=None):
         Player.__init__(self, dbm, location_tree)
 
-    def _parse(self, request):
+    def _parse(self, request, questionCodeFunction = _get_question_codes_from_couchdb):
         sms_parser = SMSParser()
-        form_code, values = sms_parser.parse(request.message)
+        if (settings.USE_ORDERED_SMS_PARSER):
+            form_code = sms_parser.form_code(request.message)
+            question_code_list = questionCodeFunction(self.dbm, form_code)
+            form_code, values = sms_parser.parse_ordered(request.message, question_code_list)
+        else:
+            form_code, values = sms_parser.parse(request.message)
         return form_code, values
 
-    def accept(self, request):
+
+    def accept(self, request, questionCodeFunction = _get_question_codes_from_couchdb):
         assert request is not None
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        form_code, values = self._parse(request)
+        form_code, values = self._parse(request, questionCodeFunction)
         submission_id, form_submission = self.submit(request.transport, form_code, values, reporter_entity)
         return Response(reporters=[{NAME_FIELD: reporter_entity.value(NAME_FIELD)}], submission_id=submission_id,
                         form_submission=form_submission)

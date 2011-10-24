@@ -106,5 +106,12 @@ class TestSMSParser(TestCase):
     def test_should_handle_gps(self):
         form_code, values = self.sms_parser.parse("WP .ID 1 .NAME FirstName.LastName .AGE 10")
         self.assertEqual({"id": "1", "name": "FirstName.LastName", "age": "10"}, values)
-        
+
+    def test_should_add_question_code_when_using_order_sms(self):
+        settings.USE_ORDERED_SMS_PARSER = True
+        question_code = ['uid', 'ag', 'qa']
+        form_code, values = self.sms_parser.parse_ordered("WP 1 10 A", question_code)
+        self.assertEqual({"uid": "1", "ag": "10", "qa": "A"}, values)
+        self.assertEqual("wp", form_code)
+        settings.USE_ORDERED_SMS_PARSER = False;
 

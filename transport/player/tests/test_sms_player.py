@@ -1,12 +1,15 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
+from datawinners import settings
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
+def _mock_get_question_codes_from_couchdb(dbm, form_code):
+    return ["ID", "M"]
 
 class TestSMSPlayer(TestCase):
     def _mock_reporter(self):
@@ -69,11 +72,20 @@ class TestSMSPlayer(TestCase):
 
 
     def test_should_not_parse_if_two_question_codes(self):
+        settings.USE_ORDERED_SMS_PARSER = False
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request(transportInfo=transport, message="cli001 .na tester1 .na tester2")
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)
+        settings.USE_ORDERED_SMS_PARSER = False
+
+    def test_should_accept_ordered_sms_message(self):
+        settings.USE_ORDERED_SMS_PARSER = True
+        self.request = Request(transportInfo=self.transport, message="FORM_CODE 1 hello")
+        self.sms_player.accept(self.request, _mock_get_question_codes_from_couchdb)
+        self.assertEqual(1, self.form_model_mock.submit.call_count)
+        settings.USE_ORDERED_SMS_PARSER = False
 
 

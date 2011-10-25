@@ -40,7 +40,7 @@ class SMSParser(object):
 
     def _parse_tokens(self, tokens):
         tokens = self._handle_tokens_with_only_separators(tokens)
-        submission = dict()
+        submission = OrderedDict()
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
@@ -50,7 +50,7 @@ class SMSParser(object):
         return submission
 
     def _parse_tokens_without_field_id(self, tokens, question_codes):
-        submission = dict()
+        submission = OrderedDict()
 
         if len(tokens) != len(question_codes)-1:
             raise SMSParserWrongNumberOfAnswersException()

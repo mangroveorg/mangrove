@@ -66,7 +66,8 @@ def convert_to_epoch(end_time):
     return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None
 
 def convert_date_time_to_epoch(date_time):
-    assert isinstance(date_time,date)
+    if isinstance(date_time,date):
+        date_time = datetime(date_time.year,date_time.month,date_time.day)
     if is_naive_datetime(date_time):
         return int(time.mktime(date_time.timetuple())) * 1000 + date_time.microsecond / 1000.
     else:

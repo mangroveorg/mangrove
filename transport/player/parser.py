@@ -52,13 +52,13 @@ class SMSParser(object):
     def _parse_tokens_without_field_id(self, tokens, question_codes):
         submission = OrderedDict()
 
-        if len(tokens) != len(question_codes)-1:
+        if len(tokens) != len(question_codes):
             raise SMSParserWrongNumberOfAnswersException()
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
             if is_empty(token): continue
-            submission[question_codes[token_index+1]] = token.lower()
+            submission[question_codes[token_index]] = token.lower()
         return submission
 
 

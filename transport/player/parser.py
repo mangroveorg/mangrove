@@ -4,9 +4,8 @@ import csv
 import re
 import xlrd
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
-    SubmissionParseException, CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, MangroveException, FormModelDoesNotExistsException, SMSParserWrongNumberOfAnswersException
+    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.utils.types import is_empty, is_string
-from datawinners import settings
 
 
 class SMSParser(object):
@@ -49,19 +48,6 @@ class SMSParser(object):
             submission[field_code] = answer
         return submission
 
-    def _parse_tokens_without_field_id(self, tokens, question_codes):
-        submission = OrderedDict()
-
-        if len(tokens) != len(question_codes):
-            raise SMSParserWrongNumberOfAnswersException()
-
-        for token_index in range(len(tokens)):
-            token = tokens[token_index]
-            if is_empty(token): continue
-            submission[question_codes[token_index]] = token.lower()
-        return submission
-
-
     def _parse_token(self, token):
         m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
         field_code, value = m.groups()
@@ -71,22 +57,11 @@ class SMSParser(object):
         if not re.match(message_prefix_regex, message, flags=re.UNICODE):
             raise SMSParserInvalidFormatException(message)
 
-    def parse(self, message, question_codes=None):
+    def parse(self, message):
         assert is_string(message)
-        return self._parse_sms_with_field(message, question_codes)
-
-    def parse_ordered_sms(self, message, question_codes):
-        assert is_string(message)
-        return self._parse_ordered_sms(message, question_codes)
-
-    def _parse_sms_with_field(self, message, question_codes=None):
         form_code = None
         try:
-            message = self._clean(message)
-            self._validate_format(self.MESSAGE_PREFIX_WITH_FIELD_ID,message)
-            tokens = message.split(self.SEPARATOR)
-            
-            form_code = self._pop_form_code(tokens)
+            form_code,tokens = self.form_code(message)
             submission = self._parse_tokens(tokens)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
@@ -94,40 +69,12 @@ class SMSParser(object):
             raise MultipleSubmissionsForSameCodeException(ex.data[0])
         return form_code, submission
 
-    def _parse_ordered_sms(self, message, question_codes):
-        form_code = None
-        try:
-            message = self._clean(message)
-            self._validate_format(self.MESSAGE_PREFIX_NO_FIELD_ID,message)
-            tokens = message.split()
-            form_code = self._pop_form_code(tokens)
-            submission = self._parse_tokens_without_field_id(tokens, question_codes)
-
-        except SMSParserInvalidFormatException as ex:
-            raise SMSParserInvalidFormatException(ex.data)
-        except MultipleSubmissionsForSameCodeException as ex:
-            raise MultipleSubmissionsForSameCodeException(ex.data[0])
-
-        return form_code, submission
-
     def form_code(self, message):
-        #TODO This is terrible, we need to fix it asap, this would need change in the workflow of the player.
-        assert is_string(message)
-        form_code = None
-        try:
-            message = self._clean(message)
-            if(settings.USE_ORDERED_SMS_PARSER):
-                tokens = message.split()
-            else:
-                tokens = message.split(self.SEPARATOR)
-            form_code = self._pop_form_code(tokens)
-        except SMSParserInvalidFormatException as ex:
-            raise SMSParserInvalidFormatException(ex.data)
-        except MultipleSubmissionsForSameCodeException as ex:
-            raise MultipleSubmissionsForSameCodeException(ex.data[0])
-        except MangroveException as ex:
-            raise SubmissionParseException(form_code, ex.message)
-        return form_code
+        message = self._clean(message)
+        self._validate_format(self.MESSAGE_PREFIX_WITH_FIELD_ID,message)
+        tokens = message.split(self.SEPARATOR)
+        form_code = self._pop_form_code(tokens)
+        return form_code, tokens
 
 
 class WebParser(object):

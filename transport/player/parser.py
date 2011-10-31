@@ -9,11 +9,9 @@ from mangrove.utils.types import is_empty, is_string
 
 
 class SMSParser(object):
-    MESSAGE_PREFIX_WITH_FIELD_ID = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
-    MESSAGE_PREFIX_NO_FIELD_ID = ur'^(\w+)\s+(\w+)'
+    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."
-    SEPARATOR_FOR_NO_FIELD_ID = u" "
 
     def _to_unicode(self, message):
         if type(message) is not unicode:
@@ -71,7 +69,7 @@ class SMSParser(object):
 
     def form_code(self, message):
         message = self._clean(message)
-        self._validate_format(self.MESSAGE_PREFIX_WITH_FIELD_ID,message)
+        self._validate_format(self.MESSAGE_PREFIX,message)
         tokens = message.split(self.SEPARATOR)
         form_code = self._pop_form_code(tokens)
         return form_code, tokens

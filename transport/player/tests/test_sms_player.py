@@ -2,6 +2,7 @@
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from datawinners import settings
+from datawinners.orderSMSParser.order_sms_parser import OrderSMSParser
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
@@ -16,8 +17,8 @@ class TestSMSPlayer(TestCase):
         self.reporter_module.find_reporter_entity.return_value = self.reporter_mock
 
     def setUp(self):
-        loc_tree = Mock()
-        loc_tree.get_hierarchy_path.return_value = None
+        self.loc_tree = Mock()
+        self.loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self._mock_form_model()
         self.reporter_patcher = patch('mangrove.transport.player.player.reporter')
@@ -25,7 +26,7 @@ class TestSMSPlayer(TestCase):
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request(transportInfo=self.transport, message="FORM_CODE .ID 1 .M hello world")
-        self.sms_player = SMSPlayer(self.dbm, loc_tree)
+        self.sms_player = SMSPlayer(self.dbm, self.loc_tree)
         self.generate_code_patcher = patch(
             "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
         self.generate_code_patcher.start()
@@ -70,20 +71,21 @@ class TestSMSPlayer(TestCase):
 
 
     def test_should_not_parse_if_two_question_codes(self):
-        settings.USE_ORDERED_SMS_PARSER = False
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.request = Request(transportInfo=transport, message="cli001 .na tester1 .na tester2")
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
             self.sms_player.accept(self.request)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)
-        settings.USE_ORDERED_SMS_PARSER = False
 
     def test_should_accept_ordered_sms_message(self):
         settings.USE_ORDERED_SMS_PARSER = True
         self.request = Request(transportInfo=self.transport,
                                message="questionnaire_code question1_answer question2_answer")
-        self.sms_player.accept(self.request)
+        order_sms_parser = OrderSMSParser(self.dbm)
+        order_sms_parser._get_question_codes_from_couchdb = Mock()
+        order_sms_parser._get_question_codes_from_couchdb.return_value = ['q1', 'q2']
+        SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.request)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
         settings.USE_ORDERED_SMS_PARSER = False
 

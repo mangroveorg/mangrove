@@ -9,7 +9,8 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
 def _mock_get_question_codes_from_couchdb(dbm, form_code):
-    return ["form_code","ID", "M"]
+    return ["question1_code", "question2_code"]
+
 
 class TestSMSPlayer(TestCase):
     def _mock_reporter(self):
@@ -83,7 +84,8 @@ class TestSMSPlayer(TestCase):
 
     def test_should_accept_ordered_sms_message(self):
         settings.USE_ORDERED_SMS_PARSER = True
-        self.request = Request(transportInfo=self.transport, message="FORM_CODE 1 hello")
+        self.request = Request(transportInfo=self.transport,
+                               message="questionnaire_code question1_answer question2_answer")
         self.sms_player.accept(self.request, _mock_get_question_codes_from_couchdb)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
         settings.USE_ORDERED_SMS_PARSER = False

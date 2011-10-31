@@ -1,9 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.utils.dates import convert_date_time_to_epoch
 
 __author__ = 'jwishnie'
 
 from unittest  import TestCase
-from datetime import datetime
+from datetime import datetime, date
 from mangrove import utils
 from mangrove.utils import types
 
@@ -198,6 +199,18 @@ class TestDateUtils(TestCase):
         un = un.replace(microsecond=0)
         dn = dn.replace(tzinfo=pytz.UTC, microsecond=0)
         self.assertEqual(un, dn)
+
+    def test_convert_date_time_to_epoch_when_given_a_datetime_object(self):
+        date_time = datetime(year=1970, month=1, day=1, tzinfo=pytz.UTC)
+        actual_epoch_time = convert_date_time_to_epoch(date_time)
+        expected_epoch_time = 0.0
+        self.assertEqual(actual_epoch_time,expected_epoch_time)
+
+    def test_convert_date_time_to_epoch_when_given_a_date_object(self):
+        date_object_time = date(year=1970, month=1, day=1)
+        actual_epoch_time = convert_date_time_to_epoch(date_object_time, pytz.UTC)
+        expected_epoch_time = 0.0
+        self.assertEqual(actual_epoch_time,expected_epoch_time)
 
 
 class TestJSONUtils(TestCase):

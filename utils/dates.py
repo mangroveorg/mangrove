@@ -1,9 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from calendar import timegm
 
-from datetime import datetime, date
+from datetime import datetime
 import iso8601
 import pytz
+import time
 from types import is_empty, is_string
 
 
@@ -60,14 +61,13 @@ def js_datestring_to_py_datetime(s):
         raise ValueError("Not a valid datetime string")
     return to_aware_utc(parse_iso_date_str(s))
 
-import time
 
 def convert_to_epoch(end_time):
     return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None
 
-def convert_date_time_to_epoch(date_time):
-    if isinstance(date_time,date):
-        date_time = datetime(date_time.year,date_time.month,date_time.day)
+def convert_date_time_to_epoch(date_time, tzinfo=None):
+    if not isinstance(date_time, datetime):
+        date_time = datetime(year=date_time.year, month=date_time.month, day=date_time.day,tzinfo=tzinfo)
     if is_naive_datetime(date_time):
         return int(time.mktime(date_time.timetuple())) * 1000 + date_time.microsecond / 1000.
     else:

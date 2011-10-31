@@ -168,11 +168,12 @@ class Player(object):
 
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None):
+    def __init__(self, dbm, location_tree=None, parser=None):
         Player.__init__(self, dbm, location_tree)
+        self.parser = parser or SMSParser()
 
     def _parse(self, request, questionCodeFunction = _get_question_codes_from_couchdb):
-        sms_parser = SMSParser()
+        sms_parser = self.parser
         if (settings.USE_ORDERED_SMS_PARSER):
             form_code = sms_parser.form_code(request.message)
             question_code_list = questionCodeFunction(self.dbm, form_code)

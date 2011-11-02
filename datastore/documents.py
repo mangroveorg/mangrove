@@ -23,7 +23,7 @@ class attributes(object):
     ACTIVE_LANGUAGES = 'activeLanguages'
     ACTIVE_STATE = 'Active'
     INACTIVE_STATE = 'Inactive'
-    TEST_STATE = 'test'
+    TEST_STATE = 'Test'
 
 
 class TZAwareDateTimeField(DateTimeField):

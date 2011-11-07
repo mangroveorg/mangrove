@@ -2,7 +2,7 @@
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from datawinners import settings
-from datawinners.orderSMSParser.order_sms_parser import OrderSMSParser
+from datawinners.ordersmsparser.order_sms_parser import OrderSMSParser
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException

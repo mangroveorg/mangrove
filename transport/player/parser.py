@@ -96,7 +96,7 @@ class CsvParser(object):
     EXTRA_VALUES = "extra_values"
 
     def _next_line(self, dict_reader):
-        return dict_reader.next().values()[0]
+        return dict_reader.respond().values()[0]
 
     def _parse_header(self, dict_reader):
         field_header = dict_reader.fieldnames

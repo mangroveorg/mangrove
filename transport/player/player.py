@@ -165,11 +165,9 @@ class SMSPlayer(Player):
         Player.__init__(self, dbm, location_tree)
         self.parser = parser or SMSParser()
 
-    def accept(self, request):
-        assert request is not None
-        reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        form_code, values = self.parser.parse(request.message)
-        submission_id, form_submission = self.submit(request.transport, form_code, values, reporter_entity)
+    def accept(self, transport_info, form_code, values):
+        reporter_entity = reporter.find_reporter_entity(self.dbm, transport_info.source)
+        submission_id, form_submission = self.submit(transport_info, form_code, values, reporter_entity)
         return Response(reporters=[{NAME_FIELD: reporter_entity.value(NAME_FIELD)}], submission_id=submission_id,
                         form_submission=form_submission)
 

@@ -16,6 +16,7 @@ from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTy
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
+from mangrove.transport.player.parser import SMSParser
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
@@ -86,7 +87,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
-        response = self.sms_player.accept(Request(transportInfo=transport_info, message=text))
+        form_code, values = SMSParser().parse(text)
+        response = self.sms_player.accept(transport_info, form_code, values)
         return response
 
     def test_should_save_submitted_sms(self):
@@ -230,9 +232,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
-        request = Request(transportInfo=transport_info, message="reg .N buddy .S DOG3 .T dog .G 1 1")
-
-        response = self.sms_player.accept(request)
+        form_code, values = SMSParser().parse("reg .N buddy .S DOG3 .T dog .G 1 1")
+        response = self.sms_player.accept(transport_info, form_code, values)
         submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(transport_info.transport, submission_log.channel)

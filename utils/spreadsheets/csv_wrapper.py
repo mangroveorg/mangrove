@@ -25,7 +25,7 @@ class CsvReader(object):
         and next methods. Each iteration of this object returns a row
         of data.
         """
-        row = self._csv_reader.respond()
+        row = self._csv_reader.next()
         return [cell for cell in row]
 
     def _set_headers(self):

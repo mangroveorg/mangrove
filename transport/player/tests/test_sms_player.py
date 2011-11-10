@@ -7,6 +7,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
+from mangrove.transport.player.parser import SMSParser
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
 
@@ -25,7 +26,7 @@ class TestSMSPlayer(TestCase):
         self.reporter_module = self.reporter_patcher.start()
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        self.request = Request(transportInfo=self.transport, message="FORM_CODE .ID 1 .M hello world")
+        self.message = "FORM_CODE .ID 1 .M hello world"
         self.sms_player = SMSPlayer(self.dbm, self.loc_tree)
         self.generate_code_patcher = patch(
             "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
@@ -42,14 +43,16 @@ class TestSMSPlayer(TestCase):
         self.generate_code_patcher.stop()
 
     def test_should_submit_if_parsing_is_successful(self):
-        self.sms_player.accept(self.request)
+        form_code, values = SMSParser().parse(self.message)
+        self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 
     #    TODO: Rewrite below test, skipping for now
     @SkipTest
     def test_should_submit_if_submission_by_registered_reporter(self):
-        self.sms_player.accept(self.request)
+        form_code, values = SMSParser().parse(self.message)
+        self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 
@@ -59,22 +62,23 @@ class TestSMSPlayer(TestCase):
     def test_should_check_if_submission_by_unregistered_reporter(self):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
         with self.assertRaises(NumberNotRegisteredException):
-            self.sms_player.accept(self.request)
+            form_code, values = SMSParser().parse(self.message)
+            self.sms_player.accept(self.transport, form_code, values)
 
 
     def test_should_not_submit_if_parsing_is_not_successful(self):
-        self.request = Request(transportInfo=self.transport, message="invalid format")
         with self.assertRaises(SMSParserInvalidFormatException):
-            self.sms_player.accept(self.request)
+            form_code, values = SMSParser().parse("invalid format")
+            self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)
 
 
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        self.request = Request(transportInfo=transport, message="cli001 .na tester1 .na tester2")
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
-            self.sms_player.accept(self.request)
+            form_code, values = SMSParser().parse("cli001 .na tester1 .na tester2")
+            self.sms_player.accept(transport, form_code, values)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)
 
@@ -85,7 +89,8 @@ class TestSMSPlayer(TestCase):
         order_sms_parser = OrderSMSParser(self.dbm)
         order_sms_parser._get_question_codes_from_couchdb = Mock()
         order_sms_parser._get_question_codes_from_couchdb.return_value = ['q1', 'q2']
-        SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.request)
+        form_code, values = order_sms_parser.parse("questionnaire_code question1_answer question2_answer")
+        SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.transport, form_code, values)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
         settings.USE_ORDERED_SMS_PARSER = False
 

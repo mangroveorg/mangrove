@@ -4,28 +4,44 @@ import csv
 import re
 import xlrd
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
-    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
+    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, SMSParserWrongNumberOfAnswersException
+from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 
 
-class KeyBasedSMSParser(object):
-    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
-    MESSAGE_TOKEN = ur"(\S+)(.*)"
-    SEPARATOR = u" ."
-
+class SMSParser(object):
     def _to_unicode(self, message):
         if type(message) is not unicode:
             message = unicode(message, encoding='utf-8')
         return message
 
-    def _clean(self, message):
+    def clean(self, message):
         message = self._to_unicode(message)
         return message.strip()
 
-    def _pop_form_code(self, tokens):
+    def validate_format(self, message_prefix_regex, message):
+        if not re.match(message_prefix_regex, message, flags=re.UNICODE):
+            raise SMSParserInvalidFormatException(message)
+
+    def pop_form_code(self, tokens):
         form_code = tokens[0].strip().lower()
         tokens.remove(tokens[0])
         return form_code
+
+    def parse(self, message):
+        pass
+
+    def form_code(self, message):
+        pass
+
+
+
+class KeyBasedSMSParser(SMSParser):
+    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
+    MESSAGE_TOKEN = ur"(\S+)(.*)"
+    SEPARATOR = u" ."
+
+
 
     def _handle_tokens_with_only_separators(self, tokens):
         new_tokens = []
@@ -51,9 +67,6 @@ class KeyBasedSMSParser(object):
         field_code, value = m.groups()
         return field_code.lower(), value.strip()
 
-    def _validate_format(self, message_prefix_regex, message):
-        if not re.match(message_prefix_regex, message, flags=re.UNICODE):
-            raise SMSParserInvalidFormatException(message)
 
     def parse(self, message):
         assert is_string(message)
@@ -68,12 +81,58 @@ class KeyBasedSMSParser(object):
         return form_code, submission
 
     def form_code(self, message):
-        message = self._clean(message)
-        self._validate_format(self.MESSAGE_PREFIX,message)
+        message = self.clean(message)
+        self.validate_format(self.MESSAGE_PREFIX,message)
         tokens = message.split(self.SEPARATOR)
-        form_code = self._pop_form_code(tokens)
+        form_code = self.pop_form_code(tokens)
         return form_code, tokens
 
+class OrderSMSParser(SMSParser):
+    MESSAGE_PREFIX_FOR_ORDERED_SMS = ur'^(\w+)\s+(\w+)'
+
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def _parse_ordered_tokens(self, tokens, question_codes):
+        submission = OrderedDict()
+
+        if len(tokens) != len(question_codes):
+            print tokens
+            print question_codes
+            raise SMSParserWrongNumberOfAnswersException()
+
+        for token_index in range(len(tokens)):
+            token = tokens[token_index]
+            if is_empty(token): continue
+            submission[question_codes[token_index]] = token
+        return submission
+
+    def parse(self, message):
+        assert is_string(message)
+        try:
+            form_code, tokens = self.form_code(message)
+            question_codes = self._get_question_codes_from_couchdb(form_code)
+            submission = self._parse_ordered_tokens(tokens, question_codes)
+        except SMSParserInvalidFormatException as ex:
+            raise SMSParserInvalidFormatException(ex.data)
+        return form_code, submission
+
+    def form_code(self, message):
+        message = self.clean(message)
+        self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS,message)
+        tokens = message.split()
+        form_code = self.pop_form_code(tokens)
+        return form_code, tokens
+
+    def _get_question_codes_from_couchdb(self,form_code):
+        questionnaire_form = get_form_model_by_code(self.dbm, form_code)
+        question_codes = []
+        form_fields = questionnaire_form.fields
+        if questionnaire_form.entity_type[0] == 'reporter':
+            form_fields.remove(form_fields[0])
+        for aField in form_fields:
+            question_codes.append(aField.code)
+        return question_codes
 
 class WebParser(object):
     def _remove_csrf_token(self, message):

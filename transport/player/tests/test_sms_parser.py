@@ -11,7 +11,7 @@ class TestSMSParser(TestCase):
 
     def test_should_return_form_code(self):
         tokens = ["QUESTIONNAIRE_CODE", "id_1", "FirstName"]
-        form_code = self.sms_parser._pop_form_code(tokens)
+        form_code = self.sms_parser.pop_form_code(tokens)
         self.assertEqual("questionnaire_code", form_code)
 
     def test_should_return_all_field_codes_in_lower_case(self):

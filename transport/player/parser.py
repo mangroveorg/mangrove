@@ -9,6 +9,15 @@ from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 
 
+class SMSParserFactory(object):
+    MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
+    def getSMSParser(self,message,dbm=None):
+        clean_message = SMSParser().clean(message)
+        if re.match(self.MESSAGE_PREFIX, clean_message,flags=re.UNICODE):
+            return KeyBasedSMSParser()
+        return OrderSMSParser(dbm)
+
+
 class SMSParser(object):
     def _to_unicode(self, message):
         if type(message) is not unicode:

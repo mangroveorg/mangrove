@@ -2,12 +2,11 @@
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from datawinners import settings
-from datawinners.ordersmsparser.order_sms_parser import OrderSMSParser
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport.player.parser import KeyBasedSMSParser
+from mangrove.transport.player.parser import KeyBasedSMSParser, OrderSMSParser
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
 

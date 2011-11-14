@@ -108,7 +108,8 @@ class DataObject(object):
         return self._dbm._save_document(self._doc)
 
     def delete(self):
-        self._dbm.delete(self)
+        if self.id is not None:
+            self._dbm.delete(self)
 
     def void(self, void = True):
         if self._doc is not None:

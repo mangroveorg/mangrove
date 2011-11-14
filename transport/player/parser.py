@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeExce
 from mangrove.utils.types import is_empty, is_string
 
 
-class SMSParser(object):
+class KeyBasedSMSParser(object):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."

@@ -7,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport.player.parser import SMSParser
+from mangrove.transport.player.parser import KeyBasedSMSParser
 from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 
 
@@ -43,7 +43,7 @@ class TestSMSPlayer(TestCase):
         self.generate_code_patcher.stop()
 
     def test_should_submit_if_parsing_is_successful(self):
-        form_code, values = SMSParser().parse(self.message)
+        form_code, values = KeyBasedSMSParser().parse(self.message)
         self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
@@ -51,7 +51,7 @@ class TestSMSPlayer(TestCase):
     #    TODO: Rewrite below test, skipping for now
     @SkipTest
     def test_should_submit_if_submission_by_registered_reporter(self):
-        form_code, values = SMSParser().parse(self.message)
+        form_code, values = KeyBasedSMSParser().parse(self.message)
         self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
@@ -62,13 +62,13 @@ class TestSMSPlayer(TestCase):
     def test_should_check_if_submission_by_unregistered_reporter(self):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
         with self.assertRaises(NumberNotRegisteredException):
-            form_code, values = SMSParser().parse(self.message)
+            form_code, values = KeyBasedSMSParser().parse(self.message)
             self.sms_player.accept(self.transport, form_code, values)
 
 
     def test_should_not_submit_if_parsing_is_not_successful(self):
         with self.assertRaises(SMSParserInvalidFormatException):
-            form_code, values = SMSParser().parse("invalid format")
+            form_code, values = KeyBasedSMSParser().parse("invalid format")
             self.sms_player.accept(self.transport, form_code, values)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)
@@ -77,7 +77,7 @@ class TestSMSPlayer(TestCase):
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
-            form_code, values = SMSParser().parse("cli001 .na tester1 .na tester2")
+            form_code, values = KeyBasedSMSParser().parse("cli001 .na tester1 .na tester2")
             self.sms_player.accept(transport, form_code, values)
 
         self.assertEqual(0, self.form_model_mock.submit.call_count)

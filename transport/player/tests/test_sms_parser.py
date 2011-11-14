@@ -2,12 +2,12 @@
 
 from unittest import TestCase
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException
-from mangrove.transport.player.parser import SMSParser
+from mangrove.transport.player.parser import KeyBasedSMSParser
 
 
 class TestSMSParser(TestCase):
     def setUp(self):
-        self.sms_parser = SMSParser()
+        self.sms_parser = KeyBasedSMSParser()
 
     def test_should_return_form_code(self):
         tokens = ["QUESTIONNAIRE_CODE", "id_1", "FirstName"]

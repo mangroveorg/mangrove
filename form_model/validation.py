@@ -83,6 +83,8 @@ class ChoiceConstraint(object):
 
 class GeoCodeConstraint(object):
     def validate(self, latitude, longitude):
+        latitude=latitude.encode('ascii','ignore')
+        longitude=longitude.encode('ascii','ignore')
         try:
             lat = is_float(latitude, min=ConstraintAttributes.MIN_LAT, max=ConstraintAttributes.MAX_LAT)
         except VdtTypeError:

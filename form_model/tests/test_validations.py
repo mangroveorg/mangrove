@@ -185,6 +185,12 @@ class TestLocationValidations(unittest.TestCase):
         self.assertEqual((90.0, 130.0), constraint.validate("90 ", " 130"))
         self.assertEqual((90.0, 130.0), constraint.validate("   90 ", " 130  "))
 
+    def test_should_remove_right_to_left_mark_character(self):
+        constraint = GeoCodeConstraint()
+        # the string is '49.418607\u200e'
+        self.assertEqual((90.0, 49.418607), constraint.validate("90 ", u'49.418607‎'))
+        self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎', " 130  "))
+
 
 class TestRegexValidations(unittest.TestCase):
     def test_should_validate_values_within_regex(self):

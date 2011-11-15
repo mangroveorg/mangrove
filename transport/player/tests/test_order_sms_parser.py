@@ -8,7 +8,6 @@ class TestOrderSMSParser(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock()
         self.sms_parser = OrderSMSParser(self.dbm)
-        settings.USE_ORDERED_SMS_PARSER = True
 
     def _mock_get_question_codes_from_couchdb(self, question_code):
         self.sms_parser._get_question_codes_from_couchdb = Mock()
@@ -53,5 +52,3 @@ class TestOrderSMSParser(unittest.TestCase):
 
         self.assertEqual(expected, values)
 
-    def tearDown(self):
-        settings.USE_ORDERED_SMS_PARSER = False

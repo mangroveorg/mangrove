@@ -82,7 +82,6 @@ class TestSMSPlayer(TestCase):
         self.assertEqual(0, self.form_model_mock.submit.call_count)
 
     def test_should_accept_ordered_sms_message(self):
-        settings.USE_ORDERED_SMS_PARSER = True
         self.request = Request(transportInfo=self.transport,
                                message="questionnaire_code question1_answer question2_answer")
         order_sms_parser = OrderSMSParser(self.dbm)
@@ -91,6 +90,5 @@ class TestSMSPlayer(TestCase):
         form_code, values = order_sms_parser.parse("questionnaire_code question1_answer question2_answer")
         SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.transport, form_code, values)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
-        settings.USE_ORDERED_SMS_PARSER = False
 
 

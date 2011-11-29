@@ -224,8 +224,8 @@ class SMSParserInvalidFormatException(MangroveException):
         MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data, (data,))
         
 class SMSParserWrongNumberOfAnswersException(MangroveException):
-    def __init__(self):
-        MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.")
+    def __init__(self, form_code):
+        MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (form_code, ))
 
 class CSVParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):

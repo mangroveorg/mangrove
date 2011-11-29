@@ -102,13 +102,11 @@ class OrderSMSParser(SMSParser):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def _parse_ordered_tokens(self, tokens, question_codes):
+    def _parse_ordered_tokens(self, tokens, question_codes, form_code):
         submission = OrderedDict()
 
         if len(tokens) != len(question_codes):
-            print tokens
-            print question_codes
-            raise SMSParserWrongNumberOfAnswersException()
+            raise SMSParserWrongNumberOfAnswersException(form_code)
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
@@ -121,7 +119,7 @@ class OrderSMSParser(SMSParser):
         try:
             form_code, tokens = self.form_code(message)
             question_codes = self._get_question_codes_from_couchdb(form_code)
-            submission = self._parse_ordered_tokens(tokens, question_codes)
+            submission = self._parse_ordered_tokens(tokens, question_codes, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
         return form_code, submission

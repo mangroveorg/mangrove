@@ -276,6 +276,6 @@ class LocationFieldNotPresentException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "Please fill out atleast one location field")
 
-class TrialAccountExpiredException(MangroveException):
-    def __init__(self):
-        MangroveException.__init__(self, "Trial account has been expired!")
+class AccountExpiredException(MangroveException):
+    def __init__(self, message = "Trial account has been expired!"):
+        MangroveException.__init__(self, message)

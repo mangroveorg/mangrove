@@ -4,7 +4,7 @@ import time
 from datawinners import settings
 from datawinners.location.LocationTree import get_location_hierarchy
 from mangrove.datastore.queries import get_entity_count_for_type
-from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException, DataObjectAlreadyExists, MultipleReportersForANumberException, MobileNumberMissing, FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import KeyBasedSMSParser, WebParser
@@ -204,14 +204,13 @@ class FilePlayer(Player):
                 if not form_submission.saved:
                     response.errors = dict(error=form_submission.errors, row=values)
                 responses.append(response)
-                return responses
-            except DataObjectAlreadyExists as e:
-                raise e
-            except MultipleReportersForANumberException as e:
-                raise e
-            except MobileNumberMissing as e:
-                raise e
-            except FormModelDoesNotExistsException as e:
-                raise e
-            
+            except MangroveException as e:
+                response = Response(reporters=[], submission_id=None, form_submission=None)
+                response.success = False
+                response.errors = dict(error=e.message, row=values)
+                responses.append(response)
+        return responses
+
+
+
         

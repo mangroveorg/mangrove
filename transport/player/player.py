@@ -2,12 +2,13 @@
 from copy import copy
 import time
 from datawinners import settings
+from datawinners.entity.entity_exceptions import InvalidFileFormatException
 from datawinners.location.LocationTree import get_location_hierarchy
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.transport import reporter
-from mangrove.transport.player.parser import KeyBasedSMSParser, WebParser
+from mangrove.transport.player.parser import KeyBasedSMSParser, WebParser, CsvParser, XlsParser
 from mangrove.transport.submissions import  Submission
 from mangrove.utils.types import is_empty
 
@@ -193,6 +194,18 @@ class FilePlayer(Player):
         self.parser = parser
         self.channel_name = channel_name
 
+    @classmethod
+    def build(cls, manager, extension, location_tree):
+        if extension == '.csv':
+            parser = CsvParser()
+            channel = Channel.CSV
+        elif extension == '.xls':
+            parser = XlsParser()
+            channel = Channel.XLS
+        else:
+            raise InvalidFileFormatException()
+        return FilePlayer(manager, parser, channel, location_tree)
+            
     def accept(self, file_contents):
         responses = []
         submissions = self.parser.parse(file_contents)

@@ -4,7 +4,7 @@ from mangrove.datastore.data import  LocationAggregration, LocationFilter, Entit
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 import unittest
 from pytz import UTC
-from mangrove.datastore.entity import Entity, get_entities_by_value, create_entity
+from mangrove.datastore.entity import Entity, get_entities_by_value, create_entity, entities_exists_with_value
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity_type import get_all_entity_types, define_type
@@ -564,6 +564,43 @@ class TestQueryApi(unittest.TestCase):
         self.assertTrue(e.id not in entity_ids)
         self.assertTrue(f.id in entity_ids)
         # TODO: more tests for different types?
+
+    def test_check_entity_exists_with_value(self):
+        med_type = DataDictType(self.manager,
+                                name='Medicines',
+                                slug='meds',
+                                primitive_type='number',
+                                description='Number of medications',
+                                tags=['med'])
+        med_type.save()
+        doctor_type = DataDictType(self.manager,
+                                   name='Doctor',
+                                   slug='doc',
+                                   primitive_type='string',
+                                   description='Name of doctor',
+                                   tags=['doctor', 'med'])
+        doctor_type.save()
+        facility_type = DataDictType(self.manager,
+                                     name='Facility',
+                                     slug='facility',
+                                     primitive_type='string',
+                                     description='Name of facility')
+        facility_type.save()
+
+        e = Entity(self.manager, entity_type='foo')
+        e.save()
+        data_record = [('meds', 20, med_type),
+            ('doc', "aroj", doctor_type),
+            ('facility', 'clinic', facility_type)]
+        e.add_data(data_record, event_time=(datetime.datetime(2011, 02, 01, tzinfo=UTC)))
+
+        self.assertTrue(entities_exists_with_value(self.manager, ['foo'], 'meds', 20))
+        self.assertTrue(entities_exists_with_value(self.manager, ['foo'], 'doc', 'aroj'))
+
+        self.assertFalse(entities_exists_with_value(self.manager, ['foo'], 'meds', 21))
+        self.assertFalse(entities_exists_with_value(self.manager, ['foo'], 'doc', "akshay"))
+        self.assertFalse(entities_exists_with_value(self.manager, ['bar'], 'meds', 20))
+        self.assertFalse(entities_exists_with_value(self.manager, ['foo'], 'test_field', 20))
 
 
     def test_should_aggregate_per_entity_per_form_model(self):

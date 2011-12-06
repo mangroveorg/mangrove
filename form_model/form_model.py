@@ -4,7 +4,7 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.datastore.documents import FormModelDocument, attributes
-from mangrove.datastore.entity import get_all_entities
+from mangrove.datastore.entity import    entities_exists_with_value
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
     NoQuestionsSubmittedException, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException, MobileNumberMissing
@@ -403,14 +403,8 @@ class FormSubmission(object):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
 
-    #    TODO: Query a separate view to check reporter uniqueness ie. fetch reporter by key as phone number.
     def _exists_reporter_with_phone_number(self, dbm, phone_number):
-
-        reporters = get_all_entities(dbm, entity_type=[REPORTER])
-        def is_mobilenumber_same(reporter):return reporter.value(MOBILE_NUMBER_FIELD)==phone_number
-
-
-        return not is_empty(filter(is_mobilenumber_same,reporters))
+        return entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number)
 
 
 def create_default_reg_form_model(manager):

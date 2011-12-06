@@ -104,6 +104,18 @@ def get_entities_by_value(dbm, label, value, as_of=None):
 
     return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
 
+def entities_exists_with_value(dbm, entity_type, label, value):
+    """
+    Returns true if entity with the given value for the label exists
+    """
+    assert isinstance(dbm, DatabaseManager)
+    assert isinstance(label, DataDictType) or is_string(label)
+    if isinstance(label, DataDictType):
+        label = label.slug
+
+    rows = dbm.load_all_rows_in_view(u'entity_by_label_value', key=[entity_type, label, value])
+    return is_not_empty(rows)
+
 
 class Entity(DataObject):
     """

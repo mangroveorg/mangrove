@@ -4,9 +4,9 @@ from dates import js_datestring_to_py_datetime, py_datetime_to_js_datestring
 from types import is_sequence
 
 try:
-    import json
-except ImportError:
     import simplejson as json
+except ImportError:
+    import json
 
 
 #

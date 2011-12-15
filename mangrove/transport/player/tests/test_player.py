@@ -4,6 +4,8 @@ from mock import Mock
 from mangrove.datastore.database import DatabaseManager
 from mangrove.transport.player.player import   Player
 
+def get_location_hierarchy(foo):
+    return ["no_hierarchy"]
 
 class TestSMSPlayer(TestCase):
     def setUp(self):
@@ -11,7 +13,7 @@ class TestSMSPlayer(TestCase):
         self.loc_tree.get_hierarchy_path.return_value = ['hierarchy']
         self.dbm = Mock(spec=DatabaseManager)
         self.submission_handler_mock = Mock()
-        self.player = Player(self.dbm, self.loc_tree)
+        self.player = Player(self.dbm, self.loc_tree, get_location_hierarchy= get_location_hierarchy)
 
 
     def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):

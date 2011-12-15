@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from validate import is_integer, VdtTypeError, VdtValueTooBigError, VdtValueTooSmallError,\
+from mangrove.validate import is_integer, VdtTypeError, VdtValueTooBigError, VdtValueTooSmallError,\
     is_string, VdtValueTooShortError, VdtValueTooLongError, is_option_in_list
 
 

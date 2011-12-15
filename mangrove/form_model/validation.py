@@ -3,7 +3,7 @@ import re
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.utils.types import is_empty
 
-from validate import is_string, is_float, VdtTypeError, VdtValueError
+from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 
 class ConstraintTypes(object):
     REGEX = 'regex'

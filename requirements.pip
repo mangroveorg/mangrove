@@ -5,3 +5,4 @@ simplejson
 mock
 iso8601
 pytz
+xlwt

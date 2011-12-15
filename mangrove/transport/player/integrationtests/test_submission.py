@@ -5,6 +5,7 @@
 from time import mktime
 import unittest
 import datetime
+from mock import patch
 from nose.plugins.skip import SkipTest
 from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
@@ -21,6 +22,8 @@ from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
 
+def get_location_hierarchy(foo):
+    return [u'arantany']
 
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):
@@ -80,7 +83,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.form_model__id = self.form_model.save()
 
         self.submission_handler = None
-        self.sms_player = SMSPlayer(self.dbm, LocationTree())
+        self.sms_player = SMSPlayer(self.dbm, LocationTree(), get_location_hierarchy = get_location_hierarchy)
 
     def tearDown(self):
         _delete_db_and_remove_db_manager(self.dbm)

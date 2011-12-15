@@ -6,7 +6,7 @@ from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSm
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
 from mangrove.utils.types import is_sequence, is_empty
-from validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
+from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
 
 
 def create_question_from(dictionary, dbm):

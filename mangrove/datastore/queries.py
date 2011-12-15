@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from validate import is_string
+from mangrove.validate import is_string
 
 def get_entity_count_for_type(dbm, entity_type):
     rows = dbm.view.by_short_codes(descending=True,

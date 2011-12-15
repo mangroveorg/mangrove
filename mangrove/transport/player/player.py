@@ -1,9 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 import time
-from datawinners import settings
-from datawinners.entity.entity_exceptions import InvalidFileFormatException
-from datawinners.location.LocationTree import get_location_hierarchy
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import MangroveException, GeoCodeFormatException
 from mangrove.form_model.form_model import get_form_model_by_code, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, LOCATION_TYPE_FIELD_CODE, GEO_CODE
@@ -79,9 +76,10 @@ def _set_short_code(dbm, form_model, values):
         raise MangroveException(ENTITY_TYPE_FIELD_CODE + " should be present")
 
 class Player(object):
-    def __init__(self, dbm, location_tree=None):
+    def __init__(self, dbm, location_tree=None, get_location_hierarchy=None):
         self.dbm = dbm
         self.location_tree = location_tree
+        self.get_location_hierarchy = get_location_hierarchy
 
     def submit(self, transportInfo, form_code, values, reporter_entity=None):
         submission = Submission(self.dbm, transportInfo, form_code, copy(values))
@@ -126,7 +124,7 @@ class Player(object):
             display_location_list.reverse()
             return display_location_list
         lowest_level_location = display_location_list[0]
-        location_hierarchy = get_location_hierarchy(lowest_level_location)
+        location_hierarchy = self.get_location_hierarchy(lowest_level_location)
         return location_hierarchy
 
 
@@ -162,8 +160,8 @@ class Player(object):
 
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None, parser=None):
-        Player.__init__(self, dbm, location_tree)
+    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None):
+        Player.__init__(self, dbm, location_tree, get_location_hierarchy)
         self.parser = parser or KeyBasedSMSParser()
 
     def accept(self, transport_info, form_code, values):
@@ -173,8 +171,8 @@ class SMSPlayer(Player):
                         form_submission=form_submission)
 
 class WebPlayer(Player):
-    def __init__(self, dbm, location_tree=None):
-        Player.__init__(self, dbm, location_tree)
+    def __init__(self, dbm, location_tree=None, get_location_hierarchy=None):
+        Player.__init__(self, dbm, location_tree, get_location_hierarchy)
 
 
     def _parse(self, request):

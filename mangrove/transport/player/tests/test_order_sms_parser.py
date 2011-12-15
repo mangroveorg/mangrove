@@ -1,6 +1,5 @@
 import unittest
 from mock import Mock
-from datawinners import settings
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException, SMSParserWrongNumberOfAnswersException
 from mangrove.transport.player.parser import OrderSMSParser
 

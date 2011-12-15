@@ -5,8 +5,6 @@
 from time import mktime
 import unittest
 import datetime
-from mock import patch
-from nose.plugins.skip import SkipTest
 from  mangrove import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
@@ -18,7 +16,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.parser import KeyBasedSMSParser
-from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
+from mangrove.transport.player.player import SMSPlayer, TransportInfo
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
 

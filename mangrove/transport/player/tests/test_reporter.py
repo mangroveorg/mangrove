@@ -1,7 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from datetime import  datetime
-from unittest.case import TestCase
-from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
@@ -10,9 +8,10 @@ from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.player.player import TransportInfo
 from mangrove.transport.reporter import find_reporter, get_reporters_who_submitted_data_for_frequency_period
 from mangrove.transport.submissions import Submission
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
-class TestReporter(TestCase):
+class TestReporter(MangroveTestCase):
     def register(self, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
     #    manager = get_db_manager()
         e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
@@ -21,7 +20,7 @@ class TestReporter(TestCase):
         return e
 
     def setUp(self):
-        self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
+        MangroveTestCase.setUp(self)
         define_type(self.manager, ["reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
                                               primitive_type='string')
@@ -51,7 +50,7 @@ class TestReporter(TestCase):
                       source="sms", short_code="REP3")
 
     def tearDown(self):
-        _delete_db_and_remove_db_manager(self.manager)
+        MangroveTestCase.tearDown(self)
 
     def test_should_load_reporter_list_given_tel_number(self):
         saved_r2 = find_reporter(self.manager, "8888567890")

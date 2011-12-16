@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import dbm
 
-from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import DataDictDocument
+from database import DatabaseManager, DataObject
+from documents import DataDictDocument
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.utils.types import is_string
 

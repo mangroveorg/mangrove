@@ -1,24 +1,25 @@
 import datetime
+import unittest
 from mangrove.datastore.aggregrate import aggregate_by_form_code_python, Sum, Min, Max, Latest, aggregation_factory
 from mangrove.datastore.data import  LocationAggregration, LocationFilter, EntityAggregration, TypeAggregration, aggregate_for_form
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
-import unittest
 from pytz import UTC
 from mangrove.datastore.entity import Entity, get_entities_by_value, create_entity, entities_exists_with_value
 from mangrove.datastore import data
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity_type import get_all_entity_types, define_type
+from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
-class TestQueryApi(unittest.TestCase):
+class TestQueryApi(MangroveTestCase):
     def setUp(self):
-        self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
+        MangroveTestCase.setUp(self)
 
     def tearDown(self):
-        _delete_db_and_remove_db_manager(self.manager)
+        MangroveTestCase.tearDown(self)
 
     def create_reporter(self):
         r = Entity(self.manager, entity_type=["Reporter"])

@@ -12,7 +12,6 @@ from datetime import datetime
 from mangrove.utils import dates
 from mangrove.utils.types import is_empty, is_sequence
 from mangrove.errors.MangroveException import NoDocumentError, DataObjectNotFound, FailedToSaveDataObject
-import views
 
 
 _dbms = {}
@@ -164,9 +163,6 @@ class DatabaseManager(object):
         except ResourceNotFound:
             self.database = self.server.create(self.database_name)
 
-        if self.database is not None:
-            self.create_default_views()
-
         self.view= View(self.database)
 
 
@@ -209,9 +205,6 @@ class DatabaseManager(object):
 
     def _delete_design_docs(self):
         for doc in self._get_design_docs(): del self.database[doc.id]
-
-    def create_default_views(self):
-        views.create_views(self)
 
     def _save_document(self, document, modified=None):
         u"""'Returns document ID''"""

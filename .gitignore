@@ -2,3 +2,6 @@ mangrove.egg-info
 .idea
 dist
 *.pyc
+.coverage
+xunit.xml
+

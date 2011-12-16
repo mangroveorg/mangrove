@@ -1,7 +1,7 @@
 import datetime
 from mangrove.datastore.database import get_db_manager,\
     _delete_db_and_remove_db_manager
-from mangrove.datastore.views import find_views
+from mangrove.bootstrap.initializer import _find_views
 from pytz import UTC
 import random
 from mangrove.datastore.entity import Entity
@@ -124,7 +124,7 @@ class ViewGenerationTimer(object):
     def _calculate_view_generation_time(self, number_of_entities, number_of_data_records_per_entity):
         self._reset(number_of_entities, number_of_data_records_per_entity)
 
-        js_views = find_views()
+        js_views = _find_views()
         times = {}
         for v in js_views.keys():
             funcs = js_views[v]

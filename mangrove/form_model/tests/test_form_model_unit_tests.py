@@ -4,9 +4,8 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.errors.MangroveException import EntityQuestionCodeNotSubmitted, NoQuestionsSubmittedException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import _construct_registration_form, FormModel, REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
+from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 
 
@@ -35,23 +34,6 @@ class TestFormModel(unittest.TestCase):
 
     def tearDown(self):
         self.datadict_patcher.stop()
-
-    def test_should_create_registration_form_mode(self):
-        form = _construct_registration_form(self.dbm)
-        self.assertEqual(7, len(form.fields))
-        self.assertEqual(REGISTRATION_FORM_CODE, form.form_code)
-
-    def test_registration_form_should_have_entity_type_field(self):
-        form = _construct_registration_form(self.dbm)
-        field = form.get_field_by_code("T")
-        self.assertIsNotNone(field)
-
-    def test_registration_form_should_have_multiple_constraints_on_mobile(self):
-        form = _construct_registration_form(self.dbm)
-        field = form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
-        self.assertEqual(15, field.constraints[0].max)
-        self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
-
 
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
@@ -148,20 +130,6 @@ class TestFormModel(unittest.TestCase):
     def test_should_be_able_to_put_the_form_model_in_test_mode(self):
         self.form_model.set_test_mode()
         self.assertTrue(self.form_model.is_in_test_mode())
-
-    def test_create_form_submission_with_entity_type_as_lowercase_list_of_string(self):
-        answers = {"s": "1", "t": "Reporter", "g": "1 1", "m": "1212121212"}
-        registration_form = _construct_registration_form(self.dbm)
-        form_submission = registration_form.validate_submission(answers)
-        self.assertEqual(["reporter"], form_submission.entity_type)
-
-
-    def test_should_throw_exception_if_no_location_field_provided_while_registering_an_entity(self):
-        answers = {"s": "1", "t": "Reporter", "m": "1212121212"}
-        registration_form = _construct_registration_form(self.dbm)
-        with self.assertRaises(LocationFieldNotPresentException):
-            registration_form.validate_submission(answers)
-
 
     def _case_insensitive_lookup(self, values, code):
         for fieldcode in values:

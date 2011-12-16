@@ -1,27 +1,26 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-import unittest
-from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.datadict import create_datadict_type, get_datadict_type_by_slug, get_datadict_type
 from mangrove.errors.MangroveException import  DataObjectNotFound
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
-class TestDataDict(unittest.TestCase):
+class TestDataDict(MangroveTestCase):
     def setUp(self):
-        self.dbm = get_db_manager(database='mangrove-test')
+        MangroveTestCase.setUp(self)
 
     def tearDown(self):
-        _delete_db_and_remove_db_manager(self.dbm)
+        MangroveTestCase.tearDown(self)
 
     def test_should_create_load_edit_datadict(self):
         FIRST_NAME_SLUG = 'first_name'
 
-        name_type = create_datadict_type(self.dbm, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
+        name_type = create_datadict_type(self.manager, name='First name', slug=FIRST_NAME_SLUG, primitive_type='string')
 
-        saved_type = get_datadict_type(self.dbm, name_type.id)
+        saved_type = get_datadict_type(self.manager, name_type.id)
         self.assertEqual(name_type.id, saved_type.id)
         self.assertEqual(name_type.slug, saved_type.slug)
 
-        ddtype = get_datadict_type_by_slug(self.dbm, slug=FIRST_NAME_SLUG)
+        ddtype = get_datadict_type_by_slug(self.manager, slug=FIRST_NAME_SLUG)
 
         self.assertEqual(name_type.id, ddtype.id)
         self.assertEqual(name_type.slug, ddtype.slug)
@@ -29,9 +28,9 @@ class TestDataDict(unittest.TestCase):
         ddtype.description = "new desc"
         ddtype.save()
 
-        saved = get_datadict_type_by_slug(self.dbm, slug=FIRST_NAME_SLUG)
+        saved = get_datadict_type_by_slug(self.manager, slug=FIRST_NAME_SLUG)
         self.assertEqual("new desc", saved.description)
 
     def test_should_raise_exception_if_datadict_not_found(self):
         with self.assertRaises(DataObjectNotFound):
-            get_datadict_type(self.dbm, "ID not in db")
+            get_datadict_type(self.manager, "ID not in db")

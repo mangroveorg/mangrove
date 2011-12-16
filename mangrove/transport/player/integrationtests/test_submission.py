@@ -3,10 +3,8 @@
 #  This is an integration test.
 # Send sms, parse and save.
 from time import mktime
-import unittest
 import datetime
-from  mangrove import initializer
-from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
+from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
@@ -19,6 +17,7 @@ from mangrove.transport.player.parser import KeyBasedSMSParser
 from mangrove.transport.player.player import SMSPlayer, TransportInfo
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 def get_location_hierarchy(foo):
     return [u'arantany']
@@ -31,33 +30,33 @@ class LocationTree(object):
         return 60, -12
 
 
-class TestShouldSaveSMSSubmission(unittest.TestCase):
+class TestShouldSaveSMSSubmission(MangroveTestCase):
     def setUp(self):
-        self.dbm = get_db_manager(database='mangrove-test')
-        initializer.run(self.dbm)
-        define_type(self.dbm, ["dog"])
+        MangroveTestCase.setUp(self)
+        initializer.run(self.manager)
+        define_type(self.manager, ["dog"])
         self.entity_type = ["healthfacility", "clinic"]
-        define_type(self.dbm, self.entity_type)
-        self.name_type = DataDictType(self.dbm, name='Name', slug='name', primitive_type='string')
-        self.telephone_number_type = DataDictType(self.dbm, name='telephone_number', slug='telephone_number',
+        define_type(self.manager, self.entity_type)
+        self.name_type = DataDictType(self.manager, name='Name', slug='name', primitive_type='string')
+        self.telephone_number_type = DataDictType(self.manager, name='telephone_number', slug='telephone_number',
                                                   primitive_type='string')
-        self.entity_id_type = DataDictType(self.dbm, name='Entity Id Type', slug='entity_id', primitive_type='string')
-        self.stock_type = DataDictType(self.dbm, name='Stock Type', slug='stock', primitive_type='integer')
-        self.color_type = DataDictType(self.dbm, name='Color Type', slug='color', primitive_type='string')
+        self.entity_id_type = DataDictType(self.manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
+        self.stock_type = DataDictType(self.manager, name='Stock Type', slug='stock', primitive_type='integer')
+        self.color_type = DataDictType(self.manager, name='Color Type', slug='color', primitive_type='string')
 
         self.name_type.save()
         self.telephone_number_type.save()
         self.stock_type.save()
         self.color_type.save()
 
-        self.entity = create_entity(self.dbm, entity_type=self.entity_type,
+        self.entity = create_entity(self.manager, entity_type=self.entity_type,
                                     location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
 
         self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],
                                                    submission=dict(submission_id="1"))
 
-        self.reporter = create_entity(self.dbm, entity_type=["reporter"],
+        self.reporter = create_entity(self.manager, entity_type=["reporter"],
                                       location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
                                       )
 
@@ -75,16 +74,16 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
 
-        self.form_model = FormModel(self.dbm, entity_type=self.entity_type, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="clinic", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
         self.submission_handler = None
-        self.sms_player = SMSPlayer(self.dbm, LocationTree(), get_location_hierarchy = get_location_hierarchy)
+        self.sms_player = SMSPlayer(self.manager, LocationTree(), get_location_hierarchy = get_location_hierarchy)
 
     def tearDown(self):
-        _delete_db_and_remove_db_manager(self.dbm)
+        MangroveTestCase.tearDown(self)
 
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
@@ -100,7 +99,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertTrue(response.success)
 
         data_record_id = response.datarecord_id
-        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
+        data_record = self.manager._load_document(id=data_record_id, document_class=DataRecordDocument)
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
@@ -120,7 +119,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
-        activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
+        activity_report = FormModel(self.manager, entity_type=["reporter"], name="report", label="reporting form_model",
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()
 
@@ -132,7 +131,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
 
         data_record_id = response.datarecord_id
-        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
+        data_record = self.manager._load_document(id=data_record_id, document_class=DataRecordDocument)
         self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
         self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual("acp", data_record.submission['form_code'])
@@ -154,22 +153,22 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_get_submissions_for_form(self):
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
                                                       status=False, error_message="", data_record_id='2345678'))
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
                                                       status=False, error_message="", data_record_id='1234567'))
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="def",
                                                       values={'defQ1': 'defans12', 'defQ2': 'defans22'},
                                                       status=False, error_message="", data_record_id='345678'))
 
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        submissions = get_submissions(self.dbm, "abc", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        submissions = get_submissions(self.manager, "abc", 0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(2, len(submissions))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
@@ -179,7 +178,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.send_sms(text)
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        submissions= get_submissions(self.dbm, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        submissions= get_submissions(self.manager, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(submissions))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
 
@@ -194,7 +193,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "dog1"
         self.assertEqual(response.short_code, expected_short_code)
-        a = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        a = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual(a.short_code, expected_short_code)
 
         text = "reg .N buddy .S bud .T dog .G 80 80 .D its a dog! .M 45557"
@@ -203,7 +202,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         self.assertEqual(response.short_code, "bud", ["dog"])
-        a = get_by_short_code(self.dbm, "bud", ["dog"])
+        a = get_by_short_code(self.manager, "bud", ["dog"])
         self.assertEqual(a.short_code, "bud")
 
         text = "reg .N buddy2 .T dog .L 80 80 .D its another dog! .M 78541"
@@ -213,7 +212,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "dog3"
         self.assertEqual(response.short_code, expected_short_code)
-        b = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        b = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual(b.short_code, expected_short_code)
 
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
@@ -235,7 +234,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         form_code, values = KeyBasedSMSParser().parse("reg .N buddy .S DOG3 .T dog .G 1 1")
         response = self.sms_player.accept(transport_info, form_code, values)
-        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
+        submission_log = self.manager._load_document(response.submission_id, SubmissionLogDocument)
         self.assertIsInstance(submission_log, SubmissionLogDocument)
         self.assertEquals(transport_info.transport, submission_log.channel)
         self.assertEquals(transport_info.source, submission_log.source)
@@ -299,7 +298,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "reg .n buddy .T DOG .G 80 80 .M 123456"
         response = self.send_sms(text)
         self.assertTrue(response.success)
-        data_record = self.dbm._load_document(response.datarecord_id, DataRecordDocument)
+        data_record = self.manager._load_document(response.datarecord_id, DataRecordDocument)
         actual_type = data_record["entity"]["aggregation_paths"]["_type"]
         self.assertEquals(["dog"], actual_type)
 
@@ -334,7 +333,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         self.assertIsNotNone(response.submission_id)
-        submission_log = self.dbm._load_document(response.submission_id, SubmissionLogDocument)
+        submission_log = self.manager._load_document(response.submission_id, SubmissionLogDocument)
         self.assertTrue(submission_log.test)
 
 
@@ -348,7 +347,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual([-12.35, 49.3], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_if_only_location_provided(self):
@@ -361,7 +360,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual([-12, 60], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
@@ -374,20 +373,20 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = 'dog1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.dbm, expected_short_code, ["dog"])
+        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
         self.assertEqual([u'arantany'], dog.location_path)
 
     def test_get_submissions_for_form_for_an_activity_period(self):
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans1', 'Q2': 'ans2'},
                                                       status=False, error_message="", data_record_id='2345678',event_time=datetime.datetime(2011,9,1)))
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans12', 'Q2': 'ans22'},
                                                       status=False, error_message="", data_record_id='1234567',event_time=datetime.datetime(2011,3,3)))
-        self.dbm._save_document(SubmissionLogDocument(channel="transport", source=1234,
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
                                                       destination=12345, form_code="abc",
                                                       values={'Q1': 'ans12', 'Q2': 'defans22'},
                                                       status=False, error_message="", data_record_id='345678',event_time=datetime.datetime(2011,3,10)))
@@ -395,6 +394,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         from_time = datetime.datetime(2011,3,1)
         end_time = datetime.datetime(2011,3,30)
 
-        submissions = get_submissions_for_activity_period(self.dbm, "abc", from_time, end_time)
+        submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
         self.assertEquals(2, len(submissions))
 

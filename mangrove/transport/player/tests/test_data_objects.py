@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
-from mangrove.transport.player.player import TransportInfo, Request
+from mangrove.transport.facade import TransportInfo, Request
 
 class TestTransport(unittest.TestCase):
     def test_should_throw_error_if_transport_is_none(self):

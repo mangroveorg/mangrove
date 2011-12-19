@@ -201,7 +201,7 @@ class FormModel(DataObject):
 
 
     def is_registration_form(self):
-        return self.form_code.lower() == REGISTRATION_FORM_CODE.lower()
+        return self._doc['is_registration_model']
 
     def entity_defaults_to_reporter(self):
         return self.entity_type == [REPORTER]
@@ -279,6 +279,7 @@ class FormModel(DataObject):
                 return answers[key]
         return None
 
+    #TODO This kind of stuff should go into either reporter class or RegistrationWorkFlow
     def _validate_mandatory_fields_have_values(self, values):
         if self.is_registration_form() and self.get_entity_type(values) == REPORTER.lower() and is_empty(
             self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):

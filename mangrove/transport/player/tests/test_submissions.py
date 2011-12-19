@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, N
     DataObjectNotFound, InactiveFormModelException
 
 from mangrove.form_model.form_model import FormModel, FormSubmission
-from mangrove.transport.player.player import   Channel
+from mangrove.transport.facade import Channel
 
 #TODO: Now that submission handler has been deleted, move these tests to the player.
 @SkipTest

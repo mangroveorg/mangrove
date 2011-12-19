@@ -6,7 +6,8 @@ from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import KeyBasedSMSParser, OrderSMSParser
-from mangrove.transport.player.player import SMSPlayer, Request, TransportInfo
+from mangrove.transport.player.player import SMSPlayer
+from mangrove.transport.facade import Request, TransportInfo
 
 
 class TestSMSPlayer(TestCase):
@@ -27,13 +28,14 @@ class TestSMSPlayer(TestCase):
         self.message = "FORM_CODE .ID 1 .M hello world"
         self.sms_player = SMSPlayer(self.dbm, self.loc_tree)
         self.generate_code_patcher = patch(
-            "mangrove.transport.player.player.Player._update_submission_with_short_code_if_registration_form")
+            "mangrove.transport.facade._set_short_code")
         self.generate_code_patcher.start()
 
     def _mock_form_model(self):
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
         get_form_model_mock = self.get_form_model_mock_patcher.start()
         self.form_model_mock = Mock(spec=FormModel)
+        self.form_model_mock.is_registration_form = Mock(return_value=True)
         get_form_model_mock.return_value = self.form_model_mock
 
     def tearDown(self):
@@ -42,7 +44,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_submit_if_parsing_is_successful(self):
         form_code, values = KeyBasedSMSParser().parse(self.message)
-        self.sms_player.accept(self.transport, form_code, values)
+        self.sms_player.accept(self.transport, self.form_model_mock, values)
 
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 
@@ -87,7 +89,7 @@ class TestSMSPlayer(TestCase):
         order_sms_parser._get_question_codes_from_couchdb = Mock()
         order_sms_parser._get_question_codes_from_couchdb.return_value = ['q1', 'q2']
         form_code, values = order_sms_parser.parse("questionnaire_code question1_answer question2_answer")
-        SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.transport, form_code, values)
+        SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(self.transport, self.form_model_mock, values)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 
 

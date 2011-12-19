@@ -87,9 +87,17 @@ class Submission(DataObject):
         return self._doc.channel
 
     @property
+    def form_code(self):
+        return self._doc.form_code
+
+    @property
     def values(self):
         return self._doc.values
 
+    def update_values(self, values):
+        self._doc.values = values
+        self.save()
+        
     @property
     def errors(self):
         return self._doc.error_message

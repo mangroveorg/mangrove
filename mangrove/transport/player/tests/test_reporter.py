@@ -5,7 +5,7 @@ from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
-from mangrove.transport.player.player import TransportInfo
+from mangrove.transport.facade import TransportInfo
 from mangrove.transport.reporter import find_reporter, get_reporters_who_submitted_data_for_frequency_period
 from mangrove.transport.submissions import Submission
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase

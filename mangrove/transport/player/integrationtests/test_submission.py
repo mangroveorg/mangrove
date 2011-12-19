@@ -4,6 +4,7 @@
 # Send sms, parse and save.
 from time import mktime
 import datetime
+from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
@@ -14,10 +15,12 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.parser import KeyBasedSMSParser
-from mangrove.transport.player.player import SMSPlayer, TransportInfo
+from mangrove.transport.player.player import SMSPlayer
+from mangrove.transport.facade import TransportInfo
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
+from mangrove.transport.submissions import Submission
 
 def get_location_hierarchy(foo):
     return [u'arantany']
@@ -88,7 +91,8 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         form_code, values = KeyBasedSMSParser().parse(text)
-        response = self.sms_player.accept(transport_info, form_code, values)
+        form_model = get_form_model_by_code(self.manager, form_code)
+        response = self.sms_player.accept(transport_info, form_model, values)
         return response
 
     def test_should_save_submitted_sms(self):
@@ -233,17 +237,18 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         form_code, values = KeyBasedSMSParser().parse("reg .N buddy .S DOG3 .T dog .G 1 1")
-        response = self.sms_player.accept(transport_info, form_code, values)
-        submission_log = self.manager._load_document(response.submission_id, SubmissionLogDocument)
-        self.assertIsInstance(submission_log, SubmissionLogDocument)
+        form_model = get_form_model_by_code(self.manager, form_code)
+        response = self.sms_player.accept(transport_info, form_model, values)
+        submission_log = Submission.get(self.manager, response.submission_id)
+        self.assertIsInstance(submission_log, Submission)
         self.assertEquals(transport_info.transport, submission_log.channel)
         self.assertEquals(transport_info.source, submission_log.source)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': ['dog'], 'g': [1.0, 1.0]}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(response.datarecord_id, submission_log.data_record_id)
+        self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):

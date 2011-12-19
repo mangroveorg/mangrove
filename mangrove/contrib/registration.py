@@ -52,5 +52,5 @@ def _construct_registration_form(manager):
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6, question7], entity_type=["Registration"])
+        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["Registration"])
     return form_model

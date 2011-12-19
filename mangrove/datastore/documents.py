@@ -181,6 +181,7 @@ class FormModelDocument(DocumentBase):
     label = DictField()
     form_code = TextField()
     state = TextField()
+    is_registration_model = BooleanField(default=False)
     entity_type = ListField(TextField())
     json_fields = ListField(DictField())
 

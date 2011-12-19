@@ -50,7 +50,7 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", state=attributes.ACTIVE_STATE, validators=[MandatoryValidator()]):
+                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=[MandatoryValidator()]):
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
@@ -79,6 +79,7 @@ class FormModel(DataObject):
         doc.type = type
         doc.state = state
         doc.active_languages = language
+        doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
 
     @property

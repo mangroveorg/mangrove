@@ -110,8 +110,6 @@ class FormModel(DataObject):
 
     @form_code.setter
     def form_code(self, value):
-        if value != self._doc.form_code:
-            self._check_if_form_code_is_unique(value)
         self._doc.form_code = value
 
     @property
@@ -160,8 +158,9 @@ class FormModel(DataObject):
 
     def save(self):
         # convert fields to json fields before save
-        if self._doc.rev is None:
-            self._check_if_form_code_is_unique(self.form_code)
+        if not self._is_form_code_unique():
+            raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
+
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         return DataObject.save(self)
 
@@ -265,12 +264,13 @@ class FormModel(DataObject):
             f = field.create_question_from(json_field, self._dbm)
             self._form_fields.append(f)
 
-    def _check_if_form_code_is_unique(self, value):
+    def _is_form_code_unique(self):
         try:
-            get_form_model_by_code(self._dbm, value)
-            raise DataObjectAlreadyExists('Form Model', 'Form Code', value)
+            form = get_form_model_by_code(self._dbm, self.form_code)
+            is_form_code_same_as_existing_form_code = True if form.id == self.id else False
+            return  is_form_code_same_as_existing_form_code
         except FormModelDoesNotExistsException:
-            pass
+            return True
 
     def _find_code(self, answers, code):
         for key in answers:
@@ -305,8 +305,8 @@ class FormModel(DataObject):
         self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
-#TODO removing this check as every field required in datawinners. Also This check should be introduced when we introduce form level errors and should not throw exception
-#        self._validate_if_valid_values_left_to_be_saved(values)
+        #TODO removing this check as every field required in datawinners. Also This check should be introduced when we introduce form level errors and should not throw exception
+        #        self._validate_if_valid_values_left_to_be_saved(values)
         for key in values:
             field = self.get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)

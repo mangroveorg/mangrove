@@ -74,7 +74,7 @@ class TestFormModel(MangroveTestCase):
         form_model.add_field(question)
         form_model.save()
 
-        added_question = self.manager.get(self.form_model__id, FormModel).fields[4]
+        added_question = self.manager.get(self.form_model.id, FormModel).fields[4]
         self.assertEquals(added_question.code, "Q4")
 
     def test_should_delete_field(self):
@@ -246,6 +246,7 @@ class TestFormModel(MangroveTestCase):
         form_model2.save()
         with self.assertRaises(DataObjectAlreadyExists):
             form_model2.form_code = "1"
+            form_model2.save()
 
     def test_should_not_raise_exception_if_form_code_is_updated(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",

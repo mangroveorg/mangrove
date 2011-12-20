@@ -39,7 +39,7 @@ class SMSPlayer(Player):
         if form_model.is_registration_form():
             values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree, self.get_location_hierarchy).process(values)
         if form_model.entity_defaults_to_reporter():
-            values = ActivityReportWorkFlow(self.dbm, values, form_model, reporter_entity).process(values)
+            values = ActivityReportWorkFlow(form_model, reporter_entity).process(values)
         submission_id, form_submission = self.submit(transport_info, form_model, values)
         return Response(reporters=[{NAME_FIELD: reporter_entity.value(NAME_FIELD)}], submission_id=submission_id,
                         form_submission=form_submission)

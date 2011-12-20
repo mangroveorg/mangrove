@@ -50,9 +50,7 @@ class GeneralWorkFlow(object):
         return values
 
 class ActivityReportWorkFlow(object):
-    def __init__(self, dbm, message, form_model, reporter_entity):
-        self.dbm = dbm
-        self.message = message
+    def __init__(self, form_model, reporter_entity):
         self.form_model = form_model
         self.reporter_entity = reporter_entity
 

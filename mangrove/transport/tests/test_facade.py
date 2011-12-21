@@ -1,12 +1,12 @@
-from unittest.case import TestCase
+import unittest
 from mock import Mock
-from nose.case import Test
+from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport.facade import ActivityReportWorkFlow
+from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow
 
-class TestActivityWorkFlow(TestCase):
+class TestActivityWorkFlow(unittest.TestCase):
     def setUp(self):
         self.form_model_mock = Mock(spec=FormModel)
         self.reporter_entity_mock = Mock(spec=Entity)

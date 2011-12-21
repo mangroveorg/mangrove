@@ -94,10 +94,6 @@ class Submission(DataObject):
     def values(self):
         return self._doc.values
 
-    def update_values(self, values):
-        self._doc.values = values
-        self.save()
-        
     @property
     def errors(self):
         return self._doc.error_message

@@ -14,12 +14,11 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer
-from mangrove.transport.facade import TransportInfo
+from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
-from transport import Request
 
 def get_location_hierarchy(foo):
     return [u'arantany']

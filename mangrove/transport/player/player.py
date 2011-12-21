@@ -4,10 +4,9 @@ from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport import reporter
-from mangrove.transport.player.parser import WebParser
+from mangrove.transport.player.parser import WebParser, SMSParserFactory
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import Response, ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
-from transport.player.parser import SMSParserFactory
 
 
 class Player(object):

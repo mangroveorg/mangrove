@@ -12,10 +12,7 @@ from mangrove.form_model.validation import NumericRangeConstraint, TextLengthCon
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
-        self.datadict_patcher = patch("mangrove.form_model.form_model.get_or_create_data_dict")
-        self.datadict_mock = self.datadict_patcher.start()
         self.ddtype_mock = Mock(spec=DataDictType)
-        self.datadict_mock.return_value = self.ddtype_mock
 
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                        language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
@@ -33,8 +30,8 @@ class TestFormModel(unittest.TestCase):
 
 
     def tearDown(self):
-        self.datadict_patcher.stop()
-
+        pass
+    
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
         cleaned_answers, errors = self.form_model._is_valid(answers)

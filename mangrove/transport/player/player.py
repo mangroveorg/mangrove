@@ -45,7 +45,7 @@ class SMSPlayer(Player):
         form_model, values = self._process(values, form_code, reporter_entity)
         try:
             form_submission = self.submit(form_model, values)
-            submission.update(True, form_submission.errors, form_submission.data_record_id,
+            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
                                   form_submission.form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
@@ -78,7 +78,7 @@ class WebPlayer(Player):
         form_model, values = self._process(form_code, values)
         try:
             form_submission = self.submit(form_model, values)
-            submission.update(True, form_submission.errors, form_submission.data_record_id,
+            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
                                   form_submission.form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())

@@ -15,7 +15,7 @@ class Player(object):
         self.location_tree = location_tree
         self.get_location_hierarchy = get_location_hierarchy
 
-    def submit(self, transportInfo, form_model, values):
+    def submit(self, form_model, values):
         form_submission = form_model.submit(self.dbm, values)
         return form_submission
 
@@ -44,7 +44,7 @@ class SMSPlayer(Player):
         submission.save()
         form_model, values = self._process(values, form_code, reporter_entity)
         try:
-            form_submission = self.submit(request.transport, form_model, values)
+            form_submission = self.submit(form_model, values)
             submission.update(True, form_submission.errors, form_submission.data_record_id,
                                   form_submission.form_model.is_in_test_mode())
         except MangroveException as exception:
@@ -77,7 +77,7 @@ class WebPlayer(Player):
         submission.save()
         form_model, values = self._process(form_code, values)
         try:
-            form_submission = self.submit(request.transport, form_model, values)
+            form_submission = self.submit(form_model, values)
             submission.update(True, form_submission.errors, form_submission.data_record_id,
                                   form_submission.form_model.is_in_test_mode())
         except MangroveException as exception:

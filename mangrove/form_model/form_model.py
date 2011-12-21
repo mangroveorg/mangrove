@@ -148,13 +148,13 @@ class FormModel(DataObject):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
         return entity_type.lower() if is_not_empty(entity_type) else None
 
-    def submit(self, dbm, values, submission_id):
+    def submit(self, dbm, values):
         self.bind(values)
         if self.is_inactive():
             raise InactiveFormModelException(self.form_code)
         form_submission = self.validate_submission(values)
         if form_submission.is_valid:
-            form_submission.save(dbm, submission_id)
+            form_submission.save(dbm)
         return form_submission
 
     def save(self):
@@ -357,12 +357,12 @@ class FormSubmission(object):
         return self.form_model.is_registration_form()
 
 
-    def save(self, dbm, submission_id):
+    def save(self, dbm):
         self._validate_unique_phone_number_for_reporter(dbm)
-        return self._save_data(self._get_entity(dbm), submission_id)
+        return self._save_data(self._get_entity(dbm))
 
-    def _save_data(self, entity, submission_id=None):
-        submission_information = dict(form_code=self.form_code, submission_id=submission_id)
+    def _save_data(self, entity):
+        submission_information = dict(form_code=self.form_code)
         self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
         return self.data_record_id
 

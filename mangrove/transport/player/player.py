@@ -16,7 +16,7 @@ class Player(object):
         self.get_location_hierarchy = get_location_hierarchy
 
     def submit(self, transportInfo, form_model, values):
-        form_submission = form_model.submit(self.dbm, values, None)
+        form_submission = form_model.submit(self.dbm, values)
         return form_submission
 
 class SMSPlayer(Player):

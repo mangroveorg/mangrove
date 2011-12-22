@@ -5,6 +5,7 @@ from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow
+from mangrove.transport.player.tests.test_web_player import DummyLocationTree
 
 class TestActivityWorkFlow(unittest.TestCase):
     def setUp(self):
@@ -43,7 +44,7 @@ class TestActivityWorkFlow(unittest.TestCase):
         self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar", ddtype=Mock())
         self.assertEquals({'l':'None'}, activity_report.process({'l':'None'}))
 
-class TestReporterWorkFlow(unittest.TestCase):
+class TestRegistrationWorkFlow(unittest.TestCase):
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
@@ -63,8 +64,7 @@ class TestReporterWorkFlow(unittest.TestCase):
 
     def test_should_set_geocode_if_location_and_short_code_both_are_given(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        self.form_model_mock.get_short_code = Mock(return_value='1')
-        self.assertEquals({'l':['arantany'], 'g': '-12 60'}, registration_work_flow.process({'l':'Pune'}))
+        self.assertEquals({'s':'cli1', 'l':['arantany'], 'g': '-12 60'}, registration_work_flow.process({'s':'cli1', 'l':'Pune'}))
 
     def test_should_set_geocode_if_only_location_is_given(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
@@ -75,14 +75,14 @@ class TestReporterWorkFlow(unittest.TestCase):
 
     def test_should_set_location_if_geocode_and_short_code_both_are_given(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        self.form_model_mock.get_short_code = Mock(return_value='1')
-        self.assertEquals({'l':[u'arantany'],'g':'1 1'}, registration_work_flow.process({'l':'None','g':'1 1'}))
+        values = registration_work_flow.process({'s':'cli1', 'l':'None','g':'1 1'})
+        self.assertEquals({'s':'cli1', 'l':[u'arantany'],'g':'1 1'}, values)
 
     def test_should_set_location_if_only_geocode_is_given(self):
-        reporter_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
+        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
-        values = reporter_work_flow.process({'t': 'clinic', 'l':'None', 'g':'1 1'})
+        values = registration_work_flow.process({'t': 'clinic', 'l':'None', 'g':'1 1'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '1 1', 'l': [u'arantany']}, values)
 
 

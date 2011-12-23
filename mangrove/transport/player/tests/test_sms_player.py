@@ -42,6 +42,17 @@ class TestSMSPlayer(TestCase):
         self.reporter_patcher.stop()
         self.generate_code_patcher.stop()
 
+    def test_sms_player_should_parse_message(self):
+        parser_mock = Mock(spec=OrderSMSParser)
+        parser_mock.parse.return_value = ('FORM_CODE', {'id':'1'})
+        message = 'FORM_CODE 1'
+
+        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser_mock)
+        sms_player.accept(Request(message=message, transportInfo=self.transport))
+
+        parser_mock.parse.assert_called_once_with(message)
+
+
     def test_should_submit_if_parsing_is_successful(self):
         self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
 
@@ -85,5 +96,4 @@ class TestSMSPlayer(TestCase):
         order_sms_parser._get_question_codes_from_couchdb.return_value = ['q1', 'q2']
         SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(request)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
-
 

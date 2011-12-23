@@ -11,13 +11,11 @@ def get_location_hierarchy(foo):
 
 class TestBasePlayer(TestCase):
     def setUp(self):
-        self.loc_tree = Mock()
-        self.loc_tree.get_hierarchy_path.return_value = ['hierarchy']
-        self.dbm = Mock(spec=DatabaseManager)
-        self.submission_handler_mock = Mock()
-        self.player = Player(self.dbm, self.loc_tree, get_location_hierarchy= get_location_hierarchy)
+        loc_tree = Mock()
+        loc_tree.get_hierarchy_path.return_value = ['hierarchy']
+        dbm = Mock(spec=DatabaseManager)
         form_model = Mock(spec=FormModel)
-        self.registration_workflow = RegistrationWorkFlow(self.dbm, form_model, self.loc_tree, get_location_hierarchy)
+        self.registration_workflow = RegistrationWorkFlow(dbm, form_model, loc_tree, get_location_hierarchy)
 
     def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
         values = dict(l='a,b,c', t='clinic')

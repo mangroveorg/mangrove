@@ -20,9 +20,10 @@ class Player(object):
         return form_submission
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None):
+    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None,post_sms_parser_processors=[]):
         Player.__init__(self, dbm, location_tree, get_location_hierarchy)
         self.parser = parser
+        self.post_sms_parser_processor=post_sms_parser_processors
 
     def _process(self, values, form_code, reporter_entity):
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -34,11 +35,16 @@ class SMSPlayer(Player):
 
         return form_model, values
 
+    def _process_post_parse_callback(self, form_code, values):
+        for post_sms_parser_processors in self.post_sms_parser_processor:
+            post_sms_parser_processors.process(form_code, values)
+
     def accept(self, request):
         if self.parser is None:
             self.parser = SMSParserFactory().getSMSParser(request.message, self.dbm)
 
         form_code, values = self.parser.parse(request.message)
+        self._process_post_parse_callback(form_code, values)
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         submission = Submission(self.dbm, request.transport, form_code, copy(values))
         submission.save()

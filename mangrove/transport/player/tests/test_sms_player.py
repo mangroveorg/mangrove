@@ -52,6 +52,18 @@ class TestSMSPlayer(TestCase):
 
         parser_mock.parse.assert_called_once_with(message)
 
+    def test_should_call_parser_post_processor(self):
+        parser_mock = Mock(spec=OrderSMSParser)
+        parser_mock.parse.return_value = ('FORM_CODE', {'id':'1'})
+        post_sms_processor_mock=Mock()
+        post_sms_processor_mock.process.return_value=None
+        message = 'FORM_CODE 1'
+
+        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,post_sms_parser_processors=[post_sms_processor_mock])
+        sms_player.accept(Request(message=message, transportInfo=self.transport))
+
+        post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1', 'l': None})
+
 
     def test_should_submit_if_parsing_is_successful(self):
         self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))

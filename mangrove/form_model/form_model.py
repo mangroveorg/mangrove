@@ -292,10 +292,6 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k,v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
-    def _validate_if_valid_values_left_to_be_saved(self, values):
-        if values is None or len(values) <= 1:
-            raise NoQuestionsSubmittedException()
-
     def _is_valid(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
@@ -305,8 +301,6 @@ class FormModel(DataObject):
         self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
-        #TODO removing this check as every field required in datawinners. Also This check should be introduced when we introduce form level errors and should not throw exception
-        #        self._validate_if_valid_values_left_to_be_saved(values)
         for key in values:
             field = self.get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)

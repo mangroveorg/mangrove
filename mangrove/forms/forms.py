@@ -32,7 +32,7 @@ class Form(BaseForm):
         fields = []
         for field_json in dct['fields']:
             field_class_name = field_json.pop('_class')
-            field = type(field_class_name, (TextField,Field,), {})(**field_json)
+            field = type(field_class_name, (eval(field_class_name),Field,), {})(**field_json)
             fields.append(field)
         attrs['fields'] = fields
         return type('Form', (BaseForm,), attrs)

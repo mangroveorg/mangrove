@@ -17,4 +17,8 @@ class TestTestField(unittest.TestCase):
         f = TextField("name", "na", "What is the name?")
         self.assertEqual({'name':"name",
                           'code':"na",
-                          "label":"What is the name?"}, f.to_json())
+                          "label":"What is the name?",
+                          "default": ""}, f.to_json())
+
+
+

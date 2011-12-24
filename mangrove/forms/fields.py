@@ -21,9 +21,10 @@ class TextField(Field):
 
     def __init__(self, name, code, label, constraints=default_constraints, instruction=None, default=""):
         Field.__init__(self, name, code, label, constraints, instruction)
-        self.value = default
+        self.default = default
 
     def to_json(self):
         return {'name': self.name,
                 'code': self.code,
-                'label': self.label}
+                'label': self.label,
+                'default':self.default}

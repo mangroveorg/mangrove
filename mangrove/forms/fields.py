@@ -2,7 +2,7 @@ from mangrove.forms import validators
 
 class Field(object):
 
-    default_constraints = {
+    default_constraints_message = {
         'required': "This field is required.",
         'invalid': "Enter a valid value",
     }
@@ -16,7 +16,8 @@ class Field(object):
 
     def validate(self, value):
         if value in validators.EMPTY_VALUES and self.required:
-            return [self.default_constraints['required']]
+            return [self.default_constraints_message['required']]
+        return []
 
 
 class TextField(Field):

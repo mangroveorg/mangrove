@@ -1,7 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
 from mangrove.utils.types import is_empty
-EMPTY_VALUES = (None, '', [], (), {})
 
 def case_insensitive_lookup(values, code):
     for fieldcode in values:

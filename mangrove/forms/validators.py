@@ -5,6 +5,8 @@ from errors.MangroveException import MangroveException
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 
+EMPTY_VALUES = (None, '', [], (), {})
+
 class ConstraintTypes(object):
     SELECT = 'select'
     RANGE = 'range'

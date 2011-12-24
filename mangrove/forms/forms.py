@@ -21,8 +21,22 @@ class MangroveFormMetaclass(type):
 
 class BaseForm(object):
 
-    def __init__(self):
+    def __init__(self, data=None):
+        self.is_bound = data is not None
+        self.data = data or {}
         self.fields = deepcopy(self.base_fields)
+
+    @property
+    def errors(self):
+        _errors = []
+        for field in self.fields.values():
+            error = field.validate(self.data.get(field.name))
+            if error:
+                _errors.append((field.name, error))
+        return _errors
+
+    def is_valid(self):
+        return self.is_bound and not bool(self.errors)
 
     def __getitem__(self, name):
         field = self.fields[name]
@@ -40,7 +54,7 @@ class Form(BaseForm):
             field = type(field_class_name, (eval(field_class_name),Field,), {})(**field_json)
             fields.append((field.name, field))
         attrs['base_fields'] = OrderedDict(fields)
-        return type('Form', (BaseForm,), attrs)()
+        return type('Form', (BaseForm,), attrs)
 
 
 

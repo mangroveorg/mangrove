@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from copy import deepcopy
 
 from mangrove.forms.fields import Field
@@ -8,9 +9,9 @@ def get_declared_fields(bases, attrs):
 
     for base in bases[::-1]:
         if hasattr(base, 'base_fields'):
-            fields = base.base_fields + fields
+            fields = base.base_fields.items() + fields
 
-    return fields
+    return OrderedDict(fields)
 
 class MangroveFormMetaclass(type):
     def __new__(cls, name, bases, attrs):
@@ -23,6 +24,10 @@ class BaseForm(object):
     def __init__(self):
         self.fields = deepcopy(self.base_fields)
 
+    def __getitem__(self, name):
+        field = self.fields[name]
+        return field
+
 class Form(BaseForm):
     __metaclass__ = MangroveFormMetaclass
 
@@ -33,7 +38,7 @@ class Form(BaseForm):
         for field_json in dct['fields']:
             field_class_name = field_json.pop('_class')
             field = type(field_class_name, (eval(field_class_name),Field,), {})(**field_json)
-            fields.append(field)
-        attrs['fields'] = fields
-        return type('Form', (BaseForm,), attrs)
+            fields.append((field.name, field))
+        attrs['base_fields'] = OrderedDict(fields)
+        return type('Form', (BaseForm,), attrs)()
 

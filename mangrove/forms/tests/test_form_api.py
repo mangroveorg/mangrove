@@ -26,5 +26,18 @@ class TestFormAPI(unittest.TestCase):
         }
         form = forms.Form.build_from_dct(dct)
         self.assertEqual(1, len(form.fields))
+        self.assertEqual("reg", form.code)
 
-
+    def test_get_hold_of_field_from_form(self):
+        dct = {
+            'code': "reg",
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default":"",
+            }]
+        }
+        form = forms.Form.build_from_dct(dct)
+        self.assertEqual("na", form['name'].code)

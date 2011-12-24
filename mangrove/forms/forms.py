@@ -26,4 +26,14 @@ class BaseForm(object):
 class Form(BaseForm):
     __metaclass__ = MangroveFormMetaclass
 
-    code = TextField("foo", "f", "What is foo?")
+    @classmethod
+    def build_from_dct(cls, dct):
+        attrs = {'code': dct['code']}
+        fields = []
+        for field_json in dct['fields']:
+            field_class_name = field_json.pop('_class')
+            field = type(field_class_name, (TextField,Field,), {})(**field_json)
+            fields.append(field)
+        attrs['fields'] = fields
+        return type('Form', (BaseForm,), attrs)
+

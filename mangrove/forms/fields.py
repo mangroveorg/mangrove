@@ -24,7 +24,8 @@ class TextField(Field):
         self.default = default
 
     def to_json(self):
-        return {'name': self.name,
+        return {'type': 'Text',
+                'name': self.name,
                 'code': self.code,
                 'label': self.label,
                 'default':self.default}

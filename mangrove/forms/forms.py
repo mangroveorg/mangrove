@@ -5,7 +5,7 @@ from mangrove.forms.fields import Field
 from mangrove.forms.fields import TextField
 
 def get_declared_fields(bases, attrs):
-    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
+    fields = [(obj.name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
 
     for base in bases[::-1]:
         if hasattr(base, 'base_fields'):

@@ -11,6 +11,7 @@ class TestFormAPI(unittest.TestCase):
 
         form = FooForm()
         self.assertEqual(1, len(form.fields))
+        self.assertEqual("bar", form.code)
 
 
     def test_create_new_form_from_dct(self):

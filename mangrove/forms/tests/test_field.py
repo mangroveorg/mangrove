@@ -15,10 +15,12 @@ class TestTestField(unittest.TestCase):
 
     def test_text_field_to_json(self):
         f = TextField("name", "na", "What is the name?")
-        self.assertEqual({'name':"name",
+        self.assertEqual({'_class': 'TextField',
+                          'name':"name",
                           'code':"na",
                           "label":"What is the name?",
-                          "default": ""}, f.to_json())
+                          "default": "",
+                          "required":False}, f.to_json())
 
 
 

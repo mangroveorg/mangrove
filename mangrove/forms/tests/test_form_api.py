@@ -9,9 +9,14 @@ class TestFormAPI(unittest.TestCase):
             code = "bar"
             name = TextField("foo", "f", "What is foo?")
 
+            class Meta:
+                registration = True
+                entity_type = "Clinic"
+
         form = FooForm()
         self.assertEqual(1, len(form.fields))
         self.assertEqual("bar", form.code)
+        self.assertTrue(form.registration())
 
 
     def test_create_new_form_from_dct(self):

@@ -37,12 +37,17 @@ class TextField(Field):
         self.required = required
 
     def to_json(self):
+        validators_json = []
+        for validator in self.validators:
+            validators_json.append(validator._to_json())
         return {'_class': 'TextField',
                 'name': self.name,
                 'code': self.code,
                 'label': self.label,
-                'default':self.default,
-                'required': self.required}
+                'default': self.default,
+                'required': self.required,
+                'validators': validators_json}
+
 
     def validate(self, value):
         errors = Field.validate(self,value)

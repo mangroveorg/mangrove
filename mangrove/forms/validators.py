@@ -79,7 +79,7 @@ class GeoCodeValidator(object):
     MIN_LAT = -90
     MAX_LAT = 90
 
-    def to_json(self):
+    def _to_json(self):
         return {'_class':'GeoCodeValidator'}
     
     def validate(self, latitude, longitude):

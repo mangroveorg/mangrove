@@ -20,7 +20,9 @@ class TestTestField(unittest.TestCase):
                           'code':"na",
                           "label":"What is the name?",
                           "default": "",
-                          "required":False}, f.to_json())
+                          "required":False,
+                          "validators": []
+                          }, f.to_json())
 
 
 

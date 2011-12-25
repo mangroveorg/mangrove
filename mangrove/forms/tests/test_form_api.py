@@ -59,3 +59,25 @@ class TestFormAPI(unittest.TestCase):
         }
         form = forms.Form.build_from_dct(dct)
         self.assertFalse(form(data={}).is_valid())
+
+    def test_validate_submission_with_length_constraint_added(self):
+        dct = {
+            'code': "reg",
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default":"",
+                "required":True,
+                "validators":[
+                    {'_class':'TextLengthValidator',
+                     'min':2,
+                     'max':5}
+                ]
+            }]
+        }
+        form = forms.Form.build_from_dct(dct)
+        self.assertTrue(form(data={'name':'foo'}).is_valid())
+        self.assertFalse(form(data={'name':'foobar'}).is_valid())
+

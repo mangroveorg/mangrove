@@ -1,18 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
-from errors.MangroveException import MangroveException
+from mangrove.errors.MangroveException import MangroveException
 
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 
 EMPTY_VALUES = (None, '', [], (), {})
-
-class ConstraintTypes(object):
-    SELECT = 'select'
-    RANGE = 'range'
-    LENGTH = 'length'
-    GEO = 'geo'
-
 
 class NumericRangeValidator(object):
     MAX = "max"
@@ -106,7 +99,7 @@ class GeoCodeValidator(object):
             raise LongitudeNotInRange(longitude)
         return lat, long
 
-def constraints_factory(constraints_json):
+def validator_factory(constraints_json):
     constraints = []
     for constraint_json in constraints_json:
         constraint_class = constraint_json.pop('_class')

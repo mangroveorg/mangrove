@@ -2,7 +2,6 @@ from collections import OrderedDict
 from copy import deepcopy
 
 from mangrove.forms.fields import Field
-from mangrove.forms.fields import TextField
 
 def get_declared_fields(bases, attrs):
     fields = [(obj.name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
@@ -50,8 +49,7 @@ class Form(BaseForm):
         attrs = {'code': dct['code']}
         fields = []
         for field_json in dct['fields']:
-            field_class_name = field_json.pop('_class')
-            field = type(field_class_name, (eval(field_class_name),Field,), {})(**field_json)
+            field = Field.build_from_dct(field_json)
             fields.append((field.name, field))
         attrs['base_fields'] = OrderedDict(fields)
         return type('Form', (BaseForm,), attrs)

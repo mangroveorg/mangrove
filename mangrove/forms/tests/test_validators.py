@@ -2,7 +2,7 @@
 
 import unittest
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
-from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, ConstraintTypes, constraints_factory
+from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -13,7 +13,7 @@ class TestIntegerValidators(unittest.TestCase):
         self.assertEqual({'_class': 'NumericRangeValidator', "min": 10, "max": 20}, validator._to_json())
 
     def test_should_return_max_as_dictionary(self):
-        constraint = NumericRangeValidator(min=None, max=20)
+        constraint = NumericRangeValidator(max=20)
         self.assertEqual({'max': 20, '_class': 'NumericRangeValidator'}, constraint._to_json())
 
     def test_should_return_min_as_dictionary(self):
@@ -173,11 +173,11 @@ class TestCreationOfConstraints(unittest.TestCase):
             {"_class":"NumericRangeValidator","min": 10, "max": 20},
             {"_class":"TextLengthValidator","min": 10, "max": 20}
         ]
-        constraints = constraints_factory(constraint_info)
+        constraints = validator_factory(constraint_info)
         self.assertEqual(2, len(constraints))
 
     def test_should_create_empty_constraint_dictionary_if_None(self):
         constraint_info = []
-        constraints = constraints_factory(constraint_info)
+        constraints = validator_factory(constraint_info)
         self.assertEqual([], constraints)
         

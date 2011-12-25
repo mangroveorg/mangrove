@@ -6,7 +6,7 @@ class TestFormAPI(unittest.TestCase):
 
     def test_create_new_form(self):
         class FooForm(forms.Form):
-            code = "bar"
+            form_code = "bar"
             name = TextField("foo", "f", "What is foo?")
 
             class Meta:
@@ -15,13 +15,13 @@ class TestFormAPI(unittest.TestCase):
 
         form = FooForm()
         self.assertEqual(1, len(form.fields))
-        self.assertEqual("bar", form.code)
+        self.assertEqual("bar", form.form_code)
         self.assertTrue(form.registration())
 
 
     def test_create_new_form_from_dct(self):
         dct = {
-            'code': "reg",
+            'form_code': "reg",
             'fields': [{
                 '_class': "TextField",
                 'name': "name",
@@ -36,7 +36,7 @@ class TestFormAPI(unittest.TestCase):
 
     def test_get_hold_of_field_from_form(self):
         dct = {
-            'code': "reg",
+            'form_code': "reg",
             'fields': [{
                 '_class': "TextField",
                 'name': "name",
@@ -52,7 +52,7 @@ class TestFormAPI(unittest.TestCase):
 
     def test_validate_submission_with_no_constraints_added(self):
         dct = {
-            'code': "reg",
+            'form_code': "reg",
             'fields': [{
                 '_class': "TextField",
                 'name': "name",
@@ -67,7 +67,7 @@ class TestFormAPI(unittest.TestCase):
 
     def test_validate_submission_with_length_constraint_added(self):
         dct = {
-            'code': "reg",
+            'form_code': "reg",
             'fields': [{
                 '_class': "TextField",
                 'name': "name",

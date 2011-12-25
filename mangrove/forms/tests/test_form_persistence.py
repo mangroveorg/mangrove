@@ -11,7 +11,7 @@ class TestFormPersistence(MangroveTestCase):
 
     def test_save_form_to_couch(self):
         dct = {
-            'code': "reg",
+            'form_code': "reg",
             'name': "random_registration_form",
             'state': 'Test',
             'fields': [{
@@ -38,3 +38,39 @@ class TestFormPersistence(MangroveTestCase):
         form = Form()
         form.save(self.manager)
         self.assertTrue(form.uuid)
+
+    def test_read_form_to_couch(self):
+        dct = {
+            'form_code': "reg",
+            'name': "random_registration_form",
+            'state': 'Test',
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default": "",
+                "required": True,
+                "validators": [
+                        {
+                        '_class': 'TextLengthValidator',
+                        'min': 2,
+                        'max': 5
+                    }
+                ]
+            }],
+            'metadata': {
+                'is_registration': True,
+                'entity_type': 'Clinic'
+            }
+        }
+        Form = forms.Form.build_from_dct(dct)
+        form1 = Form()
+        form1.save(self.manager)
+        Form = forms.form_by_code(self.manager, "reg")
+        form2 = Form()
+        self.assertEqual(form1.uuid, form2.uuid)
+        self.assertEqual(form1.name, form2.name)
+        self.assertEqual(form1.code, form2.code)
+        self.assertEqual(form1.state, form2.state)
+

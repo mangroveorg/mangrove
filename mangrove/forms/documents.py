@@ -5,7 +5,7 @@ class FormDocument(DocumentBase):
     name = TextField()
     form_code = TextField()
     state = TextField()
-    json_fields = ListField(DictField())
+    fields = ListField(DictField())
     metadata = DictField()
     
     def __init__(self, **args):
@@ -23,11 +23,12 @@ class FormDocument(DocumentBase):
         for field in form.fields.values():
             fields_dct.append(field.to_json())
         dct = {
-            '_id': form.uuid if hasattr(form, 'uuid') else None,
+            '_id': form.uuid,
             'name': form.name,
             'state': form.state,
-            'json_fields': fields_dct,
-            'code': form.code
+            'fields': fields_dct,
+            'code': form.code,
+            'metadata': form._metadata if hasattr(form, '_metadata') else {}
         }
 
         document = cls(**dct)

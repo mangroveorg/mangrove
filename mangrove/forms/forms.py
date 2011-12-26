@@ -30,6 +30,7 @@ def _get_declared_fields(bases, attrs):
 class MangroveFormMetaclass(type):
     def __new__(cls, name, bases, attrs):
         attrs['base_fields'] = _get_declared_fields(bases, attrs)
+        attrs['uuid'] = None
         if attrs.get('Meta'):
             def function(self): return value
             for key, value in attrs.get('Meta').__dict__.items():

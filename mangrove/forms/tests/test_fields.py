@@ -20,11 +20,13 @@ class TestTextField(unittest.TestCase):
                           }, f.to_json())
 
     def test_should_validate_text(self):
-        field = TextField(code="bar", label="pipe", validators=[TextLengthValidator(1,2), RegexValidator("^[A-Za-z0-9]+$")])
+        field = TextField(code="bar", label="pipe", validators=[TextLengthValidator(1,2), RegexValidator("^[A-Za-z0-9]+$")], required=True)
         self.assertEqual((['the value "foo." is too long.',
                           'Invalid Mobile Number. Only Numbers and Dash(-) allowed.'], "foo."),
                                                                                      field.validate("foo."))
         self.assertEqual(([], "fo"), field.validate("fo"))
+        self.assertEqual((['This field is required.'], ''), field.validate(""))
+
 
 
 class TestHierarchyField(unittest.TestCase):

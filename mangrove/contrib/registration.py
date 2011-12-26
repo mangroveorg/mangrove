@@ -1,4 +1,3 @@
-from mangrove.forms import forms
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, DESCRIPTION_FIELD_CODE, GEO_CODE_FIELD, FormModel, GEO_CODE, DESCRIPTION_FIELD, REGISTRATION_FORM_CODE

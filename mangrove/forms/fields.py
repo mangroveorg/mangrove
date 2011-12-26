@@ -20,7 +20,7 @@ class Field(object):
     def validate(self, value):
         errors = []
         if is_empty(value) and self.required:
-            return list(self.default_validator_messages['required']), value
+            return [self.default_validator_messages['required']], value
         for validator in self.validators:
             try:
                 value =validator.validate(value)
@@ -68,7 +68,12 @@ class HierarchyField(Field):
         Field.__init__(self, code=code, label=label, instruction=instruction,required=required, validators=validators)
 
     def validate(self, value):
-        errors, value = Field.validate(self,value)
+        errors = []
+        if is_empty(value):
+            if self.required:
+                return list(self.default_validator_messages['required']), value
+            else:
+                return [], value
         try:
             value = SequenceValidator().validate(value)
         except Exception as ex:
@@ -76,9 +81,10 @@ class HierarchyField(Field):
         return errors, value
 
 class GeoCodeField(Field):
-    def __init__(self, code, label, instruction="",required=False):
+    default_validators = []
+    def __init__(self, code, label, instruction="",required=False, validators=default_validators):
         Field.__init__(self, code=code,
-                       label=label, instruction=instruction,required=required, validators=[])
+                       label=label, instruction=instruction,required=required, validators=validators)
 
     def validate(self, value):
         if is_empty(value):

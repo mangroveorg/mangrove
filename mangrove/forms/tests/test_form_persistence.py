@@ -57,6 +57,10 @@ class TestFormPersistence(MangroveTestCase):
                         '_class': 'TextLengthValidator',
                         'min': 2,
                         'max': 5
+                    },
+                        {
+                        '_class': 'RegexValidator',
+                        'pattern': "^[A-Za-z0-9]+$"
                     }
                 ]
             }],
@@ -77,4 +81,5 @@ class TestFormPersistence(MangroveTestCase):
         self.assertEqual(len(form1.fields), len(form2.fields))
         self.assertEqual(len(form1.fields['name'].validators), len(form2.fields['name'].validators))
         self.assertTrue(isinstance(form2.fields['name'].validators[0], TextLengthValidator))
+        self.assertFalse(Form(data={'name':'foo.'}).is_valid())
 

@@ -99,6 +99,21 @@ class GeoCodeValidator(object):
             raise LongitudeNotInRange(longitude)
         return lat, long
 
+class RegexValidator(object):
+    def __init__(self, pattern=None):
+        self.pattern = pattern
+
+    def validate(self, text):
+        if re.match(self.pattern, text):
+            return text
+        raise RegexMismatchException(self.pattern)
+
+    def _to_json(self):
+        return {
+            '_class':'RegexValidator',
+            'pattern': self.pattern
+        }
+
 def validator_factory(constraints_json):
     constraints = []
     for constraint_json in constraints_json:

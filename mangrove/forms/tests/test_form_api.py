@@ -86,3 +86,27 @@ class TestFormAPI(unittest.TestCase):
         self.assertTrue(form(data={'name':'foo'}).is_valid())
         self.assertFalse(form(data={'name':'foobar'}).is_valid())
 
+    def test_should_add_multiple_validators(self):
+        dct = {
+            'code': "reg",
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default": "",
+                "required": True,
+                "validators": [
+                        {'_class': 'TextLengthValidator',
+                         'min': 2,
+                         'max': 5},
+                        {'_class': 'RegexValidator',
+                         'pattern': "^[A-Za-z0-9]+$"}
+                ]
+            }]
+        }
+        Form = forms.Form.build_from_dct(dct)
+        form = Form()
+        self.assertEqual(2,len(form.fields['name'].validators))
+        self.assertTrue(Form(data={'name':'foo'}).is_valid())
+        self.assertFalse(Form(data={'name':'foo.'}).is_valid())

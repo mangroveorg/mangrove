@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
+from forms.validators import RegexValidator
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
@@ -166,6 +167,22 @@ class TestLocationValidator(unittest.TestCase):
         # the string is '49.418607\u200e'
         self.assertEqual((90.0, 49.418607), constraint.validate("90 ", u'49.418607‎'))
         self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎', " 130  "))
+
+class TestRegexValidators(unittest.TestCase):
+    def test_should_validate_values_within_regex(self):
+        validator = RegexValidator("^[A-Za-z0-9]+$")
+        self.assertEqual("Hello1", validator.validate("Hello1"))
+
+    def test_should_throw_error_on_invalid_value(self):
+        validator = RegexValidator("^[A-Za-z0-9]+$")
+        with self.assertRaises(RegexMismatchException):
+            validator.validate("Hello 1")
+
+    def test_should_return_valid_regex_json(self):
+        pattern = "^[A-Za-z0-9]+$"
+        validator = RegexValidator(pattern)
+        self.assertEqual({"_class": "RegexValidator", "pattern": pattern}, validator._to_json())
+
 
 class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_a_constraint_dictionary(self):

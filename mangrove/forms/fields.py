@@ -1,4 +1,3 @@
-from mangrove.forms.validators import validator_factory
 from mangrove.forms import validators
 
 class Field(object):
@@ -23,7 +22,7 @@ class Field(object):
     @classmethod
     def build_from_dct(cls, dct):
         field_class_name = dct.pop('_class')
-        dct['validators'] = validator_factory(dct.get('validators') or [])
+        dct['validators'] = validators.validator_factory(dct.get('validators') or [])
         field = type(field_class_name, (eval(field_class_name),Field,), {})(**dct)
         return field
 

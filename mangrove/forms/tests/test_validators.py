@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from forms.validators import RegexValidator
+from mangrove.forms.validators import RegexValidator
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError

@@ -134,3 +134,28 @@ class TestFormAPI(unittest.TestCase):
         form = Form(data={'name':'foo'})
         self.assertTrue(form.is_valid())
         self.assertEqual({'name':'foo'}, form.cleaned_data)
+
+    def test_should_not_have_cleaned_data_after_incorrect_validation(self):
+        dct = {
+            'code': "reg",
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default": "",
+                "required": True,
+                "validators": [
+                        {'_class': 'TextLengthValidator',
+                         'min': 2,
+                         'max': 5},
+                        {'_class': 'RegexValidator',
+                         'pattern': "^[A-Za-z0-9]+$"}
+                ]
+            }]
+        }
+        Form = forms.Form.build_from_dct(dct)
+        form = Form(data={'name':'foo.'})
+        self.assertFalse(form.is_valid())
+        with self.assertRaises(AttributeError):
+            foo = form.cleaned_data

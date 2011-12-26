@@ -2,12 +2,11 @@
 
 import unittest
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, GeoCodeFormatException
-from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory, RegexValidator, SequenceValidator
+from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory, RegexValidator, SequenceValidator, TelephoneNumberValidator
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
 class TestIntegerValidators(unittest.TestCase):
-
     def test_should_return_min_max_as_dictionary_for_integer(self):
         validator = NumericRangeValidator(min=10, max=20)
         self.assertEqual({'_class': 'NumericRangeValidator', "min": 10, "max": 20}, validator._to_json())
@@ -18,7 +17,7 @@ class TestIntegerValidators(unittest.TestCase):
 
     def test_should_return_min_as_dictionary(self):
         constraint = NumericRangeValidator(min=1)
-        self.assertEqual({'_class': 'NumericRangeValidator',"min": 1}, constraint._to_json())
+        self.assertEqual({'_class': 'NumericRangeValidator', "min": 1}, constraint._to_json())
 
     def test_should_return_empty_dict_for_empty_integer_constraint(self):
         constraint = NumericRangeValidator() #First off there should not be an empty NumericConstraint
@@ -50,14 +49,14 @@ class TestIntegerValidators(unittest.TestCase):
 class TestTextValidator(unittest.TestCase):
     def test_should_return_min_max_as_dictionary_for_integer(self):
         actual_dict = (TextLengthValidator(min=10, max=20))._to_json()
-        self.assertEqual({'_class':'TextLengthValidator', "min": 10, "max": 20}, actual_dict)
+        self.assertEqual({'_class': 'TextLengthValidator', "min": 10, "max": 20}, actual_dict)
 
     def test_should_return_max_as_dictionary(self):
         actual_dict = (TextLengthValidator(max=20))._to_json()
-        self.assertEqual({'_class':'TextLengthValidator', 'max': 20}, actual_dict)
+        self.assertEqual({'_class': 'TextLengthValidator', 'max': 20}, actual_dict)
 
     def test_should_return_min_as_dictionary(self):
-        self.assertEqual({'_class': 'TextLengthValidator','min': 1}, (TextLengthValidator(min=1))._to_json())
+        self.assertEqual({'_class': 'TextLengthValidator', 'min': 1}, (TextLengthValidator(min=1))._to_json())
 
     def test_should_return_empty_dict_for_empty_text_constraint(self):
         self.assertEqual({'_class': 'TextLengthValidator'}, (TextLengthValidator())._to_json())
@@ -105,13 +104,13 @@ class TestChoiceValidator(unittest.TestCase):
     def test_should_not_validate_numeric_values_sent_for_choice(self):
         with self.assertRaises(AnswerNotInListException):
             constraint = ChoiceValidator(single_select_constraint=False,
-                                          list_of_valid_choices=["village", "urban", "city", "country"])
+                                         list_of_valid_choices=["village", "urban", "city", "country"])
             constraint.validate("1b", "Q1")
 
     def test_should_invalidate_special_characters_sent_for_choice(self):
         with self.assertRaises(AnswerNotInListException):
             constraint = ChoiceValidator(single_select_constraint=False,
-                                          list_of_valid_choices=["village", "urban", "city", "country"])
+                                         list_of_valid_choices=["village", "urban", "city", "country"])
             constraint.validate("a!b", "Q1")
 
 
@@ -165,12 +164,13 @@ class TestLocationValidator(unittest.TestCase):
         constraint = GeoCodeValidator()
         # the string is '49.418607\u200e'
         self.assertEqual((90.0, 49.418607), constraint.validate("90 " + u'49.418607‎'))
-        self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎'+ " 130  "))
+        self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎' + " 130  "))
 
     def test_should_raise_exception_if_only_either_of_lat_lng_is_submitted(self):
         constraint = GeoCodeValidator()
         with self.assertRaises(GeoCodeFormatException):
             constraint.validate("23")
+
 
 class TestRegexValidators(unittest.TestCase):
     def test_should_validate_values_within_regex(self):
@@ -191,8 +191,8 @@ class TestRegexValidators(unittest.TestCase):
 class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_a_constraint_dictionary(self):
         constraint_info = [
-            {"_class":"NumericRangeValidator","min": 10, "max": 20},
-            {"_class":"TextLengthValidator","min": 10, "max": 20}
+                {"_class": "NumericRangeValidator", "min": 10, "max": 20},
+                {"_class": "TextLengthValidator", "min": 10, "max": 20}
         ]
         constraints = validator_factory(constraint_info)
         self.assertEqual(2, len(constraints))
@@ -202,12 +202,22 @@ class TestCreationOfConstraints(unittest.TestCase):
         constraints = validator_factory(constraint_info)
         self.assertEqual([], constraints)
 
-class TestSequenceValidator(unittest.TestCase):
 
+class TestSequenceValidator(unittest.TestCase):
     def test_should_return_value_if_sequence(self):
         self.assertEqual(["a", "b", "c"], SequenceValidator().validate(["a", "b", "c"]))
-        
+
     def test_should_raise_exception_if_value_is_not_seq(self):
         with self.assertRaises(Exception):
             SequenceValidator().validate("ddsdw")
+
+
+class TestTelephoneNumberValidator(unittest.TestCase):
+    def test_telephone_number_should_clean_before_validate(self):
+        self.assertEqual(u'266123321435', TelephoneNumberValidator().validate(u'2.66123321435e+11'))
+        self.assertEqual(u'266123321435', TelephoneNumberValidator().validate(u'266-123321435'))
+        self.assertEqual(u'266123321435', TelephoneNumberValidator().validate(u'266123321435.0'))
+
+    def test_telephone_number_should_not_trim_the_leading_zeroes(self):
+        self.assertEqual(u'020', TelephoneNumberValidator().validate(u'020'))
         

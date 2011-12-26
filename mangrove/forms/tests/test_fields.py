@@ -1,9 +1,7 @@
 import unittest
-from mangrove.errors.MangroveException import GeoCodeFormatException
-from mangrove.forms.fields import GeoCodeField
+from mangrove.forms.fields import Field, TelephoneNumberField, HierarchyField, TextField, GeoCodeField
+from mangrove.errors.MangroveException import GeoCodeFormatException, RegexMismatchException
 from mangrove.forms.validators import TextLengthValidator, RegexValidator
-from mangrove.forms.fields import HierarchyField
-from mangrove.forms.fields import TextField
 
 class TestTextField(unittest.TestCase):
     def test_create_text_field(self):
@@ -84,3 +82,68 @@ class TestLocationField(unittest.TestCase):
         self.assertEqual(([exception.message], ""),field.validate(""))
         self.assertEqual(([exception.message], ""),field.validate(None))
 
+class TestTelephoneNumberField(unittest.TestCase):
+
+    def test_telephone_number_field_should_return_expected_json(self):
+        mobile_number_length = TextLengthValidator(max=15)
+        mobile_number_pattern = RegexValidator('^[0-9]+$')
+        field = TelephoneNumberField(name="test", code='MC', label='question',
+                                     validators=[mobile_number_length, mobile_number_pattern])
+        expected_json = {
+            "label": "question",
+            "name": "test",
+            "code": "MC",
+            "instruction": "",
+            "validators": [
+                    {
+                    '_class': 'TextLengthValidator',
+                    'max': 15},
+                    {
+                    '_class': 'RegexValidator',
+                    'pattern': '^[0-9]+$'}],
+            "required": False,
+            "_class": "TelephoneNumberField"
+        }
+        self.assertEqual(expected_json, field.to_json())
+
+    def test_should_create_telephone_number_field_from_dictionary(self):
+        field_json = {
+            "label": "test",
+            "name": "field1_Name",
+            "code": "Q1",
+            "validators": [{'_class': 'TextLengthValidator', "min": 1, "max": 10}, {
+                '_class': 'RegexValidator',
+                'pattern': '^[0-9]+$'}],
+            "instruction": "some instruction",
+            "required": False,
+            "_class": "TelephoneNumberField"
+        }
+        field = Field.build_from_dct(field_json)
+
+        self.assertIsInstance(field, TelephoneNumberField)
+        self.assertIsInstance(field.validators[0], TextLengthValidator)
+        self.assertIsInstance(field.validators[1], RegexValidator)
+        self.assertEqual(field.validators[0].max, 10)
+        self.assertEqual(field.validators[0].min, 1)
+        self.assertEqual(field.label, "test")
+        self.assertEqual(field.instruction, "some instruction")
+        self.assertFalse(field.required)
+
+    def test_telephone_number_should_clean_value_to_remove_only_hyphen_from_the_given_value(self):
+        pattern = '^[0-9]+$'
+        field = TelephoneNumberField(name="test", code='MC', label='question',
+                                     validators=[(TextLengthValidator(max=15)), (RegexValidator(pattern))])
+
+        self.assertEqual(([], '1234321122'), field.validate('123-4321122'))
+        self.assertEqual(([RegexMismatchException(pattern).message], '123dsasa4321122'), field.validate('123dsasa4321122'))
+
+    def test_should_convert_text_in_epsilon_format_to_expanded_text(self):
+        field = TelephoneNumberField(name="test", code='MC', label='question',
+                                     validators=[(TextLengthValidator(max=15)), (RegexValidator('^[0-9]+$'))])
+        self.assertEqual(([], u'266123321435'), field.validate(u'2.66123321435e+11'))
+
+    def test_should_raise_regex_mismatch_exception_if_invalid_phone_number(self):
+        pattern = '^[0-9]+$'
+        field = TelephoneNumberField(name="test", code='MC', label='question',
+                                     validators=[(TextLengthValidator(max=15)), (RegexValidator(pattern))],)
+        self.assertEqual(([RegexMismatchException(pattern).message], u'020321dsa'), field.validate(u'020321dsa'))

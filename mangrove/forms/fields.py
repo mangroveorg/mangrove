@@ -1,3 +1,4 @@
+from mangrove.forms.validators import TelephoneNumberValidator
 from mangrove.forms.validators import GeoCodeValidator
 from mangrove.forms.validators import SequenceValidator
 from mangrove.forms import validators
@@ -19,14 +20,14 @@ class Field(object):
 
     def validate(self, value):
         errors = []
+        if is_empty(value) and self.required:
+            return list(self.default_validator_messages['required']), value
         for validator in self.validators:
             try:
                 value =validator.validate(value)
             except Exception as ex:
                 errors.append(ex.message)
 
-        if is_empty(value) and self.required:
-            errors.append(self.default_validator_messages['required'])
         return errors, value
 
     def to_json(self):
@@ -90,3 +91,14 @@ class GeoCodeField(Field):
         except Exception as ex:
             errors.append(ex.message)
         return errors, value
+
+class TelephoneNumberField(Field):
+    default_validators = []
+    def __init__(self, name, code, label, instruction="", required=False, validators=default_validators):
+        Field.__init__(self, name=name, code=code, label=label,
+                           instruction=instruction, validators=validators, required=required)
+
+    def validate(self, value):
+        value = TelephoneNumberValidator().validate(value)
+        return Field.validate(self, value)
+

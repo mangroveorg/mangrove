@@ -127,3 +127,29 @@ def validator_factory(constraints_json):
         constraint_class = constraint_json.pop('_class')
         constraints.append(type(constraint_class, (eval(constraint_class),), {})(**constraint_json))
     return constraints
+
+class TelephoneNumberValidator(object):
+
+    def _strip_decimals(self, number_as_given):
+        return unicode(long(number_as_given))
+
+    def _clean_epsilon_format(self, value):
+        if value.startswith('0'):
+            return value
+        try:
+            value = self._strip_decimals(is_float(value))
+        except Exception:
+            pass
+        return value
+
+    def _clean_digits(self, value):
+        if value is not None:
+            return "".join([num for num in value if num != '-'])
+        return value
+
+    def validate(self, value):
+        value = self._clean_epsilon_format(value)
+        return self._clean_digits(value)
+
+    def _to_json(self):
+        return {'_class': self.__class__.__name__}

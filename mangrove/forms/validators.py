@@ -6,8 +6,6 @@ from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHa
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 from mangrove.utils.types import is_sequence
 
-EMPTY_VALUES = (None, '', [], (), {})
-
 class NumericRangeValidator(object):
     MAX = "max"
     MIN = "min"
@@ -16,7 +14,7 @@ class NumericRangeValidator(object):
         self.max = max
 
     def _to_json(self):
-        dict = {'_class': 'NumericRangeValidator'}
+        dict = {'_class': self.__class__.__name__}
         if self.min is not None:
             dict[self.MIN] = self.min
         if self.max is not None:
@@ -24,15 +22,12 @@ class NumericRangeValidator(object):
         return dict
 
     def validate(self, value):
-        if is_float(value, min=self.min, max=self.max):
-            return is_float(value, min=self.min, max=self.max)
-        else:
-            raise MangroveException
+        return is_float(value, min=self.min, max=self.max)
 
 
 class TextLengthValidator(NumericRangeValidator):
     def _to_json(self):
-        dict = {'_class': 'TextLengthValidator'}
+        dict = {'_class': self.__class__.__name__}
         if self.min is not None:
             dict[self.MIN] = self.min
         if self.max is not None:
@@ -40,11 +35,7 @@ class TextLengthValidator(NumericRangeValidator):
         return dict
 
     def validate(self, value):
-        if is_string(value.strip(), min=self.min, max=self.max):
-            return is_string(value.strip(), min=self.min, max=self.max)
-        else:
-            raise MangroveException
-
+        return is_string(value.strip(), min=self.min, max=self.max)
 
 class ChoiceValidator(object):
 
@@ -81,7 +72,7 @@ class GeoCodeValidator(object):
     MAX_LAT = 90
 
     def _to_json(self):
-        return {'_class':'GeoCodeValidator'}
+        return {'_class':self.__class__.__name__}
     
     def validate(self, latitude, longitude):
         latitude=latitude.encode('ascii','ignore')
@@ -111,7 +102,7 @@ class RegexValidator(object):
 
     def _to_json(self):
         return {
-            '_class':'RegexValidator',
+            '_class':self.__class__.__name__,
             'pattern': self.pattern
         }
 
@@ -124,7 +115,7 @@ class SequenceValidator(object):
 
     def _to_json(self):
         return {
-            '_class': 'SequenceValidator'
+            '_class': self.__class__.__name__
         }
 def validator_factory(constraints_json):
     constraints = []

@@ -20,6 +20,7 @@ def form_by_code(dbm, code):
 
 def _get_declared_fields(bases, attrs):
     fields = [(field_name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
+    fields.sort(key = lambda x: x[1].creation_counter)
 
     for base in bases[::-1]:
         if hasattr(base, 'base_fields'):
@@ -52,20 +53,22 @@ class BaseForm(object):
         self.data = data or {}
         self.fields = deepcopy(self.base_fields)
 
-    @property
-    def errors(self):
+    def _errors(self):
         _errors = []
         _cleaned_data = []
         for name, field in self.fields.items():
             errors, value = field.validate(self.data.get(name))
+            if (not errors) and (not value) and (not field.required): continue
             _errors.append((name, errors)) if errors else _cleaned_data.append((name, value))
         
         if not _errors:
             setattr(self, 'cleaned_data', OrderedDict(_cleaned_data))
+        else:
+            setattr(self, 'errors', OrderedDict(_errors))
         return OrderedDict(_errors)
 
     def is_valid(self):
-        return self.is_bound and not bool(self.errors)
+        return self.is_bound and not bool(self._errors())
 
     def __getitem__(self, name):
         field = self.fields[name]

@@ -79,7 +79,7 @@ class TestFormPersistence(MangroveTestCase):
         self.assertTrue(isinstance(form2.fields['fathers_name'].validators[0], TextLengthValidator))
         self.assertFalse(Form(data={'fathers_name':'foo.'}).is_valid())
 
-    def test_save_and_retreive_declared_classes(self):
+    def test_save_and_retrieve_declared_classes(self):
         class FooForm(forms.Form):
             code = "bar"
             name = TextField("foo", "f", instruction="What is foo?")

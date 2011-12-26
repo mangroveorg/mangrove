@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from mangrove.forms.forms import form_by_code
 from mangrove.form_model.form_model import REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.contrib.registration_form import create_default_registration_form
@@ -29,7 +30,10 @@ class TestRegistrationFormModel(MangroveTestCase):
     def test_registration_form_validate_submission(self):
         create_default_registration_form(self.manager)
         Form = form_by_code(self.manager, "reg")
-        self.assertTrue(Form(data={"s": "1", "t": ["Reporter"], "g": "1 1", "m": "1212121212", "n":"foo"}).is_valid())
+        form = Form(data={"s": "1", "t": ["Reporter"], "g": "1 1", "m": "1212121212", "n":"foo"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(OrderedDict([('g', (1.0, 1.0)), ('m', u'1212121212'), ('n', 'foo'), ('s', '1'), ('t', ['Reporter'])]),
+                         form.cleaned_data)
         
     def test_registration_form_invalid_submission(self):
         create_default_registration_form(self.manager)

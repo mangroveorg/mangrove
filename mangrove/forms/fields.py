@@ -6,6 +6,7 @@ from mangrove.utils.types import is_empty
 
 class Field(object):
 
+    creation_counter = 0
     default_validator_messages = {
         'required': "This field is required.",
         'invalid': "Enter a valid value",
@@ -16,6 +17,8 @@ class Field(object):
         self.validators = validators
         self.instruction = instruction
         self.required = required
+        self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
 
     def validate(self, value):
         errors = []

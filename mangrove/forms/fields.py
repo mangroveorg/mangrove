@@ -10,8 +10,7 @@ class Field(object):
         'required': "This field is required.",
         'invalid': "Enter a valid value",
     }
-    def __init__(self, name, code, label, validators, instruction, required):
-        self.name = name
+    def __init__(self, code, label, validators, instruction, required):
         self.code = code
         self.label = label
         self.validators = validators
@@ -35,7 +34,6 @@ class Field(object):
         for validator in self.validators:
             validators_json.append(validator._to_json())
         return {'_class': self.__class__.__name__,
-                'name': self.name,
                 'code': self.code,
                 'label': self.label,
                 'required': self.required,
@@ -54,8 +52,8 @@ class TextField(Field):
     
     default_constraints = []
 
-    def __init__(self, name, code, label, validators=default_constraints, instruction="", default="", required=False):
-        Field.__init__(self, name, code, label, validators, instruction, required)
+    def __init__(self, code, label, validators=default_constraints, instruction="", default="", required=False):
+        Field.__init__(self, code, label, validators, instruction, required)
         self.default = default
         self.required = required
 
@@ -66,8 +64,8 @@ class TextField(Field):
 
 class HierarchyField(Field):
     default_constraints = []
-    def __init__(self, name, code, label, validators=default_constraints, instruction=None,required=False):
-        Field.__init__(self, name=name, code=code, label=label, instruction=instruction,required=required, validators=validators)
+    def __init__(self, code, label, validators=default_constraints, instruction=None,required=False):
+        Field.__init__(self, code=code, label=label, instruction=instruction,required=required, validators=validators)
 
     def validate(self, value):
         errors, value = Field.validate(self,value)
@@ -78,8 +76,8 @@ class HierarchyField(Field):
         return errors, value
 
 class GeoCodeField(Field):
-    def __init__(self, name, code, label, instruction="",required=False):
-        Field.__init__(self, name=name, code=code,
+    def __init__(self, code, label, instruction="",required=False):
+        Field.__init__(self, code=code,
                        label=label, instruction=instruction,required=required, validators=[])
 
     def validate(self, value):
@@ -94,8 +92,8 @@ class GeoCodeField(Field):
 
 class TelephoneNumberField(Field):
     default_validators = []
-    def __init__(self, name, code, label, instruction="", required=False, validators=default_validators):
-        Field.__init__(self, name=name, code=code, label=label,
+    def __init__(self, code, label, instruction="", required=False, validators=default_validators):
+        Field.__init__(self, code=code, label=label,
                            instruction=instruction, validators=validators, required=required)
 
     def validate(self, value):

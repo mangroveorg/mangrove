@@ -5,7 +5,7 @@ class FormDocument(DocumentBase):
     name = TextField()
     code = TextField()
     state = TextField()
-    fields = ListField(DictField())
+    fields = DictField()
     metadata = DictField()
     
     def __init__(self, **args):
@@ -13,15 +13,15 @@ class FormDocument(DocumentBase):
         self.name = args.get('name') or ""
         self.code = args.get('code') or ""
         self.state = args.get('state') or ""
-        self.fields = args.get('fields') or []
+        self.fields = args.get('fields') or {}
         if args.get('metadata'):
             self.metadata = args.get('metadata')
 
     @classmethod
     def save(cls, form, dbm):
-        fields_dct = []
-        for field in form.fields.values():
-            fields_dct.append(field.to_json())
+        fields_dct = {}
+        for name, field in form.fields.items():
+            fields_dct[name] = field.to_json()
         dct = {
             '_id': form.uuid,
             'name': form.name,

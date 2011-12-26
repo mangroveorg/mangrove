@@ -19,7 +19,7 @@ def form_by_code(dbm, code):
     return form
 
 def _get_declared_fields(bases, attrs):
-    fields = [(obj.name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
+    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
 
     for base in bases[::-1]:
         if hasattr(base, 'base_fields'):
@@ -49,9 +49,9 @@ class BaseForm(object):
     def errors(self):
         _errors = []
         _cleaned_data = []
-        for field in self.fields.values():
-            errors, value = field.validate(self.data.get(field.name))
-            _errors.append((field.name, errors)) if errors else _cleaned_data.append((field.name, value))
+        for name, field in self.fields.items():
+            errors, value = field.validate(self.data.get(name))
+            _errors.append((name, errors)) if errors else _cleaned_data.append((name, value))
         
         if not _errors:
             setattr(self, 'cleaned_data', OrderedDict(_cleaned_data))
@@ -76,12 +76,12 @@ class Form(BaseForm):
     def build_from_dct(cls, dct):
         dct['uuid'] = dct.pop('_id') if '_id' in dct.keys() else None
         dct['code'] = dct.pop('code')
-        fields = dct.pop('fields') if dct.get('fields') else []
+        fields = dct.pop('fields') if dct.get('fields') else {}
         metadata = dct.pop('metadata') if dct.get('metadata') else {}
         field_classes = []
-        for field_json in fields:
+        for field_name, field_json in fields.items():
             field = Field.build_from_dct(field_json)
-            field_classes.append((field.name, field))
+            field_classes.append((field_name, field))
         dct['base_fields'] = OrderedDict(field_classes)
         dct['_metadata'] = metadata
         for key, value in metadata.items():

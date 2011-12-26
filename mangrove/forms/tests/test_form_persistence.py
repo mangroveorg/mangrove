@@ -15,9 +15,8 @@ class TestFormPersistence(MangroveTestCase):
             'code': "reg",
             'name': "random_registration_form",
             'state': 'Test',
-            'fields': [{
+            'fields': {'name':{
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default": "",
@@ -29,7 +28,7 @@ class TestFormPersistence(MangroveTestCase):
                         'max': 5
                     }
                 ]
-            }],
+            }},
             'metadata': {
                 'is_registration': True,
                 'entity_type': 'Clinic'
@@ -45,10 +44,9 @@ class TestFormPersistence(MangroveTestCase):
             'code': "reg",
             'name': "random_registration_form",
             'state': 'Test',
-            'fields': [{
+            'fields': {'fathers_name': {
                 '_class': "TextField",
-                'name': "name",
-                "code": "na",
+                "code": "fn",
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
@@ -63,7 +61,7 @@ class TestFormPersistence(MangroveTestCase):
                         'pattern': "^[A-Za-z0-9]+$"
                     }
                 ]
-            }],
+            }},
             'metadata': {
                 'is_registration': True,
                 'entity_type': 'Clinic'
@@ -79,7 +77,7 @@ class TestFormPersistence(MangroveTestCase):
         self.assertEqual(form1.code, form2.code)
         self.assertEqual(form1.state, form2.state)
         self.assertEqual(len(form1.fields), len(form2.fields))
-        self.assertEqual(len(form1.fields['name'].validators), len(form2.fields['name'].validators))
-        self.assertTrue(isinstance(form2.fields['name'].validators[0], TextLengthValidator))
-        self.assertFalse(Form(data={'name':'foo.'}).is_valid())
+        self.assertEqual(len(form1.fields['fathers_name'].validators), len(form2.fields['fathers_name'].validators))
+        self.assertTrue(isinstance(form2.fields['fathers_name'].validators[0], TextLengthValidator))
+        self.assertFalse(Form(data={'fathers_name':'foo.'}).is_valid())
 

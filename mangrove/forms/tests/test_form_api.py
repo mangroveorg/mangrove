@@ -22,13 +22,15 @@ class TestFormAPI(unittest.TestCase):
     def test_create_new_form_from_dct(self):
         dct = {
             'code': "reg",
-            'fields': [{
-                '_class': "TextField",
-                'name': "name",
-                "code": "na",
-                "label": "What is the name?",
-                "default":"",
-            }]
+            'fields': {
+                'name':
+                        {
+                            '_class': "TextField",
+                            "code": "na",
+                            "label": "What is the name?",
+                            "default": ""
+                        }
+            }
         }
         form = forms.Form.build_from_dct(dct)
         self.assertEqual(1, len(form().fields))
@@ -37,14 +39,13 @@ class TestFormAPI(unittest.TestCase):
     def test_get_hold_of_field_from_form(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {'name': {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
                 "required":True
-            }]
+            }}
         }
         form = forms.Form.build_from_dct(dct)
         self.assertEqual("na", form()['name'].code)
@@ -53,14 +54,13 @@ class TestFormAPI(unittest.TestCase):
     def test_validate_submission_with_no_constraints_added(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {"name": {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
                 "required":True
-            }]
+            }}
         }
         form = forms.Form.build_from_dct(dct)
         self.assertFalse(form(data={}).is_valid())
@@ -68,9 +68,9 @@ class TestFormAPI(unittest.TestCase):
     def test_validate_submission_with_length_constraint_added(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {
+                "name": {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
@@ -80,7 +80,8 @@ class TestFormAPI(unittest.TestCase):
                      'min':2,
                      'max':5}
                 ]
-            }]
+                }
+            }
         }
         form = forms.Form.build_from_dct(dct)
         self.assertTrue(form(data={'name':'foo'}).is_valid())
@@ -89,9 +90,8 @@ class TestFormAPI(unittest.TestCase):
     def test_should_add_multiple_validators(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {'name': {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default": "",
@@ -103,7 +103,7 @@ class TestFormAPI(unittest.TestCase):
                         {'_class': 'RegexValidator',
                          'pattern': "^[A-Za-z0-9]+$"}
                 ]
-            }]
+            }}
         }
         Form = forms.Form.build_from_dct(dct)
         form = Form()
@@ -114,9 +114,8 @@ class TestFormAPI(unittest.TestCase):
     def test_should_have_cleaned_data_after_validation(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {"name": {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default": "",
@@ -128,7 +127,7 @@ class TestFormAPI(unittest.TestCase):
                         {'_class': 'RegexValidator',
                          'pattern': "^[A-Za-z0-9]+$"}
                 ]
-            }]
+            }}
         }
         Form = forms.Form.build_from_dct(dct)
         form = Form(data={'name':'foo'})
@@ -138,9 +137,8 @@ class TestFormAPI(unittest.TestCase):
     def test_should_not_have_cleaned_data_after_incorrect_validation(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {"name": {
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default": "",
@@ -152,7 +150,7 @@ class TestFormAPI(unittest.TestCase):
                         {'_class': 'RegexValidator',
                          'pattern': "^[A-Za-z0-9]+$"}
                 ]
-            }]
+            }}
         }
         Form = forms.Form.build_from_dct(dct)
         form = Form(data={'name':'foo.'})
@@ -163,14 +161,13 @@ class TestFormAPI(unittest.TestCase):
     def test_should_create_meta_class_from_metadata(self):
         dct = {
             'code': "reg",
-            'fields': [{
+            'fields': {"name":{
                 '_class': "TextField",
-                'name': "name",
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
                 "required":True
-            }],
+            }},
             "metadata":{
                 "registration": False,
                 "entity_type": "reporter"

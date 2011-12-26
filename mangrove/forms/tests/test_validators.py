@@ -1,9 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.forms.validators import RegexValidator
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
-from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory
+from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory, RegexValidator, SequenceValidator
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
 
@@ -197,4 +196,13 @@ class TestCreationOfConstraints(unittest.TestCase):
         constraint_info = []
         constraints = validator_factory(constraint_info)
         self.assertEqual([], constraints)
+
+class TestSequenceValidator(unittest.TestCase):
+
+    def test_should_return_value_if_sequence(self):
+        self.assertEqual(["a", "b", "c"], SequenceValidator().validate(["a", "b", "c"]))
+        
+    def test_should_raise_exception_if_value_is_not_seq(self):
+        with self.assertRaises(Exception):
+            SequenceValidator().validate("ddsdw")
         

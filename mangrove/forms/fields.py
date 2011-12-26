@@ -1,4 +1,6 @@
+from mangrove.forms.validators import SequenceValidator
 from mangrove.forms import validators
+from mangrove.utils.types import is_empty
 
 class Field(object):
 
@@ -15,9 +17,29 @@ class Field(object):
         self.required = required
 
     def validate(self, value):
-        if value in validators.EMPTY_VALUES and self.required:
-            return [self.default_validator_messages['required']]
-        return []
+        errors = []
+        for validator in self.validators:
+            try:
+                value =validator.validate(value)
+            except Exception as ex:
+                errors.append(ex.message)
+
+        if is_empty(value) and self.required:
+            errors.append(self.default_validator_messages['required'])
+        return errors, value
+
+    def to_json(self):
+        validators_json = []
+        for validator in self.validators:
+            validators_json.append(validator._to_json())
+        return {'_class': self.__class__.__name__,
+                'name': self.name,
+                'code': self.code,
+                'label': self.label,
+                'required': self.required,
+                'instruction': self.instruction,
+                'validators': validators_json}
+
 
     @classmethod
     def build_from_dct(cls, dct):
@@ -30,29 +52,25 @@ class TextField(Field):
     
     default_constraints = []
 
-    def __init__(self, name, code, label, validators=default_constraints, instruction=None, default="", required=False):
+    def __init__(self, name, code, label, validators=default_constraints, instruction="", default="", required=False):
         Field.__init__(self, name, code, label, validators, instruction, required)
         self.default = default
         self.required = required
 
     def to_json(self):
-        validators_json = []
-        for validator in self.validators:
-            validators_json.append(validator._to_json())
-        return {'_class': 'TextField',
-                'name': self.name,
-                'code': self.code,
-                'label': self.label,
-                'default': self.default,
-                'required': self.required,
-                'validators': validators_json}
+        _json = Field.to_json(self)
+        _json['default'] = self.default
+        return _json
 
+class HierarchyField(Field):
+    default_constraints = []
+    def __init__(self, name, code, label, validators=default_constraints, instruction=None,required=False):
+        Field.__init__(self, name=name, code=code, label=label, instruction=instruction,required=required, validators=validators)
 
     def validate(self, value):
-        errors = Field.validate(self,value)
-        for validators in self.validators:
-            try:
-                value =validators.validate(value)
-            except Exception as ex:
-                errors.append(ex.message)
+        errors, value = Field.validate(self,value)
+        try:
+            value = SequenceValidator().validate(value)
+        except Exception as ex:
+            errors.append(ex.message)
         return errors, value

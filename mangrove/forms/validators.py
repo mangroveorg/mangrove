@@ -4,6 +4,7 @@ from mangrove.errors.MangroveException import MangroveException
 
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
+from mangrove.utils.types import is_sequence
 
 EMPTY_VALUES = (None, '', [], (), {})
 
@@ -114,6 +115,17 @@ class RegexValidator(object):
             'pattern': self.pattern
         }
 
+class SequenceValidator(object):
+
+    def validate(self, value):
+        if is_sequence(value):
+            return value
+        raise Exception("The value should be a sequence")
+
+    def _to_json(self):
+        return {
+            '_class': 'SequenceValidator'
+        }
 def validator_factory(constraints_json):
     constraints = []
     for constraint_json in constraints_json:

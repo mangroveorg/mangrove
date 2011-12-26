@@ -16,6 +16,7 @@ class TestTextField(unittest.TestCase):
                           "default": "",
                           "instruction": "",
                           "required":False,
+                          'creation_counter': 0,
                           "validators": []
                           }, f.to_json())
 
@@ -37,6 +38,7 @@ class TestHierarchyField(unittest.TestCase):
             "instruction": "Answer is list",
             "code": "Q1",
             "required":False,
+            'creation_counter': 0,
             "validators": []
             }
         field = HierarchyField(code="Q1", label="What is your location", instruction="Answer is list")
@@ -56,6 +58,7 @@ class TestLocationField(unittest.TestCase):
             "_class": "GeoCodeField",
             "required":False,
             "instruction": "test_instruction",
+            'creation_counter': 0,
             "validators": []
         }
         field = GeoCodeField(code="Q1", label="Where do you stay?", instruction="test_instruction", )
@@ -100,6 +103,7 @@ class TestTelephoneNumberField(unittest.TestCase):
                     '_class': 'RegexValidator',
                     'pattern': '^[0-9]+$'}],
             "required": False,
+            "creation_counter": 0,
             "_class": "TelephoneNumberField"
         }
         self.assertEqual(expected_json, field.to_json())
@@ -113,6 +117,7 @@ class TestTelephoneNumberField(unittest.TestCase):
                 'pattern': '^[0-9]+$'}],
             "instruction": "some instruction",
             "required": False,
+            "creation_counter":0,
             "_class": "TelephoneNumberField"
         }
         field = Field.build_from_dct(field_json)

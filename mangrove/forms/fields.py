@@ -18,7 +18,6 @@ class Field(object):
         self.instruction = instruction
         self.required = required
         self.creation_counter = Field.creation_counter
-        Field.creation_counter += 1
 
     def validate(self, value):
         errors = []
@@ -41,6 +40,7 @@ class Field(object):
                 'label': self.label,
                 'required': self.required,
                 'instruction': self.instruction,
+                'creation_counter': self.creation_counter,
                 'validators': validators_json}
 
 
@@ -48,7 +48,9 @@ class Field(object):
     def build_from_dct(cls, dct):
         field_class_name = dct.pop('_class')
         dct['validators'] = validators.validator_factory(dct.get('validators') or [])
+        creation_counter = dct.pop('creation_counter')
         field = type(field_class_name, (eval(field_class_name),Field,), {})(**dct)
+        field.creation_counter = creation_counter
         return field
 
 class TextField(Field):

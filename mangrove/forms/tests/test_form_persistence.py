@@ -23,6 +23,7 @@ class TestFormPersistence(MangroveTestCase):
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
+                "creation_counter": 0,
                 "validators": [
                         {
                         '_class': 'TextLengthValidator',
@@ -50,6 +51,7 @@ class TestFormPersistence(MangroveTestCase):
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
+                "creation_counter":0,
                 "validators": [
                         {
                         '_class': 'TextLengthValidator',

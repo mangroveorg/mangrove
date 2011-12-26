@@ -21,6 +21,7 @@ def form_by_code(dbm, code):
 def _get_declared_fields(bases, attrs):
     fields = [(field_name, attrs.pop(field_name)) for field_name, obj in attrs.items() if isinstance(obj, Field)]
     fields.sort(key = lambda x: x[1].creation_counter)
+    Field.creation_counter = 0
 
     for base in bases[::-1]:
         if hasattr(base, 'base_fields'):
@@ -92,6 +93,7 @@ class Form(BaseForm):
         for field_name, field_json in fields.items():
             field = Field.build_from_dct(field_json)
             field_classes.append((field_name, field))
+        field_classes.sort(key=lambda x :x[1].creation_counter)
         dct['base_fields'] = OrderedDict(field_classes)
         dct['_metadata'] = metadata
         for key, value in metadata.items():

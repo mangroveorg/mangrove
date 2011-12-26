@@ -28,7 +28,8 @@ class TestFormAPI(unittest.TestCase):
                             '_class': "TextField",
                             "code": "na",
                             "label": "What is the name?",
-                            "default": ""
+                            "default": "",
+                            "creation_counter": 0
                         }
             }
         }
@@ -44,7 +45,8 @@ class TestFormAPI(unittest.TestCase):
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
-                "required":True
+                "required":True,
+                "creation_counter":0
             }}
         }
         form = forms.Form.build_from_dct(dct)
@@ -59,7 +61,8 @@ class TestFormAPI(unittest.TestCase):
                 "code": "na",
                 "label": "What is the name?",
                 "default":"",
-                "required":True
+                "required":True,
+                "creation_counter":0
             }}
         }
         form = forms.Form.build_from_dct(dct)
@@ -75,6 +78,7 @@ class TestFormAPI(unittest.TestCase):
                 "label": "What is the name?",
                 "default":"",
                 "required":True,
+                "creation_counter":0,
                 "validators":[
                     {'_class':'TextLengthValidator',
                      'min':2,
@@ -96,6 +100,7 @@ class TestFormAPI(unittest.TestCase):
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
+                "creation_counter":0,
                 "validators": [
                         {'_class': 'TextLengthValidator',
                          'min': 2,
@@ -120,6 +125,7 @@ class TestFormAPI(unittest.TestCase):
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
+                "creation_counter":0,
                 "validators": [
                         {'_class': 'TextLengthValidator',
                          'min': 2,
@@ -143,6 +149,7 @@ class TestFormAPI(unittest.TestCase):
                 "label": "What is the name?",
                 "default": "",
                 "required": True,
+                "creation_counter":0,
                 "validators": [
                         {'_class': 'TextLengthValidator',
                          'min': 2,
@@ -165,6 +172,7 @@ class TestFormAPI(unittest.TestCase):
                 '_class': "TextField",
                 "code": "na",
                 "label": "What is the name?",
+                "creation_counter":0,
                 "default":"",
                 "required":True
             }},

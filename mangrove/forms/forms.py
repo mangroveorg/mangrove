@@ -48,11 +48,14 @@ class BaseForm(object):
     @property
     def errors(self):
         _errors = []
+        _cleaned_data = []
         for field in self.fields.values():
-            error = field.validate(self.data.get(field.name))
-            if error:
-                _errors.append((field.name, error))
-        return _errors
+            errors, value = field.validate(self.data.get(field.name))
+            _errors.append((field.name, errors)) if errors else _cleaned_data.append((field.name, value))
+        
+        if not _errors:
+            setattr(self, 'cleaned_data', OrderedDict(_cleaned_data))
+        return OrderedDict(_errors)
 
     def is_valid(self):
         return self.is_bound and not bool(self.errors)

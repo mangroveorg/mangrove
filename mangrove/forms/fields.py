@@ -53,7 +53,7 @@ class TextField(Field):
         errors = Field.validate(self,value)
         for validators in self.validators:
             try:
-                validators.validate(value)
+                value =validators.validate(value)
             except Exception as ex:
                 errors.append(ex.message)
-        return errors
+        return errors, value

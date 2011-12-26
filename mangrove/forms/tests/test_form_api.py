@@ -110,3 +110,27 @@ class TestFormAPI(unittest.TestCase):
         self.assertEqual(2,len(form.fields['name'].validators))
         self.assertTrue(Form(data={'name':'foo'}).is_valid())
         self.assertFalse(Form(data={'name':'foo.'}).is_valid())
+
+    def test_should_have_cleaned_data_after_validation(self):
+        dct = {
+            'code': "reg",
+            'fields': [{
+                '_class': "TextField",
+                'name': "name",
+                "code": "na",
+                "label": "What is the name?",
+                "default": "",
+                "required": True,
+                "validators": [
+                        {'_class': 'TextLengthValidator',
+                         'min': 2,
+                         'max': 5},
+                        {'_class': 'RegexValidator',
+                         'pattern': "^[A-Za-z0-9]+$"}
+                ]
+            }]
+        }
+        Form = forms.Form.build_from_dct(dct)
+        form = Form(data={'name':'foo'})
+        self.assertTrue(form.is_valid())
+        self.assertEqual({'name':'foo'}, form.cleaned_data)

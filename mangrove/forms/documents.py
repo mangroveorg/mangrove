@@ -3,7 +3,7 @@ from mangrove.datastore.documents import DocumentBase
 
 class FormDocument(DocumentBase):
     name = TextField()
-    form_code = TextField()
+    code = TextField()
     state = TextField()
     fields = ListField(DictField())
     metadata = DictField()
@@ -11,9 +11,9 @@ class FormDocument(DocumentBase):
     def __init__(self, **args):
         DocumentBase.__init__(self, args.get('_id'), document_type='FormModel')
         self.name = args.get('name') or ""
-        self.form_code = args.get('code') or ""
+        self.code = args.get('code') or ""
         self.state = args.get('state') or ""
-        self.json_fields = args.get('json_fields') or []
+        self.fields = args.get('fields') or []
         if args.get('metadata'):
             self.metadata = args.get('metadata')
 

@@ -10,7 +10,7 @@ from mangrove.utils.types import is_string
 def form_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
-    rows = dbm.load_all_rows_in_view('questionnaire', key=code)
+    rows = dbm.load_all_rows_in_view('form_by_code', key=code)
     if not len(rows):
         raise FormModelDoesNotExistsException(code)
 
@@ -72,7 +72,7 @@ class Form(BaseForm):
     @classmethod
     def build_from_dct(cls, dct):
         dct['uuid'] = dct.pop('_id') if '_id' in dct.keys() else None
-        dct['code'] = dct.pop('form_code')
+        dct['code'] = dct.pop('code')
         fields = dct.pop('fields') if dct.get('fields') else []
         metadata = dct.pop('metadata') if dct.get('metadata') else {}
         field_classes = []

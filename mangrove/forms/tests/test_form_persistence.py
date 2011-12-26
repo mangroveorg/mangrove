@@ -11,7 +11,7 @@ class TestFormPersistence(MangroveTestCase):
 
     def test_save_form_to_couch(self):
         dct = {
-            'form_code': "reg",
+            'code': "reg",
             'name': "random_registration_form",
             'state': 'Test',
             'fields': [{
@@ -41,7 +41,7 @@ class TestFormPersistence(MangroveTestCase):
 
     def test_read_form_to_couch(self):
         dct = {
-            'form_code': "reg",
+            'code': "reg",
             'name': "random_registration_form",
             'state': 'Test',
             'fields': [{
@@ -73,4 +73,5 @@ class TestFormPersistence(MangroveTestCase):
         self.assertEqual(form1.name, form2.name)
         self.assertEqual(form1.code, form2.code)
         self.assertEqual(form1.state, form2.state)
+        self.assertEqual(len(form1.fields), len(form2.fields))
 

@@ -1,3 +1,4 @@
+from mangrove.forms.validators import TextLengthValidator
 from mangrove.forms import forms
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
@@ -74,4 +75,6 @@ class TestFormPersistence(MangroveTestCase):
         self.assertEqual(form1.code, form2.code)
         self.assertEqual(form1.state, form2.state)
         self.assertEqual(len(form1.fields), len(form2.fields))
+        self.assertEqual(len(form1.fields['name'].validators), len(form2.fields['name'].validators))
+        self.assertTrue(isinstance(form2.fields['name'].validators[0], TextLengthValidator))
 

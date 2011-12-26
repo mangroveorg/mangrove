@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, GeoCodeFormatException
 from mangrove.forms.validators import NumericRangeValidator, TextLengthValidator, ChoiceValidator, GeoCodeValidator, validator_factory, RegexValidator, SequenceValidator
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -119,53 +119,58 @@ class TestLocationValidator(unittest.TestCase):
     def test_latitude_and_longitude_is_float(self):
         constraint = GeoCodeValidator()
         expected_response = (90.0, 130.0)
-        actual_response = constraint.validate("90", "130")
+        actual_response = constraint.validate("90 130")
         self.assertEqual(expected_response, actual_response)
 
     def test_should_invalidate_non_float_latitude(self):
         with self.assertRaises(LatitudeNotFloat) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("a", "1.2")
+            constraint.validate("a 1.2")
 
         self.assertEqual(("a",), e.exception.data)
 
     def test_should_invalidate_non_float_longitude(self):
         with self.assertRaises(LongitudeNotFloat) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("1.2", "asasasas")
+            constraint.validate("1.2 asasasas")
         self.assertEqual(("asasasas",), e.exception.data)
 
     def test_latitude_should_be_between_minus_90_and_90(self):
         with self.assertRaises(LatitudeNotInRange) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("100", "90")
+            constraint.validate("100 90")
         self.assertEqual(("100",), e.exception.data)
         with self.assertRaises(LatitudeNotInRange) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("-100", "90")
+            constraint.validate("-100 90")
         self.assertEqual(("-100",), e.exception.data)
 
 
     def test_longitude_should_be_between_minus_180_and_180(self):
         with self.assertRaises(LongitudeNotInRange) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("-10", "190")
+            constraint.validate("-10 190")
         self.assertEqual(("190",), e.exception.data)
         with self.assertRaises(LongitudeNotInRange) as e:
             constraint = GeoCodeValidator()
-            constraint.validate("90", "-190")
+            constraint.validate("90 -190")
         self.assertEqual(("-190",), e.exception.data)
 
     def test_should_strip_white_spaces(self):
         constraint = GeoCodeValidator()
-        self.assertEqual((90.0, 130.0), constraint.validate("90 ", " 130"))
-        self.assertEqual((90.0, 130.0), constraint.validate("   90 ", " 130  "))
+        self.assertEqual((90.0, 130.0), constraint.validate("90  130"))
+        self.assertEqual((90.0, 130.0), constraint.validate("   90  130  "))
 
     def test_should_remove_right_to_left_mark_character(self):
         constraint = GeoCodeValidator()
         # the string is '49.418607\u200e'
-        self.assertEqual((90.0, 49.418607), constraint.validate("90 ", u'49.418607‎'))
-        self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎', " 130  "))
+        self.assertEqual((90.0, 49.418607), constraint.validate("90 " + u'49.418607‎'))
+        self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎'+ " 130  "))
+
+    def test_should_raise_exception_if_only_either_of_lat_lng_is_submitted(self):
+        constraint = GeoCodeValidator()
+        with self.assertRaises(GeoCodeFormatException):
+            constraint.validate("23")
 
 class TestRegexValidators(unittest.TestCase):
     def test_should_validate_values_within_regex(self):

@@ -1,3 +1,4 @@
+from mangrove.forms.validators import GeoCodeValidator
 from mangrove.forms.validators import SequenceValidator
 from mangrove.forms import validators
 from mangrove.utils.types import is_empty
@@ -71,6 +72,21 @@ class HierarchyField(Field):
         errors, value = Field.validate(self,value)
         try:
             value = SequenceValidator().validate(value)
+        except Exception as ex:
+            errors.append(ex.message)
+        return errors, value
+
+class GeoCodeField(Field):
+    def __init__(self, name, code, label, instruction="",required=False):
+        Field.__init__(self, name=name, code=code,
+                       label=label, instruction=instruction,required=required, validators=[])
+
+    def validate(self, value):
+        if is_empty(value):
+            value = ""
+        errors, value = Field.validate(self,value)
+        try:
+            value = GeoCodeValidator().validate(value)
         except Exception as ex:
             errors.append(ex.message)
         return errors, value

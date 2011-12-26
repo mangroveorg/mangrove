@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
-from mangrove.errors.MangroveException import MangroveException
+from mangrove.errors.MangroveException import GeoCodeFormatException
 
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
@@ -73,10 +73,14 @@ class GeoCodeValidator(object):
 
     def _to_json(self):
         return {'_class':self.__class__.__name__}
-    
-    def validate(self, latitude, longitude):
-        latitude=latitude.encode('ascii','ignore')
-        longitude=longitude.encode('ascii','ignore')
+
+    def validate(self, lat_long_string):
+        lat_long = lat_long_string.replace(",", " ").strip().split()
+        if len(lat_long) < 2:
+            raise GeoCodeFormatException(lat_long)
+
+        latitude=lat_long[0].encode('ascii','ignore')
+        longitude=lat_long[1].encode('ascii','ignore')
         try:
             lat = is_float(latitude, min=self.MIN_LAT, max=self.MAX_LAT)
         except VdtTypeError:

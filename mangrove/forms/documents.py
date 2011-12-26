@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from couchdb.mapping import DictField, TextField, BooleanField, ListField, Mapping
 from mangrove.datastore.documents import DocumentBase
 

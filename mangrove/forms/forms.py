@@ -27,14 +27,20 @@ def _get_declared_fields(bases, attrs):
 
     return OrderedDict(fields)
 
+def _get_meta_class_properties(attrs):
+    properties = {property_name: attrs.pop(property_name) for property_name, value in attrs.items() if not property_name.startswith("__")}
+    return properties
+
 class MangroveFormMetaclass(type):
     def __new__(cls, name, bases, attrs):
         attrs['base_fields'] = _get_declared_fields(bases, attrs)
         attrs['uuid'] = None
         if attrs.get('Meta'):
+            attrs['_metadata'] = _get_meta_class_properties(attrs.get('Meta').__dict__)
             def function(self): return value
-            for key, value in attrs.get('Meta').__dict__.items():
+            for key, value in attrs['_metadata'].items():
                 if not key.startswith('__'): attrs[key] = function
+            attrs['Meta'] = type('Meta', (), attrs['_metadata'])
 
         return super(MangroveFormMetaclass,
                      cls).__new__(cls, name, bases, attrs)

@@ -1,7 +1,7 @@
-from forms.fields import TextField
-from forms.forms import form_by_code
+from mangrove.forms.fields import TextField
 from mangrove.forms.validators import TextLengthValidator
 from mangrove.forms import forms
+from mangrove.forms.forms import form_by_code
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 class TestFormPersistence(MangroveTestCase):
@@ -82,7 +82,7 @@ class TestFormPersistence(MangroveTestCase):
     def test_save_and_retreive_declared_classes(self):
         class FooForm(forms.Form):
             code = "bar"
-            name = TextField("foo", "f", "What is foo?")
+            name = TextField("foo", "f", instruction="What is foo?")
 
             class Meta:
                 registration = True

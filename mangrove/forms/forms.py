@@ -87,4 +87,5 @@ class Form(BaseForm):
         for key, value in metadata.items():
             def func(self): return self._meta[key]
             dct[key] = func
+        dct['Meta'] = type('Meta', (), metadata)
         return type('Form', (BaseForm,), dct)

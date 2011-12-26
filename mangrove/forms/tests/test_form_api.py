@@ -172,9 +172,11 @@ class TestFormAPI(unittest.TestCase):
                 "required":True
             }],
             "metadata":{
-                "registration": True,
+                "registration": False,
                 "entity_type": "reporter"
             }
         }
         Form = forms.Form.build_from_dct(dct)
         self.assertEqual("reporter", Form.Meta.entity_type)
+        self.assertFalse(Form().registration())
+        self.assertEqual("reporter", Form().entity_type())

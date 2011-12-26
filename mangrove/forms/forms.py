@@ -85,7 +85,13 @@ class Form(BaseForm):
         dct['base_fields'] = OrderedDict(field_classes)
         dct['_metadata'] = metadata
         for key, value in metadata.items():
-            def func(self): return self._meta[key]
-            dct[key] = func
+            dct[key] = create_meta_functions(value)
         dct['Meta'] = type('Meta', (), metadata)
         return type('Form', (BaseForm,), dct)
+
+
+def create_meta_functions(value):
+    def func(self):
+        return value
+
+    return func

@@ -20,15 +20,15 @@ from mangrove.transport.submissions import get_submissions, get_submissions_for_
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
 
-def get_location_hierarchy(foo):
-    return [u'arantany']
-
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):
         return ['madagascar']
 
     def get_centroid(self, location_name, level):
         return 60, -12
+
+def get_location_hierarchy(foo):
+    return [u'arantany']
 
 
 class TestShouldSaveSMSSubmission(MangroveTestCase):
@@ -395,4 +395,3 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
         submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
         self.assertEquals(2, len(submissions))
-

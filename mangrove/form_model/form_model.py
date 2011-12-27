@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from mangrove.form_model.validators import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
@@ -49,7 +50,8 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=[MandatoryValidator()]):
+                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None):
+        if not validators: validators = []
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
@@ -162,6 +164,7 @@ class FormModel(DataObject):
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
+        self._doc.validators = [validator.to_json() for validator in self.validators]
         return DataObject.save(self)
 
 
@@ -263,6 +266,8 @@ class FormModel(DataObject):
         for json_field in document.json_fields:
             f = field.create_question_from(json_field, self._dbm)
             self._form_fields.append(f)
+        for validator in document.validators:
+            self.validators.append(validator_factory(validator))
 
     def _is_form_code_unique(self):
         try:
@@ -278,11 +283,10 @@ class FormModel(DataObject):
                 return answers[key]
         return None
 
-    #TODO This kind of stuff should go into either reporter class or RegistrationWorkFlow
     def _validate_mandatory_fields_have_values(self, values):
-        if self.is_registration_form() and self.get_entity_type(values) == REPORTER.lower() and is_empty(
-            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
-            raise MobileNumberMissing()
+#        if self.is_registration_form() and self.get_entity_type(values) == REPORTER.lower() and is_empty(
+#            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
+#            raise MobileNumberMissing()
         if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(
             self._case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
             raise LocationFieldNotPresentException()

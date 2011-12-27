@@ -1,4 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.form_model.form_model import get_form_model_by_code
+from mangrove.form_model.validators import MandatoryValidator, MobileNumberMandatoryForReporterRegistrationValidator
 
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity_type import  define_type
@@ -277,3 +279,13 @@ class TestFormModel(MangroveTestCase):
                                     form_code="1", type='survey', fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
+
+    def test_should_save_form_model_with_validators(self):
+        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
+        form = FormModel(self.manager, 'test_form', 'label', 'foo', fields=fields, entity_type=['Clinic'], validators=[MandatoryValidator(), MobileNumberMandatoryForReporterRegistrationValidator()])
+        form.save()
+        form = get_form_model_by_code(self.manager, 'foo')
+        self.assertEqual(2, len(form.validators))
+        self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
+        self.assertTrue(isinstance(form.validators[1], MobileNumberMandatoryForReporterRegistrationValidator))
+

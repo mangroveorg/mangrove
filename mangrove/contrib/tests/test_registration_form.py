@@ -32,7 +32,7 @@ class TestRegistrationFormModel(MangroveTestCase):
         Form = form_by_code(self.manager, "reg")
         form = Form(data={"s": "1", "t": ["Reporter"], "g": "1 1", "m": "1212121212", "n":"foo"})
         self.assertTrue(form.is_valid())
-        self.assertEqual(OrderedDict([('g', (1.0, 1.0)), ('m', u'1212121212'), ('n', 'foo'), ('s', '1'), ('t', ['Reporter'])]),
+        self.assertEqual(OrderedDict([('t', ['Reporter']), ('n', 'foo'), ('s', '1'), ('g', (1.0, 1.0)), ('m', u'1212121212')]),
                          form.cleaned_data)
         
     def test_registration_form_invalid_submission(self):

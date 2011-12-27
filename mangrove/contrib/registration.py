@@ -1,3 +1,4 @@
+from mangrove.form_model.validators import MandatoryValidator, MobileNumberMandatoryForReporterRegistrationValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, DESCRIPTION_FIELD_CODE, GEO_CODE_FIELD, FormModel, GEO_CODE, DESCRIPTION_FIELD, REGISTRATION_FORM_CODE
@@ -52,5 +53,6 @@ def _construct_registration_form(manager):
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["Registration"])
+        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["Registration"],
+        validators=[MandatoryValidator(), MobileNumberMandatoryForReporterRegistrationValidator()])
     return form_model

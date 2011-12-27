@@ -8,10 +8,10 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, MultipleReportersForANumberException, MobileNumberMissing
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, MultipleReportersForANumberException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import WebPlayer
 from mangrove.transport.facade import TransportInfo, Request
@@ -242,9 +242,10 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertTrue("Answer 1234534673498723925129953280 for question m is longer than allowed.", response.errors.get('m'))
 
     def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):
-        with self.assertRaises(MobileNumberMissing):
-            text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80'}
-            self.send_request_to_web_player(text)
+        text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80'}
+        response = self.send_request_to_web_player(text)
+        self.assertFalse(response.success)
+        self.assertTrue(MOBILE_NUMBER_FIELD_CODE in response.errors)
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):

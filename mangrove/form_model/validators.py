@@ -29,6 +29,11 @@ class MandatoryValidator(object):
     def to_json(self):
         return dict(cls=ValidatorTypes.MANDATORY)
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return True
+        return False
+
 class MobileNumberMandatoryForReporterRegistrationValidator(object):
 
     def validate(self, values, fields):
@@ -42,6 +47,10 @@ class MobileNumberMandatoryForReporterRegistrationValidator(object):
     def to_json(self):
         return dict(cls=ValidatorTypes.MOBILE_NUMBER_MANDATORY_FOR_REPORTER)
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return True
+        return False
 
 def validator_factory(validator_json):
     validator_class = validators.get(validator_json['cls'])

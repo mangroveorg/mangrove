@@ -50,7 +50,8 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=[MandatoryValidator]):
+                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None):
+        if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
@@ -265,8 +266,10 @@ class FormModel(DataObject):
         for json_field in document.json_fields:
             f = field.create_question_from(json_field, self._dbm)
             self._form_fields.append(f)
-        for validator in document.validators:
-            self.validators.append(validator_factory(validator))
+        for validator_json in document.validators:
+            validator = validator_factory(validator_json)
+            if validator not in self.validators:
+                self.validators.append(validator)
 
     def _is_form_code_unique(self):
         try:

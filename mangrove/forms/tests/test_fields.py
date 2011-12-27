@@ -37,7 +37,7 @@ class TestTextField(unittest.TestCase):
 
 class TestHierarchyField(unittest.TestCase):
     def setUp(self):
-        pass
+        Field.creation_counter = 0
 
     def tearDown(self):
         Field.creation_counter = 0

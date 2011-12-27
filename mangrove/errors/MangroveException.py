@@ -245,7 +245,7 @@ class AggregationNotSupportedForTypeException(MangroveException):
 
 class InactiveFormModelException(MangroveException):
     def __init__(self, form_code):
-        error_message = "The form_model %s is inactive" % (form_code, )
+        error_message = "The questionnaire form %s is in draft mode" % (form_code, )
         MangroveException.__init__(self, error_message, (form_code, ))
 
 

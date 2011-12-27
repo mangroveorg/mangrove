@@ -4,6 +4,11 @@ from mangrove.errors.MangroveException import GeoCodeFormatException, RegexMisma
 from mangrove.forms.validators import TextLengthValidator, RegexValidator
 
 class TestTextField(unittest.TestCase):
+    def setUp(self):
+        pass
+    def tearDown(self):
+        Field.creation_counter = 0
+
     def test_create_text_field(self):
         f = TextField("na", "What is the name?")
         self.assertEqual("na", f.code)
@@ -31,6 +36,12 @@ class TestTextField(unittest.TestCase):
 
 
 class TestHierarchyField(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        Field.creation_counter = 0
+
     def test_should_create_list_field_type_for_default_english_language(self):
         expected_json = {
             '_class': 'HierarchyField',
@@ -51,6 +62,12 @@ class TestHierarchyField(unittest.TestCase):
         self.assertEqual((["The value should be a sequence"], "eewewewe"), field.validate("eewewewe"))
 
 class TestLocationField(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        Field.creation_counter = 0
+
     def test_should_create_location_field_type_for_default_english_language(self):
         expected_json = {
             "label": "Where do you stay?",
@@ -85,6 +102,12 @@ class TestLocationField(unittest.TestCase):
         self.assertEqual(([exception.message], ""),field.validate(None))
 
 class TestTelephoneNumberField(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        Field.creation_counter = 0
 
     def test_telephone_number_field_should_return_expected_json(self):
         mobile_number_length = TextLengthValidator(max=15)

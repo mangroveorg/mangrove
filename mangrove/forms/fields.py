@@ -18,6 +18,7 @@ class Field(object):
         self.instruction = instruction
         self.required = required
         self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
 
     def validate(self, value):
         errors = []

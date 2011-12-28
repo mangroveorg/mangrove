@@ -1,4 +1,4 @@
-from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator, AtLeastOneLocationFieldMustBeAnsweredValidator
+from mangrove.contrib.registration_validators import MobileNumberMandatoryForReporterRegistrationValidator, AtLeastOneLocationFieldMustBeAnsweredValidator
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
@@ -55,6 +55,6 @@ def _construct_registration_form(manager):
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["Registration"],
-        validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),
+        validators=[MandatoryValidator(), MobileNumberMandatoryForReporterRegistrationValidator(),
                     AtLeastOneLocationFieldMustBeAnsweredValidator()])
     return form_model

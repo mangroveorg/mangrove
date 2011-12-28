@@ -5,7 +5,7 @@ from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE_FIELD, GEO_CODE
-from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberValidationsForReporterRegistrationValidator
+from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberMandatoryForReporterRegistrationValidator
 from mangrove.datastore.datadict import DataDictType
 
 class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
@@ -44,9 +44,9 @@ class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
         self.assertEqual(expected_json, self.validator.to_json())
 
 
-class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unittest.TestCase):
+class TestMobileNumberMandatoryForReporterRegistrationValidator(unittest.TestCase):
     def setUp(self):
-        self.validator = MobileNumberValidationsForReporterRegistrationValidator()
+        self.validator = MobileNumberMandatoryForReporterRegistrationValidator()
         self.field1 = TextField('t', 't', 't', Mock(spec=DataDictType), entity_question_flag=True)
         self.field2 = TextField('m', 'm', 'm', Mock(spec=DataDictType))
         self.fields = [self.field1, self.field2]
@@ -62,7 +62,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
             'cls': ValidatorTypes.MOBILE_NUMBER_MANDATORY_FOR_REPORTER
         }
 
-        self.assertTrue(isinstance(validator_factory(validator_json), MobileNumberValidationsForReporterRegistrationValidator))
+        self.assertTrue(isinstance(validator_factory(validator_json), MobileNumberMandatoryForReporterRegistrationValidator))
 
     def test_mobile_number_mandatory_for_reporter_validator_should_be_serializable(self):
         expected_json = {

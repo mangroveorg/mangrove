@@ -17,11 +17,6 @@ class TestRegistrationFormModel(MangroveTestCase):
         self.assertEqual(REGISTRATION_FORM_CODE, form.form_code)
         self.assertEqual('string', form.fields[3].ddtype.primitive_type)
 
-    def test_should_create_registration_form_mode(self):
-        form = _construct_registration_form(self.manager)
-        self.assertEqual(7, len(form.fields))
-        self.assertEqual(REGISTRATION_FORM_CODE, form.form_code)
-
     def test_registration_form_should_have_entity_type_field(self):
         form = _construct_registration_form(self.manager)
         self.assertIsNotNone(form.get_field_by_code("T"))

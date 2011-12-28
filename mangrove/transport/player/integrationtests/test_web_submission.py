@@ -8,7 +8,7 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, MultipleReportersForANumberException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
@@ -203,9 +203,8 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals(transport_info.transport, submission_log.channel)
         self.assertEquals(transport_info.source, submission_log.source)
         self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(True, submission_log. status)
+        self.assertTrue(submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        print submission_log.values
         self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
@@ -229,16 +228,18 @@ class TestWEBSubmission(MangroveTestCase):
 
     def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
         text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80', 'm':'12345'}
-        self.send_request_to_web_player(text)
+        response = self.send_request_to_web_player(text)
+        self.assertTrue(response.success)
 
-        with self.assertRaises(MultipleReportersForANumberException):
-            text = {'form_code':'reg', 'n':'buddy2', 't': 'reporter', 'g':'80 80', 'm':'12345'}
-            self.send_request_to_web_player(text)
+        text = {'form_code':'reg', 'n':'buddy2', 't': 'reporter', 'g':'80 80', 'm':'12345'}
+        response = self.send_request_to_web_player(text)
+        self.assertFalse(response.success)
+        self.assertTrue('m' in response.errors)
 
     def test_should_throw_error_if_mobile_phone_is_too_long(self):
         text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80', 'm':'1234534673498723909872373267'}
         response = self.send_request_to_web_player(text)
-        assert(response.success is False)
+        self.assertFalse(response.success)
         self.assertTrue("Answer 1234534673498723925129953280 for question m is longer than allowed.", response.errors.get('m'))
 
     def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):

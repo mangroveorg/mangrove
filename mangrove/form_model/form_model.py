@@ -7,7 +7,7 @@ from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.datastore.entity import    entities_exists_with_value
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
-    MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
+    MultipleReportersForANumberException, InactiveFormModelException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -159,7 +159,7 @@ class FormModel(DataObject):
         return form_submission
 
     def save(self):
-        # convert fields to json fields before save
+        # convert fields and validators to json fields before save
         if not self._is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 

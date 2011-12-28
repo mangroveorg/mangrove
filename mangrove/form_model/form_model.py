@@ -285,11 +285,6 @@ class FormModel(DataObject):
                 return answers[key]
         return None
 
-    def _validate_mandatory_fields_have_values(self, values):
-        if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(
-            self._case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
-            raise LocationFieldNotPresentException()
-
     def _remove_empty_values(self, answers):
         return OrderedDict([(k,v) for k, v in answers.items() if not is_empty(v)])
 
@@ -302,7 +297,6 @@ class FormModel(DataObject):
         errors = OrderedDict()
         for validator in self.validators:
             errors.update(validator.validate(values, self.fields))
-        self._validate_mandatory_fields_have_values(values)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:

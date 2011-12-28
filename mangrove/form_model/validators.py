@@ -15,7 +15,7 @@ class MandatoryValidator(object):
         return [field for field in fields if field.is_required()]
 
 
-    def validate(self,values,fields, dbm=None):
+    def validate(self,values,fields):
         errors = OrderedDict()
         mandatory_fields = self.get_mandatory_fields(fields)
         for field in mandatory_fields:

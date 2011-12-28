@@ -4,8 +4,10 @@ from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
+from mangrove.datastore.entity import    entities_exists_with_value
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, InactiveFormModelException
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
+    MultipleReportersForANumberException, InactiveFormModelException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -294,7 +296,7 @@ class FormModel(DataObject):
         cleaned_values = OrderedDict()
         errors = OrderedDict()
         for validator in self.validators:
-            errors.update(validator.validate(values, self.fields, self._dbm))
+            errors.update(validator.validate(values, self.fields))
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:
@@ -346,12 +348,20 @@ class FormSubmission(object):
 
 
     def save(self, dbm):
+        self._validate_unique_phone_number_for_reporter(dbm)
         return self._save_data(self._get_entity(dbm))
 
     def _save_data(self, entity):
         submission_information = dict(form_code=self.form_code)
         self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
         return self.data_record_id
+
+    def _validate_unique_phone_number_for_reporter(self, dbm):
+        if self.cleaned_data.get(ENTITY_TYPE_FIELD_CODE) == [REPORTER] and self.form_model.is_registration_form():
+            phone_number = self.cleaned_data.get(MOBILE_NUMBER_FIELD_CODE)
+            if self._exists_reporter_with_phone_number(dbm, phone_number):
+                raise MultipleReportersForANumberException(from_number=phone_number)
+            self.cleaned_data[MOBILE_NUMBER_FIELD_CODE] = phone_number
 
     def _get_entity_type(self, form_model):
         if form_model.is_registration_form():
@@ -383,3 +393,7 @@ class FormSubmission(object):
                                         short_code=self.short_code,
                                         geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
+
+
+    def _exists_reporter_with_phone_number(self, dbm, phone_number):
+        return entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number)

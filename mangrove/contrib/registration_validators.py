@@ -1,11 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from mangrove.datastore.entity import entities_exists_with_value
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.utils.types import is_empty
 
 class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
-    def validate(self, values, fields=None, dbm=None):
+    def validate(self, values, fields):
         from mangrove.form_model.form_model import GEO_CODE, LOCATION_TYPE_FIELD_CODE
 
         if is_empty(case_insensitive_lookup(values, GEO_CODE)) and is_empty(
@@ -26,20 +25,13 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
 
 class MobileNumberValidationsForReporterRegistrationValidator(object):
 
-    def validate(self, values, fields, dbm):
-        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD
+    def validate(self, values, fields):
+        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE
 
-        errors = OrderedDict()
         field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
-
-        if case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE) == REPORTER:
-            phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
-            if is_empty(phone_number):
-               errors[field_code] = u'Mobile number is missing'
-            elif entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number):
-                errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered' % (phone_number,)
-
-        return errors
+        if case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE) == REPORTER and is_empty(case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
+            return OrderedDict({str(field_code):'Mobile number is missing'})
+        return OrderedDict({})
 
     def to_json(self):
         return dict(cls=ValidatorTypes.MOBILE_NUMBER_MANDATORY_FOR_REPORTER)
@@ -48,8 +40,6 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
         if self.__class__ == other.__class__:
             return True
         return False
-
-
 
 def case_insensitive_lookup(values, code):
     for fieldcode in values:

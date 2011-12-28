@@ -1,13 +1,13 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from mangrove.form_model.validators import validator_factory
+from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.datastore.entity import    entities_exists_with_value
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, \
-    NoQuestionsSubmittedException, MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException, MobileNumberMissing
+    MultipleReportersForANumberException, InactiveFormModelException, LocationFieldNotPresentException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
@@ -286,9 +286,6 @@ class FormModel(DataObject):
         return None
 
     def _validate_mandatory_fields_have_values(self, values):
-#        if self.is_registration_form() and self.get_entity_type(values) == REPORTER.lower() and is_empty(
-#            self._case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)):
-#            raise MobileNumberMissing()
         if self.is_registration_form() and is_empty(self._case_insensitive_lookup(values, GEO_CODE)) and is_empty(
             self._case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
             raise LocationFieldNotPresentException()

@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.contrib.registration_validators import MobileNumberMandatoryForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.form_model.validators import MandatoryValidator, MobileNumberMandatoryForReporterRegistrationValidator
+from mangrove.form_model.validators import MandatoryValidator
 
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity_type import  define_type

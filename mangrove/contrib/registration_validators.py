@@ -23,7 +23,7 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
             return True
         return False
 
-class MobileNumberMandatoryForReporterRegistrationValidator(object):
+class MobileNumberValidationsForReporterRegistrationValidator(object):
 
     def validate(self, values, fields):
         from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE

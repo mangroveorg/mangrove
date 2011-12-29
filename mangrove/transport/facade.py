@@ -1,8 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import threading
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, LOCATION_TYPE_FIELD_CODE, GEO_CODE
 from mangrove.utils.types import is_empty
+
+_lock = threading.Lock()
 
 class Channel(object):
     SMS = "sms"
@@ -69,7 +72,8 @@ class RegistrationWorkFlow(object):
 
     def process(self, values):
         if is_empty(self.form_model.get_short_code(values)):
-            _set_short_code(self.dbm, self.form_model, values)
+            with _lock:
+                _set_short_code(self.dbm, self.form_model, values)
         self._set_location_data(values)
         return values
 

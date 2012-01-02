@@ -8,7 +8,7 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException, MultipleReportersForANumberException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
@@ -254,10 +254,13 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
     def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
         text = "reg .N buddy .T reporter .G 80 80 .M 123456"
-        self.send_sms(text)
-        with self.assertRaises(MultipleReportersForANumberException):
-            text = "reg .N buddy2 .T reporter .L 80 80 .M 123456"
-            self.send_sms(text)
+        response = self.send_sms(text)
+        self.assertTrue(response.success)
+
+        text = "reg .N buddy2 .T reporter .L 80 80 .M 123456"
+        response = self.send_sms(text)
+        self.assertFalse(response.success)
+        self.assertIn('m', response.errors)
 
     def test_should_throw_error_if_mobile_phone_is_in_weird_pattern(self):
         text = "reg .N buddy .T reporter .G 80 80 .M 1234@5678"

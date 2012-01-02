@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
 from mock import Mock, patch
-from datastore.database import DatabaseManager
+from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField

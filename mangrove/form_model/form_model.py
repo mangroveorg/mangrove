@@ -354,9 +354,16 @@ class FormSubmission(object):
     def save(self, dbm):
         return self._save_data(self._get_entity(dbm))
 
+    def _get_event_time_value(self):
+        return self.cleaned_data.get(self._get_event_time_code())
+
+    def _get_event_time_code(self):
+        event_time_field = self.form_model.event_time_question
+        return event_time_field.code if event_time_field else None
+
     def _save_data(self, entity):
         submission_information = dict(form_code=self.form_code)
-        self.data_record_id = entity.add_data(data=self._values, submission=submission_information)
+        self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),submission=submission_information)
         return self.data_record_id
 
     def _get_entity_type(self, form_model):
@@ -367,9 +374,9 @@ class FormSubmission(object):
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
     def _to_three_tuple(self):
-        return [(self.form_model.get_field_by_code(field).name, value, self.form_model.get_field_by_code(field).ddtype)
-        for (field, value) in
-        self.cleaned_data.items()]
+        return [(self.form_model.get_field_by_code(code).name, value, self.form_model.get_field_by_code(code).ddtype)
+        for (code, value) in
+        (self.cleaned_data.items())]
 
     def _get_answer_for(self, code):
         for key in self._cleaned_data:

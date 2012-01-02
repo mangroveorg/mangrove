@@ -111,6 +111,10 @@ class Field(object):
     def is_entity_field(self):
         return False
 
+    @property
+    def is_event_time_field(self):
+        return False
+
 
     @property
     def ddtype(self):

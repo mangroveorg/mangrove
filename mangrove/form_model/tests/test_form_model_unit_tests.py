@@ -4,7 +4,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 
@@ -24,9 +24,11 @@ class TestFormModel(unittest.TestCase):
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                          options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock, required=False)
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
+        self.event_time_field_code = "Q6"
+        q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field", date_format = "%m.%d.%Y",ddtype=self.ddtype_mock, required=False,event_time_field_flag=True)
 
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5])
+                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5,q6])
 
 
     def tearDown(self):
@@ -160,6 +162,8 @@ class TestFormModel(unittest.TestCase):
             self.assertEqual([], field.errors)
 
 
+    def test_should_get_event_time_question(self):
+        self.assertEqual(self.event_time_field_code,self.form_model.event_time_question.code)
 
 
 

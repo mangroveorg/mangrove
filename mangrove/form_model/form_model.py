@@ -6,7 +6,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, InactiveFormModelException
-from mangrove.form_model.field import TextField
+from mangrove.form_model.field import TextField, DateField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -103,6 +103,12 @@ class FormModel(DataObject):
                 eq = f
                 break
         return eq
+
+    @property
+    def event_time_question(self):
+        event_time_questions = [event_time_question for event_time_question in self._form_fields if
+                  event_time_question.is_event_time_field]
+        return event_time_questions[0] if event_time_questions else None
 
     @property
     def form_code(self):

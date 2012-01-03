@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from unittest.case import TestCase
+from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -42,20 +42,21 @@ class TestFormSubmission(TestCase):
     def test_should_do_submission_with_event_time(self):
         event_time_answer = self.event_time_question.validate('01.01.2012')
         submission = OrderedDict({"id": "1", "q1": "My Name", "ET": event_time_answer})
-        entity_mock = self._get_entity_mock()
+        entity_mock,patcher = self._get_entity_mock()
 
         form_submission = FormSubmission(self.form_model, submission)
         form_submission.save(self.dbm)
+        patcher.stop()
 
         self._assert_entity_mock(entity_mock, event_time_answer)
 
     def test_should_do_submission_without_event_time(self):
         submission = OrderedDict({"id": "1", "q1": "My Name"})
-        entity_mock = self._get_entity_mock()
+        entity_mock,patcher = self._get_entity_mock()
 
         form_submission = FormSubmission(self.form_model, submission)
         form_submission.save(self.dbm)
-
+        patcher.stop()
         self._assert_entity_mock(entity_mock)
 
     def _assert_entity_mock(self, entity_mock,event_time=None):
@@ -74,4 +75,4 @@ class TestFormSubmission(TestCase):
         entity_patcher_mock = entity_patcher.start()
         entity_mock = Mock(spec=Entity)
         entity_patcher_mock.return_value = entity_mock
-        return entity_mock
+        return entity_mock,entity_patcher

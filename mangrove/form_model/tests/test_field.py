@@ -1,5 +1,6 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
+from datetime import datetime
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -695,3 +696,19 @@ class TestField(unittest.TestCase):
             'event_time_field_flag': True
             }
         self.assertEqual(expected_json, field._to_json())
+
+    def test_should_convert_given_string_to_datetime_object(self):
+        field = DateField('event_time', 'et', 'event_time', 'dd.mm.yyyy', Mock(spec=DataDictType), event_time_field_flag=True)
+        get_date_time = field.to_datetime('26.02.2012')
+        expected_value = datetime(2012,2,26,0,0)
+        self.assertEqual(expected_value, get_date_time)
+
+        field = DateField('event_time', 'et', 'event_time', 'mm.yyyy', Mock(spec=DataDictType), event_time_field_flag=True)
+        get_date_time = field.to_datetime('02.2012')
+        expected_value = datetime(2012,2,1,0,0)
+        self.assertEqual(expected_value, get_date_time)
+
+        field = DateField('event_time', 'et', 'event_time', 'mm.dd.yyyy', Mock(spec=DataDictType), event_time_field_flag=True)
+        get_date_time = field.to_datetime('02.26.2012')
+        expected_value = datetime(2012,2,26,0,0)
+        self.assertEqual(expected_value, get_date_time)

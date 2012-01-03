@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
 from unittest.case import TestCase, SkipTest
+import datetime
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -40,15 +41,15 @@ class TestFormSubmission(TestCase):
 
 
     def test_should_do_submission_with_event_time(self):
-        event_time_answer = self.event_time_question.validate('01.01.2012')
-        submission = OrderedDict({"id": "1", "q1": "My Name", "ET": event_time_answer})
+        submission = OrderedDict({"id": "1", "q1": "My Name", "ET": '01.01.2011'})
         entity_mock,patcher = self._get_entity_mock()
 
         form_submission = FormSubmission(self.form_model, submission)
         form_submission.save(self.dbm)
         patcher.stop()
 
-        self._assert_entity_mock(entity_mock, event_time_answer)
+        expected_event_time = datetime.datetime(2011,1,1,0,0)
+        self._assert_entity_mock(entity_mock, expected_event_time)
 
     def test_should_do_submission_without_event_time(self):
         submission = OrderedDict({"id": "1", "q1": "My Name"})
@@ -63,7 +64,7 @@ class TestFormSubmission(TestCase):
 
         submission_values = [('Name', 'My Name', self.ddtype_mock)]
         if event_time is not None:
-            submission_values.append(("Event time",event_time,self.ddtype_mock))
+            submission_values.append(("Event time",'01.01.2011',self.ddtype_mock))
         submission_values.append(('entity_question', '1', self.ddtype_mock))
 
         submission_information = {'form_code': u'AIDS'}

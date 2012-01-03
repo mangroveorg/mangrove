@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from datetime import datetime
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
@@ -355,7 +356,12 @@ class FormSubmission(object):
         return self._save_data(self._get_entity(dbm))
 
     def _get_event_time_value(self):
-        return self.cleaned_data.get(self._get_event_time_code())
+        code = self._get_event_time_code()
+        value = self.cleaned_data.get(code)
+
+        if value is not None:
+            value = self.form_model.event_time_question.to_datetime(value)
+        return value
 
     def _get_event_time_code(self):
         event_time_field = self.form_model.event_time_question

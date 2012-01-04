@@ -41,6 +41,7 @@ class TestSMSPlayer(TestCase):
     def tearDown(self):
         self.reporter_patcher.stop()
         self.generate_code_patcher.stop()
+        self.get_form_model_mock_patcher.stop()
 
     def test_sms_player_should_parse_message(self):
         parser_mock = Mock(spec=OrderSMSParser)

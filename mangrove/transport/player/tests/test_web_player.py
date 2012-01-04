@@ -13,7 +13,6 @@ class TestWebPlayer(TestCase):
         self.transport = TransportInfo(transport="web", source="1234", destination="5678")
         self.message = {'form_code':'reg', 'n':'subject_name', 't':'clinic', 'l':'Pune'}
         self._mock_form_model()
-        pass
 
     def _mock_form_model(self):
         self.form_model_mock = Mock(spec=FormModel)
@@ -22,7 +21,7 @@ class TestWebPlayer(TestCase):
         get_form_model_mock.return_value = self.form_model_mock
 
     def tearDown(self):
-        pass
+        self.get_form_model_mock_patcher.stop()
 
     def test_should_submit_if_parsing_is_successful(self):
         self.web_player.accept(Request(message=self.message, transportInfo=self.transport))

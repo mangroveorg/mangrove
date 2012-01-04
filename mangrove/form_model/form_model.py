@@ -41,8 +41,7 @@ def get_form_model_by_code(dbm, code):
         raise FormModelDoesNotExistsException(code)
 
     doc = FormModelDocument.wrap(rows[0]['value'])
-    form = FormModel.new_from_doc(dbm, doc)
-    return form
+    return FormModel.new_from_doc(dbm, doc)
 
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)

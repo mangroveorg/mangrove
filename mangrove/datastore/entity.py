@@ -40,11 +40,11 @@ def get_by_short_code(dbm, short_code, entity_type):
     """
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False)
+    rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False, include_docs=True)
     if is_empty(rows):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
-    doc_id = rows[0].id
-    return Entity.get(dbm, doc_id)
+    doc = EntityDocument.wrap(rows[0]['doc'])
+    return Entity.new_from_doc(dbm, doc)
 
 
 def get_entities_in(dbm, geo_path, type_path=None):

@@ -40,7 +40,7 @@ def get_form_model_by_code(dbm, code):
     if not len(rows):
         raise FormModelDoesNotExistsException(code)
 
-    doc = dbm._load_document(rows[0]['value']['_id'], FormModelDocument)
+    doc = FormModelDocument.wrap(rows[0]['value'])
     form = FormModel.new_from_doc(dbm, doc)
     return form
 

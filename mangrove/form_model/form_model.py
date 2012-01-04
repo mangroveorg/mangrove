@@ -47,9 +47,9 @@ def get_form_model_by_code(dbm, code):
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_sequence(entity_type)
-    rows = dbm.view.registration_form_model_by_entity_type(key=entity_type)
+    rows = dbm.view.registration_form_model_by_entity_type(key=entity_type, include_docs=True)
     if len(rows):
-        doc = dbm._load_document(rows[0]['id'], FormModelDocument)
+        doc = FormModelDocument.wrap(rows[0]['doc'])
         return FormModel.new_from_doc(dbm, doc)
     return None
 

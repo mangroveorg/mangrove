@@ -31,9 +31,15 @@ class TestFormModel(unittest.TestCase):
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[q1, q2, q3, q4, q5,q6])
 
+        self.form_model_patch = patch('mangrove.form_model.form_model.FormModel')
+        self.form_model_document_patch = patch('mangrove.form_model.form_model.FormModelDocument')
 
     def tearDown(self):
-        pass
+        try:
+            self.form_model_patch.stop()
+            self.form_model_document_patch.stop()
+        except Exception:
+            pass
     
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
@@ -181,19 +187,26 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_return_registration_form_model_if_found_for_an_entity(self):
         manager_stub = DatabaseManagerStub()
-        manager_stub.view.registration_form_model_by_entity_type.return_value = [{"id":"879a9556369c11e1a7570026b9c41e40","key":["Registration"],"value":1}]
+        document = {'foo':'bar'}
+        manager_stub.view.registration_form_model_by_entity_type.return_value = [
+                {"id": "tes_id", "key": ["test"], "value": None,
+                 'doc': document}]
         mock_form_instance = Mock(FormModel)
+        mock_form_document_instance = Mock(FormModelDocument)
 
-        patcher = patch('mangrove.form_model.form_model.FormModel')
-        form_model_mock = patcher.start()
+        form_model_mock = self.form_model_patch.start()
         form_model_mock.new_from_doc.return_value = mock_form_instance
+
+        form_model_document_mock = self.form_model_document_patch.start()
+        form_model_document_mock.wrap.return_value = mock_form_document_instance
+
         reg_form_model = get_form_model_by_entity_type(manager_stub, ['test'])
 
         self.assertEqual(mock_form_instance, reg_form_model)
-        manager_stub.view.registration_form_model_by_entity_type.assert_called_once_with(key=['test'])
+        manager_stub.view.registration_form_model_by_entity_type.assert_called_once_with(key=['test'],
+            include_docs=True)
         self.assertEqual(1, form_model_mock.new_from_doc.call_count)
-
-        patcher.stop()
+        form_model_document_mock.wrap.assert_called_once_with(document)
 
 class DatabaseManagerStub(DatabaseManager):
 

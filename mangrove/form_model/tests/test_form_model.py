@@ -273,6 +273,7 @@ class TestFormModel(MangroveTestCase):
 
         reg_form_model = get_form_model_by_entity_type(self.manager, self.entity_type)
         self.assertEqual(expected_form_model.id, reg_form_model.id)
+        self.assertEqual(expected_form_model.name, reg_form_model.name)
 
 
     def test_should_save_form_model_with_validators(self):

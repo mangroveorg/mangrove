@@ -1,13 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from datetime import datetime
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, InactiveFormModelException
-from mangrove.form_model.field import TextField, DateField
+from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -44,6 +43,15 @@ def get_form_model_by_code(dbm, code):
     doc = dbm._load_document(rows[0]['value']['_id'], FormModelDocument)
     form = FormModel.new_from_doc(dbm, doc)
     return form
+
+def get_form_model_by_entity_type(dbm, entity_type):
+    assert isinstance(dbm, DatabaseManager)
+    assert is_sequence(entity_type)
+    rows = dbm.view.registration_form_model_by_entity_type(key=entity_type)
+    if len(rows):
+        doc = dbm._load_document(rows[0]['id'], FormModelDocument)
+        return FormModel.new_from_doc(dbm, doc)
+    return None
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument

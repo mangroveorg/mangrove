@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
@@ -260,26 +261,19 @@ class TestFormModel(MangroveTestCase):
         form_model2.form_code = "2"
         form_model2.save()
 
-    def _create_form_model(self):
-        self.entity_type = ["HealthFacility", "Clinic"]
-        define_type(self.manager, ["HealthFacility", "Clinic"])
-        self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
-                                           primitive_type='string')
-        self.default_ddtype.save()
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
-        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="en",
-                              constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
-                              ddtype=self.default_ddtype)
-        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
-        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
-        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[
-                question1, question2, question3, question4])
-        self.form_model__id = self.form_model.save()
+    def test_should_return_none_if_no_registraion_form_found_for_entity_type(self):
+        self.assertIsNone(get_form_model_by_entity_type(self.manager, ['test']))
+
+    def test_should_return_the_registration_form_model_for_the_entity_type(self):
+        field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+            language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+        expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
+            entity_type=self.entity_type, is_registration_model=True)
+        expected_form_model.save()
+
+        reg_form_model = get_form_model_by_entity_type(self.manager, self.entity_type)
+        self.assertEqual(expected_form_model.id, reg_form_model.id)
+
 
     def test_should_save_form_model_with_validators(self):
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
@@ -290,3 +284,23 @@ class TestFormModel(MangroveTestCase):
         self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
         self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
 
+    def _create_form_model(self):
+        self.entity_type = ["HealthFacility", "Clinic"]
+        define_type(self.manager, ["HealthFacility", "Clinic"])
+        self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
+            primitive_type='string')
+        self.default_ddtype.save()
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+            language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
+            defaultValue="some default value", language="en",
+            constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
+            ddtype=self.default_ddtype)
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
+            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
+        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
+            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+            form_code="1", type='survey', fields=[
+                question1, question2, question3, question4])
+        self.form_model__id = self.form_model.save()

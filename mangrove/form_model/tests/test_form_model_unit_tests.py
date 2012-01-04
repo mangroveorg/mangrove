@@ -2,10 +2,11 @@
 from collections import OrderedDict
 import unittest
 from mock import Mock, patch
+from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, get_form_model_by_entity_type
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 
 
@@ -165,17 +166,39 @@ class TestFormModel(unittest.TestCase):
     def test_should_get_event_time_question(self):
         self.assertEqual(self.event_time_field_code,self.form_model.event_time_question.code)
 
+    def test_should_check_if_proper_database_manager_passed_for_get_registration_form(self):
+        with self.assertRaises(AssertionError):
+            get_form_model_by_entity_type(Mock(), Mock())
 
+    def test_should_check_if_entity_type_is_sequesnce_for_get_registration_form(self):
+        with self.assertRaises(AssertionError):
+            get_form_model_by_entity_type(Mock(spec=DatabaseManager), 'clinic')
 
+    def test_return_none_if_registration_form_model_for_an_entity_does_not_exist(self):
+        manager_stub = DatabaseManagerStub()
+        manager_stub.view.registration_form_model_by_entity_type.return_value = []
+        self.assertIsNone(get_form_model_by_entity_type(manager_stub, ["XYZ"]))
 
+    def test_should_return_registration_form_model_if_found_for_an_entity(self):
+        manager_stub = DatabaseManagerStub()
+        manager_stub.view.registration_form_model_by_entity_type.return_value = [{"id":"879a9556369c11e1a7570026b9c41e40","key":["Registration"],"value":1}]
+        mock_form_instance = Mock(FormModel)
 
+        patcher = patch('mangrove.form_model.form_model.FormModel')
+        form_model_mock = patcher.start()
+        form_model_mock.new_from_doc.return_value = mock_form_instance
+        reg_form_model = get_form_model_by_entity_type(manager_stub, ['test'])
 
+        self.assertEqual(mock_form_instance, reg_form_model)
+        manager_stub.view.registration_form_model_by_entity_type.assert_called_once_with(key=['test'])
+        self.assertEqual(1, form_model_mock.new_from_doc.call_count)
 
+        patcher.stop()
 
+class DatabaseManagerStub(DatabaseManager):
 
+    def __init__(self):
+        self.view = Mock()
 
-
-
-
-
-
+    def _load_document(self, id, document_class=None):
+        return Mock(FormModelDocument)

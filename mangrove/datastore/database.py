@@ -175,10 +175,6 @@ class DatabaseManager(object):
     def __repr__(self):
         return repr(self.database)
 
-    def __getattr__(self, name):
-        setattr(self,name,View(self.database,name))
-        return getattr(self,name)
-
     def load_all_rows_in_view(self, view_name, **values):
         full_view_name = view_name + '/' + view_name
         print '[DEBUG] loading view: %s' % full_view_name

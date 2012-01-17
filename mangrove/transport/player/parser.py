@@ -271,3 +271,30 @@ class XlsParser(object):
 
     def _is_empty(self, row):
         return len([value for value in row if not is_empty(value)]) == 0
+
+class XlsOrderedParser(XlsParser):
+    def __init__(self, form_code):
+        self.form_code = form_code
+        
+    def parse(self, xls_contents):
+        assert xls_contents is not None
+        workbook = xlrd.open_workbook(file_contents=xls_contents)
+        worksheet = workbook.sheets()[0]
+        codes_sheet = workbook.sheets()[1]
+        parsedData = []
+        row = codes_sheet.row_values(0)
+        header, header_found = self._is_header_row(row)
+        header = header[1:]
+        form_code = self.form_code
+        for row_num in range(1, worksheet.nrows):
+            row = worksheet.row_values(row_num)
+
+            if self._is_empty(row):
+                continue
+
+            row = self._clean(row)
+            values = dict(zip(header, row))
+            parsedData.append((form_code, values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
+        return parsedData

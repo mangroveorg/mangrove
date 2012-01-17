@@ -1,12 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mock import Mock
-from form_model.form_model import FormModel, GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.form_model.form_model import REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.contrib.registration import construct_global_registration_form, create_default_reg_form_model
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 class TestRegistrationFormModel(MangroveTestCase):
-
     def setUp(self):
         MangroveTestCase.setUp(self)
 

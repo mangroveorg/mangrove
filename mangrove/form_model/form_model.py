@@ -32,6 +32,7 @@ DESCRIPTION_FIELD_CODE = "d"
 MOBILE_NUMBER_FIELD = "mobile_number"
 MOBILE_NUMBER_FIELD_CODE = "m"
 REPORTER = "reporter"
+GLOBAL_REGISTRATION_FORM_ENTITY_TYPE="registration"
 
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
@@ -211,7 +212,7 @@ class FormModel(DataObject):
 
     def validate_submission(self, values):
         cleaned_answers, errors = self._is_valid(values)
-        return FormSubmission(self, cleaned_answers, errors)
+        return FormSubmissionFactory().get_form_submission(self, cleaned_answers, errors)
 
 
     def is_registration_form(self):
@@ -335,11 +336,11 @@ class FormSubmission(object):
 
         self.form_model = form_model
         self._cleaned_data = form_answers
-        short_code = self._get_answer_for(form_model.entity_question.code)
+        short_code = self.get_answer_for(form_model.entity_question.code)
         self.short_code = short_code.lower() if short_code is not None else None
         self.is_valid = (errors is None or len(errors) == 0)
         self.errors = errors
-        self.entity_type = self._get_entity_type(form_model)
+        self.entity_type = self.get_entity_type(form_model)
         self.data_record_id = None
 
     @property
@@ -360,7 +361,7 @@ class FormSubmission(object):
 
 
     def save(self, dbm):
-        return self._save_data(self._get_entity(dbm))
+        return self._save_data(self.get_entity(dbm))
 
     def _get_event_time_value(self):
         code = self._get_event_time_code()
@@ -379,11 +380,8 @@ class FormSubmission(object):
         self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),submission=submission_information)
         return self.data_record_id
 
-    def _get_entity_type(self, form_model):
-        if form_model.form_code == REGISTRATION_FORM_CODE:
-            entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
-        else:
-            entity_type = self.form_model.entity_type
+    def get_entity_type(self, form_model):
+        entity_type = self.form_model.entity_type
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
     def _to_three_tuple(self):
@@ -391,7 +389,7 @@ class FormSubmission(object):
         for (code, value) in
         (self.cleaned_data.items())]
 
-    def _get_answer_for(self, code):
+    def get_answer_for(self, code):
         for key in self._cleaned_data:
             if key.lower() == code.lower():
                 return self._cleaned_data[key]
@@ -401,11 +399,52 @@ class FormSubmission(object):
     def _values(self):
         return self._to_three_tuple()
 
-    def _get_entity(self, dbm):
-        if self.form_model.is_registration_form():
-            location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
-            return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
-                                        location=location,
-                                        short_code=self.short_code,
-                                        geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+    def get_entity(self, dbm):
+        pass
+
+
+class DataFormSubmission(FormSubmission):
+    def __init__(self,form_model,answers,errors):
+        super(DataFormSubmission,self).__init__(form_model,answers,errors)
+
+    def get_entity(self,dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
+
+class GlobalRegistrationFormSubmission(FormSubmission):
+    def __init__(self,form_model,answers,errors):
+        super(GlobalRegistrationFormSubmission,self).__init__(form_model,answers,errors)
+        self.entity_type=GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+
+    def get_entity(self,dbm):
+        location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+        return entity.create_entity(dbm=dbm, entity_type=self.get_entity_type(self.form_model),
+            location=location,
+            short_code=self.short_code,
+            geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+
+    def get_entity_type(self, form_model):
+        entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
+        return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
+
+class EntityRegistrationFormSubmission(FormSubmission):
+    def __init__(self,form_model,answers,errors):
+        super(EntityRegistrationFormSubmission,self).__init__(form_model,answers,errors)
+
+    def get_entity(self, dbm):
+        location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+        return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
+                location=location,
+                short_code=self.short_code,
+                geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+
+
+
+class FormSubmissionFactory(object):
+
+    def _is_global_registration_form(self,form_model):
+        return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in form_model.entity_type
+
+    def get_form_submission(self,form_model, answers,errors=None):
+        if not form_model.is_registration_form():
+            return DataFormSubmission(form_model, answers,errors)
+        return GlobalRegistrationFormSubmission(form_model,answers,errors) if self._is_global_registration_form(form_model) else EntityRegistrationFormSubmission(form_model,answers,errors)

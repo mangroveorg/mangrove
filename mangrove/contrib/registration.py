@@ -6,7 +6,7 @@ from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_F
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 
 def create_default_reg_form_model(manager):
-    form_model = _construct_registration_form(manager)
+    form_model = construct_global_registration_form(manager)
     form_model.save()
     return form_model
 
@@ -19,7 +19,7 @@ def _create_constraints_for_mobile_number():
     return mobile_constraints
 
 
-def _construct_registration_form(manager):
+def construct_global_registration_form(manager):
     location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='string')
     geo_code_type = get_or_create_data_dict(manager, name='GeoCode Type', slug='geo_code', primitive_type='geocode')
     description_type = get_or_create_data_dict(manager, name='description Type', slug='description',
@@ -54,7 +54,7 @@ def _construct_registration_form(manager):
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name="reg", form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["Registration"],
+        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["registration"],
         validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),
                     AtLeastOneLocationFieldMustBeAnsweredValidator()])
     return form_model

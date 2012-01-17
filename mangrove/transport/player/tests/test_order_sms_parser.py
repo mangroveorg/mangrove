@@ -1,5 +1,6 @@
 import unittest
 from mock import Mock
+from mangrove.form_model.form_model import FormModel
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException, SMSParserWrongNumberOfAnswersException
 from mangrove.transport.player.parser import OrderSMSParser
 
@@ -8,9 +9,11 @@ class TestOrderSMSParser(unittest.TestCase):
         self.dbm = Mock()
         self.sms_parser = OrderSMSParser(self.dbm)
 
-    def _mock_get_question_codes_from_couchdb(self, question_code):
-        self.sms_parser._get_question_codes_from_couchdb = Mock()
-        self.sms_parser._get_question_codes_from_couchdb.return_value = question_code
+    def _mock_get_question_codes_from_couchdb(self, question_code,is_registration_form=True):
+        self.sms_parser._get_question_codes = Mock()
+        form_model = Mock(spec=FormModel)
+        form_model.is_registration_form.return_value=is_registration_form
+        self.sms_parser._get_question_codes.return_value = question_code,form_model
 
     def test_should_return_all_answers(self):
         message = "questionnaire_code q1_answer q2_answer q3_answer"
@@ -28,12 +31,13 @@ class TestOrderSMSParser(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.sms_parser.parse(None)
 
-    def test_num_of_answers_not_the_same_as_num_of_questions(self):
+    def test_num_of_answers_not_the_same_as_num_of_questions_for_submission(self):
         message = "questionnaire_code q1_answer q2_answer"
-        self._mock_get_question_codes_from_couchdb(['q1', 'q2', 'q3'])
+        is_registration_form = False
+        self._mock_get_question_codes_from_couchdb(['q1', 'q2', 'q3'], is_registration_form)
         with self.assertRaises(SMSParserWrongNumberOfAnswersException): self.sms_parser.parse(message)
 
-        self._mock_get_question_codes_from_couchdb(['q1'])
+        self._mock_get_question_codes_from_couchdb(['q1'],is_registration_form)
         with self.assertRaises(SMSParserWrongNumberOfAnswersException): self.sms_parser.parse(message)
 
     def test_invalid_format_message(self):

@@ -105,8 +105,6 @@ class OrderSMSParser(SMSParser):
     def _parse_ordered_tokens(self, tokens, question_codes, form_code):
         submission = OrderedDict()
 
-        if len(tokens) != len(question_codes):
-            raise SMSParserWrongNumberOfAnswersException(form_code)
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
@@ -118,7 +116,8 @@ class OrderSMSParser(SMSParser):
         assert is_string(message)
         try:
             form_code, tokens = self.form_code(message)
-            question_codes = self._get_question_codes_from_couchdb(form_code)
+            question_codes,form_model = self._get_question_codes(form_code)
+            self._check_number_of_answers_for_submission(form_model,tokens,question_codes,form_code)
             submission = self._parse_ordered_tokens(tokens, question_codes, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
@@ -131,15 +130,20 @@ class OrderSMSParser(SMSParser):
         form_code = self.pop_form_code(tokens)
         return form_code, tokens
 
-    def _get_question_codes_from_couchdb(self,form_code):
-        questionnaire_form = get_form_model_by_code(self.dbm, form_code)
+    def _get_question_codes(self,form_code):
+        form_model = get_form_model_by_code(self.dbm, form_code)
         question_codes = []
-        form_fields = questionnaire_form.fields
-        if questionnaire_form.entity_type[0] == 'reporter':
+        form_fields = form_model.fields
+        if form_model.entity_type[0] == 'reporter':
             form_fields.remove(form_fields[0])
         for aField in form_fields:
             question_codes.append(aField.code)
-        return question_codes
+        return question_codes,form_model
+
+    def _check_number_of_answers_for_submission(self,form_model,tokens,question_codes,form_code):
+        if not form_model.is_registration_form() and (len(tokens) != len(question_codes)):
+            raise SMSParserWrongNumberOfAnswersException(form_code)
+
 
 class WebParser(object):
     def _remove_csrf_token(self, message):

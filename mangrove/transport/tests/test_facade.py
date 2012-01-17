@@ -58,17 +58,20 @@ class TestRegistrationWorkFlow(unittest.TestCase):
     def test_should_generate_default_code_if_short_code_is_empty(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), dummy_get_location_hierarchy)
         self.form_model_mock.get_short_code = Mock(return_value=None)
+        self.form_model_mock.entity_type=['clinic']
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
         values = registration_work_flow.process({'t': 'clinic', 'l':'Pune'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '-12 60', 'l': [u'arantany']}, values)
 
     def test_should_set_geocode_if_location_and_short_code_both_are_given(self):
+        self.form_model_mock.entity_type=['clinic']
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
         self.assertEquals({'s':'cli1', 'l':['arantany'], 'g': '-12 60'}, registration_work_flow.process({'s':'cli1', 'l':'Pune'}))
 
     def test_should_set_geocode_if_only_location_is_given(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
         self.form_model_mock.get_short_code = Mock(return_value=None)
+        self.form_model_mock.entity_type=['clinic']
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
         values = registration_work_flow.process({'t': 'clinic', 'l':'Pune'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '-12 60', 'l': [u'arantany']}, values)
@@ -81,6 +84,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
     def test_should_set_location_if_only_geocode_is_given(self):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
         self.form_model_mock.get_short_code = Mock(return_value=None)
+        self.form_model_mock.entity_type=['clinic']
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
         values = registration_work_flow.process({'t': 'clinic', 'l':'None', 'g':'1 1'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '1 1', 'l': [u'arantany']}, values)

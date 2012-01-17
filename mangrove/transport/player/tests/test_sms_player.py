@@ -32,16 +32,21 @@ class TestSMSPlayer(TestCase):
         self.generate_code_patcher.start()
 
     def _mock_form_model(self):
-        self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
-        get_form_model_mock = self.get_form_model_mock_patcher.start()
+        self.get_form_model_mock_player_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
+        self.get_form_model_mock_parser_patcher = patch('mangrove.transport.player.parser.get_form_model_by_code')
+        get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
+        get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
         self.form_model_mock = Mock(spec=FormModel)
-        self.form_model_mock.is_registration_form = Mock(return_value=True)
-        get_form_model_mock.return_value = self.form_model_mock
+        self.form_model_mock.is_registration_form.return_value = True
+        self.form_model_mock.entity_type=["clinic"]
+        get_form_model_player_mock.return_value = self.form_model_mock
+        get_form_model_parser_mock.return_value = self.form_model_mock
 
     def tearDown(self):
         self.reporter_patcher.stop()
         self.generate_code_patcher.stop()
-        self.get_form_model_mock_patcher.stop()
+        self.get_form_model_mock_player_patcher.stop()
+        self.get_form_model_mock_parser_patcher.stop()
 
     def test_sms_player_should_parse_message(self):
         parser_mock = Mock(spec=OrderSMSParser)
@@ -105,8 +110,8 @@ class TestSMSPlayer(TestCase):
         request = Request(transportInfo=self.transport,
                                message="questionnaire_code question1_answer question2_answer")
         order_sms_parser = OrderSMSParser(self.dbm)
-        order_sms_parser._get_question_codes_from_couchdb = Mock()
-        order_sms_parser._get_question_codes_from_couchdb.return_value = ['q1', 'q2']
+        order_sms_parser._get_question_codes = Mock()
+        order_sms_parser._get_question_codes.return_value = ['q1', 'q2'],self.form_model_mock
         SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(request)
         self.assertEqual(1, self.form_model_mock.submit.call_count)
 

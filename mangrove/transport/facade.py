@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, LOCATION_TYPE_FIELD_CODE, GEO_CODE
@@ -106,13 +107,16 @@ class RegistrationWorkFlow(object):
 def _set_short_code(dbm, form_model, values):
     entity_q_code = form_model.entity_question.code
     try:
-        values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
+        if GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in form_model.entity_type:
+            values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())
+        else:
+            values[entity_q_code] = _generate_short_code(dbm, form_model.entity_type[0])
     except KeyError:
         raise MangroveException(ENTITY_TYPE_FIELD_CODE + " should be present")
 
 
 
 def _generate_short_code(dbm, entity_type):
-    current_count = get_entity_count_for_type(dbm, entity_type)
+    current_count = get_entity_count_for_type(dbm, entity_type.lower())
     entity_type_prefix = entity_type[:3] + "%s"
     return  entity_type_prefix % (current_count + 1)

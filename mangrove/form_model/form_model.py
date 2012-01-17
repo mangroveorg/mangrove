@@ -380,7 +380,7 @@ class FormSubmission(object):
         return self.data_record_id
 
     def _get_entity_type(self, form_model):
-        if form_model.is_registration_form():
+        if form_model.form_code == REGISTRATION_FORM_CODE:
             entity_type = self._get_answer_for(ENTITY_TYPE_FIELD_CODE)
         else:
             entity_type = self.form_model.entity_type

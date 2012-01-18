@@ -169,7 +169,10 @@ class IntegerField(Field):
         try:
             for constraint in self.constraints:
                 constraint.validate(value)
-            return float(value)
+            try:
+                return int(value)
+            except Exception:
+                return float(value)
         except VdtValueTooBigError:
             raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE], value)
         except VdtValueTooSmallError:

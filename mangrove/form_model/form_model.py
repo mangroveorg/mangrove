@@ -413,7 +413,7 @@ class DataFormSubmission(FormSubmission):
 class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self,form_model,answers,errors):
         super(GlobalRegistrationFormSubmission,self).__init__(form_model,answers,errors)
-        self.entity_type=GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+        self.entity_type=self.get_entity_type(form_model)
 
     def get_entity(self,dbm):
         location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)

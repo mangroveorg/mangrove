@@ -30,7 +30,7 @@ class TestRegistrationFormModel(MangroveTestCase):
         answers = {"s": "1", "t": "Reporter", "g": "1 1", "m": "1212121212"}
         registration_form = construct_global_registration_form(self.manager)
         form_submission = registration_form.validate_submission(answers)
-        self.assertEqual("registration", form_submission.entity_type)
+        self.assertEqual("reporter", form_submission.entity_type[0])
 
 
     def test_form_submission_should_be_invalid_if_no_location_field_provided_while_registering_an_entity(self):

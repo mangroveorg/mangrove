@@ -38,14 +38,19 @@ class SMSPlayer(Player):
 
     def _process_post_parse_callback(self, form_code, values):
         for post_sms_parser_processors in self.post_sms_parser_processor:
-            post_sms_parser_processors.process(form_code, values)
+            response = post_sms_parser_processors.process(form_code, values)
+            if response is not None:
+                return response
 
     def accept(self, request):
         if self.parser is None:
             self.parser = SMSParserFactory().getSMSParser(request.message, self.dbm)
 
         form_code, values = self.parser.parse(request.message)
-        self._process_post_parse_callback(form_code, values)
+        post_sms_processor_response = self._process_post_parse_callback(form_code, values)
+        if post_sms_processor_response is not None:
+            return post_sms_processor_response
+
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         submission = Submission(self.dbm, request.transport, form_code, copy(values))
         submission.save()

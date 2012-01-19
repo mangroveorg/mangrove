@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
+from form_model.form_model import NAME_FIELD
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
@@ -8,12 +9,14 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import  OrderSMSParser
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
+from transport.facade import Response
 
 
 class TestSMSPlayer(TestCase):
     def _mock_reporter(self):
         self.reporter_mock = Mock(spec=Entity)
-        reporter_name = "1234"
+        self.reporter_name = "1234"
+        self.reporter_mock.value.return_value=self.reporter_name
         self.reporter_module.find_reporter_entity.return_value = self.reporter_mock
 
     def setUp(self):
@@ -58,7 +61,7 @@ class TestSMSPlayer(TestCase):
 
         parser_mock.parse.assert_called_once_with(message)
 
-    def test_should_call_parser_post_processor(self):
+    def test_should_call_parser_post_processor_and_continue_for_no_response(self):
         parser_mock = Mock(spec=OrderSMSParser)
         parser_mock.parse.return_value = ('FORM_CODE', {'id':'1'})
         post_sms_processor_mock=Mock()
@@ -66,9 +69,23 @@ class TestSMSPlayer(TestCase):
         message = 'FORM_CODE 1'
 
         sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,post_sms_parser_processors=[post_sms_processor_mock])
-        sms_player.accept(Request(message=message, transportInfo=self.transport))
+        response = sms_player.accept(Request(message=message, transportInfo=self.transport))
+        self.assertEqual(self.reporter_name,response.reporters[0][NAME_FIELD])
 
         post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1', 'l': None})
+
+    def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
+        parser_mock = Mock(spec=OrderSMSParser)
+        parser_mock.parse.return_value = ('FORM_CODE', {'id':'1'})
+        post_sms_processor_mock=Mock()
+        expected_response = Response(reporters=None,submission_id=None,form_submission=None)
+        post_sms_processor_mock.process.return_value= expected_response
+        message = 'FORM_CODE 1'
+
+        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,post_sms_parser_processors=[post_sms_processor_mock])
+        response = sms_player.accept(Request(message=message, transportInfo=self.transport))
+        self.assertEqual(expected_response,response)
+
 
 
     def test_should_submit_if_parsing_is_successful(self):

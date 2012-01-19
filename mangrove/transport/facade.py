@@ -68,9 +68,12 @@ class RegistrationWorkFlow(object):
         self.location_tree = location_tree
         self.get_location_hierarchy = get_location_hierarchy
 
-    def process(self, values):
+    def _generate_short_code_if_empty(self, values):
         if is_empty(self.form_model.get_short_code(values)):
             _set_short_code(self.dbm, self.form_model, values)
+
+    def process(self, values):
+        self._generate_short_code_if_empty(values)
         self._set_location_data(values)
         return values
 

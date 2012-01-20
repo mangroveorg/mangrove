@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
-from form_model.form_model import NAME_FIELD
+from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException

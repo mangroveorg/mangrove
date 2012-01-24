@@ -32,7 +32,7 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, reporters, submission_id, form_submission):
+    def __init__(self, reporters, submission_id, form_submission=None):
         self.reporters = reporters if reporters is not None else []
         self.success = False
         self.errors = {}

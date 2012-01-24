@@ -109,6 +109,7 @@ class OrderSMSParser(SMSParser):
         for token_index in range(len(tokens)):
             token = tokens[token_index]
             if is_empty(token): continue
+            if len(question_codes) <= token_index: break
             submission[question_codes[token_index]] = token
         return submission
 
@@ -117,7 +118,6 @@ class OrderSMSParser(SMSParser):
         try:
             form_code, tokens = self.form_code(message)
             question_codes,form_model = self._get_question_codes(form_code)
-            self._check_number_of_answers_for_submission(form_model,tokens,question_codes,form_code)
             submission = self._parse_ordered_tokens(tokens, question_codes, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
@@ -139,10 +139,6 @@ class OrderSMSParser(SMSParser):
         for aField in form_fields:
             question_codes.append(aField.code)
         return question_codes,form_model
-
-    def _check_number_of_answers_for_submission(self,form_model,tokens,question_codes,form_code):
-        if not form_model.is_registration_form() and (len(tokens) != len(question_codes)):
-            raise SMSParserWrongNumberOfAnswersException(form_code)
 
 
 class WebParser(object):

@@ -86,7 +86,7 @@ class FormModel(DataObject):
         doc.entity_type = entity_type
         doc.type = type
         doc.state = state
-        doc.active_languages = language
+        doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
 
@@ -206,7 +206,7 @@ class FormModel(DataObject):
         self._form_fields = []
 
     def add_language(self, language, label=None):
-        self._doc.active_languages = language
+        self._doc.active_languages.append(language)
         if label is not None:
             self._doc.add_label(language, label)
 

@@ -196,8 +196,7 @@ class FormModelDocument(DocumentBase):
 
     @active_languages.setter
     def active_languages(self, language):
-        #TODO This has to become a string and not a list
-        self.metadata[attributes.ACTIVE_LANGUAGES] = language
+        self.metadata[attributes.ACTIVE_LANGUAGES]=language
 
     def add_label(self, language, label):
         self.label[language] = label

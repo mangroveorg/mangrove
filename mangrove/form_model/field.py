@@ -22,24 +22,21 @@ def create_question_from(dictionary, dbm):
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
     is_event_time_field = dictionary.get("event_time_field_flag")
-    label = None
-    if label_dict is not None:
-        label = label_dict.get(field_attributes.DEFAULT_LANGUAGE)
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required)
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, ddtype, dictionary, label, name, instruction, required)
+        return _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, ddtype, dictionary, label, name, instruction, required, is_event_time_field)
+        return _get_date_field(code, ddtype, dictionary, label_dict, name, instruction, required, is_event_time_field)
     elif type == field_attributes.LOCATION_FIELD:
-        return GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction, required=required)
+        return _get_geo_code_field(code, ddtype, instruction, label_dict, name, required)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, ddtype, dictionary, label, name, type, instruction, required)
+        return _get_select_field(code, ddtype, dictionary, label_dict, name, type, instruction, required)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, ddtype, instruction, required)
+        return _get_list_field(name, code, label_dict, ddtype, instruction, required)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required)
+        return _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required)
     return None
 
 
@@ -401,44 +398,80 @@ class GeoCodeField(Field):
         return "xx.xxxx yy.yyyy"
 
 
-def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required):
+def _add_more_labels_to_field_if_any(field, labels):
+    if len(labels) > 1:
+        [field.add_or_edit_label(label=label[1], language=label[0]) for label in labels[1:]]
+
+
+def _get_labels_as_list(label_dict):
+    labels = label_dict.items()
+    first_label = labels[0][1]
+    first_language_for_label = labels[0][0]
+    return first_label, first_language_for_label, labels
+
+
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    field = TextField(name=name, code=code, label=first_label, entity_question_flag=is_entity_question,
+        constraints=constraints, ddtype=ddtype, instruction=instruction, required=required, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(field, labels)
+    return field
 
-    return TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                     constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
 
-
-def _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required):
+def _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    field = TelephoneNumberField(name=name, code=code, label=first_label, constraints=constraints, ddtype=ddtype,
+        instruction=instruction, required=required, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(field, labels)
 
-    return TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype,
-                                instruction=instruction, required=required)
+    return field
 
 
-def _get_integer_field(code, ddtype, dictionary, label, name, instruction, required):
+def _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required):
     constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
         constraints = constraints_factory(constraint_list)
-    return IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,
-                        constraints=constraints, required=required)
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    integer_field = IntegerField(name=name, code=code, label=first_label, ddtype=ddtype, instruction=instruction,
+        constraints=constraints, required=required, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(integer_field, labels)
+    return integer_field
 
 
-def _get_date_field(code, ddtype, dictionary, label, name, instruction, required, is_event_time_field):
+def _get_date_field(code, ddtype, dictionary, label_dict, name, instruction, required, is_event_time_field):
     date_format = dictionary.get("date_format")
-    return DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype,
-                     instruction=instruction, required=required, event_time_field_flag=is_event_time_field)
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    date_field = DateField(name=name, code=code, label=first_label, date_format=date_format, ddtype=ddtype,
+        instruction=instruction, required=required, event_time_field_flag=is_event_time_field, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(date_field, labels)
+    return date_field
 
 
-def _get_select_field(code, ddtype, dictionary, label, name, type, instruction, required):
+def _get_select_field(code, ddtype, dictionary, label_dict, name, type, instruction, required):
     choices = dictionary.get("choices")
     single_select = True if type == field_attributes.SELECT_FIELD else False
-    return SelectField(name=name, code=code, label=label, options=choices,
-                       single_select_flag=single_select, ddtype=ddtype, instruction=instruction, required=required)
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    field = SelectField(name=name, code=code, label=first_label, options=choices, single_select_flag=single_select,
+        ddtype=ddtype, instruction=instruction, required=required, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(field, labels)
+    return field
 
 
-def _get_list_field(name, code, label, ddtype, instruction, required):
-    return HierarchyField(name, code, label, ddtype, instruction=instruction, required=required)
+def _get_list_field(name, code, label_dict, ddtype, instruction, required):
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    field = HierarchyField(name, code, label_dict, ddtype, instruction=instruction, required=required)
+    _add_more_labels_to_field_if_any(field, labels)
+    return field
+
+def _get_geo_code_field(code, ddtype, instruction, label_dict, name, required):
+    first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
+    field = GeoCodeField(name=name, code=code, label=first_label, ddtype=ddtype, instruction=instruction,
+        required=required, language=first_language_for_label)
+    _add_more_labels_to_field_if_any(field, labels)
+    return field

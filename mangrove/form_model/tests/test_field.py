@@ -221,6 +221,30 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.instruction, "some instruction")
         self.assertFalse(created_field.is_required())
 
+    def test_should_create_text_field_from_dictionary_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        field_json = {
+            "defaultValue": "",
+            "label": {"en": "What is your name","fr":"french_label"},
+            "name": "field1_Name",
+            "code": "Q1",
+            "type": "text",
+            "constraints": [("length", {"min": 1, "max": 10})],
+            "entity_field_flag": True,
+            "ddtype": self.ddtype,
+            "required":False,
+            "instruction": "some instruction"
+        }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, TextField)
+        self.assertIsInstance(created_field.constraints[0], TextLengthConstraint)
+        self.assertEqual(created_field.constraints[0].max, 10)
+        self.assertEqual(created_field.constraints[0].min, 1)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertEqual(created_field.label, {"en": "What is your name","fr":"french_label"})
+        self.assertEqual(created_field.instruction, "some instruction")
+        self.assertFalse(created_field.is_required())
+
     def test_should_create_integer_field_with_validations(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         field_json = {
@@ -243,6 +267,30 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertTrue(created_field.is_required())
 
+    def test_should_create_integer_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "What is your age", "fr": "french label"}
+        field_json = {
+            "defaultValue": "",
+            "label": LABEL,
+            "name": "field1_age",
+            "code": "Q1",
+            "type": "integer",
+            "ddtype": self.DDTYPE_JSON,
+            'constraints': [("range", {"min": 0, "max": 100})],
+            "required":True,
+            "entity_field_flag": False
+        }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, IntegerField)
+        self.assertEqual(created_field._dict["constraints"][0][1], {"min": 0, "max": 100})
+        self.assertIsInstance(created_field.constraints[0], NumericRangeConstraint)
+        self.assertEqual(LABEL,created_field.label)
+        self.assertEqual(created_field.constraints[0].max, 100)
+        self.assertEqual(created_field.constraints[0].min, 0)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertTrue(created_field.is_required())
+
     def test_should_create_select_field_with_options(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         field_json = {
@@ -253,9 +301,30 @@ class TestField(unittest.TestCase):
             "choices": [{"text": {"en": "option 1"}, "value": "c1"},
                     {"text": {"en": "option 1"}, "value": "c2"}],
             "required":False,
-            "entity_field_flag": False}
+            "entity_field_flag": False,
+            "label":{"en":"select type field"}}
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, SelectField)
+        self.assertEqual(created_field.single_select_flag, False)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertFalse(created_field.is_required())
+
+    def test_should_create_select_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "select type field", "mg": "malagast label"}
+        field_json = {
+            "name": "q3",
+            "code": "qc3",
+            "type": "select",
+            "ddtype": self.DDTYPE_JSON,
+            "choices": [{"text": {"en": "option 1"}, "value": "c1"},
+                    {"text": {"en": "option 1"}, "value": "c2"}],
+            "required":False,
+            "entity_field_flag": False,
+            "label": LABEL}
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, SelectField)
+        self.assertEqual(LABEL, created_field.label)
         self.assertEqual(created_field.single_select_flag, False)
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertFalse(created_field.is_required())
@@ -271,7 +340,8 @@ class TestField(unittest.TestCase):
             "choices": [{"text": {"en": "hello", "fr": "bonjour"}, "value": "c1"},
                     {"text": {"en": "world"}, "value": "c2"}],
             "required":False,
-            "entity_field_flag": False}
+            "entity_field_flag": False,
+            "label": {"en":"select1 type question"}}
 
         expected_option_list = [{"text": {"en": "hello", "fr": "bonjour"}, "value": "c1"},
                 {"text": {"en": "world"}, "value": "c2"}]
@@ -360,6 +430,26 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertFalse(created_field.is_required())
 
+    def test_should_create_date_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "What is your birth date", "es": "spanish label"}
+        field_json = {
+            "defaultValue": "",
+            "label": LABEL,
+            "name": "Birth_date",
+            "code": "Q1",
+            "type": "date",
+            "date_format": "%m.%Y",
+            "ddtype": self.DDTYPE_JSON,
+            "required": False
+            }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, DateField)
+        self.assertEqual(created_field.date_format, "%m.%Y")
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertEqual(LABEL, created_field.label)
+        self.assertFalse(created_field.is_required())
+
     def test_should_create_geo_code_field(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         field_json = {
@@ -373,6 +463,23 @@ class TestField(unittest.TestCase):
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, GeoCodeField)
         self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertTrue(created_field.is_required())
+
+    def test_should_create_geo_code_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "What is your location", "mg": "malagasy label"}
+        field_json = {
+            "label": LABEL,
+            "name": "Birth_place",
+            "code": "LOC",
+            "type": "geocode",
+            "ddtype": self.DDTYPE_JSON,
+            "required": True,
+            }
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, GeoCodeField)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertEqual(LABEL, created_field.label)
         self.assertTrue(created_field.is_required())
 
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
@@ -577,9 +684,10 @@ class TestField(unittest.TestCase):
 
     def test_should_create_telephone_number_field_from_dictionary(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "test", "fr": "french_label"}
         field_json = {
             "defaultValue": "",
-            "label": {"en": "test"},
+            "label": LABEL,
             "name": "field1_Name",
             "code": "Q1",
             "type": "telephone_number",
@@ -596,7 +704,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.constraints[0].max, 10)
         self.assertEqual(created_field.constraints[0].min, 1)
         self.assertEqual(created_field.ddtype, self.ddtype)
-        self.assertEqual(created_field.label, {"en": "test"})
+        self.assertEqual(created_field.label, LABEL)
         self.assertEqual(created_field.instruction, "some instruction")
         self.assertFalse(created_field.is_required())
 

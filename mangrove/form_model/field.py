@@ -7,6 +7,7 @@ from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, 
 
 from mangrove.utils.types import is_sequence, is_empty
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
+from django.utils.translation import ugettext_lazy as _
 
 
 def create_question_from(dictionary, dbm):
@@ -180,10 +181,10 @@ class IntegerField(Field):
     def get_constraint_text(self):
         max, min = self._get_max_min()
         if min is not None and max is None:
-            constraint_text = "Minimum %s" % min
+            constraint_text = _("Minimum %s") % min
             return constraint_text
         if min is None and max is not None:
-            constraint_text = "Upto %s" % max
+            constraint_text = _("Upto %s") % max
             return constraint_text
         elif min is not None and max is not None:
             constraint_text = "%s -- %s" % (min, max)
@@ -271,13 +272,13 @@ class TextField(Field):
             min = length_constraint.min
             max = length_constraint.max
             if min is not None and max is None:
-                constraint_text = "Minimum %s characters" % min
+                constraint_text = _("Minimum %s characters") % min
                 return constraint_text
             if min is None and max is not None:
-                constraint_text = "Upto %s characters" % max
+                constraint_text = _("Upto %s characters") % max
                 return constraint_text
             elif min is not None and max is not None:
-                constraint_text = "Between %s -- %s characters" % (min, max)
+                constraint_text = _("Between %s -- %s characters") % (min, max)
                 return constraint_text
         return ""
 

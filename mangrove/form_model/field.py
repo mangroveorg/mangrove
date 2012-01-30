@@ -466,7 +466,7 @@ def _get_select_field(code, ddtype, dictionary, label_dict, name, type, instruct
 
 def _get_list_field(name, code, label_dict, ddtype, instruction, required):
     first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
-    field = HierarchyField(name, code, label_dict, ddtype, instruction=instruction, required=required)
+    field = HierarchyField(name, code, first_label, ddtype, instruction=instruction, required=required, language=first_language_for_label)
     _add_more_labels_to_field_if_any(field, labels)
     return field
 

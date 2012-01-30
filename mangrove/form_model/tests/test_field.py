@@ -329,6 +329,38 @@ class TestField(unittest.TestCase):
         self.assertEqual(created_field.ddtype, self.ddtype)
         self.assertFalse(created_field.is_required())
 
+    def test_should_create_hierarchy_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "hierarchy type field", "mg": "malagast label"}
+        field_json = {
+            "name": "q3",
+            "code": "qc3",
+            "type": "list",
+            "ddtype": self.DDTYPE_JSON,
+            "required":False,
+            "entity_field_flag": False,
+            "label": LABEL}
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, HierarchyField)
+        self.assertEqual(LABEL, created_field.label)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertFalse(created_field.is_required())
+
+    def test_should_create_telephone_number_field_with_multiple_labels(self):
+        self.ddtype_module.create_from_json.return_value = self.ddtype
+        LABEL = {"en": "telephone number field", "mg": "malagast label"}
+        field_json = {
+            "name": "q3",
+            "code": "qc3",
+            "type": "telephone_number",
+            "ddtype": self.DDTYPE_JSON,
+            "required":False,
+            "label": LABEL}
+        created_field = field.create_question_from(field_json, self.dbm)
+        self.assertIsInstance(created_field, TelephoneNumberField)
+        self.assertEqual(LABEL, created_field.label)
+        self.assertEqual(created_field.ddtype, self.ddtype)
+        self.assertFalse(created_field.is_required())
 
     def test_should_create_select_field_with_single_select_options(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype

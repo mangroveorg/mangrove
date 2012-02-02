@@ -371,11 +371,6 @@ class SelectField(Field):
 
     def _to_json_view(self):
         dict = self._dict.copy()
-        option_list = []
-        for option in self.options:
-            option_text = option["text"][field_attributes.DEFAULT_LANGUAGE]
-            option_list.append({"text": option_text, "val": option.get("val")})
-        dict['choices'] = option_list
         dict['ddtype'] = dict['ddtype'].to_json()
         return dict
 

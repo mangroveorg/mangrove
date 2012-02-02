@@ -24,8 +24,6 @@ def _create_constraints_for_mobile_number():
 def construct_global_registration_form(manager):
     location_type = get_or_create_data_dict(manager, name='Location Type', slug='location', primitive_type='string')
     geo_code_type = get_or_create_data_dict(manager, name='GeoCode Type', slug='geo_code', primitive_type='geocode')
-    description_type = get_or_create_data_dict(manager, name='description Type', slug='description',
-                                               primitive_type='string')
     mobile_number_type = get_or_create_data_dict(manager, name='Mobile Number Type', slug='mobile_number',
                                                  primitive_type='string')
     name_type = get_or_create_data_dict(manager, name='Name', slug='name', primitive_type='string')
@@ -47,16 +45,13 @@ def construct_global_registration_form(manager):
                                language="en", ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
     question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
                              language="en", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3", required=False)
-    question6 = TextField(name=DESCRIPTION_FIELD, code=DESCRIPTION_FIELD_CODE, label="Describe the subject",
-                          defaultValue="some default value", language="en", ddtype=description_type,
-                          instruction="Describe your subject in more details (optional)", required=False)
-    question7 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
+    question6 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                                      label="What is the mobile number associated with the subject?",
                                      defaultValue="some default value", language="en", ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name=GLOBAL_REGISTRATION_FORM_CODE, form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["registration"],
+        question1, question2, question3, question4, question5, question6], is_registration_model=True, entity_type=["registration"],
         validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),
                     AtLeastOneLocationFieldMustBeAnsweredValidator()])
     return form_model

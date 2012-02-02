@@ -12,7 +12,7 @@ Setting Up the development environment
 
     $ (http://blog.devinterface.com/2010/08/how-to-create-multiple-django-environments-using-virtualenv/)
 
-Install pip
+* Install pip
 
 * DataBase Requirements::
 
@@ -56,17 +56,11 @@ Install pip
 * In Mangrove module::
 
     $ pip install -r requirements.pip
-
-* In DataWinners module::
-
-    $ pip install -r requirements.pip
-
-* In Mangrove module::
-
     $ python setup.py develop
 
 * In DataWinners module::
 
+    $ pip install -r requirements.pip
     $ python manage.py syncdb migrate recreatedb
     $ python manage.py loadshapes
     $ django-admin.py compilemessages

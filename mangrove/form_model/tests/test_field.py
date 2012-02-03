@@ -596,7 +596,7 @@ class TestField(unittest.TestCase):
 
     def test_should_return_default_language_text(self):
         expected_json = {
-            "choices": [{"text": "Lake", "val": None}, {"text": "Dam", "val": None}],
+            "choices": [{"text": {"fr": "lake", "en": "Lake"}}, {"text":  {"fr": "dam", "en": "Dam"}}],
             "name": "type",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",

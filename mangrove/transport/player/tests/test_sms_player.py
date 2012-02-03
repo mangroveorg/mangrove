@@ -1,6 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
+from form_model.field import HierarchyField, GeoCodeField
+from form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
@@ -42,8 +44,19 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_registration_form.return_value = True
         self.form_model_mock.entity_type=["clinic"]
+        self.form_model_mock.get_field_by_name = self._location_field
         get_form_model_player_mock.return_value = self.form_model_mock
         get_form_model_parser_mock.return_value = self.form_model_mock
+
+    def _location_field(self,*args,**kwargs):
+        name = kwargs.get('name')
+        if name is LOCATION_TYPE_FIELD_NAME:
+            location_field = Mock(spec=HierarchyField)
+            location_field.code='l'
+            return location_field
+        geo_code_field=Mock(spec=GeoCodeField)
+        geo_code_field.code='g'
+        return geo_code_field
 
     def tearDown(self):
         self.reporter_patcher.stop()

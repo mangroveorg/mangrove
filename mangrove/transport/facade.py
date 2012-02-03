@@ -3,7 +3,7 @@ from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, GEO_CODE_FI
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
-from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, LOCATION_TYPE_FIELD_CODE, GEO_CODE
+from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE
 from mangrove.utils.types import is_empty
 
 class Channel(object):
@@ -94,10 +94,10 @@ class RegistrationWorkFlow(object):
         elif location_hierarchy is not [] and is_empty(geo_code):
             try:
                 translated_geo_code = tree.get_centroid(display_location.split(',')[0], len(location_hierarchy) - 1)
-                values[GEO_CODE] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
+                values[geo_field_code] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
             except Exception:
                 pass
-        values[LOCATION_TYPE_FIELD_CODE] = location_hierarchy
+        values[location_field_code] = location_hierarchy
 
     def _get_location_hierarchy_from_location_name(self, display_location):
         if is_empty(display_location):

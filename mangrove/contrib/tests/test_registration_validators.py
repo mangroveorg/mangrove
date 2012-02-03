@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE_FIELD, GEO_CODE, REPORTER, MOBILE_NUMBER_FIELD
+from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE_FIELD_NAME, GEO_CODE, REPORTER, MOBILE_NUMBER_FIELD
 from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.datastore.datadict import DataDictType
 
@@ -16,7 +16,7 @@ class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
             label="What is the subject's location?",
             language="en", ddtype=Mock(spec=DataDictType), instruction="Enter a region, district, or commune",
             required=False)
-        self.field2 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
+        self.field2 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
             language="en", ddtype=Mock(spec=DataDictType), instruction="Enter lat and long. Eg 20.6, 47.3",
             required=False)
         self.field3 = TextField('a', 'a', 'a', Mock(spec=DataDictType))

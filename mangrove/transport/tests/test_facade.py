@@ -1,5 +1,7 @@
 import unittest
 from mock import Mock, patch
+from form_model.field import HierarchyField, GeoCodeField
+from form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
@@ -49,6 +51,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.form_model_mock = Mock(spec=FormModel)
+        self.form_model_mock.get_field_by_name = self._location_field
         self.get_entity_count = patch('mangrove.transport.facade.get_entity_count_for_type', new=dummy_get_entity_count_for_type,spec=True)
         self.get_entity_count.start()
 
@@ -88,6 +91,16 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
         values = registration_work_flow.process({'t': 'clinic', 'l':'None', 'g':'1 1'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '1 1', 'l': [u'arantany']}, values)
+
+    def _location_field(self,*args,**kwargs):
+        name = kwargs.get('name')
+        if name is LOCATION_TYPE_FIELD_NAME:
+            location_field = Mock(spec=HierarchyField)
+            location_field.code='l'
+            return location_field
+        geo_code_field=Mock(spec=GeoCodeField)
+        geo_code_field.code='g'
+        return geo_code_field
 
 
 def dummy_get_entity_count_for_type(dbm, entity_type):

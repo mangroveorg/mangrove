@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from form_model.form_model import LOCATION_TYPE_FIELD_NAME, GEO_CODE_FIELD_NAME
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
@@ -78,7 +79,9 @@ class RegistrationWorkFlow(object):
         return values
 
     def _set_location_data(self, values):
-        display_location, geo_code = values.get(LOCATION_TYPE_FIELD_CODE), values.get(GEO_CODE)
+        location_field_code = self._get_location_field_code()
+        geo_field_code = self._get_geo_field_code()
+        display_location, geo_code = values.get(location_field_code), values.get(geo_field_code)
         location_hierarchy = self._get_location_hierarchy_from_location_name(display_location)
         tree = self.location_tree
         if location_hierarchy is [] and not is_empty(geo_code):
@@ -106,6 +109,17 @@ class RegistrationWorkFlow(object):
         lowest_level_location = display_location_list[0]
         location_hierarchy = self.get_location_hierarchy(lowest_level_location)
         return location_hierarchy
+
+    def _get_field_code_by_name(self,field_name):
+        field = self.form_model.get_field_by_name(name=field_name)
+        return field.code if field is not None else None
+
+    def _get_location_field_code(self):
+        return self._get_field_code_by_name(LOCATION_TYPE_FIELD_NAME)
+
+    def _get_geo_field_code(self):
+        return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
+
 
 def _set_short_code(dbm, form_model, values):
     entity_q_code = form_model.entity_question.code

@@ -2,7 +2,7 @@ from mangrove.contrib.registration_validators import MobileNumberValidationsForR
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
-from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, DESCRIPTION_FIELD_CODE, GEO_CODE_FIELD, FormModel, GEO_CODE, DESCRIPTION_FIELD, REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, DESCRIPTION_FIELD_CODE, GEO_CODE_FIELD_NAME, FormModel, GEO_CODE, DESCRIPTION_FIELD, REGISTRATION_FORM_CODE
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 
 GLOBAL_REGISTRATION_FORM_CODE = "reg"
@@ -43,7 +43,7 @@ def construct_global_registration_form(manager):
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
                                language="en", ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
-    question5 = GeoCodeField(name=GEO_CODE_FIELD, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
+    question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
                              language="en", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3", required=False)
     question6 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                                      label="What is the mobile number associated with the subject?",

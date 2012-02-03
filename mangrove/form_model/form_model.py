@@ -20,7 +20,7 @@ ENTITY_TYPE_FIELD_NAME = "entity_type"
 LOCATION_TYPE_FIELD_NAME = "location"
 LOCATION_TYPE_FIELD_CODE = "l"
 GEO_CODE = "g"
-GEO_CODE_FIELD = "geo_code"
+GEO_CODE_FIELD_NAME = "geo_code"
 
 NAME_FIELD = "name"
 FORM_CODE="form_code"

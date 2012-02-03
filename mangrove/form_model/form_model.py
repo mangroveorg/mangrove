@@ -402,6 +402,15 @@ class FormSubmission(object):
     def get_entity(self, dbm):
         pass
 
+    def _get_field_code_by_name(self,field_name):
+        field = self.form_model.get_field_by_name(name=field_name)
+        return field.code if field is not None else None
+
+    def get_location_field_code(self):
+        return self._get_field_code_by_name(LOCATION_TYPE_FIELD_NAME)
+
+    def get_geo_field_code(self):
+        return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
 
 class DataFormSubmission(FormSubmission):
     def __init__(self,form_model,answers,errors):
@@ -416,11 +425,11 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         self.entity_type=self.get_entity_type(form_model)
 
     def get_entity(self,dbm):
-        location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+        location = self.cleaned_data.get(self.get_location_field_code())
         return entity.create_entity(dbm=dbm, entity_type=self.get_entity_type(self.form_model),
             location=location,
             short_code=self.short_code,
-            geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+            geometry=convert_to_geometry(self.cleaned_data.get(self.get_geo_field_code())))
 
     def get_entity_type(self, form_model):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
@@ -431,11 +440,11 @@ class EntityRegistrationFormSubmission(FormSubmission):
         super(EntityRegistrationFormSubmission,self).__init__(form_model,answers,errors)
 
     def get_entity(self, dbm):
-        location = self.cleaned_data.get(LOCATION_TYPE_FIELD_CODE)
+        location = self.cleaned_data.get(self.get_location_field_code())
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
                 location=location,
                 short_code=self.short_code,
-                geometry=convert_to_geometry(self.cleaned_data.get(GEO_CODE)))
+                geometry=convert_to_geometry(self.cleaned_data.get(self.get_geo_field_code())))
 
 
 

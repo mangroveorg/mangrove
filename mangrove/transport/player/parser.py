@@ -155,6 +155,8 @@ class WebParser(object):
         return form_code, self._fetch_string_value(message)
 
     def _to_str(self, value):
+        if type(value) is int:
+            return str(value)
         return "".join(value) if value is not None else None
 
 

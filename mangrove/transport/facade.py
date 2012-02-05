@@ -101,7 +101,7 @@ class RegistrationWorkFlow(object):
 
     def _get_location_hierarchy_from_location_name(self, display_location):
         if is_empty(display_location):
-            return None
+            return Nonesms
         display_location_list = display_location.lower().split(',')
         if len(display_location_list) > 1:
             display_location_list.reverse()

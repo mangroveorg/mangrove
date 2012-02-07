@@ -1,7 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from database import DatabaseManager, DataObject
-from mangrove.datastore.entity import DataRecord
 from documents import DataDictDocument
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.utils.types import is_string
@@ -109,10 +108,3 @@ class DataDictType(DataObject):
     def create_from_json(cls, json, dbm):
         doc = DataDictDocument.wrap(json)
         return DataDictType.new_from_doc(dbm, doc)
-
-    def update_record_caches(self):
-        """This function will update the cached version of this type in all assosciated datarecords."""
-        rows = self._dbm.load_all_rows_in_view('datarecords_by_datatype_and_label', key=[self.id])
-        records_to_update = [{'id': row.id, 'label': row['key'][1]} for row in rows]
-        for record in records_to_update:
-            doc = self._dbm.get(record['id'], DataRecord)

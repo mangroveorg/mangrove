@@ -1,4 +1,4 @@
-# vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
+    # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
 from datetime import datetime
 from mock import Mock, patch
@@ -32,6 +32,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "defaultValue": "some default value",
             "label": {"eng": "What is your name"},
+            "language": "eng",
             "name": "field1_Name",
             "instruction": "Answer is word or phrase",
             "code": "Q1",
@@ -49,6 +50,7 @@ class TestField(unittest.TestCase):
     def test_should_create_list_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"eng": "What is your location"},
+            "language": "eng",
             "name": "loc",
             "instruction": "Answer is list",
             "code": "Q1",
@@ -65,6 +67,7 @@ class TestField(unittest.TestCase):
     def test_should_create_integer_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"eng": "What is your age"},
+            "language": "eng",
             "name": "Age",
             "code": "Q2",
             "ddtype": self.DDTYPE_JSON,
@@ -80,6 +83,7 @@ class TestField(unittest.TestCase):
     def test_should_create_integer_field_type_for_default_english_language_as_optional(self):
         expected_json = {
             "label": {"eng": "What is your age"},
+            "language": "eng",
             "name": "Age",
             "code": "Q2",
             "ddtype": self.DDTYPE_JSON,
@@ -95,6 +99,7 @@ class TestField(unittest.TestCase):
     def test_should_create_integer_field_type_for_default_english_language_with_range(self):
         expected_json = {
             "label": {"eng": "What is your age"},
+            "language": "eng",
             "name": "Age",
             "code": "Q2",
             "constraints": [('range', {"min": 15, "max": 120})],
@@ -112,6 +117,7 @@ class TestField(unittest.TestCase):
     def test_should_create_select_one_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"eng": "What is your favorite color"},
+            "language": "eng",
             "name": "color",
             "choices": [{"text": {"eng": "RED"}, "val": 1}, {"text": {"eng": "YELLOW"}, "val": 2},
                     {"text": {'eng': 'green'}, "val": 3}],
@@ -129,6 +135,7 @@ class TestField(unittest.TestCase):
     def test_should_create_multi_select_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"en": "What is your favorite color"},
+            "language": "en",
             "name": "color",
             "choices": [{"text": {"en": "RED"}, "val": 1}, {"text": {"en": "YELLOW"}, "val": 2},
                     {"text": {'en': 'green'}}],
@@ -149,6 +156,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "defaultValue": "some default value",
             "label": {"en": "What is your name", "fra": "french label"},
+            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "instruction": "test_instruction",
@@ -166,6 +174,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "defaultValue": "some default value",
             "label": {"en": "english label", "fra": "french label"},
+            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "ddtype": self.DDTYPE_JSON,
@@ -184,6 +193,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "defaultValue": "",
             "label": {"en": "What is your name"},
+            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
@@ -226,6 +236,7 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label": {"en": "What is your name","fr":"french_label"},
+            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
@@ -250,6 +261,7 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label": {"en": "What is your age"},
+            "language": "en",
             "name": "field1_age",
             "code": "Q1",
             "type": "integer",
@@ -580,6 +592,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "defaultValue": "",
             "label": {"en": "What is your name"},
+            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
@@ -602,6 +615,7 @@ class TestField(unittest.TestCase):
             "type": "select1",
             "code": "T",
             "label": {"en": "What type?"},
+            "language": "en",
             "required":True,
             "instruction": "test",
 
@@ -617,6 +631,7 @@ class TestField(unittest.TestCase):
     def test_should_create_location_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"en": "Where do you stay?"},
+            "language": "en",
             "name": "field1_Loc",
             "code": "Q1",
             "type": "geocode",
@@ -659,14 +674,14 @@ class TestField(unittest.TestCase):
     def test_should_convert_field_without_constraints_to_json(self):
         field = TextField(name="Test", code="AA", label="test", ddtype=self.ddtype)
         expected_json = {"code": "AA", "name": "Test", "defaultValue": "", "instruction": None, "label": {"en": "test"}
-            , "ddtype": {"test": "test"}, "type": "text","required":True}
+            , "language": "en", "ddtype": {"test": "test"}, "type": "text","required":True}
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_convert_field_with_constraints_to_json(self):
         constraints = [TextLengthConstraint(min=10, max=12), RegexConstraint("^[A-Za-z0-9]+$")]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
         expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None,
-                         "label": {"en": "question"}, "ddtype": {"test": "test"}, "type": "text",
+                         "label": {"en": "question"}, "language": "en", "ddtype": {"test": "test"}, "type": "text",
                          "length": {'max': 12, 'min': 10}, "regex": "^[A-Za-z0-9]+$","required":True}
 
         self.assertEqual(expected_json, field_to_json(field))
@@ -674,7 +689,7 @@ class TestField(unittest.TestCase):
     def test_should_convert_field_with_apostrophe_to_json(self):
         field = TextField(name="Test's", code="AA", label="test", ddtype=self.ddtype)
         expected_json = {"code": "AA", "name": "Test\'s", "defaultValue": "", "instruction": None,
-                         "label": {"en": "test"}, "ddtype": {"test": "test"}, "type": "text","required":True}
+                         "label": {"en": "test"}, "language": "en", "ddtype": {"test": "test"}, "type": "text","required":True}
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_create_text_field_with_multiple_constraints(self):
@@ -703,6 +718,7 @@ class TestField(unittest.TestCase):
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
         expected_json = {
             "label": {"en": "question"},
+            "language": "en",
             "name": "test",
             "code": "MC",
             "ddtype": self.DDTYPE_JSON,
@@ -807,6 +823,7 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label": {"en": "What is your birth date"},
+            "language": "en",
             "name": "Birth_date",
             "code": "Q1",
             "type": "date",
@@ -827,6 +844,7 @@ class TestField(unittest.TestCase):
         expected_json = {
             "instruction": None,
             "label": {"en": "event_time"},
+            "language": "en",
             "name": "event_time",
             "code": "et",
             "type": "date",

@@ -74,7 +74,7 @@ class Field(object):
         self._dict = {}
         assert ddtype is not None
         self._dict = {'name': name, 'type': type, 'code': code, 'ddtype': ddtype, 'instruction': instruction,
-                      'label': {language: label},'required':required}
+                      'label': {language: label},'required':required, 'language':language}
         self.constraints = constraints
         self.errors = []
         self.value = None

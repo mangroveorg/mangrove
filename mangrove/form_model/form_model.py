@@ -189,7 +189,7 @@ class FormModel(DataObject):
 
     def get_field_by_code(self, code):
         for field in self._form_fields:
-            if field.code.lower() == code.lower():
+            if code != None and field.code.lower() == code.lower():
                 return field
         return None
 

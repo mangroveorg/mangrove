@@ -80,6 +80,8 @@ class RegistrationWorkFlow(object):
 
     def _set_location_data(self, values):
         location_field_code = self._get_location_field_code()
+        if location_field_code is None:
+            return values
         geo_field_code = self._get_geo_field_code()
         display_location, geo_code = values.get(location_field_code), values.get(geo_field_code)
         location_hierarchy = self._get_location_hierarchy_from_location_name(display_location)

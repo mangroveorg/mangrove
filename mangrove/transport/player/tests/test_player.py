@@ -1,10 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest.case import TestCase
-from mock import Mock
+from mock import Mock,patch
 from mangrove.form_model.field import HierarchyField
 from mangrove.form_model.form_model import FormModel
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.player.player import   Player
 from mangrove.transport.facade import RegistrationWorkFlow
 
 def get_location_hierarchy(foo):
@@ -30,3 +29,15 @@ class TestBasePlayer(TestCase):
         values = dict(l='no_hierarchy', t='clinic')
         self.registration_workflow._set_location_data(values=values)
         self.assertEqual(['no_hierarchy'], values['l'])
+
+    def test_should_not_set_location_field_if_code_not_present(self):
+        values = dict(t='clinic')
+        registration_workflow = RegistrationWorkFlow(Mock(spec=DatabaseManager), Mock(spec=FormModel), Mock(), get_location_hierarchy)
+        with patch.object(RegistrationWorkFlow, '_get_location_field_code') as get_location_field_code:
+            with patch.object(RegistrationWorkFlow, '_get_geo_field_code') as get_geo_field_code:
+                with patch.object(RegistrationWorkFlow, '_get_location_hierarchy_from_location_name') as get_location_hierarchy_from_location_name:
+                    get_location_field_code.return_value = None
+                    get_geo_field_code.return_value = None
+                    get_location_hierarchy_from_location_name.return_value = None
+                    registration_workflow._set_location_data(values=values)
+                    self.assertEqual(1, len(values))

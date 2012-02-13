@@ -81,7 +81,7 @@ class RegistrationWorkFlow(object):
     def _set_location_data(self, values):
         location_field_code = self._get_location_field_code()
         if location_field_code is None:
-            return values
+            return
         geo_field_code = self._get_geo_field_code()
         display_location, geo_code = values.get(location_field_code), values.get(geo_field_code)
         location_hierarchy = self._get_location_hierarchy_from_location_name(display_location)
@@ -99,8 +99,7 @@ class RegistrationWorkFlow(object):
                 values[geo_field_code] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
             except Exception:
                 pass
-        if location_field_code is not None:
-            values[location_field_code] = location_hierarchy
+        values[location_field_code] = location_hierarchy
 
     def _get_location_hierarchy_from_location_name(self, display_location):
         if is_empty(display_location):

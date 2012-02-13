@@ -34,10 +34,6 @@ class TestBasePlayer(TestCase):
         values = dict(t='clinic')
         registration_workflow = RegistrationWorkFlow(Mock(spec=DatabaseManager), Mock(spec=FormModel), Mock(), get_location_hierarchy)
         with patch.object(RegistrationWorkFlow, '_get_location_field_code') as get_location_field_code:
-            with patch.object(RegistrationWorkFlow, '_get_geo_field_code') as get_geo_field_code:
-                with patch.object(RegistrationWorkFlow, '_get_location_hierarchy_from_location_name') as get_location_hierarchy_from_location_name:
-                    get_location_field_code.return_value = None
-                    get_geo_field_code.return_value = None
-                    get_location_hierarchy_from_location_name.return_value = None
-                    registration_workflow._set_location_data(values=values)
-                    self.assertEqual(1, len(values))
+            get_location_field_code.return_value = None
+            registration_workflow._set_location_data(values=values)
+            self.assertEqual(1, len(values))

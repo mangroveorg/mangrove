@@ -18,6 +18,10 @@ Setting Up the development environment
 
 	$ Intsall Postgres (For Linux - apt-get install postgresql-8.4)
 	$ Intsall Postgis  (For Linux - apt-get install postgresql-8.4-postgis)
+		NOTE: If unable to install (specially for Ubuntu 11.10 users) you can perform the following:
+			$ sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+			$ update repository
+			$ apt-get install postgresql-8.4-postgis
 	$ Install CouchDb  (For Linux - apt-get install couchdb)
 
 * Install python-dev if already not installed

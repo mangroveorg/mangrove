@@ -15,6 +15,11 @@ class Player(object):
         self.location_tree = location_tree
         self.get_location_hierarchy = get_location_hierarchy
 
+    def _create_submission(self, request, form_code, values):
+        submission = Submission(self.dbm, request.transport, form_code, copy(values))
+        submission.save()
+        return submission
+
     def submit(self, form_model, values, submission):
         form_submission = form_model.submit(self.dbm, values)
         submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
@@ -57,9 +62,8 @@ class SMSPlayer(Player):
             return post_sms_processor_response
 
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        submission = Submission(self.dbm, request.transport, form_code, copy(values))
-        submission.save()
         form_model, values = self._process(values, form_code, reporter_entity)
+        submission = self._create_submission(request, form_code, values)
         try:
             form_submission = self.submit(form_model, values, submission)
         except MangroveException as exception:
@@ -88,8 +92,7 @@ class WebPlayer(Player):
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request)
-        submission = Submission(self.dbm, request.transport, form_code, copy(values))
-        submission.save()
+        submission = self._create_submission(request, form_code, values)
         form_model, values = self._process(form_code, values)
         try:
             form_submission = self.submit(form_model, values, submission)

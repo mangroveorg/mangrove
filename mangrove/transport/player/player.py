@@ -62,8 +62,8 @@ class SMSPlayer(Player):
             return post_sms_processor_response
 
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        form_model, values = self._process(values, form_code, reporter_entity)
         submission = self._create_submission(request, form_code, values)
+        form_model, values = self._process(values, form_code, reporter_entity)
         try:
             form_submission = self.submit(form_model, values, submission)
         except MangroveException as exception:

@@ -15,8 +15,8 @@ class Player(object):
         self.location_tree = location_tree
         self.get_location_hierarchy = get_location_hierarchy
 
-    def _create_submission(self, request, form_code, values):
-        submission = Submission(self.dbm, request.transport, form_code, copy(values))
+    def _create_submission(self, transport_info, form_code, values):
+        submission = Submission(self.dbm, transport_info, form_code, copy(values))
         submission.save()
         return submission
 
@@ -62,7 +62,7 @@ class SMSPlayer(Player):
             return post_sms_processor_response
 
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        submission = self._create_submission(request, form_code, values)
+        submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(values, form_code, reporter_entity)
         try:
             form_submission = self.submit(form_model, values, submission)
@@ -92,7 +92,7 @@ class WebPlayer(Player):
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request)
-        submission = self._create_submission(request, form_code, values)
+        submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(form_code, values)
         try:
             form_submission = self.submit(form_model, values, submission)

@@ -6,6 +6,17 @@ from mangrove.form_model.form_model import FormModel, FormSubmissionFactory, For
 from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.player.player import WebPlayer
 
+def mock_form_submission(form_model_mock):
+    form_submission_mock = Mock(spec=FormSubmission)
+    form_submission_mock.is_valid = True
+    form_submission_mock.errors = OrderedDict()
+    form_submission_mock.data_record_id = ''
+    form_submission_mock.form_model = form_model_mock
+    form_submission_mock.short_code = ''
+    form_submission_mock.entity_type = ['']
+    return form_submission_mock
+
+
 class TestWebPlayer(TestCase):
 
     def setUp(self):
@@ -22,16 +33,9 @@ class TestWebPlayer(TestCase):
         get_form_model_mock = self.get_form_model_mock_patcher.start()
         get_form_model_mock.return_value = self.form_model_mock
         self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
-
-        self.form_submission_mock = Mock(spec=FormSubmission)
         self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
-        self.form_submission_mock = Mock(spec=FormSubmission)
-        self.form_submission_mock.is_valid = True
-        self.form_submission_mock.errors = OrderedDict()
-        self.form_submission_mock.data_record_id = ''
-        self.form_submission_mock.form_model = self.form_model_mock
-        self.form_submission_mock.short_code = ''
-        self.form_submission_mock.entity_type = ['']
+
+        self.form_submission_mock = mock_form_submission(self.form_model_mock)
 
 
 

@@ -13,6 +13,7 @@ from mangrove.transport.player.parser import  OrderSMSParser
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.facade import Response
+from mangrove.transport.player.tests.test_web_player import mock_form_submission
 
 
 class TestSMSPlayer(TestCase):
@@ -48,13 +49,9 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.get_field_by_name = self._location_field
         self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
-        self.form_submission_mock = Mock(spec=FormSubmission)
-        self.form_submission_mock.is_valid = True
-        self.form_submission_mock.errors = OrderedDict()
-        self.form_submission_mock.data_record_id = ''
-        self.form_submission_mock.form_model = self.form_model_mock
-        self.form_submission_mock.short_code = ''
-        self.form_submission_mock.entity_type = ['']
+
+        self.form_submission_mock = mock_form_submission(self.form_model_mock)
+
         get_form_model_player_mock.return_value = self.form_model_mock
         get_form_model_parser_mock.return_value = self.form_model_mock
 

@@ -21,6 +21,8 @@ from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
 class TestWEBSubmission(MangroveTestCase):
+    _multiprocess_can_split_ = False
+    _multiprocess_shared_ = True
     def setUp(self):
         MangroveTestCase.setUp(self)
         initializer.run(self.manager)

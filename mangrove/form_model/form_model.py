@@ -162,15 +162,6 @@ class FormModel(DataObject):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
         return entity_type.lower() if is_not_empty(entity_type) else None
 
-    def submit(self, dbm, values):
-        self.bind(values)
-        if self.is_inactive():
-            raise InactiveFormModelException(self.form_code)
-        form_submission = self.validate_submission(values)
-        if form_submission.is_valid:
-            form_submission.save(dbm)
-        return form_submission
-
     def save(self):
         # convert fields and validators to json fields before save
         if not self._is_form_code_unique():
@@ -211,7 +202,7 @@ class FormModel(DataObject):
             self._doc.add_label(language, label)
 
     def validate_submission(self, values):
-        cleaned_answers, errors = self._is_valid(values)
+        cleaned_answers, errors = self.is_valid(values)
         return FormSubmissionFactory().get_form_submission(self, cleaned_answers, errors)
 
 
@@ -304,7 +295,7 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k,v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
-    def _is_valid(self, values):
+    def is_valid(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
         errors = OrderedDict()

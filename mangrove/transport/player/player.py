@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
-from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import MangroveException
+from mangrove.form_model.form_model import get_form_model_by_code, FormSubmissionFactory
+from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
@@ -21,7 +21,13 @@ class Player(object):
         return submission
 
     def submit(self, form_model, values, submission):
-        form_submission = form_model.submit(self.dbm, values)
+        form_model.bind(values)
+        if form_model.is_inactive():
+            raise InactiveFormModelException(form_model.form_code)
+        cleaned_data, errors = form_model.is_valid(values=values)
+        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
+        if form_submission.is_valid:
+            form_submission.save(self.dbm)
         submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
             form_submission.form_model.is_in_test_mode())
         return form_submission

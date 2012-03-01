@@ -31,7 +31,7 @@ class TestRegistrationFormModel(MangroveTestCase):
         create_default_registration_form(self.manager)
         Form = form_by_code(self.manager, "reg")
         form = Form(data={"s": "1", "t": ["Reporter"], "g": "1 1", "m": "1212121212", "n":"foo"})
-        self.assertTrue(form.validate_submission())
+        self.assertTrue(form.is_valid())
         self.assertEqual(OrderedDict([('t', ['Reporter']), ('n', 'foo'), ('s', '1'), ('g', (1.0, 1.0)), ('m', u'1212121212')]),
                          form.cleaned_data)
         
@@ -39,7 +39,7 @@ class TestRegistrationFormModel(MangroveTestCase):
         create_default_registration_form(self.manager)
         Form = form_by_code(self.manager, "reg")
         form = Form(data={"s": "1", "t": "Reporter", "g": "1 1", "m": "1212121212"})
-        self.assertFalse(form.validate_submission())
+        self.assertFalse(form.is_valid())
         self.assertEqual(2, len(form.errors))
         self.assertEqual(['This field is required.'], form.errors['n'])
         self.assertEqual(['The value should be a sequence'], form.errors['t'])

@@ -66,7 +66,7 @@ class TestFormAPI(unittest.TestCase):
             }}
         }
         form = forms.Form.build_from_dct(dct)
-        self.assertFalse(form(data={}).validate_submission())
+        self.assertFalse(form(data={}).is_valid())
 
     def test_validate_submission_with_length_constraint_added(self):
         dct = {
@@ -88,8 +88,8 @@ class TestFormAPI(unittest.TestCase):
             }
         }
         form = forms.Form.build_from_dct(dct)
-        self.assertTrue(form(data={'name':'foo'}).validate_submission())
-        self.assertFalse(form(data={'name':'foobar'}).validate_submission())
+        self.assertTrue(form(data={'name':'foo'}).is_valid())
+        self.assertFalse(form(data={'name':'foobar'}).is_valid())
 
     def test_should_add_multiple_validators(self):
         dct = {
@@ -113,8 +113,8 @@ class TestFormAPI(unittest.TestCase):
         Form = forms.Form.build_from_dct(dct)
         form = Form()
         self.assertEqual(2,len(form.fields['name'].validators))
-        self.assertTrue(Form(data={'name':'foo'}).validate_submission())
-        self.assertFalse(Form(data={'name':'foo.'}).validate_submission())
+        self.assertTrue(Form(data={'name':'foo'}).is_valid())
+        self.assertFalse(Form(data={'name':'foo.'}).is_valid())
 
     def test_should_have_cleaned_data_after_validation(self):
         dct = {
@@ -137,7 +137,7 @@ class TestFormAPI(unittest.TestCase):
         }
         Form = forms.Form.build_from_dct(dct)
         form = Form(data={'name':'foo'})
-        self.assertTrue(form.validate_submission())
+        self.assertTrue(form.is_valid())
         self.assertEqual({'name':'foo'}, form.cleaned_data)
 
     def test_should_not_have_cleaned_data_after_incorrect_validation(self):
@@ -161,7 +161,7 @@ class TestFormAPI(unittest.TestCase):
         }
         Form = forms.Form.build_from_dct(dct)
         form = Form(data={'name':'foo.'})
-        self.assertFalse(form.validate_submission())
+        self.assertFalse(form.is_valid())
         with self.assertRaises(AttributeError):
             foo = form.cleaned_data
 

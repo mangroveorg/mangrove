@@ -79,7 +79,7 @@ class TestFormPersistence(MangroveTestCase):
         self.assertEqual(len(form1.fields), len(form2.fields))
         self.assertEqual(len(form1.fields['fathers_name'].validators), len(form2.fields['fathers_name'].validators))
         self.assertTrue(isinstance(form2.fields['fathers_name'].validators[0], TextLengthValidator))
-        self.assertFalse(Form(data={'fathers_name':'foo.'}).validate_submission())
+        self.assertFalse(Form(data={'fathers_name':'foo.'}).is_valid())
 
     def test_save_and_retrieve_declared_classes(self):
         class FooForm(forms.Form):

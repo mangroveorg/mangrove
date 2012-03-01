@@ -32,8 +32,6 @@ def get_location_hierarchy(foo):
 
 
 class TestShouldSaveSMSSubmission(MangroveTestCase):
-    _multiprocess_can_split_ = False
-    _multiprocess_shared_ = True
     def setUp(self):
         MangroveTestCase.setUp(self)
         initializer.run(self.manager)

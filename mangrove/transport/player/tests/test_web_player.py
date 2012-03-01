@@ -32,8 +32,7 @@ class TestWebPlayer(TestCase):
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
         get_form_model_mock = self.get_form_model_mock_patcher.start()
         get_form_model_mock.return_value = self.form_model_mock
-        self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
-        self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
+        self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
         self.form_submission_mock = mock_form_submission(self.form_model_mock)
 

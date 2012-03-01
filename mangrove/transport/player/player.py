@@ -24,7 +24,7 @@ class Player(object):
         form_model.bind(values)
         if form_model.is_inactive():
             raise InactiveFormModelException(form_model.form_code)
-        cleaned_data, errors = form_model.is_valid(values=values)
+        cleaned_data, errors = form_model.validate_submission(values=values)
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
         if form_submission.is_valid:
             form_submission.save(self.dbm)

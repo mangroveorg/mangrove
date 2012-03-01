@@ -48,7 +48,7 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.get_field_by_name = self._location_field
-        self.form_model_mock.is_valid.return_value = OrderedDict(), OrderedDict()
+        self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
         self.form_submission_mock = mock_form_submission(self.form_model_mock)
 
@@ -105,7 +105,7 @@ class TestSMSPlayer(TestCase):
         parser_mock = Mock(spec=OrderSMSParser)
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
         post_sms_processor_mock = Mock()
-        expected_response = Response(reporters=None, submission_id=None, form_submission=None)
+        expected_response = Response(reporters=None, submission_id=None)
         post_sms_processor_mock.process.return_value = expected_response
         message = 'FORM_CODE 1'
 
@@ -120,7 +120,7 @@ class TestSMSPlayer(TestCase):
             get_form_submission_mock.return_value = self.form_submission_mock
             response = self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
             values = OrderedDict([(u'id', u'1'), (u'm', u'hello world'), ('l', None)])
-            self.form_model_mock.is_valid.assert_called_once_with(values=values)
+            self.form_model_mock.validate_submission.assert_called_once_with(values=values)
             self.form_submission_mock.save.assert_called_once_with(self.dbm)
             self.assertEqual('', response.datarecord_id)
             self.assertEqual([''], response.entity_type)
@@ -146,7 +146,7 @@ class TestSMSPlayer(TestCase):
         with self.assertRaises(SMSParserInvalidFormatException):
             self.sms_player.accept(Request(message="invalid .format", transportInfo=self.transport))
 
-        self.assertEqual(0, self.form_model_mock.is_valid.call_count)
+        self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
 
 
     def test_should_not_parse_if_two_question_codes(self):
@@ -154,7 +154,7 @@ class TestSMSPlayer(TestCase):
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
             self.sms_player.accept(Request(message="cli001 .na tester1 .na tester2", transportInfo=transport))
 
-        self.assertEqual(0, self.form_model_mock.is_valid.call_count)
+        self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
 
 
     def test_should_accept_ordered_sms_message(self):
@@ -167,7 +167,7 @@ class TestSMSPlayer(TestCase):
         with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
             get_form_submission_mock.return_value = self.form_submission_mock
             response = SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(request)
-            self.form_model_mock.is_valid.assert_called_once_with(values=values)
+            self.form_model_mock.validate_submission.assert_called_once_with(values=values)
             self.form_submission_mock.save.assert_called_once_with(self.dbm)
             self.assertEqual('', response.datarecord_id)
             self.assertEqual([''], response.entity_type)

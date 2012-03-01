@@ -26,19 +26,11 @@ class TestRegistrationFormModel(MangroveTestCase):
         self.assertEqual(15, field.constraints[0].max)
         self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
 
-    def test_create_form_submission_with_entity_type_as_lowercase_list_of_string(self):
-        answers = {"s": "1", "t": "Reporter", "g": "1 1", "m": "1212121212"}
-        registration_form = construct_global_registration_form(self.manager)
-        form_submission = registration_form.validate_submission(answers)
-        self.assertEqual("reporter", form_submission.entity_type[0])
-
-
     def test_form_submission_should_be_invalid_if_no_location_field_provided_while_registering_an_entity(self):
         answers = {"s": "1", "t": "Reporter", "m": "1212121212"}
         registration_form = construct_global_registration_form(self.manager)
-        form_submission = registration_form.validate_submission(answers)
-        self.assertFalse(form_submission.is_valid)
-        self.assertTrue('l' in form_submission.errors)
-        self.assertTrue('g' in form_submission.errors)
+        cleaned_data, errors = registration_form.validate_submission(answers)
+        self.assertTrue('l' in errors)
+        self.assertTrue('g' in errors)
 
 

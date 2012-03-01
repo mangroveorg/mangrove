@@ -43,12 +43,12 @@ class TestFormModel(unittest.TestCase):
     
     def test_should_validate_for_valid_integer_value(self):
         answers = {"ID": "1", "Q2": "16"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
 
     def test_should_return_error_for_invalid_integer_value(self):
         answers = {"id": "1", "q2": "200"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
@@ -56,25 +56,25 @@ class TestFormModel(unittest.TestCase):
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}
         expected_result = OrderedDict([('Q1', 'Asif Momin'), ('Q2', 20.0), ('ID', '1')])
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_ignore_field_validation_if_the_answer_blank(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
         expected_result = OrderedDict([('Q1', 'Asif Momin'), ('ID', '1')])
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
 
     def test_should_return_errors_for_invalid_text_and_integer(self):
         answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
         self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
                           'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
@@ -83,33 +83,29 @@ class TestFormModel(unittest.TestCase):
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
         expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1')])
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))
         self.assertEqual(cleaned_answers, expected_cleaned_data)
         
     def test_should_validate_field_case_insensitive(self):
         answers = {"Id": "1", "Q1": "Asif Momin", "q2": "40"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual({}, errors)
 
 
     def test_should_return_valid_form_submission(self):
         answers = {"ID": "1", "Q2": "16"}
-        form_submission = self.form_model.validate_submission(answers)
-        self.assertTrue(form_submission.is_valid)
-        self.assertEqual("1", form_submission.short_code)
-        self.assertEqual({"Q2": 16.0, 'ID': '1'}, form_submission.cleaned_data)
-        self.assertEqual(0, len(form_submission.errors))
+        cleaned_data, errors = self.form_model.validate_submission(answers)
+        self.assertEqual({"Q2": 16.0, 'ID': '1'}, cleaned_data)
+        self.assertEqual(0, len(errors))
 
     def test_should_return_invalid_form_submission(self):
         answers = {"ID": "1", "Q2": "non number value"}
-        form_submission = self.form_model.validate_submission(answers)
-        self.assertFalse(form_submission.is_valid)
-        self.assertEqual("1", form_submission.short_code)
-        self.assertEqual({'ID': '1'}, form_submission.cleaned_data)
-        self.assertEqual(1, len(form_submission.errors))
+        cleaned_data, errors = self.form_model.validate_submission(answers)
+        self.assertEqual({'ID': '1'}, cleaned_data)
+        self.assertEqual(1, len(errors))
 
     def test_should_assert_activity_report(self):
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
@@ -154,7 +150,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_set_error_on_field_validation_failure(self):
         answers = {"id": "1", "q1": "ab", "q2": "200"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
         self.assertEqual(['Answer 200 for question Q2 is greater than allowed.'], self.form_model.get_field_by_code(
             "q2").errors)
@@ -163,7 +159,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_not_set_error_if_validation_success(self):
         answers = {"id": "1", "q1": "abcdef", "q2": "100"}
-        cleaned_answers, errors = self.form_model.is_valid(answers)
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 0)
         for field in self.form_model.fields:
             self.assertEqual([], field.errors)

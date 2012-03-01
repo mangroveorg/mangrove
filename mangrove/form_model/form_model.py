@@ -201,11 +201,6 @@ class FormModel(DataObject):
         if label is not None:
             self._doc.add_label(language, label)
 
-    def validate_submission(self, values):
-        cleaned_answers, errors = self.is_valid(values)
-        return FormSubmissionFactory().get_form_submission(self, cleaned_answers, errors)
-
-
     def is_registration_form(self):
         return self._doc['is_registration_model']
 
@@ -295,7 +290,7 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k,v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
-    def is_valid(self, values):
+    def validate_submission(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
         errors = OrderedDict()

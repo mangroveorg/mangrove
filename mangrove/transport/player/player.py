@@ -21,15 +21,19 @@ class Player(object):
         return submission
 
     def submit(self, form_model, values, submission):
-        form_model.bind(values)
-        if form_model.is_inactive():
-            raise InactiveFormModelException(form_model.form_code)
-        cleaned_data, errors = form_model.validate_submission(values=values)
-        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
-        if form_submission.is_valid:
-            form_submission.save(self.dbm)
-        submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
-            form_submission.form_model.is_in_test_mode())
+        try:
+            form_model.bind(values)
+            if form_model.is_inactive():
+                raise InactiveFormModelException(form_model.form_code)
+            cleaned_data, errors = form_model.validate_submission(values=values)
+            form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
+            if form_submission.is_valid:
+                form_submission.save(self.dbm)
+            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
+                form_submission.form_model.is_in_test_mode())
+        except MangroveException as exception:
+            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
+            raise
         return form_submission
 
 class SMSPlayer(Player):
@@ -70,11 +74,7 @@ class SMSPlayer(Player):
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(values, form_code, reporter_entity)
-        try:
-            form_submission = self.submit(form_model, values, submission)
-        except MangroveException as exception:
-            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
-            raise
+        form_submission = self.submit(form_model, values, submission)
         return Response(reporters=[{NAME_FIELD: reporter_entity.value(NAME_FIELD)}], submission_id=submission.uuid,
                         form_submission=form_submission)
 
@@ -100,11 +100,7 @@ class WebPlayer(Player):
         form_code, values = self._parse(request)
         submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(form_code, values)
-        try:
-            form_submission = self.submit(form_model, values, submission)
-        except MangroveException as exception:
-            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
-            raise
+        form_submission = self.submit(form_model, values, submission)
         return Response(reporters=[], submission_id=submission.uuid, form_submission=form_submission)
 
 

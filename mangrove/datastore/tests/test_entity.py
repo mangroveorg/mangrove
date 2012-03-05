@@ -2,7 +2,7 @@
 from datetime import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, invalidate_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -15,6 +15,26 @@ class TestEntity(MangroveTestCase):
         uuid = e.save()
         self.assertTrue(uuid)
         self.manager.delete(e)
+
+    def test_should_invalidate_entity(self):
+        short_code = "short_code"
+        entity_type = ["clinic"]
+        e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
+        uuid = e.save()
+        self.assertTrue(uuid)
+        invalidate_entity(self.manager, entity_type, short_code)
+        loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
+        self.assertTrue(loaded_entity.void)
+
+    def test_should_invalidate_entity_when_entity_type_is_string(self):
+        short_code = "short_code"
+        entity_type = "clinic"
+        e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
+        uuid = e.save()
+        self.assertTrue(uuid)
+        invalidate_entity(self.manager, entity_type, short_code)
+        loaded_entity = get_by_short_code(self.manager, short_code, [entity_type])
+        self.assertTrue(loaded_entity.void)
 
     def test_create_entity_with_id(self):
         e = Entity(self.manager, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")

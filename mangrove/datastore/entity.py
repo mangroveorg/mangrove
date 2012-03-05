@@ -12,8 +12,11 @@ from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
 from database import DatabaseManager, DataObject
 
-def delete_entity(dbm, entity_type, short_code, hard_delete=False):
-    pass
+def invalidate_entity(dbm, entity_type, short_code):
+    if is_string(entity_type):
+        entity_type = [entity_type]
+    entity = get_by_short_code(dbm,short_code, entity_type)
+    entity.invalidate()
 
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """

@@ -12,13 +12,13 @@ class TestDeleteHandler(TestCase):
         self.manager = Mock(spec=DatabaseManager)
         self.delete_handler = DeleteHandler(self.manager)
         self.submission_patcher = patch('mangrove.transport.player.handler.Submission')
-        self.delete_entity_patcher = patch('mangrove.transport.player.handler.delete_entity')
+        self.invalidate_entity_patcher = patch('mangrove.transport.player.handler.invalidate_entity')
         self.submission_mock = self.submission_patcher.start()
-        self.delete_entity_mock = self.delete_entity_patcher.start()
+        self.invalidate_entity_mock = self.invalidate_entity_patcher.start()
 
     def tearDown(self):
         self.submission_patcher.stop()
-        self.delete_entity_patcher.stop()
+        self.invalidate_entity_patcher.stop()
 
     def test_should_parse_the_request(self):
         message = 'delete entity_type entity_id'
@@ -35,4 +35,4 @@ class TestDeleteHandler(TestCase):
             parse_mock.assert_called_once_with(message)
         self.submission_mock.assert_called_once_with(self.manager, transportInfo, command, values)
         mock_submission.save.assert_called_once_with()
-        self.delete_entity_mock.assert_called_once_with(self.manager, 'entity_type', 'entity_id')
+        self.invalidate_entity_mock.assert_called_once_with(self.manager, 'entity_type', 'entity_id')

@@ -79,7 +79,6 @@ class KeyBasedSMSParser(SMSParser):
 
     def parse(self, message):
         assert is_string(message)
-        form_code = None
         try:
             form_code,tokens = self.form_code(message)
             submission = self._parse_tokens(tokens)
@@ -296,3 +295,8 @@ class XlsOrderedParser(XlsParser):
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
         return parsedData
+
+
+class DeleteRequestParser(object):
+    def parse(self, message):
+        pass

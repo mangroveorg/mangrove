@@ -5,7 +5,7 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, InactiveFormModelException
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry

@@ -79,13 +79,12 @@ class SMSPlayer(Player):
                         form_submission=form_submission)
 
 class WebPlayer(Player):
-    def __init__(self, dbm, location_tree=None, get_location_hierarchy=None):
+    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None):
+        self.parser = parser or WebParser()
         Player.__init__(self, dbm, location_tree, get_location_hierarchy)
 
     def _parse(self, request):
-        web_parser = WebParser()
-        form_code, values = web_parser.parse(request.message)
-        return form_code, values
+        return self.parser.parse(request.message)
 
     def _process(self, form_code, values):
         form_model = get_form_model_by_code(self.dbm, form_code)

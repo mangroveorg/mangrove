@@ -79,7 +79,7 @@ class TestWEBSubmission(MangroveTestCase):
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()
 
-        self.web_player = WebPlayer(self.manager, LocationTree(), get_location_hierarchy = get_location_hierarchy)
+        self.web_player = WebPlayer(self.manager, location_tree=LocationTree(), get_location_hierarchy = get_location_hierarchy)
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)

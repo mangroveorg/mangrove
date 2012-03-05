@@ -12,6 +12,8 @@ from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
 from database import DatabaseManager, DataObject
 
+def delete_entity(dbm, entity_type, short_code, hard_delete=False):
+    pass
 
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """

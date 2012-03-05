@@ -285,7 +285,6 @@ def dottedQuadToNum(ip):
             return 0xFFFFFFFFL
         else:
             raise ValueError('Not a good dotted-quad IP: %s' % ip)
-    return
 
 
 def numToDottedQuad(num):

@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from unittest import TestCase
-from mock import patch, Mock, self
+from mock import patch, Mock
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.datastore.database import DatabaseManager
 from mangrove.transport.player.handler import DeleteHandler
@@ -21,7 +21,7 @@ class TestDeleteHandler(TestCase):
         self.submission_patcher.stop()
         self.invalidate_entity_patcher.stop()
 
-    def test_should_parse_the_request(self):
+    def test_should_invalidate_entity(self):
         message = 'delete entity_type entity_id'
         command = 'delete'
         values = {'entity_type': 'entity_type', 'entity_id': 'entity_id'}

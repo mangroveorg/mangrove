@@ -26,6 +26,50 @@ class TestEntity(MangroveTestCase):
         loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
         self.assertTrue(loaded_entity.void)
 
+    def _create_ddtypes(self):
+        bed_ddtype = DataDictType(self.manager, name='beds', slug='beds', primitive_type='number')
+        med_ddtype = DataDictType(self.manager, name='meds', slug='meds', primitive_type='number')
+        patient_ddtype = DataDictType(self.manager, name='patients', slug='patients', primitive_type='number')
+        bed_ddtype.save()
+        med_ddtype.save()
+        patient_ddtype.save()
+        return bed_ddtype, med_ddtype
+
+    def _add_data(self, bed_ddtype, e, med_ddtype):
+        data = [('beds', 10, bed_ddtype), ('meds', 20, med_ddtype)]
+        data_record_id1 = e.add_data(data=data)
+        data = [('patients', 10, bed_ddtype), ('meds', 10, med_ddtype)]
+        data_record_id2 = e.add_data(data=data)
+        data = [('beds', 20, bed_ddtype), ('patients', 20, med_ddtype)]
+        data_record_id3 = e.add_data(data=data)
+        return data_record_id1, data_record_id2, data_record_id3
+
+    def _get_data_records(self, data_record_id1, data_record_id2, data_record_id3):
+        data_record1 = DataRecord.get(self.manager, data_record_id1)
+        data_record2 = DataRecord.get(self.manager, data_record_id2)
+        data_record3 = DataRecord.get(self.manager, data_record_id3)
+        return data_record1, data_record2, data_record3
+
+    def test_should_invalidate_entity_with_its_data_records(self):
+        short_code = "short_code"
+        entity_type = ["clinic"]
+        e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
+        uuid = e.save()
+        self.assertTrue(uuid)
+
+        bed_ddtype, med_ddtype = self._create_ddtypes()
+        data_record_id1, data_record_id2, data_record_id3 = self._add_data(bed_ddtype, e, med_ddtype)
+
+        invalidate_entity(self.manager, entity_type, short_code)
+        loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
+        self.assertTrue(loaded_entity.void)
+
+        data_record1, data_record2, data_record3 = self._get_data_records(data_record_id1, data_record_id2,
+            data_record_id3)
+        self.assertTrue(data_record1.void)
+        self.assertTrue(data_record2.void)
+        self.assertTrue(data_record3.void)
+
     def test_should_invalidate_entity_when_entity_type_is_string(self):
         short_code = "short_code"
         entity_type = "clinic"

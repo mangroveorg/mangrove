@@ -279,3 +279,11 @@ class LocationFieldNotPresentException(MangroveException):
 class AccountExpiredException(MangroveException):
     def __init__(self, message = "Trial account has been expired!"):
         MangroveException.__init__(self, message)
+
+class DeleteRequestParserInvalidFormatException(MangroveException):
+    def __init__(self, data):
+        MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data, (data,))
+
+class DeleteRequestParserWrongNumberOfAnswersException(MangroveException):
+    def __init__(self, message):
+        MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (message, ))

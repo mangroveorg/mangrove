@@ -37,7 +37,7 @@ class TestDeleteHandler(TestCase):
         mock_submission.save.assert_called_once_with()
         self.invalidate_entity_mock.assert_called_once_with(self.manager, 'entity_type', 'entity_id')
 
-    def test_should_log_when_delete_unsuccessful(self):
+    def test_should_log_when_delete_successful(self):
         message = 'delete entity_type entity_id'
         command = 'delete'
         values = {'entity_type': 'entity_type', 'entity_id': 'entity_id'}
@@ -50,7 +50,7 @@ class TestDeleteHandler(TestCase):
             self.delete_handler.handle(request)
         mock_submission.update.assert_called_once_with(True,'',)
 
-    def test_should_log_when_delete_successful(self):
+    def test_should_log_when_delete_unsuccessful(self):
         message = 'delete entity_type entity_id'
         command = 'delete'
         values = {'entity_type': 'entity_type', 'entity_id': 'entity_id'}

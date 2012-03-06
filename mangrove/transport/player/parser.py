@@ -4,7 +4,8 @@ import csv
 import re
 import xlrd
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
-    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, SMSParserWrongNumberOfAnswersException
+    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, DeleteRequestParserInvalidFormatException,\
+    DeleteRequestParserWrongNumberOfAnswersException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 
@@ -298,5 +299,21 @@ class XlsOrderedParser(XlsParser):
 
 
 class DeleteRequestParser(object):
+
+    def clean(self, message):
+        message = unicode(message, encoding='utf-8')
+        return message.strip()
+
     def parse(self, message):
-        pass
+        assert is_string(message)
+        message = self.clean(message)
+        self._validate_format(message)
+        tokens = message.split()
+        if len(tokens) < 3:
+            raise DeleteRequestParserWrongNumberOfAnswersException(message)
+        values = dict(entity_type=tokens[1],entity_id=tokens[2])
+        return tokens[0], values
+
+    def _validate_format(self, message):
+        if not re.match(ur'^(\w+)\s+(\w+)', message):
+            raise DeleteRequestParserInvalidFormatException(message)

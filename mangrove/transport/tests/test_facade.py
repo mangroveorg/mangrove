@@ -1,13 +1,14 @@
 import unittest
 from mock import Mock, patch
 from mangrove.form_model.field import HierarchyField, GeoCodeField
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
+from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmission
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow
+from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow, Response
 from mangrove.transport.player.tests.test_web_player import DummyLocationTree
+from mangrove.utils.types import is_empty
 
 class TestActivityWorkFlow(unittest.TestCase):
     def setUp(self):
@@ -115,3 +116,42 @@ class DummyLocationTree(object):
 
     def get_centroid(self, location_name, level):
         return 60, -12
+
+class TestResponse(unittest.TestCase):
+
+    def test_should_initialize_response(self):
+        response = Response(reporters=None, submission_id=None, form_submission=None)
+        self.assertFalse(response.success)
+        self.assertTrue(is_empty(response.errors))
+        self.assertTrue(is_empty(response.reporters))
+
+    def test_should_initialize_response_with_reporters(self):
+        reporters=[1]
+        response = Response(reporters=reporters, submission_id=None, form_submission=None)
+        self.assertEquals(reporters,response.reporters)
+
+    def test_should_initialize_response_from_form_submission(self):
+        form_submission_mock = Mock(spec=FormSubmission)
+        form_submission_mock.saved=True
+        form_submission_mock.errors=[]
+        expected_data_record_id = 123
+        form_submission_mock.data_record_id= expected_data_record_id
+        expected_short_code = 456
+        form_submission_mock.short_code= expected_short_code
+        expected_cleanned_data = {'a': 1}
+        form_submission_mock.cleaned_data= expected_cleanned_data
+        form_submission_mock.is_registration=False
+        expected_entity_type = 'entity_type'
+        form_submission_mock.entity_type= expected_entity_type
+
+        response = Response(reporters=None, submission_id=None, form_submission=form_submission_mock)
+        self.assertTrue(response.success)
+        self.assertTrue(is_empty(response.errors))
+        self.assertTrue(is_empty(response.reporters))
+        self.assertTrue(response.success)
+        self.assertEquals(expected_data_record_id,response.datarecord_id)
+        self.assertEquals(expected_short_code,response.short_code)
+        self.assertEquals(expected_cleanned_data,response.processed_data)
+        self.assertFalse(response.is_registration)
+        self.assertEquals(expected_entity_type,response.entity_type)
+

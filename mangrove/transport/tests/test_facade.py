@@ -143,6 +143,10 @@ class TestResponse(unittest.TestCase):
         form_submission_mock.is_registration=False
         expected_entity_type = 'entity_type'
         form_submission_mock.entity_type= expected_entity_type
+        form_submission_mock.form_model = Mock()
+        expected_form_code = '1'
+        form_submission_mock.form_model.form_code = expected_form_code
+
 
         response = Response(reporters=None, submission_id=None, form_submission=form_submission_mock)
         self.assertTrue(response.success)
@@ -154,4 +158,11 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(expected_cleanned_data,response.processed_data)
         self.assertFalse(response.is_registration)
         self.assertEquals(expected_entity_type,response.entity_type)
+        self.assertEquals(expected_entity_type,response.entity_type)
+        self.assertEquals(expected_form_code,response.form_code)
+
+        form_submission_mock.form_model = None
+        response = Response(reporters=None, submission_id=None, form_submission=form_submission_mock)
+        self.assertTrue(getattr(response,'form_code',True))
+
 

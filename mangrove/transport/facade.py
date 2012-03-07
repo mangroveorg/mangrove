@@ -46,7 +46,8 @@ class Response(object):
             self.processed_data = form_submission.cleaned_data
             self.is_registration = form_submission.is_registration
             self.entity_type = form_submission.entity_type
-            self.form_code = form_submission.form_model.form_code
+            if form_submission.form_model:
+                self.form_code = form_submission.form_model.form_code
 
 class GeneralWorkFlow(object):
     def process(self, values):

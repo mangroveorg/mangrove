@@ -209,9 +209,9 @@ class TestFormModel(MangroveTestCase):
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
                             label="Entity being reported on", entity_question_flag=True,
-                            constraints=[TextLengthConstraint(min=1, max=10)], ddtype=self.default_ddtype)
+                            constraints=[TextLengthConstraint(self.manager, min=1, max=10)], ddtype=self.default_ddtype)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
-                            constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype,required=False)
+                            constraints=[NumericRangeConstraint(self.manager, min=0, max=10)], ddtype=self.default_ddtype,required=False)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
                              options=[{"text": {"en": "Pune"}}, {"text": {"en": "Bangalore"}}],
                              single_select_flag=False, ddtype=self.default_ddtype,required=False)
@@ -295,10 +295,10 @@ class TestFormModel(MangroveTestCase):
             language="en", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
             defaultValue="some default value", language="en",
-            constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
+            constraints=[TextLengthConstraint(self.manager, 5, 10), RegexConstraint(self.manager, "\w+")],
             ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
+            constraints=[NumericRangeConstraint(self.manager, min=15, max=120)], ddtype=self.default_ddtype)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
             options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",

@@ -18,10 +18,10 @@ class TestFormModel(unittest.TestCase):
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                        language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                       defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
+                       defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(self.dbm, 5, 10)],
                        ddtype=self.ddtype_mock, required=False)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                          constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock, required=False)
+                          constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)], ddtype=self.ddtype_mock, required=False)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                          options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock, required=False)
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
@@ -110,7 +110,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_assert_activity_report(self):
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
                               defaultValue="some default value", language="eng",
-                              constraints=[TextLengthConstraint(5, 10)],
+                              constraints=[TextLengthConstraint(self.dbm, 5, 10)],
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[question1])

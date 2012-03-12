@@ -14,10 +14,10 @@ def create_default_reg_form_model(manager):
     return form_model
 
 
-def _create_constraints_for_mobile_number(manager):
+def _create_constraints_for_mobile_number():
     #constraints on questionnaire
-    mobile_number_length = TextLengthConstraint(manager, max=15)
-    mobile_number_pattern = RegexConstraint(manager, reg='^[0-9]+$')
+    mobile_number_length = TextLengthConstraint(max=15)
+    mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
     mobile_constraints = [mobile_number_length, mobile_number_pattern]
     return mobile_constraints
 
@@ -40,7 +40,7 @@ def construct_global_registration_form(manager):
     question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", language="en", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",
-                          entity_question_flag=True, constraints=[TextLengthConstraint(manager,max=12)], required=False)
+                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12)], required=False)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
                                language="en", ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
@@ -50,7 +50,7 @@ def construct_global_registration_form(manager):
                                      label="What is the mobile number associated with the subject?",
                                      defaultValue="some default value", language="en", ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
-            _create_constraints_for_mobile_number(manager)), required=False)
+            _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name=GLOBAL_REGISTRATION_FORM_CODE, form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6], is_registration_model=True, entity_type=["registration"],
         validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),

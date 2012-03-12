@@ -56,10 +56,10 @@ class TestWEBSubmission(MangroveTestCase):
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng",
-                              constraints=[TextLengthConstraint(self.manager, 4, 15)],
+                              constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type, required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(self.manager, min=15, max=120)], ddtype=self.stock_type, required=False)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type, required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
@@ -71,10 +71,10 @@ class TestWEBSubmission(MangroveTestCase):
                               language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value", language="eng",
-                              constraints=[TextLengthConstraint(self.manager, 4, 15)],
+                              constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(self.manager, min=15, max=120)], ddtype=self.stock_type)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
         activity_report = FormModel(self.manager, entity_type=["reporter"], name="report", label="reporting form_model",
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()

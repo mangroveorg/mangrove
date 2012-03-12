@@ -24,7 +24,7 @@ class ConstraintAttributes(object):
 
 
 class NumericRangeConstraint(object):
-    def __init__(self,dbm, min=None, max=None, dict=None):
+    def __init__(self, min=None, max=None, dict=None):
         self.min = min
         self.max = max
         if dict is not None:
@@ -57,7 +57,7 @@ class TextLengthConstraint(NumericRangeConstraint):
 
 
 class ChoiceConstraint(object):
-    def __init__(self, single_select_constraint=None, list_of_valid_choices=None, code=None, dict=None):
+    def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
         self.single_select_constraint = single_select_constraint
         self.list_of_valid_choices = list_of_valid_choices
         self.code = code
@@ -101,7 +101,7 @@ class GeoCodeConstraint(object):
 
 
 class RegexConstraint(object):
-    def __init__(self, dbm, reg=None, dict=None):
+    def __init__(self, reg=None, dict=None):
         self._pattern = dict if dict is not None else reg
 
     def validate(self, text):
@@ -117,12 +117,12 @@ class RegexConstraint(object):
         return ('regex', self._pattern)
 
 
-def constraints_factory(dbm,constraints_json):
+def constraints_factory(constraints_json):
     constraints = []
     for constraint_type, constraint_json in constraints_json:
         constraint_class = constraint_for.get(constraint_type)
         if constraint_class is not None:
-            constraints.append(constraint_class(dbm,dict=constraint_json))
+            constraints.append(constraint_class(dict=constraint_json))
     return constraints
 
 constraint_for = {

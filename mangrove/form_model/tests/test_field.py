@@ -42,7 +42,7 @@ class TestField(unittest.TestCase):
             "ddtype": self.DDTYPE_JSON,
             }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          defaultValue="some default value", constraints=[TextLengthConstraint(self.dbm, 1, 20)], language="eng",
+                          defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)], language="eng",
                           ddtype=self.ddtype, instruction="Answer is word or phrase")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -109,7 +109,7 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="eng", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)], ddtype=self.ddtype,
+                             language="eng", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype,
                              instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -398,7 +398,7 @@ class TestField(unittest.TestCase):
 
     def test_should_return_error_for_integer_range_validation(self):
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-                             language="en", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)], ddtype=self.ddtype)
+                             language="en", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
         valid_value = field.validate("120")
         self.assertEqual(valid_value, 120)
         valid_value = field.validate("25.5")
@@ -407,7 +407,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_wrong_type_for_integer(self):
         with self.assertRaises(AnswerWrongType) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="en", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)],
+                                 language="en", constraints=[NumericRangeConstraint(min=15, max=120)],
                                  ddtype=self.ddtype)
             field.validate("asas")
         self.assertEqual(e.exception.message, "Answer asas for question Q2 is of the wrong type.")
@@ -415,7 +415,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="en", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)],
+                                 language="en", constraints=[NumericRangeConstraint(min=15, max=120)],
                                  ddtype=self.ddtype)
             valid_value = field.validate(150)
             self.assertFalse(valid_value)
@@ -424,7 +424,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                                 language="en", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)],
+                                 language="en", constraints=[NumericRangeConstraint(min=15, max=120)],
                                  ddtype=self.ddtype)
             valid_value = field.validate(11)
             self.assertFalse(valid_value)
@@ -432,7 +432,7 @@ class TestField(unittest.TestCase):
 
     def test_successful_text_length_validation(self):
         field = TextField(name="Name", code="Q2", label="What is your Name",
-                          language="en", constraints=[TextLengthConstraint(self.dbm, min=4, max=15)], ddtype=self.ddtype)
+                          language="en", constraints=[TextLengthConstraint(min=4, max=15)], ddtype=self.ddtype)
         field1 = TextField(name="Name", code="Q2", label="What is your Name",
                            language="en", ddtype=self.ddtype)
         valid_value = field.validate("valid")
@@ -443,7 +443,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_max_value(self):
         with self.assertRaises(AnswerTooLongException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                              language="en", constraints=[TextLengthConstraint(self.dbm, min=1, max=4)], ddtype=self.ddtype)
+                              language="en", constraints=[TextLengthConstraint(min=1, max=4)], ddtype=self.ddtype)
             valid_value = field.validate("long_answer")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
@@ -451,7 +451,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                              language="en", constraints=[TextLengthConstraint(self.dbm, min=15, max=120)], ddtype=self.ddtype)
+                              language="en", constraints=[TextLengthConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
@@ -563,12 +563,12 @@ class TestField(unittest.TestCase):
     def test_should_create_field_with_datadict_type(self):
         nameType = Mock(spec=DataDictType)
         field1 = TextField(name="Name", code="Q1", label="What is your Name",
-                           language="en", constraints=[TextLengthConstraint(self.dbm, min=4, max=15)], ddtype=nameType)
+                           language="en", constraints=[TextLengthConstraint(min=4, max=15)], ddtype=nameType)
         self.assertEqual(nameType, field1.ddtype)
 
         ageType = Mock(spec=DataDictType)
         field2 = IntegerField(name="Age", code="Q2", label="What is your age",
-                              language="en", constraints=[NumericRangeConstraint(self.dbm, min=15, max=120)], ddtype=ageType)
+                              language="en", constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=ageType)
         self.assertEqual(ageType, field2.ddtype)
 
         selectType = Mock(spec=DataDictType)
@@ -586,7 +586,7 @@ class TestField(unittest.TestCase):
     def test_should_throw_exception_if_field_created_with_none_datadict_type(self):
         with self.assertRaises(AssertionError):
             TextField(name="Name", code="Q1", label="What is your Name",
-                      language="en", constraints=dict(length=TextLengthConstraint(self.dbm, min=4, max=15)), ddtype=None)
+                      language="en", constraints=dict(length=TextLengthConstraint(min=4, max=15)), ddtype=None)
 
     def test_should_convert_ddtype_to_json(self):
         expected_json = {
@@ -678,7 +678,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_convert_field_with_constraints_to_json(self):
-        constraints = [TextLengthConstraint(self.dbm, min=10, max=12), RegexConstraint(self.dbm, "^[A-Za-z0-9]+$")]
+        constraints = [TextLengthConstraint(min=10, max=12), RegexConstraint("^[A-Za-z0-9]+$")]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
         expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None,
                          "label": {"en": "question"}, "language": "en", "ddtype": {"test": "test"}, "type": "text",
@@ -693,16 +693,16 @@ class TestField(unittest.TestCase):
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_create_text_field_with_multiple_constraints(self):
-        length_constraint = TextLengthConstraint(self.dbm, min=10, max=12)
-        regex_constraint = RegexConstraint(self.dbm, "^[A-Za-z0-9]+$")
+        length_constraint = TextLengthConstraint(min=10, max=12)
+        regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
         constraints = [length_constraint, regex_constraint]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
 
         self.assertEqual(constraints, field.constraints)
 
     def test_should_validate_text_data_based_on_list_of_constraints(self):
-        length_constraint = TextLengthConstraint(self.dbm, min=10, max=12)
-        regex_constraint = RegexConstraint(self.dbm, "^[A-Za-z0-9]+$")
+        length_constraint = TextLengthConstraint(min=10, max=12)
+        regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")
         constraints = [length_constraint, regex_constraint]
         field = TextField(name="test", code='MC', label='question', ddtype=self.ddtype, constraints=constraints)
 
@@ -712,8 +712,8 @@ class TestField(unittest.TestCase):
         self.assertRaises(AnswerTooLongException, field.validate, 'val11111111111111')
 
     def test_telephone_number_field_should_return_expected_json(self):
-        mobile_number_length = TextLengthConstraint(self.dbm, max=15)
-        mobile_number_pattern = RegexConstraint(self.dbm, reg='^[0-9]+$')
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
         expected_json = {
@@ -757,8 +757,8 @@ class TestField(unittest.TestCase):
         self.assertFalse(created_field.is_required())
 
     def test_telephone_number_should_clean_value_to_remove_only_hyphen_from_the_given_value(self):
-        mobile_number_length = TextLengthConstraint(self.dbm, max=15)
-        mobile_number_pattern = RegexConstraint(self.dbm, reg='^[0-9]+$')
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
@@ -766,16 +766,16 @@ class TestField(unittest.TestCase):
         self.assertEqual('123dsasa4321122', field._clean('123dsasa4321122'))
 
     def test_should_convert_text_in_epsilon_format_to_expanded_text(self):
-        mobile_number_length = TextLengthConstraint(self.dbm, max=15)
-        mobile_number_pattern = RegexConstraint(self.dbm, reg='^[0-9]+$')
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
         self.assertEqual(u'266123321435', field._clean(u'2.66123321435e+11'))
 
     def test_telephone_number_should_clean_before_validate(self):
-        mobile_number_length = TextLengthConstraint(self.dbm, max=15)
-        mobile_number_pattern = RegexConstraint(self.dbm, reg='^[0-9]+$')
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
@@ -789,8 +789,8 @@ class TestField(unittest.TestCase):
         self.assertEqual(u'020', field.validate(u'020'))
 
     def test_should_raise_regex_mismatch_exception_if_invalid_phone_number(self):
-        mobile_number_length = TextLengthConstraint(self.dbm, max=15)
-        mobile_number_pattern = RegexConstraint(self.dbm, reg='^[0-9]+$')
+        mobile_number_length = TextLengthConstraint(max=15)
+        mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
                                      constraints=[mobile_number_length, mobile_number_pattern], instruction='')
         with self.assertRaises(RegexMismatchException):

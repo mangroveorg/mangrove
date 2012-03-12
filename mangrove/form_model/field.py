@@ -25,9 +25,9 @@ def create_question_from(dictionary, dbm):
     is_event_time_field = dictionary.get("event_time_field_flag")
     ddtype = DataDictType.create_from_json(dictionary.get("ddtype"), dbm)
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required, dbm)
+        return _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required, dbm)
+        return _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
         return _get_date_field(code, ddtype, dictionary, label_dict, name, instruction, required, is_event_time_field)
     elif type == field_attributes.LOCATION_FIELD:
@@ -37,7 +37,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.LIST_FIELD:
         return _get_list_field(name, code, label_dict, ddtype, instruction, required)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required, dbm)
+        return _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required)
     return None
 
 
@@ -406,10 +406,10 @@ def _get_labels_as_list(label_dict):
     return first_label, first_language_for_label, labels
 
 
-def _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required, dbm):
+def _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
-        constraints = constraints_factory(dbm,constraints_json)
+        constraints = constraints_factory(constraints_json)
     first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
     field = TextField(name=name, code=code, label=first_label, entity_question_flag=is_entity_question,
         constraints=constraints, ddtype=ddtype, instruction=instruction, required=required, language=first_language_for_label)
@@ -417,10 +417,10 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label_dict, na
     return field
 
 
-def _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required, dbm):
+def _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
-        constraints = constraints_factory(dbm, constraints_json)
+        constraints = constraints_factory(constraints_json)
     first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
     field = TelephoneNumberField(name=name, code=code, label=first_label, constraints=constraints, ddtype=ddtype,
         instruction=instruction, required=required, language=first_language_for_label)
@@ -429,10 +429,10 @@ def _get_telephone_number_field(code, ddtype, dictionary, label_dict, name, inst
     return field
 
 
-def _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required, dbm):
+def _get_integer_field(code, ddtype, dictionary, label_dict, name, instruction, required):
     constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
-        constraints = constraints_factory(dbm, constraint_list)
+        constraints = constraints_factory(constraint_list)
     first_label, first_language_for_label, labels = _get_labels_as_list(label_dict)
     integer_field = IntegerField(name=name, code=code, label=first_label, ddtype=ddtype, instruction=instruction,
         constraints=constraints, required=required, language=first_language_for_label)

@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from views import view_js
+from mangrove.contrib.deletion import create_default_delete_form_model, ENTITY_DELETION_FORM_CODE
 from mangrove.contrib.registration import create_default_reg_form_model
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityTypeAlreadyDefined
@@ -10,8 +11,12 @@ from mangrove.transport.reporter import REPORTER_ENTITY_TYPE
 def run(manager):
     sync_views(manager)
     _create_entity_types(manager, [REPORTER_ENTITY_TYPE])
+
     _delete_reg_form_if_exists(manager)
     create_default_reg_form_model(manager)
+
+    _delete_entity_delete_form_if_exists(manager)
+    create_default_delete_form_model(manager)
 
 
 def _delete_reg_form_if_exists(manager):
@@ -21,6 +26,11 @@ def _delete_reg_form_if_exists(manager):
     except FormModelDoesNotExistsException:
         pass
 
+def _delete_entity_delete_form_if_exists(manager):
+    try:
+        get_form_model_by_code(manager, ENTITY_DELETION_FORM_CODE).delete()
+    except FormModelDoesNotExistsException:
+        pass
 
 def _create_entity_types(manager, entity_types):
     for entity_type in entity_types:

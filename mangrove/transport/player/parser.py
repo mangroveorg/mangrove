@@ -298,22 +298,3 @@ class XlsOrderedParser(XlsParser):
         return parsedData
 
 
-class DeleteRequestParser(object):
-
-    def clean(self, message):
-        message = unicode(message, encoding='utf-8')
-        return message.strip()
-
-    def parse(self, message):
-        assert is_string(message)
-        message = self.clean(message)
-        self._validate_format(message)
-        tokens = message.split()
-        if len(tokens) < 3:
-            raise DeleteRequestParserWrongNumberOfAnswersException(message)
-        values = dict(entity_type=tokens[1],entity_id=tokens[2])
-        return tokens[0], values
-
-    def _validate_format(self, message):
-        if not re.match(ur'^(\w+)\s+(\w+)', message):
-            raise DeleteRequestParserInvalidFormatException(message)

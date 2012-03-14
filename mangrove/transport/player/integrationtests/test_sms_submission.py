@@ -8,10 +8,12 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, \
+    InactiveFormModelException, DataObjectNotFound
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, \
+    SHORT_CODE, ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import TransportInfo, Request
@@ -399,3 +401,21 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
         submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
         self.assertEquals(2, len(submissions))
+
+    def test_should_delete_entity_instance_by_sms(self):
+        entity = get_by_short_code(self.manager, 'rep1', ["reporter"])
+        self.assertFalse(entity.is_void())
+        message = 'delete reporter rep1'
+        response = self.send_sms(message)
+        self.assertTrue(response.success)
+        entity = get_by_short_code(self.manager, 'rep1', ["reporter"])
+        self.assertTrue(entity.is_void())
+
+    def test_should_throw_error_if_deleting_entity_that_does_not_exist(self):
+        with self.assertRaises(DataObjectNotFound):
+            get_by_short_code(self.manager, 'rep2', ["reporter"])
+        message = 'delete reporter rep2'
+        response = self.send_sms(message)
+        self.assertFalse(response.success)
+        self.assertTrue(SHORT_CODE in response.errors)
+        self.assertTrue(ENTITY_TYPE_FIELD_CODE in response.errors)

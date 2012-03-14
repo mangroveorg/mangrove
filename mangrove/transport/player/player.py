@@ -7,6 +7,7 @@ from mangrove.transport import reporter
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import Response, ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
+from mangrove.transport.player.handler import handler_factory
 
 
 class Player(object):
@@ -20,19 +21,18 @@ class Player(object):
         submission.save()
         return submission
 
+
     def submit(self, form_model, values, submission, reporter_names):
         try:
             if form_model.is_inactive():
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
-            form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
-            if form_submission.is_valid:
-                form_submission.save(self.dbm)
-            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
-                form_submission.form_model.is_in_test_mode())
-            return Response(reporters=reporter_names, submission_id=submission.uuid,
-                form_submission=form_submission)
+            handler = handler_factory(self.dbm)
+            response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names)
+            submission.update(response.success, response.errors, response.datarecord_id,
+                form_model.is_in_test_mode())
+            return response
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise

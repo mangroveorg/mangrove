@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
-from mangrove.datastore.entity import invalidate_entity
+from mangrove.datastore.entity import void_entity
 from mangrove.form_model.form_model import FormSubmissionFactory, ENTITY_TYPE_FIELD_CODE, SHORT_CODE
 from mangrove.transport.facade import Response
 from mangrove.utils.types import is_empty
@@ -27,7 +27,7 @@ class DeleteHandler(object):
         short_code = cleaned_data[SHORT_CODE]
         entity_type = cleaned_data[ENTITY_TYPE_FIELD_CODE]
         if is_empty(errors):
-            invalidate_entity(self.dbm, entity_type, short_code)
+            void_entity(self.dbm, entity_type, short_code)
         return Response(reporter_names, submission.uuid, is_empty(errors), errors, None, short_code, cleaned_data,
             False, entity_type, form_model.form_code)
 

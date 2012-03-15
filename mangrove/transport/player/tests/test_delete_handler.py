@@ -14,11 +14,11 @@ class TestDeleteHandler(TestCase):
         self.submission = Mock()
         self.submission.uuid = '1'
         self.reporter_names = []
-        self.invalidate_entity_patcher = patch('mangrove.transport.player.handler.invalidate_entity')
-        self.invalidate_entity_mock = self.invalidate_entity_patcher.start()
+        self.void_entity_patcher = patch('mangrove.transport.player.handler.void_entity')
+        self.void_entity_mock = self.void_entity_patcher.start()
 
     def tearDown(self):
-        self.invalidate_entity_patcher.stop()
+        self.void_entity_patcher.stop()
 
     def test_should_delete_entity_if_it_exists(self):
         cleaned_data = OrderedDict()
@@ -31,9 +31,9 @@ class TestDeleteHandler(TestCase):
         self.assertEqual('1', response.submission_id)
         self.assertEqual(cleaned_data, response.processed_data)
         self.assertEqual(errors, response.errors)
-        self.invalidate_entity_mock.assert_called_once_with(self.dbm, 'clinic', 'cli1')
+        self.void_entity_mock.assert_called_once_with(self.dbm, 'clinic', 'cli1')
 
-    def test_should__not_delete_entity_if_it_does_not_exist(self):
+    def test_should_not_delete_entity_if_it_does_not_exist(self):
         cleaned_data = OrderedDict()
         cleaned_data[ENTITY_TYPE_FIELD_CODE] = 'clinic'
         cleaned_data[SHORT_CODE] = 'cli1'
@@ -47,5 +47,5 @@ class TestDeleteHandler(TestCase):
         self.assertEqual('1', response.submission_id)
         self.assertEqual(cleaned_data, response.processed_data)
         self.assertEqual(errors, response.errors)
-        self.assertEqual(0, self.invalidate_entity_mock.call_count)
+        self.assertEqual(0, self.void_entity_mock.call_count)
 

@@ -2,7 +2,7 @@
 from datetime import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, invalidate_entity
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -22,9 +22,9 @@ class TestEntity(MangroveTestCase):
         e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
         uuid = e.save()
         self.assertTrue(uuid)
-        invalidate_entity(self.manager, entity_type, short_code)
+        void_entity(self.manager, entity_type, short_code)
         loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
-        self.assertTrue(loaded_entity.void)
+        self.assertTrue(loaded_entity.is_void())
 
     def _create_ddtypes(self):
         bed_ddtype = DataDictType(self.manager, name='beds', slug='beds', primitive_type='number')
@@ -50,7 +50,7 @@ class TestEntity(MangroveTestCase):
         data_record3 = DataRecord.get(self.manager, data_record_id3)
         return data_record1, data_record2, data_record3
 
-    def test_should_invalidate_entity_with_its_data_records(self):
+    def test_should_invalidate_entity_without_its_data_records(self):
         short_code = "short_code"
         entity_type = ["clinic"]
         e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
@@ -60,15 +60,15 @@ class TestEntity(MangroveTestCase):
         bed_ddtype, med_ddtype = self._create_ddtypes()
         data_record_id1, data_record_id2, data_record_id3 = self._add_data(bed_ddtype, e, med_ddtype)
 
-        invalidate_entity(self.manager, entity_type, short_code)
+        void_entity(self.manager, entity_type, short_code)
         loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
-        self.assertTrue(loaded_entity.void)
+        self.assertTrue(loaded_entity.is_void())
 
         data_record1, data_record2, data_record3 = self._get_data_records(data_record_id1, data_record_id2,
             data_record_id3)
-        self.assertTrue(data_record1.void)
-        self.assertTrue(data_record2.void)
-        self.assertTrue(data_record3.void)
+        self.assertFalse(data_record1.is_void())
+        self.assertFalse(data_record2.is_void())
+        self.assertFalse(data_record3.is_void())
 
     def test_should_invalidate_entity_when_entity_type_is_string(self):
         short_code = "short_code"
@@ -76,9 +76,9 @@ class TestEntity(MangroveTestCase):
         e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
         uuid = e.save()
         self.assertTrue(uuid)
-        invalidate_entity(self.manager, entity_type, short_code)
+        void_entity(self.manager, entity_type, short_code)
         loaded_entity = get_by_short_code(self.manager, short_code, [entity_type])
-        self.assertTrue(loaded_entity.void)
+        self.assertTrue(loaded_entity.is_void())
 
     def test_create_entity_with_id(self):
         e = Entity(self.manager, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")

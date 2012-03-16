@@ -1,5 +1,5 @@
 function(doc) {
-    if (doc.document_type == "Entity") {
+    if (doc.document_type == "Entity" && !doc.void) {
         emit([doc.aggregation_paths['_type'],doc.short_code], null);
     }
 }

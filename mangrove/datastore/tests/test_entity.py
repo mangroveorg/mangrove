@@ -23,8 +23,8 @@ class TestEntity(MangroveTestCase):
         uuid = e.save()
         self.assertTrue(uuid)
         void_entity(self.manager, entity_type, short_code)
-        loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
-        self.assertTrue(loaded_entity.is_void())
+        with self.assertRaises(DataObjectNotFound):
+            get_by_short_code(self.manager, short_code, entity_type)
 
     def _create_ddtypes(self):
         bed_ddtype = DataDictType(self.manager, name='beds', slug='beds', primitive_type='number')
@@ -61,8 +61,8 @@ class TestEntity(MangroveTestCase):
         data_record_id1, data_record_id2, data_record_id3 = self._add_data(bed_ddtype, e, med_ddtype)
 
         void_entity(self.manager, entity_type, short_code)
-        loaded_entity = get_by_short_code(self.manager, short_code, entity_type)
-        self.assertTrue(loaded_entity.is_void())
+        with self.assertRaises(DataObjectNotFound):
+            get_by_short_code(self.manager, short_code, entity_type)
 
         data_record1, data_record2, data_record3 = self._get_data_records(data_record_id1, data_record_id2,
             data_record_id3)
@@ -77,8 +77,8 @@ class TestEntity(MangroveTestCase):
         uuid = e.save()
         self.assertTrue(uuid)
         void_entity(self.manager, entity_type, short_code)
-        loaded_entity = get_by_short_code(self.manager, short_code, [entity_type])
-        self.assertTrue(loaded_entity.is_void())
+        with self.assertRaises(DataObjectNotFound):
+            get_by_short_code(self.manager, short_code, [entity_type])
 
     def test_create_entity_with_id(self):
         e = Entity(self.manager, entity_type="clinic", location=["India", "MH", "Pune"], id="-1000")

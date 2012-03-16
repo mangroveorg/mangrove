@@ -4,8 +4,9 @@ from mangrove.datastore.entity import Entity
 from mangrove.validate import is_string
 
 def get_entity_count_for_type(dbm, entity_type):
-    rows = dbm.view.by_short_codes(descending=True,
-                                   startkey=[[entity_type], {}], endkey=[[entity_type]], group_level=1)
+    if is_string(entity_type):
+        entity_type = [entity_type]
+    rows = dbm.view.count_entities_by_type(key=entity_type)
     return rows[0][u"value"] if len(rows) else 0
 
 def get_entities_by_type(dbm, entity_type):

@@ -408,8 +408,8 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         message = 'delete reporter rep1'
         response = self.send_sms(message)
         self.assertTrue(response.success)
-        entity = get_by_short_code(self.manager, 'rep1', ["reporter"])
-        self.assertTrue(entity.is_void())
+        with self.assertRaises(DataObjectNotFound):
+            get_by_short_code(self.manager, 'rep1', ["reporter"])
 
     def test_should_throw_error_if_deleting_entity_that_does_not_exist(self):
         with self.assertRaises(DataObjectNotFound):

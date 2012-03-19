@@ -52,6 +52,22 @@ def get_by_short_code(dbm, short_code, entity_type):
     return Entity.new_from_doc(dbm, doc)
 
 
+def get_by_short_code_include_voided(dbm, short_code, entity_type):
+    """
+    Finds Entity with a given short code includes voided entities
+    :param dbm: DatabaseManager
+    :param short_code: short code of the Entity
+    :param entity_type: hierarchical list of entity types
+    """
+    assert is_string(short_code)
+    assert is_sequence(entity_type)
+    rows = dbm.view.entity_by_short_code(key=[entity_type, short_code], include_docs=True)
+    if is_empty(rows):
+        raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
+    doc = EntityDocument.wrap(rows[0]['doc'])
+    return Entity.new_from_doc(dbm, doc)
+
+
 def get_entities_in(dbm, geo_path, type_path=None):
     """
     Retrieve an entity within the given fully-qualified geographic placename.
@@ -473,7 +489,7 @@ class DataRecord(DataObject):
 
 def _check_if_entity_exists(dbm, entity_type, short_code):
     try:
-        get_by_short_code(dbm, short_code, entity_type)
+        get_by_short_code_include_voided(dbm, short_code, entity_type)
         return True
     except DataObjectNotFound:
         return False

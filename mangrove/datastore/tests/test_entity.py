@@ -2,7 +2,7 @@
 from datetime import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity
+from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity, get_by_short_code_include_voided
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -130,6 +130,19 @@ class TestEntity(MangroveTestCase):
         with self.assertRaises(EntityTypeDoesNotExistsException):
             create_entity(self.manager, entity_type=["Dog"], short_code="ABC")
 
+    def test_should_raise_exception_if_void_entity_with_same_short_code_exists(self):
+        entity_type = ["reporter"]
+        define_type(self.manager, entity_type)
+        short_code = "ABC"
+        entity = create_entity(self.manager, entity_type=entity_type, short_code=short_code)
+        saved_entity = get_by_short_code(self.manager, short_code=short_code, entity_type=entity_type)
+        self.assertEqual(saved_entity.id, entity.id)
+
+        void_entity(self.manager, entity_type, short_code)
+        with self.assertRaises(DataObjectAlreadyExists):
+            create_entity(self.manager, entity_type=entity_type, short_code=short_code)
+
+
 
     def test_should_get_entity_by_short_code(self):
         reporter = Entity(self.manager, entity_type=["Reporter"], location=["Pune", "India"], short_code="repx")
@@ -141,6 +154,25 @@ class TestEntity(MangroveTestCase):
 
         with self.assertRaises(DataObjectNotFound):
             entity = get_by_short_code(self.manager, short_code="ABC", entity_type=["Waterpoint"])
+
+    def test_should_get_entity_by_short_code_including_voided(self):
+            short_code = "repx"
+            entity_type = ["Reporter"]
+            reporter = Entity(self.manager, entity_type=entity_type, location=["Pune", "India"], short_code=short_code)
+            reporter.save()
+
+            entity= get_by_short_code_include_voided(self.manager, short_code=short_code, entity_type=entity_type)
+            self.assertEqual(short_code, entity.short_code)
+            self.assertFalse(entity.is_void())
+
+            void_entity(self.manager, entity_type, short_code)
+
+            with self.assertRaises(DataObjectNotFound):
+                get_by_short_code(self.manager, short_code, entity_type)
+
+            entity= get_by_short_code_include_voided(self.manager, short_code=short_code, entity_type=entity_type)
+            self.assertEqual(short_code, entity.short_code)
+            self.assertTrue(entity.is_void())
 
     def test_should_get_all_entities(self):
         test_data = TestData(self.manager)

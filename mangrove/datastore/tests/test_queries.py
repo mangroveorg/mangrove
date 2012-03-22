@@ -13,10 +13,16 @@ class TestQueries(MangroveTestCase):
         MangroveTestCase.tearDown(self)
 
 
-    def test_get_entity_count_for_type(self):
+    def test_get_entity_count_for_type_as_string(self):
         entity_type = "Clinic"
         define_type(self.manager,[entity_type])
         create_entity(self.manager, [entity_type],"1")
+        self.assertEqual(1,get_entity_count_for_type(self.manager,entity_type))
+
+    def test_get_entity_count_for_type(self):
+        entity_type = ["Clinic"]
+        define_type(self.manager,entity_type)
+        create_entity(self.manager, entity_type,"1")
         self.assertEqual(1,get_entity_count_for_type(self.manager,entity_type))
 
 

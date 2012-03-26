@@ -7,7 +7,7 @@ from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow, Response, create_response_from_form_submission
-from mangrove.transport.player.tests.test_web_player import DummyLocationTree
+from mangrove.utils.test_utils.dummy_location_tree import DummyLocationTree
 from mangrove.utils.types import is_empty
 
 class TestActivityWorkFlow(unittest.TestCase):
@@ -110,12 +110,6 @@ def dummy_get_entity_count_for_type(dbm, entity_type):
 def dummy_get_location_hierarchy(foo):
     return [u'arantany']
 
-class DummyLocationTree(object):
-    def get_location_hierarchy_for_geocode(self, lat, long ):
-        return ['madagascar']
-
-    def get_centroid(self, location_name, level):
-        return 60, -12
 
 class TestResponse(unittest.TestCase):
 

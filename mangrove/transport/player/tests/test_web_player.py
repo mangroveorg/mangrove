@@ -5,6 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel, FormSubmissionFactory, FormSubmission
 from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.player.player import WebPlayer
+from mangrove.utils.test_utils.dummy_location_tree import DummyLocationTree
 
 def mock_form_submission(form_model_mock):
     form_submission_mock = Mock(spec=FormSubmission)
@@ -53,9 +54,3 @@ class TestWebPlayer(TestCase):
 def get_location_hierarchy(foo):
     return ["no_hierarchy"]
 
-class DummyLocationTree(object):
-    def get_location_hierarchy_for_geocode(self, lat, long ):
-        return ['madagascar']
-
-    def get_centroid(self, location_name, level):
-        return 60, -12

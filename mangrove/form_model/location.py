@@ -41,13 +41,25 @@ class Location(object):
             return self.hierarchy_geometry_location_handler
         if geo_code is not None and location_hierarchy is None:
             return self.hierarchy_geometry_geo_code_handler
+        return self.hierarchy_geometry_location_geo_code_handler
+
+    def _get_lat_long_from_geo_code(self, geo_code):
+        lat_string, long_string = tuple(geo_code.split())
+        return float(lat_string), float(long_string)
+
+    def _get_geometry_from_geo_code(self, geo_code):
+        lat_string, long_string = self._get_lat_long_from_geo_code(geo_code)
+        geometry = convert_to_geometry((long_string, lat_string))
+        return geometry
+
+    def hierarchy_geometry_location_geo_code_handler(self,geo_code,location_hierarchy):
+        return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
     def hierarchy_geometry_geo_code_handler(self,geo_code,location_hierarchy):
-        lat_string, long_string = tuple(geo_code.split())
-        location_hierarchy = self.location_tree.get_location_hierarchy_for_geocode(lat=float(lat_string),
-            long=float(long_string))
-        geometry = convert_to_geometry((float(long_string),float(lat_string)))
-        return location_hierarchy, geometry
+        lat, long = self._get_lat_long_from_geo_code(geo_code)
+        location_hierarchy = self.location_tree.get_location_hierarchy_for_geocode(lat=lat,
+            long=long)
+        return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
 
     def hierarchy_geometry_location_handler(self,geo_code,location_hierarchy):

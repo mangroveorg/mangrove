@@ -68,14 +68,13 @@ class TestFormSubmission(unittest.TestCase):
     #TODO : struggled and Not happy with they way this test has been written. indicates that some basic design flaw.
     #need to correct this
     def test_should_do_submission_for_global_registration_form(self):
-        form_model = self.construct_global_registration_form()
+        form_model = self._construct_global_registration_form()
         submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
         entity_mock,patcher = self._create_entity_mock()
         form_submission = FormSubmissionFactory().get_form_submission(form_model, submission)
         data_record_id = form_submission.save(self.dbm)
         patcher.stop()
         self.assertEqual(1,data_record_id)
-
 
     def _assert_data_submission_entity_mock(self, entity_mock,event_time=None):
 
@@ -103,11 +102,7 @@ class TestFormSubmission(unittest.TestCase):
         entity_mock.add_data.return_value=1
         return entity_mock,entity_patcher
 
-
-
-
-
-    def construct_global_registration_form(self):
+    def _construct_global_registration_form(self):
         mocked_form_model=Mock()
         mocked_form_model.entity_type=GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
         return mocked_form_model

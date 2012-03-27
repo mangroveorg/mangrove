@@ -5,7 +5,7 @@ from _collections import defaultdict
 import time
 from mangrove.datastore.data import BY_VALUES_FORM_CODE_INDEX, BY_VALUES_EVENT_TIME_INDEX, EntityAggregration
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.utils.dates import convert_to_epoch
+from mangrove.utils.dates import convert_date_string_in_UTC_to_epoch
 from mangrove.utils.types import is_string, is_empty
 
 class Sum(object):
@@ -85,8 +85,8 @@ def aggregate_by_form_code_python(dbm, form_code, aggregates=None, aggregate_on=
 def _map(dbm, type_path, group_level, form_code=None, start_time=None, end_time=None, aggregate_on=None, include_grand_totals=False):
 # currently it assumes one to one mapping between form code and entity type and hence only filter on form code
     view_name = "by_form_code_time"
-    epoch_start = convert_to_epoch(start_time)
-    epoch_end = convert_to_epoch(end_time)
+    epoch_start = convert_date_string_in_UTC_to_epoch(start_time)
+    epoch_end = convert_date_string_in_UTC_to_epoch(end_time)
     start_key = [form_code, epoch_start] if epoch_start is not None else [form_code]
     end_key = [form_code, epoch_end] if epoch_end is not None else [form_code, {}]
     rows = dbm.load_all_rows_in_view(view_name, startkey=start_key, endkey=end_key)
@@ -137,7 +137,7 @@ def _start_time_filter(row, start_time):
 def _end_time_filter(row, end_time):
     if end_time is None:
         return True
-    epoch = convert_to_epoch(end_time)
+    epoch = convert_date_string_in_UTC_to_epoch(end_time)
     return row.key[BY_VALUES_EVENT_TIME_INDEX] <= epoch
 
 

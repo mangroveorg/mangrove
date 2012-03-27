@@ -62,13 +62,19 @@ def js_datestring_to_py_datetime(s):
     return to_aware_utc(parse_iso_date_str(s))
 
 
-def convert_to_epoch(end_time):
-    return int(time.mktime(time.strptime(end_time, '%d-%m-%Y %H:%M:%S'))) * 1000 if end_time is not None else None
+def convert_date_string_in_UTC_to_epoch(value):
+    """
+    Convert the time in '%d-%m-%Y %H:%M:%S' format as per UTC time zone to seconds since the Epoch.
+    """
+    if is_empty(value):
+        return None
+    date_time = datetime.strptime(value, '%d-%m-%Y %H:%M:%S').replace(tzinfo=pytz.UTC)
+    return convert_date_time_to_epoch(date_time)
 
 def convert_date_time_to_epoch(date_time, tzinfo=None):
     if not isinstance(date_time, datetime):
         date_time = datetime(year=date_time.year, month=date_time.month, day=date_time.day,tzinfo=tzinfo)
     if is_naive_datetime(date_time):
-        return int(time.mktime(date_time.timetuple())) * 1000 + date_time.microsecond / 1000.
+        return int(time.mktime(date_time.timetuple())) * 1000 + date_time.microsecond / 1000
     else:
-        return int(timegm(date_time.astimezone(pytz.UTC).timetuple())) * 1000 + date_time.microsecond / 1000.
+        return int(timegm(date_time.astimezone(pytz.UTC).timetuple())) * 1000 + date_time.microsecond / 1000

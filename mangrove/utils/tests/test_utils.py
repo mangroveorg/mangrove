@@ -1,12 +1,10 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.utils.dates import convert_date_time_to_epoch
-
-__author__ = 'jwishnie'
 
 from unittest  import TestCase
 from datetime import datetime, date
 from mangrove import utils
 from mangrove.utils import types
+from mangrove.utils.dates import convert_date_time_to_epoch, convert_date_string_in_UTC_to_epoch
 
 import pytz
 
@@ -199,6 +197,21 @@ class TestDateUtils(TestCase):
         un = un.replace(microsecond=0)
         dn = dn.replace(tzinfo=pytz.UTC, microsecond=0)
         self.assertEqual(un, dn)
+
+    def test_convert_date_string_to_epoch_in_UTC(self):
+        date_string =  "01-01-1970 00:00:00"
+        expected_epoch_time = 0
+        self.assertEqual(expected_epoch_time, convert_date_string_in_UTC_to_epoch(date_string))
+
+    def test_convert_date_string_to_epoch_in_UTC(self):
+        date_string =  "01-04-2012 00:00:00"
+        expected_epoch_time = 1333238400000
+        self.assertEqual(expected_epoch_time, convert_date_string_in_UTC_to_epoch(date_string))
+
+    def test_convert_to_epoch_should_handle_none_input(self):
+        date_string =  None
+        expected_epoch_time = None
+        self.assertEqual(expected_epoch_time, convert_date_string_in_UTC_to_epoch(date_string))
 
     def test_convert_date_time_to_epoch_when_given_a_datetime_object(self):
         date_time = datetime(year=1970, month=1, day=1, tzinfo=pytz.UTC)

@@ -350,12 +350,7 @@ class FormSubmission(object):
         return self._save_data(self.get_entity(dbm))
 
     def _get_event_time_value(self):
-        code = self._get_event_time_code()
-        value = self.cleaned_data.get(code)
-
-        if value is not None:
-            value = self.form_model.event_time_question.to_datetime(value)
-        return value
+        return self.cleaned_data.get(self._get_event_time_code())
 
     def _get_event_time_code(self):
         event_time_field = self.form_model.event_time_question

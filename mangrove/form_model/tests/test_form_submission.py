@@ -8,7 +8,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField, DateField
-from mangrove.form_model.form_model import FormModel, FormSubmission, FormSubmissionFactory, DataFormSubmission
+from mangrove.form_model.form_model import FormModel, FormSubmissionFactory
 
 
 class TestFormSubmission(unittest.TestCase):
@@ -18,12 +18,12 @@ class TestFormSubmission(unittest.TestCase):
         question2 = TextField(name="Name", code="Q1", label="What is your name",
             defaultValue="some default value", language="eng", ddtype=self.ddtype_mock)
         event_time_field_code = "ET"
-        event_time_question = DateField(name="Event time", code=event_time_field_code,
+        self.event_time_question = DateField(name="Event time", code=event_time_field_code,
             label="Event time field",
             date_format="dd.mm.yyyy", ddtype=self.ddtype_mock, required=False, event_time_field_flag=True)
         return FormModel(self.dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
             form_code="AIDS", type='survey',
-            fields=[question1, question2, event_time_question])
+            fields=[question1, question2, self.event_time_question])
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
@@ -45,7 +45,7 @@ class TestFormSubmission(unittest.TestCase):
 
     def test_should_do_submission_with_event_time(self):
         form_model=self._create_data_submission_form()
-        submission = OrderedDict({"id": "1", "q1": "My Name", "ET": '01.01.2011'})
+        submission = OrderedDict({"id": "1", "q1": "My Name", "ET": self.event_time_question.validate('01.01.2011')})
         entity_mock,patcher = self._get_entity_mock()
 
         form_submission = FormSubmissionFactory().get_form_submission(form_model, submission)
@@ -80,7 +80,7 @@ class TestFormSubmission(unittest.TestCase):
 
         submission_values = [('Name', 'My Name', self.ddtype_mock)]
         if event_time is not None:
-            submission_values.append(("Event time",'01.01.2011',self.ddtype_mock))
+            submission_values.append(("Event time",event_time,self.ddtype_mock))
         submission_values.append(('entity_question', '1', self.ddtype_mock))
 
         submission_information = {'form_code': u'AIDS'}

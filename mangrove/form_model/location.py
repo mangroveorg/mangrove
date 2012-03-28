@@ -1,4 +1,5 @@
 from mangrove.utils.geo_utils import convert_to_geometry
+from mangrove.utils.types import is_empty
 
 LOCATION_TYPE_FIELD_NAME = "location"
 LOCATION_TYPE_FIELD_CODE = "l"
@@ -6,20 +7,29 @@ GEO_CODE = "g"
 GEO_CODE_FIELD_NAME = "geo_code"
 
 class Location(object):
-    def __init__(self,location_tree, form_model):
+    def __init__(self, location_tree, form_model):
         self.location_tree = location_tree
         self.form_model = form_model
 
     def process_submission(self, submission_data):
         location_field_code = self._get_location_field_code()
-        location_hierarchy = self.location_tree.get_location_hierarchy(submission_data.get(location_field_code))
+        display_location = submission_data.get(location_field_code)
+        if is_empty(display_location):
+            return submission_data
+        display_location_list = display_location.lower().split(',')
+        if len(display_location_list) > 1:
+#            display_location_list.reverse()
+            submission_data[location_field_code] = display_location_list
+            return submission_data
+        lowest_level_location = display_location_list[0]
+        location_hierarchy = self.location_tree.get_location_hierarchy(lowest_level_location)
         submission_data[location_field_code] = location_hierarchy
         return submission_data
 
     def _get_location_field_code(self):
         return self._get_field_code_by_name(LOCATION_TYPE_FIELD_NAME)
 
-    def _get_field_code_by_name(self,field_name):
+    def _get_field_code_by_name(self, field_name):
         field = self.form_model.get_field_by_name(name=field_name)
         return field.code if field is not None else None
 
@@ -31,14 +41,14 @@ class Location(object):
         lowest_level = len(location_hierarchy) - 1
         return lowest_level, lowest_level_name
 
-    def process_entity_creation(self,processed_cleaned_data):
+    def process_entity_creation(self, processed_cleaned_data):
         location_hierarchy = processed_cleaned_data.get(self._get_location_field_code(), None)
         geo_code = processed_cleaned_data.get(self._get_geo_field_code(), None)
 
         handler = self.get_hierarchy_geometry_handler(geo_code, location_hierarchy)
-        return handler(geo_code,location_hierarchy)
+        return handler(geo_code, location_hierarchy)
 
-    def get_hierarchy_geometry_handler(self,geo_code,location_hierarchy):
+    def get_hierarchy_geometry_handler(self, geo_code, location_hierarchy):
         if location_hierarchy is None and geo_code is None:
             return self.hierarchy_geometry_none_handler
         if location_hierarchy is not None and geo_code is None:
@@ -55,22 +65,22 @@ class Location(object):
         geometry = convert_to_geometry(geo_code)
         return geometry
 
-    def hierarchy_geometry_location_geo_code_handler(self,geo_code,location_hierarchy):
+    def hierarchy_geometry_location_geo_code_handler(self, geo_code, location_hierarchy):
         return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
-    def hierarchy_geometry_geo_code_handler(self,geo_code,location_hierarchy):
+    def hierarchy_geometry_geo_code_handler(self, geo_code, location_hierarchy):
         lat, long = geo_code
         location_hierarchy = self.location_tree.get_location_hierarchy_for_geocode(lat=lat,
             long=long)
         return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
 
-    def hierarchy_geometry_location_handler(self,geo_code,location_hierarchy):
+    def hierarchy_geometry_location_handler(self, geo_code, location_hierarchy):
         geometry = convert_to_geometry(self._get_geo_code_from_location_hierarchy(location_hierarchy))
-        return location_hierarchy,geometry
+        return location_hierarchy, geometry
 
-    def hierarchy_geometry_none_handler(self,geo_code,location_hierarchy):
-        return None,None
+    def hierarchy_geometry_none_handler(self, geo_code, location_hierarchy):
+        return None, None
 
     def _get_geo_code_from_location_hierarchy(self, location_hierarchy):
         lowest_level, lowest_level_name = self._get_location_details(location_hierarchy)

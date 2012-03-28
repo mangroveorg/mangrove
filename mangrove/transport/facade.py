@@ -82,6 +82,51 @@ class RegistrationWorkFlow(object):
         self._generate_short_code_if_empty(values)
         return Location(self.location_tree, self.form_model).process_submission(values)
 
+    def _set_location_data(self, values):
+        location_field_code = self._get_location_field_code()
+        if location_field_code is None:
+            return
+        geo_field_code = self._get_geo_field_code()
+        display_location, geo_code = values.get(location_field_code), values.get(geo_field_code)
+        location_hierarchy = self._get_location_hierarchy_from_location_name(display_location)
+        tree = self.location_tree
+        if location_hierarchy is [] and is_not_empty(geo_code):
+            try:
+                lat_string, long_string = tuple(geo_code.split())
+                location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string),
+                                                                             long=float(long_string))
+            except ValueError as e:
+                raise GeoCodeFormatException(e.args)
+        elif is_not_empty(location_hierarchy) and is_empty(geo_code):
+            try:
+                translated_geo_code = tree.get_centroid(display_location.split(',')[0], len(location_hierarchy) - 1)
+                values[geo_field_code] = "%s %s" % (translated_geo_code[1], translated_geo_code[0])
+            except Exception:
+                pass
+        values[location_field_code] = location_hierarchy
+
+    def _get_location_hierarchy_from_location_name(self, display_location):
+        if is_empty(display_location):
+            return None
+        display_location_list = display_location.lower().split(',')
+        if len(display_location_list) > 1:
+            display_location_list.reverse()
+            return display_location_list
+        lowest_level_location = display_location_list[0]
+        location_hierarchy = self.get_location_hierarchy(lowest_level_location)
+        return location_hierarchy
+
+    def _get_field_code_by_name(self,field_name):
+        field = self.form_model.get_field_by_name(name=field_name)
+        return field.code if field is not None else None
+
+    def _get_location_field_code(self):
+        return self._get_field_code_by_name(LOCATION_TYPE_FIELD_NAME)
+
+    def _get_geo_field_code(self):
+        return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
+
+
 def _set_short_code(dbm, form_model, values):
     entity_q_code = form_model.entity_question.code
     try:

@@ -39,10 +39,7 @@ class TestLocation(unittest.TestCase):
         answers={GEO_CODE: (-12, 60),LOCATION_TYPE_FIELD_CODE: location_hierarchy}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
-    def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
-        values = dict(l='a,b,c', t='clinic')
-        submission = self.location.process_submission(values)
-        self.assertEqual(['a', 'b', 'c'], submission['l'])
+
 
     def location_hierarchy_stub(self,lowest_level_location_name):
         if lowest_level_location_name=='pune':

@@ -34,13 +34,26 @@ class TestFormSubmission(unittest.TestCase):
         pass
 
     def test_should_create_form_submission_with_entity_id(self):
-        form_model=self._create_data_submission_form()
+        form_model = self._create_data_submission_form()
         answers = OrderedDict({"id": "1", "q1": "My Name"})
 
         form_submission = FormSubmissionFactory().get_form_submission(form_model, answers)
 
         self.assertEqual(form_submission.form_code, "AIDS")
         self.assertEqual(form_submission.short_code, "1")
+
+
+    def test_should_create_global_form_submission_location_tree(self):
+        form_model = self._construct_global_registration_form()
+        submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
+        entity_mock, patcher = self._create_entity_mock()
+        location_tree = {1: 2}
+        form_submission = FormSubmissionFactory().get_form_submission(form_model, submission,
+            location_tree=location_tree)
+        data_record_id = form_submission.save(self.dbm)
+        patcher.stop()
+        self.assertEqual(1, data_record_id)
+        self.assertEqual(form_submission.location_tree, location_tree)
 
 
     def test_should_do_submission_with_event_time(self):
@@ -52,13 +65,13 @@ class TestFormSubmission(unittest.TestCase):
         form_submission.save(self.dbm)
         patcher.stop()
 
-        expected_event_time = datetime.datetime(2011,1,1,0,0)
+        expected_event_time = datetime.datetime(2011, 1, 1, 0, 0)
         self._assert_data_submission_entity_mock(entity_mock, expected_event_time)
 
     def test_should_do_submission_without_event_time(self):
-        form_model=self._create_data_submission_form()
+        form_model = self._create_data_submission_form()
         submission = OrderedDict({"id": "1", "q1": "My Name"})
-        entity_mock,patcher = self._get_entity_mock()
+        entity_mock, patcher = self._get_entity_mock()
 
         form_submission = FormSubmissionFactory().get_form_submission(form_model, submission)
         form_submission.save(self.dbm)
@@ -70,14 +83,13 @@ class TestFormSubmission(unittest.TestCase):
     def test_should_do_submission_for_global_registration_form(self):
         form_model = self._construct_global_registration_form()
         submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
-        entity_mock,patcher = self._create_entity_mock()
+        entity_mock, patcher = self._create_entity_mock()
         form_submission = FormSubmissionFactory().get_form_submission(form_model, submission)
         data_record_id = form_submission.save(self.dbm)
         patcher.stop()
-        self.assertEqual(1,data_record_id)
+        self.assertEqual(1, data_record_id)
 
-    def _assert_data_submission_entity_mock(self, entity_mock,event_time=None):
-
+    def _assert_data_submission_entity_mock(self, entity_mock, event_time=None):
         submission_values = [('Name', 'My Name', self.ddtype_mock)]
         if event_time is not None:
             submission_values.append(("Event time",event_time,self.ddtype_mock))
@@ -92,17 +104,17 @@ class TestFormSubmission(unittest.TestCase):
         entity_patcher_mock = entity_patcher.start()
         entity_mock = Mock(spec=Entity)
         entity_patcher_mock.return_value = entity_mock
-        return entity_mock,entity_patcher
+        return entity_mock, entity_patcher
 
     def _create_entity_mock(self):
         entity_patcher = patch('mangrove.form_model.form_model.entity.create_entity')
         entity_patcher_mock = entity_patcher.start()
         entity_mock = Mock(spec=Entity)
         entity_patcher_mock.return_value = entity_mock
-        entity_mock.add_data.return_value=1
-        return entity_mock,entity_patcher
+        entity_mock.add_data.return_value = 1
+        return entity_mock, entity_patcher
 
     def _construct_global_registration_form(self):
-        mocked_form_model=Mock()
-        mocked_form_model.entity_type=GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+        mocked_form_model = Mock()
+        mocked_form_model.entity_type = GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
         return mocked_form_model

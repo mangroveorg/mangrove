@@ -4,6 +4,7 @@ from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.queries import get_entity_count_for_type
 from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE
+from mangrove.form_model.location import Location
 from mangrove.utils.types import is_empty, is_not_empty
 
 class Channel(object):
@@ -68,11 +69,10 @@ class ActivityReportWorkFlow(object):
         return values
 
 class RegistrationWorkFlow(object):
-    def __init__(self, dbm, form_model, location_tree, get_location_hierarchy):
+    def __init__(self, dbm, form_model, location_tree):
         self.dbm = dbm
         self.form_model = form_model
         self.location_tree = location_tree
-        self.get_location_hierarchy = get_location_hierarchy
 
     def _generate_short_code_if_empty(self, values):
         if is_empty(self.form_model.get_short_code(values)):
@@ -80,8 +80,7 @@ class RegistrationWorkFlow(object):
 
     def process(self, values):
         self._generate_short_code_if_empty(values)
-        self._set_location_data(values)
-        return values
+        return Location(self.location_tree, self.form_model).process_submission(values)
 
     def _set_location_data(self, values):
         location_field_code = self._get_location_field_code()

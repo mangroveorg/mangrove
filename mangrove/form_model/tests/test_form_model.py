@@ -275,7 +275,6 @@ class TestFormModel(MangroveTestCase):
         self.assertEqual(expected_form_model.id, reg_form_model.id)
         self.assertEqual(expected_form_model.name, reg_form_model.name)
 
-
     def test_should_save_form_model_with_validators(self):
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'foo', fields=fields, entity_type=['Clinic'], validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])

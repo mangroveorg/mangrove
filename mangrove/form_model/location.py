@@ -1,5 +1,9 @@
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE, GEO_CODE_FIELD_NAME
 from mangrove.utils.geo_utils import convert_to_geometry
+
+LOCATION_TYPE_FIELD_NAME = "location"
+LOCATION_TYPE_FIELD_CODE = "l"
+GEO_CODE = "g"
+GEO_CODE_FIELD_NAME = "geo_code"
 
 class Location(object):
     def __init__(self,location_tree, form_model):
@@ -8,7 +12,7 @@ class Location(object):
 
     def process_submission(self, submission_data):
         location_field_code = self._get_location_field_code()
-        location_hierarchy = self.location_tree.location_hierarchy_for_name(submission_data.get(location_field_code))
+        location_hierarchy = self.location_tree.get_location_hierarchy(submission_data.get(location_field_code))
         submission_data[location_field_code] = location_hierarchy
         return submission_data
 
@@ -48,28 +52,30 @@ class Location(object):
         return float(lat_string), float(long_string)
 
     def _get_geometry_from_geo_code(self, geo_code):
-        lat_string, long_string = self._get_lat_long_from_geo_code(geo_code)
-        geometry = convert_to_geometry((long_string, lat_string))
+        geometry = convert_to_geometry(geo_code)
         return geometry
 
     def hierarchy_geometry_location_geo_code_handler(self,geo_code,location_hierarchy):
         return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
     def hierarchy_geometry_geo_code_handler(self,geo_code,location_hierarchy):
-        lat, long = self._get_lat_long_from_geo_code(geo_code)
+        lat, long = geo_code
         location_hierarchy = self.location_tree.get_location_hierarchy_for_geocode(lat=lat,
             long=long)
         return location_hierarchy, self._get_geometry_from_geo_code(geo_code)
 
 
     def hierarchy_geometry_location_handler(self,geo_code,location_hierarchy):
-        lowest_level, lowest_level_name = self._get_location_details(location_hierarchy)
-        translated_geo_code = self.location_tree.get_centroid(lowest_level_name, lowest_level)
-        geometry = convert_to_geometry(tuple(translated_geo_code))
+        geometry = convert_to_geometry(self._get_geo_code_from_location_hierarchy(location_hierarchy))
         return location_hierarchy,geometry
-
 
     def hierarchy_geometry_none_handler(self,geo_code,location_hierarchy):
         return None,None
+
+    def _get_geo_code_from_location_hierarchy(self, location_hierarchy):
+        lowest_level, lowest_level_name = self._get_location_details(location_hierarchy)
+        translated_long_lat_tuple = self.location_tree.get_centroid(lowest_level_name, lowest_level)
+        translated_lat_long_tuple = (translated_long_lat_tuple[1], translated_long_lat_tuple[0])
+        return translated_lat_long_tuple
 
 

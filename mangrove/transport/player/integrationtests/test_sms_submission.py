@@ -29,8 +29,8 @@ class LocationTree(object):
     def get_centroid(self, location_name, level):
         return 60, -12
 
-def get_location_hierarchy(foo):
-    return [u'arantany']
+    def get_location_hierarchy(self,lowest_level_location_name):
+        return [u'arantany']
 
 
 class TestShouldSaveSMSSubmission(MangroveTestCase):
@@ -83,7 +83,7 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.form_model__id = self.form_model.save()
 
         self.submission_handler = None
-        self.sms_player = SMSPlayer(self.manager, LocationTree(), get_location_hierarchy = get_location_hierarchy)
+        self.sms_player = SMSPlayer(self.manager, LocationTree())
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)

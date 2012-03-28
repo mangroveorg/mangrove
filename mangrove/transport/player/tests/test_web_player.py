@@ -22,7 +22,7 @@ class TestWebPlayer(TestCase):
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
-        self.web_player = WebPlayer(self.dbm, location_tree=DummyLocationTree(), get_location_hierarchy=get_location_hierarchy)
+        self.web_player = WebPlayer(self.dbm, location_tree=DummyLocationTree())
         self.transport = TransportInfo(transport="web", source="1234", destination="5678")
         self.message = {'form_code':'reg', 'n':'subject_name', 't':'clinic', 'l':'Pune'}
         self._mock_form_model()

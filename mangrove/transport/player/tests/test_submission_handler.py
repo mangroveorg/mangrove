@@ -15,6 +15,7 @@ class TestSubmissionHandler(TestCase):
         self.submission_mock = Mock()
         self.submission_mock.uuid = '1'
         self.reporter_names = Mock()
+        self.location_tree = Mock()
 
 
     def tearDown(self):
@@ -25,7 +26,7 @@ class TestSubmissionHandler(TestCase):
         with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
             get_form_submission_mock.return_value = self.form_submission_mock
             response = self.handler.handle(self.form_model_mock, OrderedDict(), OrderedDict(), self.submission_mock,
-                self.reporter_names)
+                self.reporter_names, self.location_tree)
             self.assertTrue(response.success)
             self.assertEqual(1, self.form_submission_mock.save.call_count)
             self.assertEqual('1', response.submission_id)
@@ -38,7 +39,7 @@ class TestSubmissionHandler(TestCase):
         with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
             get_form_submission_mock.return_value = self.form_submission_mock
             response = self.handler.handle(self.form_model_mock, OrderedDict(), OrderedDict(), self.submission_mock,
-                self.reporter_names)
+                self.reporter_names, self.location_tree)
             self.assertFalse(response.success)
             self.assertEqual(0, self.form_submission_mock.save.call_count)
 

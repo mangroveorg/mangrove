@@ -1,5 +1,5 @@
-TEST_LAT=60
-TEST_LONG=-12
+TEST_LAT=-12
+TEST_LONG=60
 TEST_LOCATION_HIERARCHY_FOR_GEO_CODE=['madagascar']
 
 class DummyLocationTree(object):
@@ -7,9 +7,9 @@ class DummyLocationTree(object):
         return TEST_LOCATION_HIERARCHY_FOR_GEO_CODE
 
     def get_centroid(self, location_name, level):
-        return TEST_LAT, TEST_LONG
+        return TEST_LONG, TEST_LAT
 
-    def location_hierarchy_for_name(self,lowest_level_location_name):
+    def get_location_hierarchy(self,lowest_level_location_name):
         if lowest_level_location_name=='pune':
             return ['india','mh','pune']
 

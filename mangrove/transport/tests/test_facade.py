@@ -60,38 +60,25 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.get_entity_count.stop()
 
     def test_should_generate_default_code_if_short_code_is_empty(self):
-        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), dummy_get_location_hierarchy)
+        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree())
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.entity_type=['clinic']
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
-        values = registration_work_flow.process({'t': 'clinic', 'l':'Pune'})
-        self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '-12 60', 'l': [u'arantany']}, values)
+        values = registration_work_flow.process({'t': 'clinic', 'l':'pune'})
+        self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['india', 'mh', 'pune']}, values)
 
-    def test_should_set_geocode_if_location_and_short_code_both_are_given(self):
-        self.form_model_mock.entity_type=['clinic']
-        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        self.assertEquals({'s':'cli1', 'l':['arantany'], 'g': '-12 60'}, registration_work_flow.process({'s':'cli1', 'l':'Pune'}))
+    def test_should_set_location_data(self):
+        self._generate_short_code_if_empty_patch = patch('mangrove.transport.facade.RegistrationWorkFlow._generate_short_code_if_empty')
+        self._generate_short_code_if_empty_mock = self._generate_short_code_if_empty_patch.start()
+        self.process_submission_patch = patch('mangrove.form_model.location.Location.process_submission')
+        self.process_submission_mock = self.process_submission_patch.start()
+        values = ['a','b']
+        RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree()).process(values)
+        self.assertEquals(1, self.process_submission_mock.call_count)
+        self._generate_short_code_if_empty_patch.stop()
+        self.process_submission_patch.stop()
 
-    def test_should_set_geocode_if_only_location_is_given(self):
-        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        self.form_model_mock.get_short_code = Mock(return_value=None)
-        self.form_model_mock.entity_type=['clinic']
-        self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
-        values = registration_work_flow.process({'t': 'clinic', 'l':'Pune'})
-        self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '-12 60', 'l': [u'arantany']}, values)
 
-    def test_should_set_location_if_geocode_and_short_code_both_are_given(self):
-        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        values = registration_work_flow.process({'s':'cli1', 'l':'None','g':'1 1'})
-        self.assertEquals({'s':'cli1', 'l':[u'arantany'],'g':'1 1'}, values)
-
-    def test_should_set_location_if_only_geocode_is_given(self):
-        registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree(), get_location_hierarchy=dummy_get_location_hierarchy)
-        self.form_model_mock.get_short_code = Mock(return_value=None)
-        self.form_model_mock.entity_type=['clinic']
-        self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
-        values = registration_work_flow.process({'t': 'clinic', 'l':'None', 'g':'1 1'})
-        self.assertEqual({'s': 'cli1', 't': 'clinic', 'g': '1 1', 'l': [u'arantany']}, values)
 
     def _location_field(self,*args,**kwargs):
         name = kwargs.get('name')

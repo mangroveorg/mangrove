@@ -9,6 +9,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.location import Location
 from mangrove.transport.player.parser import  OrderSMSParser
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
@@ -37,6 +38,7 @@ class TestSMSPlayer(TestCase):
         self.generate_code_patcher = patch(
             "mangrove.transport.facade._set_short_code")
         self.generate_code_patcher.start()
+
 
     def _mock_form_model(self):
         self.get_form_model_mock_player_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
@@ -85,6 +87,7 @@ class TestSMSPlayer(TestCase):
             parser_mock.parse.assert_called_once_with(message)
 
     def test_should_call_parser_post_processor_and_continue_for_no_response(self):
+        self.loc_tree.get_location_hierarchy.return_value = None
         parser_mock = Mock(spec=OrderSMSParser)
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
         post_sms_processor_mock = Mock()
@@ -104,6 +107,7 @@ class TestSMSPlayer(TestCase):
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
         parser_mock = Mock(spec=OrderSMSParser)
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
+        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
         post_sms_processor_mock = Mock()
         expected_response = Response(reporters=None, submission_id=None)
         post_sms_processor_mock.process.return_value = expected_response
@@ -117,6 +121,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_submit_if_parsing_is_successful(self):
         with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
+            self.loc_tree.get_location_hierarchy.return_value = None
             get_form_submission_mock.return_value = self.form_submission_mock
             response = self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
             values = OrderedDict([(u'id', u'1'), (u'm', u'hello world'), ('l', None)])
@@ -159,6 +164,7 @@ class TestSMSPlayer(TestCase):
 
     def test_should_accept_ordered_sms_message(self):
         values = OrderedDict([('q1', u'question1_answer'), ('q2', u'question2_answer'), ('l', None)])
+        self.loc_tree.get_location_hierarchy.return_value = None
         request = Request(transportInfo=self.transport,
             message="questionnaire_code question1_answer question2_answer")
         order_sms_parser = OrderSMSParser(self.dbm)

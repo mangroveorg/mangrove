@@ -31,12 +31,12 @@ class TestLocation(unittest.TestCase):
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_not_present_and_geo_code_is_present_for_entity_creation(self):
-        answers={GEO_CODE: '-12 60','q':"sdasd"}
+        answers={GEO_CODE: (-12, 60),'q':"sdasd"}
         self.assertEquals((TEST_LOCATION_HIERARCHY_FOR_GEO_CODE,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_present_and_geo_code_is_present_for_entity_creation(self):
         location_hierarchy = ['india', 'mh', 'pune']
-        answers={GEO_CODE: '-12 60',LOCATION_TYPE_FIELD_CODE: location_hierarchy}
+        answers={GEO_CODE: (-12, 60),LOCATION_TYPE_FIELD_CODE: location_hierarchy}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
 

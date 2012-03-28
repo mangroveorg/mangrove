@@ -11,8 +11,8 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission, reporter_names):
-        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors)
+    def handle(self, form_model, cleaned_data, errors, submission, reporter_names, location_tree):
+        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
             form_submission.save(self.dbm)
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission.uuid,
@@ -23,7 +23,7 @@ class DeleteHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission, reporter_names):
+    def handle(self, form_model, cleaned_data, errors, submission, reporter_names, location_tree=None):
         short_code = cleaned_data[SHORT_CODE]
         entity_type = cleaned_data[ENTITY_TYPE_FIELD_CODE]
         if is_empty(errors):

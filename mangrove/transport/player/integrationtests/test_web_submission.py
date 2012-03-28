@@ -79,7 +79,7 @@ class TestWEBSubmission(MangroveTestCase):
                                     form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()
 
-        self.web_player = WebPlayer(self.manager, location_tree=LocationTree(), get_location_hierarchy = get_location_hierarchy)
+        self.web_player = WebPlayer(self.manager, location_tree=LocationTree())
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)
@@ -347,6 +347,5 @@ class LocationTree(object):
     def get_centroid(self, location_name, level):
         return 60, -12
 
-
-def get_location_hierarchy(foo):
-    return [u'arantany']
+    def get_location_hierarchy(self,lowest_level_location_name):
+        return [u'arantany']

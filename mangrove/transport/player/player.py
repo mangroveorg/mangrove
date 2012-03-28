@@ -11,10 +11,9 @@ from mangrove.transport.player.handler import handler_factory
 
 
 class Player(object):
-    def __init__(self, dbm, location_tree=None, get_location_hierarchy=None):
+    def __init__(self, dbm, location_tree=None):
         self.dbm = dbm
         self.location_tree = location_tree
-        self.get_location_hierarchy = get_location_hierarchy
 
     def _create_submission(self, transport_info, form_code, values):
         submission = Submission(self.dbm, transport_info, form_code, copy(values))
@@ -29,7 +28,7 @@ class Player(object):
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model.form_code)
-            response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names)
+            response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names, self.location_tree)
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())
             return response
@@ -39,10 +38,10 @@ class Player(object):
 
 
 class SMSPlayer(Player):
-    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None,
+    def __init__(self, dbm, location_tree=None, parser=None,
                  post_sms_parser_processors=None):
         if not post_sms_parser_processors: post_sms_parser_processors = []
-        Player.__init__(self, dbm, location_tree, get_location_hierarchy)
+        Player.__init__(self, dbm, location_tree)
         self.parser = parser
         self.post_sms_parser_processor=post_sms_parser_processors
 
@@ -50,7 +49,7 @@ class SMSPlayer(Player):
         form_model = get_form_model_by_code(self.dbm, form_code)
         values = GeneralWorkFlow().process(values)
         if form_model.is_registration_form():
-            values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree, self.get_location_hierarchy).process(values)
+            values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
         if form_model.entity_defaults_to_reporter():
             values = ActivityReportWorkFlow(form_model, reporter_entity).process(values)
 
@@ -80,9 +79,9 @@ class SMSPlayer(Player):
         return self.submit(form_model, values, submission, reporter_entity_names)
 
 class WebPlayer(Player):
-    def __init__(self, dbm, location_tree=None, parser=None, get_location_hierarchy=None):
+    def __init__(self, dbm, location_tree=None, parser=None):
         self.parser = parser or WebParser()
-        Player.__init__(self, dbm, location_tree, get_location_hierarchy)
+        Player.__init__(self, dbm, location_tree)
 
     def _parse(self, request):
         return self.parser.parse(request.message)
@@ -91,7 +90,7 @@ class WebPlayer(Player):
         form_model = get_form_model_by_code(self.dbm, form_code)
         values = GeneralWorkFlow().process(values)
         if form_model.is_registration_form():
-            values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree, self.get_location_hierarchy).process(values)
+            values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
 
         return form_model, values
 

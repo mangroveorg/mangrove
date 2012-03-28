@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from mangrove.form_model.location import Location
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
@@ -23,7 +24,7 @@ GEO_CODE = "g"
 GEO_CODE_FIELD_NAME = "geo_code"
 
 NAME_FIELD = "name"
-FORM_CODE="form_code"
+FORM_CODE = "form_code"
 NAME_FIELD_CODE = "n"
 SHORT_CODE_FIELD = "short_code"
 SHORT_CODE = "s"
@@ -32,7 +33,7 @@ DESCRIPTION_FIELD_CODE = "d"
 MOBILE_NUMBER_FIELD = "mobile_number"
 MOBILE_NUMBER_FIELD_CODE = "m"
 REPORTER = "reporter"
-GLOBAL_REGISTRATION_FORM_ENTITY_TYPE="registration"
+GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
@@ -44,6 +45,7 @@ def get_form_model_by_code(dbm, code):
     doc = FormModelDocument.wrap(rows[0]['value'])
     return FormModel.new_from_doc(dbm, doc)
 
+
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_sequence(entity_type)
@@ -52,6 +54,7 @@ def get_form_model_by_entity_type(dbm, entity_type):
         doc = FormModelDocument.wrap(rows[0]['doc'])
         return FormModel.new_from_doc(dbm, doc)
     return None
+
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
@@ -116,7 +119,7 @@ class FormModel(DataObject):
     @property
     def event_time_question(self):
         event_time_questions = [event_time_question for event_time_question in self._form_fields if
-                  event_time_question.is_event_time_field]
+                                event_time_question.is_event_time_field]
         return event_time_questions[0] if event_time_questions else None
 
     @property
@@ -285,10 +288,10 @@ class FormModel(DataObject):
         return None
 
     def _remove_empty_values(self, answers):
-        return OrderedDict([(k,v) for k, v in answers.items() if not is_empty(v)])
+        return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_unknown_fields(self, answers):
-        return OrderedDict([(k,v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
+        return OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
     def validate_submission(self, values):
         assert values is not None
@@ -315,7 +318,7 @@ class FormModel(DataObject):
 
 
 class FormSubmission(object):
-    def __init__(self, form_model, form_answers, errors=None):
+    def __init__(self, form_model, form_answers, errors=None, location_tree=None):
         assert errors is None or type(errors) == OrderedDict
         assert form_answers is not None and type(form_answers) == OrderedDict
         assert form_model is not None
@@ -328,6 +331,7 @@ class FormSubmission(object):
         self.errors = errors
         self.entity_type = self.get_entity_type(form_model)
         self.data_record_id = None
+        self.location_tree = location_tree
 
     @property
     def cleaned_data(self):
@@ -358,7 +362,8 @@ class FormSubmission(object):
 
     def _save_data(self, entity):
         submission_information = dict(form_code=self.form_code)
-        self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),submission=submission_information)
+        self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),
+            submission=submission_information)
         return self.data_record_id
 
     def get_entity_type(self, form_model):
@@ -383,7 +388,7 @@ class FormSubmission(object):
     def get_entity(self, dbm):
         pass
 
-    def _get_field_code_by_name(self,field_name):
+    def _get_field_code_by_name(self, field_name):
         field = self.form_model.get_field_by_name(name=field_name)
         return field.code if field is not None else None
 
@@ -393,48 +398,53 @@ class FormSubmission(object):
     def get_geo_field_code(self):
         return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
 
-class DataFormSubmission(FormSubmission):
-    def __init__(self,form_model,answers,errors):
-        super(DataFormSubmission,self).__init__(form_model,answers,errors)
 
-    def get_entity(self,dbm):
+class DataFormSubmission(FormSubmission):
+    def __init__(self, form_model, answers, errors):
+        super(DataFormSubmission, self).__init__(form_model, answers, errors)
+
+    def get_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
-class GlobalRegistrationFormSubmission(FormSubmission):
-    def __init__(self,form_model,answers,errors):
-        super(GlobalRegistrationFormSubmission,self).__init__(form_model,answers,errors)
-        self.entity_type=self.get_entity_type(form_model)
 
-    def get_entity(self,dbm):
-        location = self.cleaned_data.get(self.get_location_field_code())
-        return entity.create_entity(dbm=dbm, entity_type=self.get_entity_type(self.form_model),
-            location=location,
+class GlobalRegistrationFormSubmission(FormSubmission):
+    def __init__(self, form_model, answers, errors, location_tree=None):
+        super(GlobalRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
+        self.entity_type = self.get_entity_type(form_model)
+
+    def get_entity(self, dbm):
+        location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
+            self.cleaned_data)
+        return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
+            location=location_hierarchy,
             short_code=self.short_code,
-            geometry=convert_to_geometry(self.cleaned_data.get(self.get_geo_field_code())))
+            geometry=processed_geometry)
 
     def get_entity_type(self, form_model):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
+
 class EntityRegistrationFormSubmission(FormSubmission):
-    def __init__(self,form_model,answers,errors):
-        super(EntityRegistrationFormSubmission,self).__init__(form_model,answers,errors)
+    def __init__(self, form_model, answers, errors, location_tree=None):
+        super(EntityRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
     def get_entity(self, dbm):
-        location = self.cleaned_data.get(self.get_location_field_code())
+        location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
+            self.cleaned_data)
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
-                location=location,
-                short_code=self.short_code,
-                geometry=convert_to_geometry(self.cleaned_data.get(self.get_geo_field_code())))
-
+            location=location_hierarchy,
+            short_code=self.short_code,
+            geometry=processed_geometry)
 
 
 class FormSubmissionFactory(object):
-
-    def _is_global_registration_form(self,form_model):
+    def _is_global_registration_form(self, form_model):
         return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in form_model.entity_type
 
-    def get_form_submission(self,form_model, answers,errors=None):
+    def get_form_submission(self, form_model, answers, errors=None, location_tree=None):
         if not form_model.is_registration_form():
-            return DataFormSubmission(form_model, answers,errors)
-        return GlobalRegistrationFormSubmission(form_model,answers,errors) if self._is_global_registration_form(form_model) else EntityRegistrationFormSubmission(form_model,answers,errors)
+            return DataFormSubmission(form_model, answers, errors)
+        return GlobalRegistrationFormSubmission(form_model, answers, errors,
+            location_tree=location_tree) if self._is_global_registration_form(
+            form_model) else EntityRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)

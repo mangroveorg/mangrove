@@ -18,22 +18,10 @@ class TestBasePlayer(TestCase):
         location_field = Mock(spec=HierarchyField)
         form_model.get_field_by_name.return_value= location_field
         location_field.code='l'
-        self.registration_workflow = RegistrationWorkFlow(dbm, form_model, loc_tree, get_location_hierarchy)
+        self.registration_workflow = RegistrationWorkFlow(dbm, form_model, loc_tree)
 
     def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
         values = dict(l='a,b,c', t='clinic')
         self.registration_workflow._set_location_data(values=values)
         self.assertEqual(['c', 'b', 'a'], values['l'])
 
-    def test_should_resolve_location_hierarchy_if_hierarchy_not_passed_in(self):
-        values = dict(l='no_hierarchy', t='clinic')
-        self.registration_workflow._set_location_data(values=values)
-        self.assertEqual(['no_hierarchy'], values['l'])
-
-    def test_should_not_set_location_field_if_code_not_present(self):
-        values = dict(t='clinic')
-        registration_workflow = RegistrationWorkFlow(Mock(spec=DatabaseManager), Mock(spec=FormModel), Mock(), get_location_hierarchy)
-        with patch.object(RegistrationWorkFlow, '_get_location_field_code') as get_location_field_code:
-            get_location_field_code.return_value = None
-            registration_workflow._set_location_data(values=values)
-            self.assertEqual(1, len(values))

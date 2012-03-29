@@ -7,6 +7,8 @@ class DummyLocationTree(object):
         return TEST_LOCATION_HIERARCHY_FOR_GEO_CODE
 
     def get_centroid(self, location_name, level):
+        if location_name=="jalgaon" and level==2:
+            return None
         return TEST_LONG, TEST_LAT
 
     def get_location_hierarchy(self,lowest_level_location_name):

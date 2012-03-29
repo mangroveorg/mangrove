@@ -76,7 +76,8 @@ class Location(object):
     def _get_geo_code_from_location_hierarchy(self, location_hierarchy):
         lowest_level, lowest_level_name = self._get_location_details(location_hierarchy)
         translated_long_lat_tuple = self.location_tree.get_centroid(lowest_level_name, lowest_level)
-        translated_lat_long_tuple = (translated_long_lat_tuple[1], translated_long_lat_tuple[0])
-        return translated_lat_long_tuple
+        return self._get_inverted_tuple(translated_long_lat_tuple) if translated_long_lat_tuple is not None else None
 
+    def _get_inverted_tuple(self, tuple_to_be_inverted):
+        return (tuple_to_be_inverted[1], tuple_to_be_inverted[0])
 

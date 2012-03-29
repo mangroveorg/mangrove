@@ -27,7 +27,7 @@ class TestLocation(unittest.TestCase):
 
     def test_case_when_location_is_present_and_geo_code_is_not_present_for_entity_creation(self):
         location_hierarchy = ['india', 'mh', 'pune']
-        answers={LOCATION_TYPE_FIELD_CODE: location_hierarchy,'q':"sdasd"}
+        answers={LOCATION_TYPE_FIELD_CODE: location_hierarchy,'q':"test answer"}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_not_present_and_geo_code_is_present_for_entity_creation(self):

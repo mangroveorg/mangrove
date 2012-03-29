@@ -16,7 +16,7 @@ class Location(object):
         display_location = submission_data.get(location_field_code)
         if is_empty(display_location):
             return submission_data
-        display_location_list = display_location.lower().split(',')
+        display_location_list = display_location.split(',')
         if len(display_location_list) > 1:
             submission_data[location_field_code] = display_location_list
             return submission_data

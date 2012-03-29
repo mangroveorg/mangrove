@@ -3,13 +3,12 @@ from collections import OrderedDict
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
 from mangrove.form_model.field import HierarchyField, GeoCodeField
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmission, FormSubmissionFactory
+from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmissionFactory
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
-from mangrove.form_model.location import Location
 from mangrove.transport.player.parser import  OrderSMSParser
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
@@ -101,7 +100,7 @@ class TestSMSPlayer(TestCase):
             response = sms_player.accept(Request(message=message, transportInfo=self.transport))
             self.assertEqual(self.reporter_name, response.reporters[0][NAME_FIELD])
 
-            post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1', 'l': None})
+            post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1'})
 
 
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
@@ -124,7 +123,7 @@ class TestSMSPlayer(TestCase):
             self.loc_tree.get_location_hierarchy.return_value = None
             get_form_submission_mock.return_value = self.form_submission_mock
             response = self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
-            values = OrderedDict([(u'id', u'1'), (u'm', u'hello world'), ('l', None)])
+            values = OrderedDict([(u'id', u'1'), (u'm', u'hello world')])
             self.form_model_mock.validate_submission.assert_called_once_with(values=values)
             self.form_submission_mock.save.assert_called_once_with(self.dbm)
             self.assertEqual('', response.datarecord_id)
@@ -163,7 +162,7 @@ class TestSMSPlayer(TestCase):
 
 
     def test_should_accept_ordered_sms_message(self):
-        values = OrderedDict([('q1', u'question1_answer'), ('q2', u'question2_answer'), ('l', None)])
+        values = OrderedDict([('q1', u'question1_answer'), ('q2', u'question2_answer')])
         self.loc_tree.get_location_hierarchy.return_value = None
         request = Request(transportInfo=self.transport,
             message="questionnaire_code question1_answer question2_answer")

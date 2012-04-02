@@ -31,6 +31,11 @@ class TestWebParser(TestCase):
         form_code, values = self.web_parser.parse(message)
         self.assertEquals(values, {'q2': "21"})
 
+    def test_should_allow_float_values(self):
+        message = {'form_code': 'X1','q2': 21.5}
+        form_code, values = self.web_parser.parse(message)
+        self.assertEquals(values, {'q2': "21.5"})
+
     def test_should_convert_list_value_to_string(self):
         message = {'form_code': 'X1', 'q1': ['a1', 'a2'], 'q2': [""], 'q3': []}
         form_code, values = self.web_parser.parse(message)

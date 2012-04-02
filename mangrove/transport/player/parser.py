@@ -4,10 +4,10 @@ import csv
 import re
 import xlrd
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
-    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, DeleteRequestParserInvalidFormatException,\
-    DeleteRequestParserWrongNumberOfAnswersException
+    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
+from mangrove.validate import is_float
 
 
 class SMSParserFactory(object):
@@ -155,7 +155,7 @@ class WebParser(object):
         return form_code, self._fetch_string_value(message)
 
     def _to_str(self, value):
-        if type(value) is int:
+        if isinstance(value,(int,float,long)):
             return str(value)
         return "".join(value) if value is not None else None
 

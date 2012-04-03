@@ -18,7 +18,7 @@ class TestLocation(unittest.TestCase):
 
     def test_should_convert_location_to_location_hierarchy(self):
         submission={LOCATION_TYPE_FIELD_CODE: self.lowest_level_location,'q':"sdasd"}
-        augmented_submission={LOCATION_TYPE_FIELD_CODE:['india','mh','pune'],'q':"sdasd"}
+        augmented_submission={LOCATION_TYPE_FIELD_CODE:['pune','mh','india'],'q':"sdasd"}
         self.assertEquals(augmented_submission,self.location.process_submission(submission))
 
     def test_should_not_do_anything_when_location_and_geo_is_not_present_for_entity_creation(self):
@@ -26,12 +26,12 @@ class TestLocation(unittest.TestCase):
         self.assertEquals((None,None),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_present_and_geo_code_is_not_present_for_entity_creation(self):
-        location_hierarchy = ['india', 'mh', 'pune']
+        location_hierarchy = ['pune', 'mh', 'india']
         answers={LOCATION_TYPE_FIELD_CODE: location_hierarchy,'q':"test answer"}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_not_found_in_location_tree(self):
-        location_hierarchy = ['india', 'mh', 'jalgaon']
+        location_hierarchy = ['jalgaon', 'mh', 'india']
         answers={LOCATION_TYPE_FIELD_CODE: location_hierarchy,'q':"test answer"}
         self.assertEquals((location_hierarchy,None),self.location.process_entity_creation(answers))
 
@@ -40,7 +40,7 @@ class TestLocation(unittest.TestCase):
         self.assertEquals((TEST_LOCATION_HIERARCHY_FOR_GEO_CODE,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
     def test_case_when_location_is_present_and_geo_code_is_present_for_entity_creation(self):
-        location_hierarchy = ['india', 'mh', 'pune']
+        location_hierarchy = ['pune', 'mh', 'india']
         answers={GEO_CODE: (-12, 60),LOCATION_TYPE_FIELD_CODE: location_hierarchy}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
@@ -48,7 +48,7 @@ class TestLocation(unittest.TestCase):
 
     def location_hierarchy_stub(self,lowest_level_location_name):
         if lowest_level_location_name=='pune':
-            return ['india','mh','pune']
+            return ['pune','mh','india']
 
     def form(self):
         manager=Mock(spec=DatabaseManager)

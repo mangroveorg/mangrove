@@ -13,5 +13,5 @@ class DummyLocationTree(object):
 
     def get_location_hierarchy(self,lowest_level_location_name):
         if lowest_level_location_name=='pune':
-            return ['india','mh','pune']
+            return ['pune','mh','india']
 

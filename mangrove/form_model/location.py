@@ -36,7 +36,7 @@ class Location(object):
         return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
 
     def _get_location_details(self, location_hierarchy):
-        lowest_level_name = location_hierarchy[-1]
+        lowest_level_name = location_hierarchy[0]
         lowest_level = len(location_hierarchy) - 1
         return lowest_level, lowest_level_name
 

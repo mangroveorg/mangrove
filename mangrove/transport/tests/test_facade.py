@@ -65,7 +65,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.form_model_mock.entity_type=['clinic']
         self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
         values = registration_work_flow.process({'t': 'clinic', 'l':'pune'})
-        self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['india', 'mh', 'pune']}, values)
+        self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['pune', 'mh', 'india']}, values)
 
     def test_should_set_location_data(self):
         self._generate_short_code_if_empty_patch = patch('mangrove.transport.facade.RegistrationWorkFlow._generate_short_code_if_empty')

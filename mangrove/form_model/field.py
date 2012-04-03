@@ -201,6 +201,7 @@ class IntegerField(Field):
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
+    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
 
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE, required=True, event_time_field_flag=False):
@@ -213,9 +214,8 @@ class DateField(Field):
 
     def validate(self, value):
         Field.validate(self,value)
-        DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
         try:
-            return datetime.strptime(value.strip(), DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
+            return datetime.strptime(value.strip(), self.DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
 

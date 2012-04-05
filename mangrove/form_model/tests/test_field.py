@@ -13,6 +13,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 
 from mangrove.form_model import field
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
+from datetime import datetime
 
 
 class TestField(unittest.TestCase):
@@ -46,6 +47,9 @@ class TestField(unittest.TestCase):
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
+        field.set_value("abc")
+        self.assertEqual("abc", field._to_str())
+
     def test_should_create_list_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"eng": "What is your location"},
@@ -61,6 +65,9 @@ class TestField(unittest.TestCase):
                                ddtype=self.ddtype, instruction="Answer is list")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+
+        field.set_value(["abc","def"])
+        self.assertEqual("abc,def", field._to_str())
 
 
     def test_should_create_integer_field_type_for_default_english_language(self):
@@ -78,6 +85,8 @@ class TestField(unittest.TestCase):
                              language="eng", ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+        field.set_value(123)
+        self.assertEqual("123", field._to_str())
 
     def test_should_create_integer_field_type_for_default_english_language_as_optional(self):
         expected_json = {
@@ -131,6 +140,9 @@ class TestField(unittest.TestCase):
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
+        field.set_value(field.validate('b'))
+        self.assertEqual("YELLOW", field._to_str())
+
     def test_should_create_multi_select_field_type_for_default_english_language(self):
         expected_json = {
             "label": {"en": "What is your favorite color"},
@@ -149,6 +161,8 @@ class TestField(unittest.TestCase):
                             ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+        field.set_value(field.validate('ab'))
+        self.assertEqual("RED,YELLOW", field._to_str())
 
 
     def test_should_add_label_for_french_language(self):
@@ -642,6 +656,8 @@ class TestField(unittest.TestCase):
                              language="en", instruction="test_instruction", )
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
+        field.set_value(field.validate("23,23"))
+        self.assertEqual("23.0,23.0", field._to_str())
 
     def test_should_validate_location(self):
         expect_lat_long = (89.1, 100.1)
@@ -814,8 +830,10 @@ class TestField(unittest.TestCase):
 
 
     def test_should_create_date_field_with_event_time_flag(self):
-        field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', Mock(spec=DataDictType), event_time_field_flag=True)
+        field = DateField('event_time', 'et', 'event_time', 'mm.dd.yyyy', Mock(spec=DataDictType), event_time_field_flag=True)
         self.assertTrue(field.is_event_time_field)
+        field.set_value(datetime.strptime('25-12-2012', '%d-%m-%Y'))
+        self.assertEqual("12.25.2012", field._to_str())
 
     def test_should_create_date_field_with_event_time_flag_from_json(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype

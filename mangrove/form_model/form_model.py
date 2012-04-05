@@ -316,6 +316,14 @@ class FormModel(DataObject):
                 return values[fieldcode]
         return None
 
+    def stringify(self, values):
+        self.bind(values)
+        dict = OrderedDict()
+        for field in self.fields:
+            dict[field.code] = field._to_str()
+
+        return dict
+
 
 class FormSubmission(object):
     def __init__(self, form_model, form_answers, errors=None, location_tree=None):

@@ -1,11 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
+import re
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
-from mangrove.utils.types import is_sequence, is_empty
+from mangrove.utils.types import is_sequence, is_empty, sequence_to_str
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
 
 
@@ -153,6 +154,9 @@ class Field(object):
         if self.is_required() and is_empty(value):
             raise RequiredFieldNotPresentException(self.code)
 
+    def _to_str(self):
+        return unicode(self.value)
+
 
 class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,
@@ -229,6 +233,11 @@ class DateField(Field):
     @property
     def is_event_time_field(self):
         return self._dict.get('event_time_field_flag',False)
+
+    def _to_str(self):
+        assert isinstance(self.value, datetime)
+        date_format = self.DATE_DICTIONARY.get(self.date_format)
+        return self.value.strftime(date_format)
 
 
 class TextField(Field):
@@ -328,6 +337,10 @@ class HierarchyField(Field):
             return value
         return [value]
 
+    def _to_str(self):
+        assert isinstance(self.value, list)
+        return sequence_to_str(self.value)
+
 
 class SelectField(Field):
     OPTIONS = "choices"
@@ -373,6 +386,10 @@ class SelectField(Field):
     def get_constraint_text(self):
         return [option["text"][self.language] for option in self.options]
 
+    def _to_str(self):
+        if isinstance(self.value, list):
+            return unicode(",".join(self.value))
+
 
 class GeoCodeField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,required=True):
@@ -388,6 +405,10 @@ class GeoCodeField(Field):
 
     def get_constraint_text(self):
         return "xx.xxxx yy.yyyy"
+
+    def _to_str(self):
+        assert isinstance(self.value, tuple)
+        return ",".join(str(b) for b in list(self.value))
 
 
 def _add_more_labels_to_field_if_any(field, labels):

@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from collections import OrderedDict
 from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
@@ -283,6 +284,16 @@ class TestFormModel(MangroveTestCase):
         self.assertEqual(2, len(form.validators))
         self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
         self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
+
+    def test_should_get_string_rep_of_form_model(self):
+        submission = {"ID": "id", "Q1": "12345", "Q2": "25", "Q3": "a"}
+        stringified_dict = self.form_model.stringify(values=self.form_model.validate_submission(submission)[0])
+        self.assertEquals("id",stringified_dict.get("ID"))
+        self.assertEquals("12345",stringified_dict.get("Q1"))
+        self.assertEquals("25",stringified_dict.get("Q2"))
+        self.assertEquals("RED",stringified_dict.get("Q3"))
+
+        
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]

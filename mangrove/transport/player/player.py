@@ -21,13 +21,12 @@ class Player(object):
         return submission
 
 
-    def submit(self, form_model, values, submission, reporter_names, registered_phone_numbers=[]):
+    def submit(self, form_model, values, submission, reporter_names):
         try:
             if form_model.is_inactive():
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
-            cleaned_data, errors = form_model.validate_submission(values=values,
-                registered_phone_numbers=registered_phone_numbers)
+            cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model.form_code)
             response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names, self.location_tree)
             submission.update(response.success, response.errors, response.datarecord_id,

@@ -26,7 +26,7 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
 
 class MobileNumberValidationsForReporterRegistrationValidator(object):
 
-    def validate(self, values, fields, dbm, registered_phone_numbers=[]):
+    def validate(self, values, fields, dbm):
         from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD
 
         errors = OrderedDict()
@@ -36,8 +36,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
             phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
                errors[field_code] = u'Mobile number is missing'
-            elif phone_number in registered_phone_numbers or\
-                 entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number):
+            elif entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number):
                 errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered' % (phone_number,)
 
         return errors

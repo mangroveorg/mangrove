@@ -12,7 +12,6 @@ from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
-from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 
 ARPT_SHORT_CODE = "dummy"
 
@@ -294,16 +293,12 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
-    def validate_submission(self, values, registered_phone_numbers=[]):
+    def validate_submission(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
         errors = OrderedDict()
         for validator in self.validators:
-            if type(validator) == MobileNumberValidationsForReporterRegistrationValidator:
-                errors.update(validator.validate(values, self.fields, self._dbm,
-                    registered_phone_numbers=registered_phone_numbers))
-            else:
-                errors.update(validator.validate(values, self.fields, self._dbm))
+            errors.update(validator.validate(values, self.fields, self._dbm))
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:

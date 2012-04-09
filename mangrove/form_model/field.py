@@ -155,6 +155,8 @@ class Field(object):
             raise RequiredFieldNotPresentException(self.code)
 
     def _to_str(self):
+        if self.value is None :
+            return unicode("--")
         return unicode(self.value)
 
 
@@ -235,6 +237,8 @@ class DateField(Field):
         return self._dict.get('event_time_field_flag',False)
 
     def _to_str(self):
+        if self.value is None :
+            return unicode("--")
         assert isinstance(self.value, datetime)
         date_format = self.DATE_DICTIONARY.get(self.date_format)
         return self.value.strftime(date_format)
@@ -338,6 +342,8 @@ class HierarchyField(Field):
         return [value]
 
     def _to_str(self):
+        if self.value is None :
+            return unicode("--")
         assert isinstance(self.value, list)
         return sequence_to_str(self.value)
 
@@ -387,8 +393,10 @@ class SelectField(Field):
         return [option["text"][self.language] for option in self.options]
 
     def _to_str(self):
-        if isinstance(self.value, list):
-            return unicode(",".join(self.value))
+        if self.value is None :
+            return unicode("--")
+        assert isinstance(self.value, list)
+        return unicode(",".join(self.value))
 
 
 class GeoCodeField(Field):
@@ -407,8 +415,10 @@ class GeoCodeField(Field):
         return "xx.xxxx yy.yyyy"
 
     def _to_str(self):
-        assert isinstance(self.value, tuple)
-        return ",".join(str(b) for b in list(self.value))
+        if self.value is None :
+            return unicode("--")
+        assert isinstance(self.value, tuple) or isinstance(self.value, list)
+        return ", ".join(str(b) for b in list(self.value))
 
 
 def _add_more_labels_to_field_if_any(field, labels):

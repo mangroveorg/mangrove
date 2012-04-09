@@ -657,7 +657,7 @@ class TestField(unittest.TestCase):
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
         field.set_value(field.validate("23,23"))
-        self.assertEqual("23.0,23.0", field._to_str())
+        self.assertEqual("23.0, 23.0", field._to_str())
 
     def test_should_validate_location(self):
         expect_lat_long = (89.1, 100.1)

@@ -221,7 +221,7 @@ class DateField(Field):
     def validate(self, value):
         Field.validate(self,value)
         try:
-            return datetime.strptime(value.strip(), self.DATE_DICTIONARY.get(self._dict[self.DATE_FORMAT]))
+            return datetime.strptime(value.strip(), self.DATE_DICTIONARY.get(self.date_format))
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
 

@@ -344,8 +344,7 @@ class HierarchyField(Field):
     def _to_str(self):
         if self.value is None :
             return unicode("--")
-        assert isinstance(self.value, list)
-        return sequence_to_str(self.value)
+        return sequence_to_str(self.value) if isinstance(self.value, list) else unicode(self.value)
 
 
 class SelectField(Field):
@@ -395,8 +394,7 @@ class SelectField(Field):
     def _to_str(self):
         if self.value is None :
             return unicode("--")
-        assert isinstance(self.value, list)
-        return unicode(",".join(self.value))
+        return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
 
 
 class GeoCodeField(Field):

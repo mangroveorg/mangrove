@@ -239,9 +239,8 @@ class DateField(Field):
     def _to_str(self):
         if self.value is None :
             return unicode("--")
-        assert isinstance(self.value, datetime)
         date_format = self.DATE_DICTIONARY.get(self.date_format)
-        return self.value.strftime(date_format)
+        return self.value.strftime(date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
 
 class TextField(Field):
@@ -415,8 +414,7 @@ class GeoCodeField(Field):
     def _to_str(self):
         if self.value is None :
             return unicode("--")
-        assert isinstance(self.value, tuple) or isinstance(self.value, list)
-        return ", ".join(str(b) for b in list(self.value))
+        return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value, tuple) else unicode(self.value)
 
 
 def _add_more_labels_to_field_if_any(field, labels):

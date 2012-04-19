@@ -185,11 +185,18 @@ class TestLocationValidations(unittest.TestCase):
         self.assertEqual((90.0, 130.0), constraint.validate("90 ", " 130"))
         self.assertEqual((90.0, 130.0), constraint.validate("   90 ", " 130  "))
 
-    def test_should_remove_right_to_left_mark_character(self):
+    def test_should_remove_right_to_left_mark_character_while_importing_from_excel(self):
         constraint = GeoCodeConstraint()
         # the string is '49.418607\u200e'
         self.assertEqual((90.0, 49.418607), constraint.validate("90 ", u'49.418607‎'))
         self.assertEqual((49.418607, 130.0), constraint.validate(u'49.418607‎', " 130  "))
+
+    def test_should_raise_error_for_non_ascii_characters(self):
+        # the string is '49.418607\u200e'
+        with self.assertRaises(UnicodeEncodeError) as e:
+            constraint = GeoCodeConstraint()
+            constraint.validate(u'23º', u'43º')
+        self.assertEqual("ordinal not in range(128)", e.exception.reason)
 
 
 class TestRegexValidations(unittest.TestCase):

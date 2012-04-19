@@ -53,6 +53,9 @@ class EntityQuestionAlreadyExistsException(MangroveException):
     pass
 
 
+class QuestionAlreadyExistsException(MangroveException):
+    pass
+
 class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 

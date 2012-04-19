@@ -6,10 +6,9 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
-from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
@@ -237,7 +236,16 @@ class FormModel(DataObject):
     def _validate_fields(self):
         self._validate_existence_of_only_one_entity_field()
         self._validate_uniqueness_of_field_codes()
+        self._validate_uniqueness_of_field_labels()
 
+
+    def _validate_uniqueness_of_field_labels(self):
+        """ Validate all question labels are unique
+        """
+        label_list = [f.label[f.language].lower() for f in self._form_fields]
+        label_list_without_duplicates = list(set(label_list))
+        if len(label_list) != len(label_list_without_duplicates):
+            raise QuestionAlreadyExistsException("All questions must be unique")
 
     def _validate_uniqueness_of_field_codes(self):
         """ Validate all question codes are unique

@@ -8,7 +8,7 @@ from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.entity_type import  define_type
 from mangrove.form_model.field import  TextField, IntegerField, SelectField
-from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists
+from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
@@ -122,6 +122,14 @@ class TestFormModel(MangroveTestCase):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
             form_model = self.manager.get(self.form_model__id, FormModel)
             question = TextField(name="added_question", code="q1", label="How are you",
+                                 ddtype=self.default_ddtype)
+            form_model.add_field(question)
+            form_model.save()
+
+    def test_should_raise_exception_if_label_is_not_unique(self):
+        with self.assertRaises(QuestionAlreadyExistsException):
+            form_model = self.manager.get(self.form_model__id, FormModel)
+            question = TextField(name="added_question", code="q5", label="What is your name",
                                  ddtype=self.default_ddtype)
             form_model.add_field(question)
             form_model.save()

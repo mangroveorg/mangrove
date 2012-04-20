@@ -59,7 +59,7 @@ class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None):
+                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None, enforce_unique_labels = True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
@@ -73,7 +73,7 @@ class FormModel(DataObject):
         self._form_fields = []
         self.errors = []
         self.validators = validators
-        self.enforce_unique_labels = False
+        self._enforce_unique_labels = enforce_unique_labels
         # Are we being constructed from scratch or existing doc?
         if name is None:
             return
@@ -244,7 +244,7 @@ class FormModel(DataObject):
         """ Validate all question labels are unique
 
         """
-        if self.enforce_unique_labels:
+        if self._enforce_unique_labels:
             label_list = [f.label[f.language].lower() for f in self._form_fields]
             label_list_without_duplicates = list(set(label_list))
             if len(label_list) != len(label_list_without_duplicates):

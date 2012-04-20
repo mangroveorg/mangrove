@@ -129,6 +129,7 @@ class TestFormModel(MangroveTestCase):
     def test_should_raise_exception_if_label_is_not_unique(self):
         with self.assertRaises(QuestionAlreadyExistsException):
             form_model = self.manager.get(self.form_model__id, FormModel)
+            form_model.enforce_unique_labels = True
             question = TextField(name="added_question", code="q5", label="What is your name",
                                  ddtype=self.default_ddtype)
             form_model.add_field(question)

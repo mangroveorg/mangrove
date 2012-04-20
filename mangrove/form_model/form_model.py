@@ -73,6 +73,7 @@ class FormModel(DataObject):
         self._form_fields = []
         self.errors = []
         self.validators = validators
+        self.enforce_unique_labels = False
         # Are we being constructed from scratch or existing doc?
         if name is None:
             return
@@ -241,11 +242,13 @@ class FormModel(DataObject):
 
     def _validate_uniqueness_of_field_labels(self):
         """ Validate all question labels are unique
+
         """
-        label_list = [f.label[f.language].lower() for f in self._form_fields]
-        label_list_without_duplicates = list(set(label_list))
-        if len(label_list) != len(label_list_without_duplicates):
-            raise QuestionAlreadyExistsException("All questions must be unique")
+        if self.enforce_unique_labels:
+            label_list = [f.label[f.language].lower() for f in self._form_fields]
+            label_list_without_duplicates = list(set(label_list))
+            if len(label_list) != len(label_list_without_duplicates):
+                raise QuestionAlreadyExistsException("All questions must be unique")
 
     def _validate_uniqueness_of_field_codes(self):
         """ Validate all question codes are unique

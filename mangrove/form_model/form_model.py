@@ -79,8 +79,8 @@ class FormModel(DataObject):
             return
 
         # Not made from existing doc, so build ourselves up
+        self._validate_fields(fields)
         self._form_fields = fields
-        self._validate_fields()
 
         doc = FormModelDocument()
         doc.name = name
@@ -188,13 +188,13 @@ class FormModel(DataObject):
         return None
 
     def add_field(self, field):
+        self._validate_fields(self._form_fields + [field])
         self._form_fields.append(field)
-        self._validate_fields()
         return self._form_fields
 
     def delete_field(self, code):
         self._form_fields = [f for f in self._form_fields if f.code != code]
-        self._validate_fields()
+        self._validate_fields(self._form_fields)
 
     def delete_all_fields(self):
         self._form_fields = []
@@ -234,33 +234,33 @@ class FormModel(DataObject):
             answer = self._case_insensitive_lookup(self.submission, field.code)
             field.set_value(answer)
 
-    def _validate_fields(self):
-        self._validate_existence_of_only_one_entity_field()
-        self._validate_uniqueness_of_field_codes()
-        self._validate_uniqueness_of_field_labels()
+    def _validate_fields(self, fields):
+        self._validate_existence_of_only_one_entity_field(fields)
+        self._validate_uniqueness_of_field_codes(fields)
+        self._validate_uniqueness_of_field_labels(fields)
 
 
-    def _validate_uniqueness_of_field_labels(self):
+    def _validate_uniqueness_of_field_labels(self, fields):
         """ Validate all question labels are unique
 
         """
         if self._enforce_unique_labels:
-            label_list = [f.label[f.language].lower() for f in self._form_fields]
+            label_list = [f.label[f.language].lower() for f in fields]
             label_list_without_duplicates = list(set(label_list))
             if len(label_list) != len(label_list_without_duplicates):
                 raise QuestionAlreadyExistsException("All questions must be unique")
 
-    def _validate_uniqueness_of_field_codes(self):
+    def _validate_uniqueness_of_field_codes(self, fields):
         """ Validate all question codes are unique
         """
-        code_list = [f.code.lower() for f in self._form_fields]
+        code_list = [f.code.lower() for f in fields]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")
 
-    def _validate_existence_of_only_one_entity_field(self):
+    def _validate_existence_of_only_one_entity_field(self, fields):
         """Validate only 1 entity question is there"""
-        entity_question_list = [f for f in self._form_fields if isinstance(f, TextField) and f.is_entity_field == True]
+        entity_question_list = [f for f in fields if isinstance(f, TextField) and f.is_entity_field == True]
         if len(entity_question_list) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 

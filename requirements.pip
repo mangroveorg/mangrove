@@ -6,3 +6,4 @@ mock
 iso8601
 pytz
 xlwt
+jinja2

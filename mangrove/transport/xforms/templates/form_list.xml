@@ -1,0 +1,10 @@
+<forms>
+    {% if form_tuples %}
+        {% for form_name, form_id in form_tuples %}
+            <formID>{{ form_name }}</formID>
+            <form url="{{ xform_base_url }}/{{ form_id }}">{{ form_name }}</form>
+            <formID>{{ form_name }}</formID>
+
+        {% endfor %}
+    {% endif %}
+</forms>

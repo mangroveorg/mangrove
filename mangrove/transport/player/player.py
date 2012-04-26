@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
+import xmldict
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
@@ -61,13 +62,13 @@ class SMSPlayer(Player):
             if response is not None:
                 return response
 
-    def _parse(self, request):
+    def _parse(self, message):
         if self.parser is None:
-            self.parser = SMSParserFactory().getSMSParser(request.message, self.dbm)
-        return self.parser.parse(request.message)
+            self.parser = SMSParserFactory().getSMSParser(message, self.dbm)
+        return self.parser.parse(message)
 
     def accept(self, request):
-        form_code, values = self._parse(request)
+        form_code, values = self._parse(request.message)
         post_sms_processor_response = self._process_post_parse_callback(form_code, values)
         if post_sms_processor_response is not None:
             return post_sms_processor_response
@@ -83,8 +84,8 @@ class WebPlayer(Player):
         self.parser = parser or WebParser()
         Player.__init__(self, dbm, location_tree)
 
-    def _parse(self, request):
-        return self.parser.parse(request.message)
+    def _parse(self, message):
+        return self.parser.parse(message)
 
     def _process(self, form_code, values):
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -96,10 +97,18 @@ class WebPlayer(Player):
 
     def accept(self, request):
         assert request is not None
-        form_code, values = self._parse(request)
+        form_code, values = self._parse(request.message)
         submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(form_code, values)
         return self.submit(form_model, values, submission,[])
 
+class XFormPlayer(WebPlayer):
+    def __init__(self, dbm):
+        WebPlayer.__init__(self, dbm)
 
+    def _parse(self, message):
+        submission_data_dict = xmldict.xml_to_dict(message).get('data')
+        return WebPlayer._parse(self,submission_data_dict)
 
+    def accept(self, request):
+        return WebPlayer.accept(self, request)

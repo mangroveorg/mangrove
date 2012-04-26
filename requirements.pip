@@ -7,3 +7,4 @@ iso8601
 pytz
 xlwt
 jinja2
+xmldict

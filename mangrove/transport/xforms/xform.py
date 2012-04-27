@@ -1,7 +1,7 @@
 from jinja2 import Environment, PackageLoader
 from mangrove.form_model.form_model import FormModel
 
-env = Environment(loader=PackageLoader('mangrove.transport.xforms', 'templates'),trim_blocks=True)
+env = Environment(loader=PackageLoader('mangrove.transport.xforms'),trim_blocks=True)
 
 def list_all_forms(form_tuples, xform_base_url):
     template = env.get_template('form_list.xml')

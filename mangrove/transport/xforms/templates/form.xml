@@ -7,7 +7,7 @@
             <instance>
                 <data>
                     {% for field in questionnaire.fields %}
-                        <{{ field.code }}>{{ field.name }}</{{ field.code }}>
+                        <{{ field.code }}/>
                     {% endfor %}
                     <form_code>{{ questionnaire.form_code }}</form_code>
                 </data>

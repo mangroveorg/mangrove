@@ -17,7 +17,7 @@ expected_response_for_get_specific_form = """<h:html xmlns="http://www.w3.org/20
         <model>
             <instance>
                 <data>
-                                            <code>name</code>
+                                            <code/>
                                         <form_code>form_code</form_code>
                 </data>
             </instance>

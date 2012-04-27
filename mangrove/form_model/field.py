@@ -159,6 +159,8 @@ class Field(object):
             return unicode("--")
         return unicode(self.value)
 
+    def xform_constraints(self):
+        return " and ".join(filter(None, [constraint.xform_constraint() for constraint in self.constraints]))
 
 class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None, language=field_attributes.DEFAULT_LANGUAGE,

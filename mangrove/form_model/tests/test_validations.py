@@ -234,3 +234,16 @@ class TestCreationOfConstraints(unittest.TestCase):
         constraints = constraints_factory(constraint_info)
         self.assertEqual(1, len(constraints))
         self.assertTrue(isinstance(constraints[0], RegexConstraint))
+
+class TestXFormConstraintsConversion(unittest.TestCase):
+    def test_should_add_min_max_constraint_if_numeric_constraint(self):
+        self.assertEquals(". &gt;= 10 and . &lt;= 20", NumericRangeConstraint(min=10, max=20).xform_constraint())
+        self.assertEquals(". &gt;= 10", NumericRangeConstraint(min=10).xform_constraint())
+        self.assertEquals(". &lt;= 10", NumericRangeConstraint(max=10).xform_constraint())
+        self.assertEquals("", NumericRangeConstraint().xform_constraint())
+
+    def test_should_add_length_constraints_if_text_length_constraints(self):
+        self.assertEquals("string-length(.) &gt;= 10 and string-length(.) &lt;= 20", TextLengthConstraint(min=10, max=20).xform_constraint())
+        self.assertEquals("string-length(.) &gt;= 10", TextLengthConstraint(min=10).xform_constraint())
+        self.assertEquals("string-length(.) &lt;= 10", TextLengthConstraint(max=10).xform_constraint())
+        self.assertEquals("", TextLengthConstraint().xform_constraint())

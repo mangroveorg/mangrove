@@ -5,7 +5,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException, RequiredFieldNotPresentException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field
 
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
@@ -871,3 +871,23 @@ class TestField(unittest.TestCase):
             'event_time_field_flag': True
             }
         self.assertEqual(expected_json, field._to_json())
+
+    def test_should_add_all_xform_constraints(self):
+        first_constraint = Mock()
+        first_constraint.xform_constraint.return_value = "first"
+        second_constraint = Mock()
+        second_constraint.xform_constraint.return_value = "second"
+
+        field = Field(constraints=[first_constraint, second_constraint], ddtype=Mock())
+        self.assertEqual("first and second", field.xform_constraints())
+
+    def test_should_not_include_none_or_empty_constraints(self):
+        first_constraint = Mock()
+        first_constraint.xform_constraint.return_value = "first"
+        second_constraint = Mock()
+        second_constraint.xform_constraint.return_value = None
+        third_constraint = Mock()
+        third_constraint.xform_constraint.return_value = ""
+
+        field = Field(constraints=[first_constraint, second_constraint, third_constraint], ddtype=Mock())
+        self.assertEqual("first", field.xform_constraints())

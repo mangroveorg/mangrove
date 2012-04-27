@@ -22,7 +22,6 @@ class ConstraintAttributes(object):
     MAX_LAT = 90
     PATTERN = '_pattern'
 
-
 class NumericRangeConstraint(object):
     def __init__(self, min=None, max=None, dict=None):
         self.min = min
@@ -42,6 +41,10 @@ class NumericRangeConstraint(object):
     def validate(self, value):
         return is_float(value, min=self.min, max=self.max)
 
+    def xform_constraint(self):
+        min_constraint = ". &gt;= {0}".format(self.min) if self.min else None
+        max_constraint = ". &lt;= {0}".format(self.max) if self.max else None
+        return " and ".join(filter(None, [min_constraint, max_constraint]))
 
 class TextLengthConstraint(NumericRangeConstraint):
     def _to_json(self):
@@ -55,6 +58,10 @@ class TextLengthConstraint(NumericRangeConstraint):
     def validate(self, value):
         return is_string(value.strip(), min=self.min, max=self.max)
 
+    def xform_constraint(self):
+        min_constraint = "string-length(.) &gt;= {0}".format(self.min) if self.min else None
+        max_constraint = "string-length(.) &lt;= {0}".format(self.max) if self.max else None
+        return " and ".join(filter(None, [min_constraint, max_constraint]))
 
 class ChoiceConstraint(object):
     def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):

@@ -13,8 +13,8 @@
                 </data>
             </instance>
             {% for field in questionnaire.fields %}
-                <bind nodeset="/data/{{ field.code }}" type="{{ field.type }}"/>
-                <bind nodeset="/data/form_code" type="string" visible="false()">{{ questionnaire.form_code }}</bind>
+                <bind nodeset="/data/{{ field.code }}" type="{{ 'string' if field.type == 'text' else field.type}}" constraint="{{ field.xform_constraints() }}"/>
+                <bind nodeset="/data/form_code" type="string">{{ questionnaire.form_code }}</bind>
             {% endfor %}
         </model>
     </h:head>

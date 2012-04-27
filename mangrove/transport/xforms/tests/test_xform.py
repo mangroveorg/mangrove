@@ -17,6 +17,7 @@ class TestXform(unittest.TestCase):
         field1.name = 'name'
         field1.code = 'code'
         field1.instruction = 'instruction'
+        field1.xform_constraints.return_value = 'constraint'
         questionnaire_mock.name = 'name'
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'

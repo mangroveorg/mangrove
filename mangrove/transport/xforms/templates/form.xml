@@ -20,7 +20,10 @@
     </h:head>
     <h:body>
     {% for field in questionnaire.fields %}
-        {{ field_xmls.get(field.type).render(field=field) }}
+        <input ref="{{ field.code }}">
+            <label>{{ field.name }}</label>
+            <hint>{{ field.instruction }}</hint>
+        </input>
     {% endfor %}
     </h:body>
 </h:html>

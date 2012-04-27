@@ -1,4 +1,0 @@
-<input ref="{{ field.code }}">
-    <label>{{ field.name }}</label>
-    <hint>{{ field.instruction }}</hint>
-</input>

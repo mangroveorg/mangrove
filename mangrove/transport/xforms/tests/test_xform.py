@@ -13,7 +13,7 @@ class TestXform(unittest.TestCase):
         dbm = Mock()
         questionnaire_mock = Mock()
         field1 = Mock()
-        field1.type = 'type'
+        field1.type = 'text'
         field1.name = 'name'
         field1.code = 'code'
         field1.instruction = 'instruction'

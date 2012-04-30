@@ -3,7 +3,16 @@ from mangrove.form_model.field import field_attributes
 from mangrove.form_model.form_model import FormModel
 
 env = Environment(loader=PackageLoader('mangrove.transport.xforms'),trim_blocks=True)
-field_xmls = {field_attributes.TEXT_FIELD : env.get_template('text_field.xml')}
+field_xmls = {
+    field_attributes.TEXT_FIELD : env.get_template('text_field.xml'),
+    field_attributes.TELEPHONE_NUMBER_FIELD : env.get_template('text_field.xml'),
+    field_attributes.INTEGER_FIELD : env.get_template('text_field.xml'),
+    field_attributes.DATE_FIELD : env.get_template('text_field.xml'),
+    field_attributes.LIST_FIELD : env.get_template('text_field.xml'),
+    field_attributes.SELECT_FIELD : env.get_template('select_field.xml'),
+    field_attributes.MULTISELECT_FIELD : env.get_template('select_field.xml'),
+    field_attributes.LOCATION_FIELD : env.get_template('text_field.xml'),
+}
 
 def list_all_forms(form_tuples, xform_base_url):
     template = env.get_template('form_list.xml')

@@ -1,0 +1,11 @@
+<{{ field.type }} ref="{{ field.code }}">
+    <label>{{ field.name }}</label>
+    <hint>{{ field.instruction }}</hint>
+    {% for option in field.options %}
+        <item>
+            <label>{{ "".join(option.get('text').values()) }}</label>
+            <value>{{ option.get('val') }}</value>
+        </item>
+    {% endfor %}
+
+</{{ field.type }}>

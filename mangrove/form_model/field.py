@@ -378,7 +378,7 @@ class SelectField(Field):
 
     def validate(self, value):
         Field.validate(self,value)
-        return self.constraint.validate(answer=value)
+        return self.constraint.validate(answer=value.replace(' ','')) #data from ODK collect is submitted with spaces
 
     @property
     def options(self):

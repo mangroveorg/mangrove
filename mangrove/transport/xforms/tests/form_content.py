@@ -21,7 +21,7 @@ expected_response_for_get_specific_form = """<h:html xmlns="http://www.w3.org/20
                                         <form_code>form_code</form_code>
                 </data>
             </instance>
-                            <bind nodeset="/data/code" type="string" constraint="constraint"/>
+                            <bind nodeset="/data/code" type="string" constraint="constraint" required="true()"/>
                 <bind nodeset="/data/form_code" type="string">form_code</bind>
                     </model>
     </h:head>

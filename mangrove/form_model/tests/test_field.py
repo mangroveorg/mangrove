@@ -164,6 +164,12 @@ class TestField(unittest.TestCase):
         field.set_value(field.validate('ab'))
         self.assertEqual("RED,YELLOW", field._to_str())
 
+    def test_should_remove_spaces_if_present_in_answer_for_multi_select(self):
+        field = SelectField(name="color", code="Q3", label="What is your favorite color",
+                            language="en", options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
+                            ddtype=self.ddtype, instruction="test_instruction")
+        self.assertEqual(['RED', 'YELLOW'], field.validate('a b'))
+
 
     def test_should_add_label_for_french_language(self):
         expected_json = {

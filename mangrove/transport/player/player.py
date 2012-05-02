@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
+from mangrove.form_model.field import SelectField
 import xmldict
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
@@ -102,13 +103,31 @@ class WebPlayer(Player):
         form_model, values = self._process(form_code, values)
         return self.submit(form_model, values, submission,[])
 
-class XFormPlayer(WebPlayer):
+class XFormPlayer(Player):
     def __init__(self, dbm):
-        WebPlayer.__init__(self, dbm)
+        self.parser = WebParser()
+        Player.__init__(self, dbm)
+
+    def __trim_multi_select_response(self, form_model, values):
+        multi_select_questions = []
+        for field in form_model.fields :
+            if type(field)==SelectField and field.single_select_flag == False:
+                multi_select_questions.append(field.code)
+
+        for code in multi_select_questions:
+            values[code] = values[code].replace(' ', '')
+
+        return values
 
     def _parse(self, message):
-        submission_data_dict = xmldict.xml_to_dict(message).get('data')
-        return WebPlayer._parse(self,submission_data_dict)
+        submission_dict = xmldict.xml_to_dict(message).get('data')
+        return self.parser.parse(submission_dict)
 
     def accept(self, request):
-        return WebPlayer.accept(self, request)
+        assert request is not None
+        form_code, values = self._parse(request.message)
+        form_model = get_form_model_by_code(self.dbm, form_code)
+
+        values = self.__trim_multi_select_response(form_model, values)
+        submission = self._create_submission(request.transport, form_code, values)
+        return self.submit(form_model, values, submission,[])

@@ -43,7 +43,7 @@ Setting Up the development environment
 
 * Install GEOS, PROJ.4 & GDAL::
 
-   $ sudo apt-get install libgeos-c1 libpq-dev
+   $ sudo apt-get install libgeos-c1 libpq-dev libxml2-dev libxslt1-dev
 
 * https://docs.djangoproject.com/en/dev/ref/contrib/gis/install/#spatial-database
 

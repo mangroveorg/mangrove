@@ -3,18 +3,20 @@ from collections import OrderedDict
 import csv
 import re
 import xlrd
+import xmldict
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
+from mangrove.form_model.field import SelectField, GeoCodeField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
-from mangrove.validate import is_float
 
 
 class SMSParserFactory(object):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
-    def getSMSParser(self,message,dbm=None):
+
+    def getSMSParser(self, message, dbm=None):
         clean_message = SMSParser().clean(message)
-        if re.match(self.MESSAGE_PREFIX, clean_message,flags=re.UNICODE):
+        if re.match(self.MESSAGE_PREFIX, clean_message, flags=re.UNICODE):
             return KeyBasedSMSParser()
         return OrderSMSParser(dbm)
 
@@ -45,12 +47,10 @@ class SMSParser(object):
         pass
 
 
-
 class KeyBasedSMSParser(SMSParser):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
     MESSAGE_TOKEN = ur"(\S+)(.*)"
     SEPARATOR = u" ."
-
 
 
     def _handle_tokens_with_only_separators(self, tokens):
@@ -81,7 +81,7 @@ class KeyBasedSMSParser(SMSParser):
     def parse(self, message):
         assert is_string(message)
         try:
-            form_code,tokens = self.form_code(message)
+            form_code, tokens = self.form_code(message)
             submission = self._parse_tokens(tokens)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
@@ -91,10 +91,11 @@ class KeyBasedSMSParser(SMSParser):
 
     def form_code(self, message):
         message = self.clean(message)
-        self.validate_format(self.MESSAGE_PREFIX,message)
+        self.validate_format(self.MESSAGE_PREFIX, message)
         tokens = message.split(self.SEPARATOR)
         form_code = self.pop_form_code(tokens)
         return form_code, tokens
+
 
 class OrderSMSParser(SMSParser):
     MESSAGE_PREFIX_FOR_ORDERED_SMS = ur'^(\w+)\s+(\w+)'
@@ -104,7 +105,6 @@ class OrderSMSParser(SMSParser):
 
     def _parse_ordered_tokens(self, tokens, question_codes, form_code):
         submission = OrderedDict()
-
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
@@ -117,7 +117,7 @@ class OrderSMSParser(SMSParser):
         assert is_string(message)
         try:
             form_code, tokens = self.form_code(message)
-            question_codes,form_model = self._get_question_codes(form_code)
+            question_codes, form_model = self._get_question_codes(form_code)
             submission = self._parse_ordered_tokens(tokens, question_codes, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
@@ -125,12 +125,12 @@ class OrderSMSParser(SMSParser):
 
     def form_code(self, message):
         message = self.clean(message)
-        self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS,message)
+        self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS, message)
         tokens = message.split()
         form_code = self.pop_form_code(tokens)
         return form_code, tokens
 
-    def _get_question_codes(self,form_code):
+    def _get_question_codes(self, form_code):
         form_model = get_form_model_by_code(self.dbm, form_code)
         question_codes = []
         form_fields = form_model.fields
@@ -138,7 +138,7 @@ class OrderSMSParser(SMSParser):
             form_fields.remove(form_fields[0])
         for aField in form_fields:
             question_codes.append(aField.code)
-        return question_codes,form_model
+        return question_codes, form_model
 
 
 class WebParser(object):
@@ -155,7 +155,7 @@ class WebParser(object):
         return form_code, self._fetch_string_value(message)
 
     def _to_str(self, value):
-        if isinstance(value,(int,float,long)):
+        if isinstance(value, (int, float, long)):
             return str(value)
         return "".join(value) if value is not None else None
 
@@ -270,10 +270,11 @@ class XlsParser(object):
     def _is_empty(self, row):
         return len([value for value in row if not is_empty(value)]) == 0
 
+
 class XlsOrderedParser(XlsParser):
     def __init__(self, form_code):
         self.form_code = form_code
-        
+
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
@@ -298,3 +299,30 @@ class XlsOrderedParser(XlsParser):
         return parsedData
 
 
+class XFormParser(object):
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def _fetch_string_value(self, message):
+        return {code: self._to_str(value) for code, value in message.iteritems()}
+
+    def parse(self, message):
+        submission_dict = xmldict.xml_to_dict(message).get('data')
+        form_code = submission_dict.pop('form_code')
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        self.__trim_multi_select_response(form_model, submission_dict)
+        return form_code, self._fetch_string_value(submission_dict)
+
+    def _to_str(self, value):
+        if isinstance(value, (int, float, long)):
+            return str(value)
+        return "".join(value) if value is not None else None
+
+    def __trim_multi_select_response(self, form_model, values):
+        for field in form_model.fields:
+            if type(field) == SelectField and field.single_select_flag == False:
+                values[field.code] = values[field.code].replace(' ', '')
+            if type(field) == GeoCodeField:
+                geo_code_list = values[field.code].split(' ')
+                values[field.code] = '{0},{1}'.format(geo_code_list[0], geo_code_list[1])
+        return values

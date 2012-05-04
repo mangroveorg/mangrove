@@ -1,12 +1,12 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
-from mangrove.form_model.field import SelectField
+from mangrove.form_model.field import SelectField, GeoCodeField
 import xmldict
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport import reporter
-from mangrove.transport.player.parser import WebParser, SMSParserFactory
+from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
@@ -45,7 +45,7 @@ class SMSPlayer(Player):
         if not post_sms_parser_processors: post_sms_parser_processors = []
         Player.__init__(self, dbm, location_tree)
         self.parser = parser
-        self.post_sms_parser_processor=post_sms_parser_processors
+        self.post_sms_parser_processor = post_sms_parser_processors
 
     def _process(self, values, form_code, reporter_entity):
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -80,6 +80,7 @@ class SMSPlayer(Player):
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
         return self.submit(form_model, values, submission, reporter_entity_names)
 
+
 class WebPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None):
         self.parser = parser or WebParser()
@@ -101,33 +102,20 @@ class WebPlayer(Player):
         form_code, values = self._parse(request.message)
         submission = self._create_submission(request.transport, form_code, values)
         form_model, values = self._process(form_code, values)
-        return self.submit(form_model, values, submission,[])
+        return self.submit(form_model, values, submission, [])
+
 
 class XFormPlayer(Player):
     def __init__(self, dbm):
-        self.parser = WebParser()
+        self.parser = XFormParser(dbm)
         Player.__init__(self, dbm)
 
-    def __trim_multi_select_response(self, form_model, values):
-        multi_select_questions = []
-        for field in form_model.fields :
-            if type(field)==SelectField and field.single_select_flag == False:
-                multi_select_questions.append(field.code)
-
-        for code in multi_select_questions:
-            values[code] = values[code].replace(' ', '')
-
-        return values
-
     def _parse(self, message):
-        submission_dict = xmldict.xml_to_dict(message).get('data')
-        return self.parser.parse(submission_dict)
+        return self.parser.parse(message)
 
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request.message)
         form_model = get_form_model_by_code(self.dbm, form_code)
-
-        values = self.__trim_multi_select_response(form_model, values)
         submission = self._create_submission(request.transport, form_code, values)
-        return self.submit(form_model, values, submission,[])
+        return self.submit(form_model, values, submission, [])

@@ -9,7 +9,8 @@ expected_response_for_get_all_forms = """<forms>
 
             </forms>"""
 
-expected_response_for_get_specific_form = """<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
+expected_response_for_get_specific_form = """
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
         xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
@@ -17,19 +18,19 @@ expected_response_for_get_specific_form = """<h:html xmlns="http://www.w3.org/20
         <model>
             <instance>
                 <data>
-                                            <code/>
-                                        <form_code>form_code</form_code>
+                    <code/>
+                    <form_code>form_code</form_code>
                 </data>
             </instance>
-                            <bind nodeset="/data/code" type="string" constraint="constraint" required="true()"/>
+                <bind nodeset="/data/code" type="string" constraint="constraint" required="true()"/>
                 <bind nodeset="/data/form_code" type="string">form_code</bind>
-                    </model>
+        </model>
     </h:head>
     <h:body>
-            <input ref="code">
-    <label>name</label>
-    <hint>instruction</hint>
-</input>
+        <input ref="code">
+            <label>name</label>
+            <hint>instruction</hint>
+        </input>
         </h:body>
 </h:html>"""
 

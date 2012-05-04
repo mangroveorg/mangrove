@@ -1,7 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
-from mangrove.form_model.field import SelectField, GeoCodeField
-import xmldict
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
@@ -10,6 +8,7 @@ from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormP
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
+from mangrove.utils.types import is_empty
 
 
 class Player(object):
@@ -18,7 +17,7 @@ class Player(object):
         self.location_tree = location_tree
 
     def _create_submission(self, transport_info, form_code, values):
-        submission = Submission(self.dbm, transport_info, form_code, copy(values))
+        submission = Submission(self.dbm, transport_info, form_code, values)
         submission.save()
         return submission
 
@@ -75,7 +74,7 @@ class SMSPlayer(Player):
             return post_sms_processor_response
 
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
-        submission = self._create_submission(request.transport, form_code, values)
+        submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(values, form_code, reporter_entity)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
         return self.submit(form_model, values, submission, reporter_entity_names)
@@ -100,7 +99,7 @@ class WebPlayer(Player):
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request.message)
-        submission = self._create_submission(request.transport, form_code, values)
+        submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(form_code, values)
         return self.submit(form_model, values, submission, [])
 
@@ -113,9 +112,25 @@ class XFormPlayer(Player):
     def _parse(self, message):
         return self.parser.parse(message)
 
+    def append_reporter_id(self, form_model, values, reporter_id):
+        if is_empty(form_model.get_short_code(values)):
+            values[form_model.entity_question.code] = reporter_id
+        return values
+
+    def _process(self, values, form_code, reporter_id):
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        if form_model.entity_defaults_to_reporter():
+            values = self.append_reporter_id(form_model, values, reporter_id)
+        return form_model, values
+
+
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request.message)
-        form_model = get_form_model_by_code(self.dbm, form_code)
-        submission = self._create_submission(request.transport, form_code, values)
-        return self.submit(form_model, values, submission, [])
+
+        reporter_id_and_name = request.transport.source
+        submission = self._create_submission(request.transport, form_code, copy(values))
+        form_model, values = self._process(values, form_code, reporter_id_and_name[0])
+        reporter_entity_names = [{NAME_FIELD: reporter_id_and_name[1]}]
+
+        return self.submit(form_model, values, submission, reporter_entity_names)

@@ -1,12 +1,13 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
 import csv
+from datetime import datetime
 import re
 import xlrd
 import xmldict
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
-from mangrove.form_model.field import SelectField, GeoCodeField
+from mangrove.form_model.field import SelectField, GeoCodeField, DateField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 
@@ -310,7 +311,7 @@ class XFormParser(object):
         submission_dict = xmldict.xml_to_dict(message).get('data')
         form_code = submission_dict.pop('form_code')
         form_model = get_form_model_by_code(self.dbm, form_code)
-        self.__trim_multi_select_response(form_model, submission_dict)
+        self.__format_response_fields(form_model, submission_dict)
         return form_code, self._fetch_string_value(submission_dict)
 
     def _to_str(self, value):
@@ -318,11 +319,18 @@ class XFormParser(object):
             return str(value)
         return "".join(value) if value is not None else None
 
-    def __trim_multi_select_response(self, form_model, values):
+    def __format_response_fields(self, form_model, values):
         for field in form_model.fields:
             if type(field) == SelectField and field.single_select_flag == False:
                 values[field.code] = values[field.code].replace(' ', '')
             if type(field) == GeoCodeField:
                 geo_code_list = values[field.code].split(' ')
                 values[field.code] = '{0},{1}'.format(geo_code_list[0], geo_code_list[1])
+            if type(field) == DateField:
+                date = datetime.strptime(values[field.code], "%Y-%m-%d")
+                values[field.code] = self.__get_formatted_date(field.date_format, date)
         return values
+
+    def __get_formatted_date(self, date_format, date):
+        return date.strftime(DateField.DATE_DICTIONARY.get(date_format))
+

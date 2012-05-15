@@ -1,6 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from mangrove.datastore.entity import entities_exists_with_value
+from mangrove.errors.MangroveException import NumberNotRegisteredException
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.utils.types import is_empty
 
@@ -36,7 +36,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
             phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
                errors[field_code] = u'Mobile number is missing'
-            elif entities_exists_with_value(dbm, [REPORTER], MOBILE_NUMBER_FIELD, phone_number):
+            elif not self._is_phone_number_unique(dbm, phone_number):
                 errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered' % (phone_number,)
 
         return errors
@@ -49,6 +49,13 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
             return True
         return False
 
+    def _is_phone_number_unique(self, dbm, phone_number):
+        from mangrove.transport.reporter import find_reporters_by_from_number
+        try:
+            find_reporters_by_from_number(dbm, phone_number)
+        except NumberNotRegisteredException:
+            return True
+        return False
 
 
 def case_insensitive_lookup(values, code):

@@ -60,14 +60,16 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
         self.assertTrue('m' in error_dict.keys())
 
     def test_should_return_error_dict_if_mobile_number_allready_exist(self):
-        patcher = patch('mangrove.contrib.registration_validators.entities_exists_with_value')
-        entity_exists_mock = patcher.start()
-        entity_exists_mock.return_value = True
+        patcher = patch('mangrove.transport.reporter.get_all_entities')
+        get_all_entities_mock = patcher.start()
+        entity_mock = Mock()
+        entity_mock.value.return_value='123'
+        get_all_entities_mock.return_value = [entity_mock]
         values = dict(t='reporter', m='123')
         error_dict = self.validator.validate(values, self.fields, self.dbm)
         self.assertEqual(1, len(error_dict))
         self.assertTrue('m' in error_dict.keys())
-        entity_exists_mock.assert_called_once_with(self.dbm, [REPORTER], MOBILE_NUMBER_FIELD, '123')
+        get_all_entities_mock.assert_called_once_with(self.dbm, entity_type=[REPORTER])
         patcher.stop()
 
     def test_should_create_mobile_number_mandatory_for_reporter_validator_from_json(self):

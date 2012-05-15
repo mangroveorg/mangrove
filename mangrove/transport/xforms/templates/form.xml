@@ -25,7 +25,7 @@
     <h:body>
     {% for field in questionnaire.fields %}
         {% if field.code != 'eid' %}
-            {{ field_xmls.get(field.type).render(field=field) }}
+            {{ field_xmls.get(field.type, default_template).render(field=field) }}
         {% endif %}
     {% endfor %}
     </h:body>

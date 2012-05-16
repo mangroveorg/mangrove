@@ -3,6 +3,7 @@ from collections import OrderedDict
 from mangrove.errors.MangroveException import NumberNotRegisteredException
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.utils.types import is_empty
+from mangrove.validate import is_float
 
 class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
     def validate(self, values, fields=None, dbm=None):
@@ -27,7 +28,7 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
 class MobileNumberValidationsForReporterRegistrationValidator(object):
 
     def validate(self, values, fields, dbm):
-        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD
+        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE
 
         errors = OrderedDict()
         field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
@@ -52,10 +53,31 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
     def _is_phone_number_unique(self, dbm, phone_number):
         from mangrove.transport.reporter import find_reporters_by_from_number
         try:
-            find_reporters_by_from_number(dbm, phone_number)
+            find_reporters_by_from_number(dbm, self._clean(phone_number))
         except NumberNotRegisteredException:
             return True
         return False
+
+    def _strip_decimals(self, number_as_given):
+        return unicode(long(number_as_given))
+
+    def _clean_epsilon_format(self, value):
+        if value.startswith('0'):
+            return value
+        try:
+            value = self._strip_decimals(is_float(value))
+        except Exception:
+            pass
+        return value
+
+    def _clean_digits(self, value):
+        if value is not None:
+            return "".join([num for num in value if num != '-'])
+        return value
+
+    def _clean(self, value):
+        value = self._clean_epsilon_format(value)
+        return self._clean_digits(value)
 
 
 def case_insensitive_lookup(values, code):

@@ -18,7 +18,6 @@ expected_response_for_get_specific_form = """
         <model>
             <instance>
                 <data>
-                    <eid>{reporter_id}</eid>
                     <code/>
                     <form_code>form_code</form_code>
                 </data>

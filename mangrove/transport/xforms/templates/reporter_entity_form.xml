@@ -1,2 +1,0 @@
-{% extends "form.xml" %}
-{% block entity_instance %}<eid>{reporter_id}</eid>{% endblock %}

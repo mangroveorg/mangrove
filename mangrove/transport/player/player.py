@@ -112,11 +112,25 @@ class XFormPlayer(Player):
     def _parse(self, message):
         return self.parser.parse(message)
 
+    def append_reporter_id(self, form_model, values, reporter_id):
+        if is_empty(form_model.get_short_code(values)):
+            values[form_model.entity_question.code] = reporter_id
+        return values
+
+    def _process(self, values, form_code, reporter_id):
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        if form_model.entity_defaults_to_reporter():
+            values = self.append_reporter_id(form_model, values, reporter_id)
+        return form_model, values
+
+
     def accept(self, request):
         assert request is not None
         form_code, values = self._parse(request.message)
 
+        reporter_id_and_name = request.transport.source
         submission = self._create_submission(request.transport, form_code, copy(values))
-        form_model = get_form_model_by_code(self.dbm, form_code)
+        form_model, values = self._process(values, form_code, reporter_id_and_name[0])
+        reporter_entity_names = [{NAME_FIELD: reporter_id_and_name[1]}]
 
-        return self.submit(form_model, values, submission, [])
+        return self.submit(form_model, values, submission, reporter_entity_names)

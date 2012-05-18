@@ -16,18 +16,18 @@
                 </data>
             </instance>
             {% for field in questionnaire.fields %}
-                {% if not field.is_entity_field %}
-                    <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" constraint="{{ field.xform_constraints() }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
-                {% endif %}
+                <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" constraint="{{ field.xform_constraints() }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
             {% endfor %}
             <bind nodeset="/data/form_code" type="string">{{ questionnaire.form_code }}</bind>
+
         </model>
     </h:head>
     <h:body>
-    {% for field in questionnaire.fields %}
-        {% if not field.is_entity_field %}
-            {{ field_xmls.get(field.type, default_template).render(field=field) }}
-        {% endif %}
-    {% endfor %}
+        {% block entity_body %}{% endblock %}
+        {% for field in questionnaire.fields %}
+            {% if not field.is_entity_field %}
+                {{ field_xmls.get(field.type, default_template).render(field=field) }}
+            {% endif %}
+        {% endfor %}
     </h:body>
 </h:html>

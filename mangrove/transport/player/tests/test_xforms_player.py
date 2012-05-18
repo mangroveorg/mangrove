@@ -8,7 +8,7 @@ class TestXFormPlayer(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.player = XFormPlayer(self.dbm)
-        transport = TransportInfo(transport="xform", source=("someId", "someName"), destination="5678")
+        transport = TransportInfo(transport="xform", source='mail@domain.com', destination="5678")
         message = '<xml></xml>'
         self.request = Request(message=message, transportInfo=transport)
         self.xform_parser_patcher = patch("mangrove.transport.player.player.XFormParser.parse")
@@ -37,6 +37,5 @@ class TestXFormPlayer(TestCase):
                 self.mock_parser.assert_called_once_with(self.request.message)
                 mock_create_submission.assert_called_once_with(self.request.transport, form_code,
                         {'submissionValues': 'values'})
-                mock_submission.assert_called_once_with(mock_form_model, {'eid': 'someId', 'submissionValues': 'values'}
-                    , submission,
-                    [{'name': 'someName'}])
+                mock_submission.assert_called_once_with(mock_form_model, {'submissionValues': 'values'}
+                    , submission,[])

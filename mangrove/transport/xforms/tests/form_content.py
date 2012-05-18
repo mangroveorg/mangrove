@@ -1,12 +1,6 @@
 expected_response_for_get_all_forms = """<forms>
-                        <formID>name</formID>
             <form url="baseURL/id">name</form>
-            <formID>name</formID>
-
-                    <formID>name2</formID>
             <form url="baseURL/id2">name2</form>
-            <formID>name2</formID>
-
             </forms>"""
 
 expected_response_for_get_specific_form = """

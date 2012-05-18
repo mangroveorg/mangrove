@@ -1,7 +1,7 @@
 from jinja2 import Environment, PackageLoader
 from mangrove.datastore.entity import get_all_entities
 from mangrove.form_model.field import field_attributes
-from mangrove.form_model.form_model import FormModel, get_form_model_by_entity_type
+from mangrove.form_model.form_model import FormModel
 
 env = Environment(loader=PackageLoader('mangrove.transport.xforms'), trim_blocks=True)
 field_xmls = {
@@ -13,6 +13,7 @@ field_xmls = {
 field_types = {
     field_attributes.LOCATION_FIELD: 'geopoint',
     field_attributes.TEXT_FIELD: 'string',
+    field_attributes.INTEGER_FIELD: 'decimal',
     }
 
 def list_all_forms(form_tuples, xform_base_url):
@@ -29,7 +30,8 @@ def xform_for(dbm, form_id, reporter_id):
             default_template=env.get_template('text_field.xml'))
     else:
         template = env.get_template('entity_form.xml')
-        entities = [(entity.short_code, entity.data['name']['value']) for entity in get_all_entities(dbm, questionnaire.entity_type)]
+        entities = [(entity.short_code, entity.data['name']['value']) for entity in
+                                                                      get_all_entities(dbm, questionnaire.entity_type)]
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
             entities=entities, default_template=env.get_template('text_field.xml'),
             entity_field=questionnaire.entity_question)

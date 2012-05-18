@@ -19,9 +19,12 @@ def list_all_forms(form_tuples, xform_base_url):
     return template.render(form_tuples=form_tuples, xform_base_url=xform_base_url)
 
 
-def xform_for(dbm, form_id):
+def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)
     template = env.get_template('form.xml')
-    return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
+    if questionnaire.entity_defaults_to_reporter() :
+        template = env.get_template('reporter_entity_form.xml')
+
+    return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types, reporter_id=reporter_id,
         default_template=env.get_template('text_field.xml'))
 

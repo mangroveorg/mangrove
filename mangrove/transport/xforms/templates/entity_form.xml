@@ -1,7 +1,7 @@
 {% extends "form.xml" %}
-{% block entity_instance %}<eid/>{% endblock %}
+{% block entity_instance %}<{{ entity_field.code }}/>{% endblock %}
 {% block entity_body %}
-    <select1 ref="eid" appearance="quick">
+    <select1 ref="{{ entity_field.code }}" appearance="quick">
         <label>{{ entity_field.name }}</label>
         <hint>{{ entity_field.instruction }}</hint>
         {% for (entity_code, entity_name) in entities %}

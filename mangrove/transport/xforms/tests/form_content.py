@@ -38,7 +38,7 @@ expected_xform_for_project_on_subject = """
         <model>
             <instance>
                 <data>
-                    <eid/>                                                                        <code/>
+                    <entity_question_code/>                                                                        <code/>
                                                                 <form_code>form_code</form_code>
                 </data>
             </instance>
@@ -48,7 +48,7 @@ expected_xform_for_project_on_subject = """
         </model>
     </h:head>
     <h:body>
-            <select1 ref="eid" appearance="quick">
+            <select1 ref="entity_question_code" appearance="quick">
         <label>name</label>
         <hint>instruction</hint>
                     <item>

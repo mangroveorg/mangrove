@@ -50,13 +50,12 @@ expected_xform_for_project_on_subject = """
     <h:body>
             <select1 ref="entity_question_code" appearance="quick">
         <label>name</label>
-        <hint>instruction</hint>
                     <item>
-                <label>nameOfEntity</label>
+                <label>nameOfEntity (shortCode1)</label>
                 <value>shortCode1</value>
             </item>
                     <item>
-                <label>nameOfEntity</label>
+                <label>nameOfEntity (shortCode1)</label>
                 <value>shortCode1</value>
             </item>
             </select1>

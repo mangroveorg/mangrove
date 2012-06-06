@@ -3,10 +3,9 @@
 {% block entity_body %}
     <select1 ref="{{ entity_field.code }}" appearance="quick">
         <label>{{ entity_field.name }}</label>
-        <hint>{{ entity_field.instruction }}</hint>
         {% for (entity_code, entity_name) in entities %}
             <item>
-                <label>{{ entity_name }}</label>
+                <label>{{ entity_name }} ({{ entity_code }})</label>
                 <value>{{ entity_code }}</value>
             </item>
         {% endfor %}

@@ -4,8 +4,13 @@ from mangrove.form_model.field import field_attributes
 from mangrove.form_model.form_model import FormModel
 
 env = Environment(loader=PackageLoader('mangrove.transport.xforms'), trim_blocks=True)
+date_appearance = {
+    'mm.yyyy' : 'month-year',
+    'yyyy' : 'year'
+}
+
 field_xmls = {
-    field_attributes.DATE_FIELD: env.get_template('date_field.xml'),
+    field_attributes.DATE_FIELD: env.get_template(name='date_field.xml', globals={'date_appearance':date_appearance}),
     field_attributes.SELECT_FIELD: env.get_template('select_field.xml'),
     field_attributes.MULTISELECT_FIELD: env.get_template('select_field.xml'),
     }
@@ -35,4 +40,3 @@ def xform_for(dbm, form_id, reporter_id):
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
             entities=entities, default_template=env.get_template('text_field.xml'),
             entity_field=questionnaire.entity_question)
-

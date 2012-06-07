@@ -22,13 +22,13 @@ class Player(object):
         return submission
 
 
-    def submit(self, form_model, values, submission, reporter_names):
+    def submit(self, form_model, values, submission, reporter_names, is_update=False):
         try:
             if form_model.is_inactive():
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
-            handler = handler_factory(self.dbm, form_model.form_code)
+            handler = handler_factory(self.dbm, form_model.form_code, is_update)
             response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names, self.location_tree)
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())
@@ -101,7 +101,7 @@ class WebPlayer(Player):
         form_code, values = self._parse(request.message)
         submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(form_code, values)
-        return self.submit(form_model, values, submission, [])
+        return self.submit(form_model, values, submission, [], is_update=request.is_update)
 
 
 class XFormPlayer(Player):

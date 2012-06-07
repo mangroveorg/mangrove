@@ -6,7 +6,7 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, DataObjectNotFound, QuestionAlreadyExistsException, DataObjectNotFound
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -33,6 +33,8 @@ MOBILE_NUMBER_FIELD = "mobile_number"
 MOBILE_NUMBER_FIELD_CODE = "m"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
+
+
 
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
@@ -368,9 +370,19 @@ class FormSubmission(object):
     def is_registration(self):
         return self.form_model.is_registration_form()
 
+    def void_existing_data_records(self, dbm):
+        pass
+
+    def save_new(self, dbm):
+        entity = self.create_entity(dbm)
+        return self._save_data(entity)
 
     def save(self, dbm):
-        return self._save_data(self.get_entity(dbm))
+        return self.save_new(dbm)
+
+    def update(self, dbm):
+        entity = self.get_entity(dbm, location_hierarchy, processed_geometry)
+        return self._save_data(entity)
 
     def _get_event_time_value(self):
         return self.cleaned_data.get(self._get_event_time_code())
@@ -404,7 +416,7 @@ class FormSubmission(object):
     def _values(self):
         return self._to_three_tuple()
 
-    def get_entity(self, dbm):
+    def create_entity(self, dbm):
         pass
 
     def _get_field_code_by_name(self, field_name):
@@ -422,7 +434,7 @@ class DataFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors):
         super(DataFormSubmission, self).__init__(form_model, answers, errors)
 
-    def get_entity(self, dbm):
+    def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
 
@@ -431,9 +443,16 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         super(GlobalRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
         self.entity_type = self.get_entity_type(form_model)
 
-    def get_entity(self, dbm):
+    def get_entity(self, dbm, location_hierarchy, processed_geometry):
+        existing_entity = entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
+        existing_entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
+        existing_entity.save()
+        return existing_entity
+
+    def create_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
+
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
             location=location_hierarchy,
             short_code=self.short_code,
@@ -443,12 +462,18 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
+    def void_existing_data_records(self, dbm):
+        data_records = dbm.view.data_record_by_form_code(key = [REGISTRATION_FORM_CODE, self.short_code])
+        for data_record in data_records:
+            data_record_doc = data_record.value
+            data_record_doc['void'] = True
+            dbm.database.save(data_record_doc)
 
 class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
         super(EntityRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
-    def get_entity(self, dbm):
+    def create_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,

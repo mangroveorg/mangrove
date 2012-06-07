@@ -28,6 +28,11 @@ class TestFormSubmission(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.ddtype_mock = Mock(spec=DataDictType)
+        view_mock = Mock()
+        view_mock.data_record_by_form_code.return_value = []
+        view_mock.by_short_codes.return_value = None
+        self.dbm.view = view_mock
+
 
 
     def tearDown(self):
@@ -117,4 +122,5 @@ class TestFormSubmission(unittest.TestCase):
     def _construct_global_registration_form(self):
         mocked_form_model = Mock()
         mocked_form_model.entity_type = GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+        mocked_form_model.entity_question.code = 's'
         return mocked_form_model

@@ -25,7 +25,7 @@ class EditRegistrationHandler(object):
     def handle(self, form_model, cleaned_data, errors, submission, reporter_names, location_tree):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
-            form_submission.void_existing_data_records()
+            form_submission.void_existing_data_records(self.dbm)
             form_submission.update(self.dbm)
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission.uuid,
             form_submission=form_submission)

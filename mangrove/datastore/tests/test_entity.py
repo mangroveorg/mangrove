@@ -388,17 +388,6 @@ class TestEntity(MangroveTestCase):
         self.assertEqual(data_fetched["meds"], 05)
         self.assertEqual(data_fetched["doctors"], 2)
 
-    def test_should_update_entity_with_location_and_geometry(self):
-        short_code = "rep001"
-        entity_type = ["reporter"]
-        entity = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
-        self.assertEqual(entity.location_path,["India", "MH", "Pune"])
-        new_location = ["Canada","Calgary"]
-        geometry = None
-        entity.set_location_and_geo_code(new_location,geometry)
-        self.assertFalse(entity.location_path==["India", "MH", "Pune"])
-        self.assertTrue(entity.location_path==["Canada","Calgary"])
-
 
 def get_entities(dbm, ids):
     return dbm.get_many(ids, Entity)

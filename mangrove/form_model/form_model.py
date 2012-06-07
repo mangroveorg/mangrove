@@ -6,7 +6,7 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, DataObjectNotFound, QuestionAlreadyExistsException, DataObjectNotFound
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -33,8 +33,6 @@ MOBILE_NUMBER_FIELD = "mobile_number"
 MOBILE_NUMBER_FIELD_CODE = "m"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
-
-
 
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
@@ -436,15 +434,6 @@ class GlobalRegistrationFormSubmission(FormSubmission):
     def get_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
-        try:
-            short_code = self.short_code
-            existing_entity = entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
-            existing_entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
-            existing_entity.save()
-            return existing_entity
-        except DataObjectNotFound:
-            pass
-
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
             location=location_hierarchy,
             short_code=self.short_code,
@@ -454,13 +443,6 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
-    def save(self, dbm):
-        data_records = dbm.view.data_record_by_form_code(key = [REGISTRATION_FORM_CODE, self.short_code])
-        for data_record in data_records:
-            data_record_doc = data_record.value
-            data_record_doc['void'] = True
-            dbm.database.save(data_record_doc)
-        return FormSubmission.save(self,dbm)
 
 class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):

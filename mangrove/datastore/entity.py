@@ -463,11 +463,6 @@ class Entity(DataObject):
                     raise ValueError(u'Attempted to add an aggregation path with a reserved name')
                 self.set_aggregation_path(name, aggregation_paths[name])
 
-    def set_location_and_geo_code(self,location,geometry):
-        self._doc.location = location
-        self._doc.geometry = geometry
-
-
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument
 

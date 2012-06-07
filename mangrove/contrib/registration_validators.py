@@ -28,7 +28,7 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
 class MobileNumberValidationsForReporterRegistrationValidator(object):
 
     def validate(self, values, fields, dbm):
-        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE
+        from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE, SHORT_CODE
 
         errors = OrderedDict()
         field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
@@ -37,7 +37,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
             phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
                errors[field_code] = u'Mobile number is missing'
-            elif not self._is_phone_number_unique(dbm, phone_number):
+            elif not self._is_phone_number_unique(dbm, phone_number, case_insensitive_lookup(values, SHORT_CODE)):
                 errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered' % (phone_number,)
 
         return errors
@@ -50,11 +50,13 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
             return True
         return False
 
-    def _is_phone_number_unique(self, dbm, phone_number):
+    def _is_phone_number_unique(self, dbm, phone_number, reporter_id):
         from mangrove.transport.reporter import find_reporters_by_from_number
         try:
-            find_reporters_by_from_number(dbm, self._clean(phone_number))
+            registered_reporters = find_reporters_by_from_number(dbm, self._clean(phone_number))
         except NumberNotRegisteredException:
+            return True
+        if len(registered_reporters) == 1 and registered_reporters[0].short_code == reporter_id:
             return True
         return False
 

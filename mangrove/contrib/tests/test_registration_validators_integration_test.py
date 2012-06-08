@@ -21,12 +21,23 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         cleaned_data, errors = self.reg_form.validate_submission(values)
         self.assertIn('m', errors)
 
-    def test_should_return_error_dict_if_mobile_number_allready_exist(self):
-        values = dict(t='reporter', m='123', s='rep_test1', l='test_location', g='1 1')
+    def test_should_allow_the_same_mobile_number_while_editing_a_reporter_details(self):
+        reporter_id = 'rep_test1'
+        reporter1 = create_entity(self.manager, [REPORTER], reporter_id)
+        reporter1.add_data(data=[("mobile_number", "123", self.geo_code_type)],
+            event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
+            submission=dict(submission_id='1', form_code='reg'))
+        values = dict(t='reporter', m='123', s=reporter_id, l='test_location', g='1 1')
+        cleaned_data, errors = self.reg_form.validate_submission(values)
+        self.assertNotIn('m', errors)
+
+
+    def test_should_return_error_dict_if_mobile_number_already_exists_for_a_different_reporter(self):
         reporter1 = create_entity(self.manager, [REPORTER], 'rep_test1')
         reporter1.add_data(data=[("mobile_number", "123", self.geo_code_type)],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))
+        values = dict(t='reporter', m='123', s='rep_test2', l='test_location', g='1 1')
         cleaned_data, errors = self.reg_form.validate_submission(values)
         self.assertIn('m', errors)
 

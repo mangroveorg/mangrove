@@ -1,5 +1,6 @@
 <{{ field.type }} ref="{{ field.code }}" appearance="quick">
     <label>{{ field.name }}</label>
+    <hint>Choose answer(s) from the list.</hint>
     {% for option in field.options %}
         <item>
             <label>{{ "".join(option.get('text').values()) }}</label>

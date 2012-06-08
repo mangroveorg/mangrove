@@ -1,6 +1,5 @@
 import unittest
 from mock import patch, Mock
-from selenium.webdriver.remote.utils import return_value_if_exists
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import Field

@@ -308,9 +308,7 @@ class XFormParser(object):
         return {code: self._to_str(value) for code, value in message.iteritems()}
 
     def parse(self, message):
-        print message
         submission_dict = xmldict.xml_to_dict(message).get('data')
-        print submission_dict
         form_code = submission_dict.pop('form_code')
         form_model = get_form_model_by_code(self.dbm, form_code)
         self.__format_response_fields(form_model, submission_dict)

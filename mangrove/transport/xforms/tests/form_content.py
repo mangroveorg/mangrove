@@ -1,7 +1,16 @@
-expected_response_for_get_all_forms = """<forms>
-            <form url="baseURL/id">name</form>
-            <form url="baseURL/id2">name2</form>
-            </forms>"""
+expected_response_for_get_all_forms = """<?xml version=\'1.0\' encoding=\'UTF-8\' ?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
+                        <xform>
+                <formID>name</formID>
+                <name>name</name>
+                <downloadUrl>baseURL/id</downloadUrl>
+            </xform>
+                    <xform>
+                <formID>name2</formID>
+                <name>name2</name>
+                <downloadUrl>baseURL/id2</downloadUrl>
+            </xform>
+            </xforms>"""
 
 expected_xform_for_project_on_reporter = """
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"

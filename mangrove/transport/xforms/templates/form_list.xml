@@ -1,7 +1,12 @@
-<forms>
+<?xml version='1.0' encoding='UTF-8' ?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
     {% if form_tuples %}
         {% for form_name, form_id in form_tuples %}
-            <form url="{{ xform_base_url }}/{{ form_id }}">{{ form_name }}</form>
+            <xform>
+                <formID>{{ form_name }}</formID>
+                <name>{{ form_name }}</name>
+                <downloadUrl>{{ xform_base_url }}/{{ form_id }}</downloadUrl>
+            </xform>
         {% endfor %}
     {% endif %}
-</forms>
+</xforms>

@@ -14,9 +14,8 @@ class TestXform(unittest.TestCase):
     def test_should_return_list_of_required_forms(self):
         form_tuples = [("name", "id"), ("name2", "id2")]
         base_url = "baseURL"
-        self.assertTrue(self.checker.check_output(list_all_forms(form_tuples, base_url),
-            unicode(expected_response_for_get_all_forms), 0))
-
+        self.assertEqual(list_all_forms(form_tuples, base_url),
+            unicode(expected_response_for_get_all_forms))
 
     def mock_constraint(self):
         mock_constraint = Mock()

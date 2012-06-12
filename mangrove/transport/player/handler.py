@@ -30,6 +30,18 @@ class EditRegistrationHandler(object):
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission.uuid,
             form_submission=form_submission)
 
+class EditSubjectRegistrationHandler(object):
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def handle(self, form_model, cleaned_data, errors, submission, reporter_names, location_tree):
+        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
+        if form_submission.is_valid:
+            form_submission.void_existing_data_records(self.dbm,form_model.form_code)
+            form_submission.update(self.dbm)
+        return create_response_from_form_submission(reporters=reporter_names, submission_id=submission.uuid,
+            form_submission=form_submission)
+
 
 class DeleteHandler(object):
 
@@ -44,11 +56,13 @@ class DeleteHandler(object):
         return Response(reporter_names, submission.uuid, is_empty(errors), errors, None, short_code, cleaned_data,
             False, entity_type, form_model.form_code)
 
-def handler_factory(dbm, form_code, is_update=False):
+def handler_factory(dbm, form_model, is_update=False):
     default_handler = SubmissionHandler
-    if form_code == REGISTRATION_FORM_CODE and is_update:
+    if form_model.form_code == REGISTRATION_FORM_CODE and is_update:
         default_handler = EditRegistrationHandler
-    handler_cls = handlers.get(form_code, default_handler)
+    elif form_model.is_registration_form and is_update:
+        default_handler = EditSubjectRegistrationHandler
+    handler_cls = handlers.get(form_model.form_code, default_handler)
 
     return handler_cls(dbm)
 

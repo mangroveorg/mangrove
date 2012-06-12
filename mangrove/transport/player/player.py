@@ -28,7 +28,7 @@ class Player(object):
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
-            handler = handler_factory(self.dbm, form_model.form_code, is_update)
+            handler = handler_factory(self.dbm, form_model, is_update)
             response = handler.handle(form_model, cleaned_data, errors, submission, reporter_names, self.location_tree)
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())

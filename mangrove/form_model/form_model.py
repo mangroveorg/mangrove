@@ -6,7 +6,7 @@ from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
-    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, DataObjectNotFound, QuestionAlreadyExistsException, DataObjectNotFound
+    EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -370,9 +370,6 @@ class FormSubmission(object):
     def is_registration(self):
         return self.form_model.is_registration_form()
 
-    def void_existing_data_records(self, dbm,form_code=None):
-        pass
-
     def save_new(self, dbm):
         entity = self.create_entity(dbm)
         return self._save_data(entity)
@@ -381,7 +378,11 @@ class FormSubmission(object):
         return self.save_new(dbm)
 
     def update(self, dbm):
-        return self._save_data(self.get_entity(dbm))
+        return self._save_data(entity)
+
+    def _contains_geo_code(self, item):
+        item_ = item[0]
+        return item_ == GEO_CODE_FIELD_NAME
 
     def _get_event_time_value(self):
         return self.cleaned_data.get(self._get_event_time_code())
@@ -421,7 +422,7 @@ class FormSubmission(object):
             geometry=processed_geometry)
 
     def get_entity(self, dbm):
-        pass
+        return entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
 
     def _get_field_code_by_name(self, field_name):
         field = self.form_model.get_field_by_name(name=field_name)
@@ -450,13 +451,15 @@ class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
         super(GlobalRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
-    def get_entity(self, dbm):
+    def update_location_and_geo_code(self, dbm):
+        existing_entity = self.get_entity(dbm)
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
-        existing_entity = entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
         existing_entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
         existing_entity.save()
-        return existing_entity
+        values = self._values
+        if is_empty(filter(self._contains_geo_code, values)):
+            self._cleaned_data[GEO_CODE] = existing_entity.geometry['coordinates']
 
     def get_entity_type(self, form_model):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)

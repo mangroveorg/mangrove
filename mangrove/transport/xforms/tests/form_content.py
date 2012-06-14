@@ -20,7 +20,7 @@ expected_xform_for_project_on_reporter = """
         <h:title>name</h:title>
         <model>
             <instance>
-                <data id="form_code">
+                <data id="id">
                     <eid>rep1</eid>
                     <code/>
                     <form_code>form_code</form_code>
@@ -46,7 +46,7 @@ expected_xform_for_project_on_subject = """
         <h:title>name</h:title>
         <model>
             <instance>
-                <data id="form_code">
+                <data id="id">
                     <entity_question_code/>                                                                        <code/>
                                                                 <form_code>form_code</form_code>
                 </data>

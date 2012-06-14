@@ -5,7 +5,7 @@
         <h:title>{{ questionnaire.name }}</h:title>
         <model>
             <instance>
-                <data id="{{ questionnaire.form_code }}">
+                <data id="{{ questionnaire.id }}">
                     {% block entity_instance %}{% endblock %}
                     {% for field in questionnaire.fields %}
                         {% if not field.is_entity_field %}

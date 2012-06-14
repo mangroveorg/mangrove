@@ -378,7 +378,7 @@ class FormSubmission(object):
         return self.save_new(dbm)
 
     def update(self, dbm):
-        return self._save_data(entity)
+        return self._save_data(self.get_entity(dbm))
 
     def _contains_geo_code(self, item):
         item_ = item[0]

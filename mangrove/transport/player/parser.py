@@ -10,6 +10,7 @@ from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeExce
 from mangrove.form_model.field import SelectField, GeoCodeField, DateField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
+from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 
 
 class SMSParserFactory(object):
@@ -273,9 +274,6 @@ class XlsParser(object):
 
 
 class XlsOrderedParser(XlsParser):
-    def __init__(self, form_code):
-        self.form_code = form_code
-
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
@@ -284,8 +282,8 @@ class XlsOrderedParser(XlsParser):
         parsedData = []
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
+        form_code = header[0]
         header = header[1:]
-        form_code = self.form_code
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
 
@@ -334,3 +332,27 @@ class XFormParser(object):
     def __get_formatted_date(self, date_format, date):
         return date.strftime(DateField.DATE_DICTIONARY.get(date_format))
 
+class XlsDatasenderParser(XlsParser):
+    def parse(self, xls_contents):
+        assert xls_contents is not None
+        workbook = xlrd.open_workbook(file_contents=xls_contents)
+        worksheet = workbook.sheets()[0]
+        codes_sheet = workbook.sheets()[1]
+        parsedData = []
+        row = codes_sheet.row_values(0)
+        header, header_found = self._is_header_row(row)
+        form_code = REGISTRATION_FORM_CODE
+        header = header[1:]
+        for row_num in range(1, worksheet.nrows):
+            row = worksheet.row_values(row_num)
+
+            if self._is_empty(row):
+                continue
+
+            row = self._clean(row)
+            values = dict(zip(header, row))
+            values.update({"t":"reporter"})
+            parsedData.append((form_code, values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
+        return parsedData

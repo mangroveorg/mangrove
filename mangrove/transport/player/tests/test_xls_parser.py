@@ -3,7 +3,7 @@ from unittest import TestCase
 import os
 import xlwt
 from mangrove.errors.MangroveException import XlsParserInvalidHeaderFormatException
-from mangrove.transport.player.parser import XlsParser
+from mangrove.transport.player.parser import XlsParser, XlsDatasenderParser
 
 class TestXlsParser(TestCase):
     def _write_to_xls(self, data):
@@ -93,3 +93,32 @@ class TestXlsParser(TestCase):
     def tearDown(self):
         os.remove(self.file_name)
         pass
+
+
+class TestXlsDatasenderParser(TestCase):
+    def setUp(self):
+        self.file_name = "test.xls"
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test')
+        data = [["Name", "Mobile Number", "Location - Name", "Location - GPS Coordinates", "Email"],
+            ["Thierry Rakoto", "261333711122", "Nairobi", "-18.13,27.65", "test@mail.com"]]
+        for row_number, row  in enumerate(data):
+            for col_number, val in enumerate(row):
+                ws.write(row_number, col_number, val)
+        codes_sheet = wb.add_sheet("codes")
+        codes = ["reg","n","m","l","g","email"]
+        for col_number, code in enumerate(codes):
+            codes_sheet.write(0, col_number, code)
+        wb.save(self.file_name)
+        self.parser = XlsDatasenderParser()
+
+    def tearDown(self):
+        os.remove(self.file_name)
+        pass
+
+    def test_should_parse_data(self):
+        with open(self.file_name) as input_file:
+            submissions = self.parser.parse(input_file.read())
+            self.assertEqual(1, len(submissions))
+            form_code, values = submissions[0]
+            self.assertEqual({u"email": u'test@mail.com', u'g': u'-18.13,27.65', u'l': u'Nairobi', u'm': u'261333711122', u'n': u'Thierry Rakoto', u't': 'reporter'}, values)

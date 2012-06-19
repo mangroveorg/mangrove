@@ -1,3 +1,4 @@
+from coverage.html import escape
 from jinja2 import Environment, PackageLoader
 from mangrove.datastore.entity import get_all_entities
 from mangrove.form_model.field import field_attributes
@@ -24,11 +25,13 @@ field_types = {
 
 def list_all_forms(form_tuples, xform_base_url):
     template = env.get_template('form_list.xml')
+    form_tuples = [(escape(form_name), form_id) for form_name, form_id in form_tuples]
     return template.render(form_tuples=form_tuples, xform_base_url=xform_base_url)
 
 
 def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)
+    questionnaire.name = escape(questionnaire.name)
     if questionnaire.entity_defaults_to_reporter():
         template = env.get_template('reporter_entity_form.xml')
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,

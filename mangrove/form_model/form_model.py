@@ -459,8 +459,8 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         existing_entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
         existing_entity.save()
         values = self._values
-        if is_empty(filter(self._contains_geo_code, values)):
-            self._cleaned_data[GEO_CODE] = existing_entity.geometry['coordinates']
+        if processed_geometry is not None and is_empty(filter(self._contains_geo_code, values)):
+            self._cleaned_data[GEO_CODE] = processed_geometry['coordinates']
 
     def get_entity_type(self, form_model):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)

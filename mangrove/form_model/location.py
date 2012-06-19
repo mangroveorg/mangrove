@@ -79,5 +79,5 @@ class Location(object):
         return self._get_inverted_tuple(translated_long_lat_tuple) if translated_long_lat_tuple is not None else None
 
     def _get_inverted_tuple(self, tuple_to_be_inverted):
-        return (tuple_to_be_inverted[1], tuple_to_be_inverted[0])
+        return tuple_to_be_inverted[1], tuple_to_be_inverted[0]
 

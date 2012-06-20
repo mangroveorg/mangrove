@@ -89,15 +89,15 @@ class TestFormModel(MangroveTestCase):
         form_model = self.manager.get(self.form_model__id, FormModel)
         self.assertEquals(len(form_model.fields), 3)
 
-    def test_should_add_english_as_default_langauge(self):
-        activeLangauges = self.form_model.activeLanguages
-        self.assertTrue("en" in activeLangauges)
+    def test_should_add_english_as_default_language(self):
+        activeLanguages = self.form_model.activeLanguages
+        self.assertTrue("en" in activeLanguages)
 
     def test_should_add_language_to_form_model(self):
         self.form_model.add_language(language="fr", label="French Aids form_model")
-        activeLangauges = self.form_model.activeLanguages
-        self.assertEquals(len(activeLangauges), 2)
-        self.assertTrue("fr" in activeLangauges)
+        activeLanguages = self.form_model.activeLanguages
+        self.assertEquals(len(activeLanguages), 2)
+        self.assertTrue("fr" in activeLanguages)
         self.assertEquals(self.form_model.label['fr'], u'French Aids form_model')
 
     def test_should_delete_all_fields_from_document(self):

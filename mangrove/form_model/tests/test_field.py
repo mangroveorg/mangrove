@@ -88,6 +88,42 @@ class TestField(unittest.TestCase):
         field.set_value(123)
         self.assertEqual("123", field._to_str())
 
+    def test_should_set_new_name_for_field(self):
+        new_name = "newName"
+        instruction = "test_instruction"
+        expected_json = {
+            "label": {"en": "What is your age"},
+            "language": "en",
+            "name": new_name,
+            "code": "Q2",
+            "ddtype": self.DDTYPE_JSON,
+            "type": "integer",
+            "required":True,
+            "instruction": instruction
+        }
+        field = Field(type="integer", name="oldName", code="Q2", label="What is your age", ddtype=self.ddtype, instruction=instruction)
+        field.set_name(new_name)
+        actual_json = field._to_json()
+        self.assertEqual(actual_json, expected_json)
+
+    def test_should_set_new_instruction_for_field(self):
+        new_instruction = "new_instruction"
+        expected_json = {
+            "label": {"en": "What is your age"},
+            "language": "en",
+            "name": "name",
+            "code": "Q2",
+            "ddtype": self.DDTYPE_JSON,
+            "type": "integer",
+            "required":True,
+            "instruction": new_instruction
+        }
+        field = Field(type="integer", name="name", code="Q2", label="What is your age", ddtype=self.ddtype, instruction="instruction")
+        field.set_instruction(new_instruction)
+        actual_json = field._to_json()
+        self.assertEqual(actual_json, expected_json)
+
+
     def test_should_create_integer_field_type_for_default_english_language_as_optional(self):
         expected_json = {
             "label": {"eng": "What is your age"},

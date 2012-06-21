@@ -1,9 +1,10 @@
 import unittest
 from mock import patch, Mock
+from unittest.case import SkipTest
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.form_model.field import Field
-from mangrove.transport.xforms.tests.form_content import expected_response_for_get_all_forms, expected_xform_for_project_on_reporter, expected_xform_for_project_on_subject
+from mangrove.form_model.field import Field, SelectField
+from mangrove.transport.xforms.tests.form_content import expected_response_for_get_all_forms, expected_xform_for_project_on_reporter, expected_xform_for_project_on_subject, expected_xform_with_escaped_characters
 from mangrove.transport.xforms.xform import list_all_forms, xform_for
 from lxml.doctestcompare import LXMLOutputChecker
 
@@ -62,3 +63,18 @@ class TestXform(unittest.TestCase):
                     unicode(expected_xform_for_project_on_subject), 0))
 
 
+    @SkipTest
+    def test_should_escape_special_characters_from_requested_form(self):
+        dbm = Mock()
+        questionnaire_mock = Mock()
+        field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&', language="en",
+            options=[{'text': {'en': 'option1&'}}], ddtype=Mock())
+        questionnaire_mock.name = '<mock_name'
+        questionnaire_mock.fields = [field1]
+        questionnaire_mock.form_code = 'form_code'
+        questionnaire_mock.id = 'id'
+        questionnaire_mock.entity_defaults_to_reporter.return_value = True
+        with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
+            form_model_mock.get.return_value = questionnaire_mock
+            self.assertTrue(self.checker.check_output(xform_for(dbm, "someFormId", 'rep1'),
+                unicode(expected_xform_with_escaped_characters), 0))

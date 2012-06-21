@@ -89,6 +89,12 @@ class Field(object):
     def name(self):
         return self._dict.get("name")
 
+    def set_name(self, new_name):
+        self._dict["name"] = new_name
+
+    def set_instruction(self, new_instruction):
+        self._dict["instruction"] = new_instruction
+
     @property
     def label(self):
         return self._dict.get('label')

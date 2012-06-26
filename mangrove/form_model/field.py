@@ -1,13 +1,13 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
-import re
+from mangrove.data_cleaner import TelephoneNumber
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
 
 from mangrove.utils.types import is_sequence, is_empty, sequence_to_str
-from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError, is_float
+from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
 
 
 def create_question_from(dictionary, dbm):
@@ -309,27 +309,8 @@ class TelephoneNumberField(TextField):
                            instruction=instruction, constraints=constraints, defaultValue=defaultValue, required=required)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
-
-    def _strip_decimals(self, number_as_given):
-        return unicode(long(number_as_given))
-
-    def _clean_epsilon_format(self, value):
-        if value.startswith('0'):
-            return value
-        try:
-            value = self._strip_decimals(is_float(value))
-        except Exception:
-            pass
-        return value
-
-    def _clean_digits(self, value):
-        if value is not None:
-            return "".join([num for num in value if num != '-'])
-        return value
-
     def _clean(self, value):
-        value = self._clean_epsilon_format(value)
-        return self._clean_digits(value)
+        return TelephoneNumber().clean(value)
 
     def validate(self, value):
         value = self._clean(value)

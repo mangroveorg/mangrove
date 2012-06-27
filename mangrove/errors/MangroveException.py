@@ -290,3 +290,8 @@ class DeleteRequestParserInvalidFormatException(MangroveException):
 class DeleteRequestParserWrongNumberOfAnswersException(MangroveException):
     def __init__(self, message):
         MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (message, ))
+
+class InvalidEmailException(MangroveException):
+    def __init__(self, message="Invalid email address."):
+        MangroveException.__init__(self, message)
+

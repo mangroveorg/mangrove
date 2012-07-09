@@ -48,12 +48,13 @@ def xform_for(dbm, form_id, reporter_id):
 
 def _escape_special_characters(questionnaire):
     questionnaire.name = escape(questionnaire.name)
+    active_language = questionnaire.activeLanguages[0]
     for question in questionnaire.fields:
         question.set_name(escape(question.name))
         question.set_instruction(escape(question.instruction))
         if type(question) == SelectField:
             for option in question.options:
-                option['text']['en'] = escape(option['text']['en'])
+                option['text'][active_language] = escape(option['text'][active_language])
 
 
 

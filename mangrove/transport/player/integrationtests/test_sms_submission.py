@@ -8,17 +8,16 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, \
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
     InactiveFormModelException, DataObjectNotFound
-
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, \
+from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
     SHORT_CODE, ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period
+from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period, submission_count
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
 
@@ -29,9 +28,10 @@ class LocationTree(object):
     def get_centroid(self, location_name, level):
         return 60, -12
 
-    def get_location_hierarchy(self,lowest_level_location_name):
+    def get_location_hierarchy(self, lowest_level_location_name):
         return [u'arantany']
 
+FORM_CODE = "abc"
 
 class TestShouldSaveSMSSubmission(MangroveTestCase):
     def setUp(self):
@@ -42,8 +42,9 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         define_type(self.manager, self.entity_type)
         self.name_type = DataDictType(self.manager, name='Name', slug='name', primitive_type='string')
         self.telephone_number_type = DataDictType(self.manager, name='telephone_number', slug='telephone_number',
-                                                  primitive_type='string')
-        self.entity_id_type = DataDictType(self.manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
+            primitive_type='string')
+        self.entity_id_type = DataDictType(self.manager, name='Entity Id Type', slug='entity_id',
+            primitive_type='string')
         self.stock_type = DataDictType(self.manager, name='Stock Type', slug='stock', primitive_type='integer')
         self.color_type = DataDictType(self.manager, name='Color Type', slug='color', primitive_type='string')
 
@@ -53,32 +54,32 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.color_type.save()
 
         self.entity = create_entity(self.manager, entity_type=self.entity_type,
-                                    location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
-                                    )
+            location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
+        )
 
         self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],
-                                                   submission=dict(submission_id="1"))
+            submission=dict(submission_id="1"))
 
         self.reporter = create_entity(self.manager, entity_type=["reporter"],
-                                      location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
-                                      )
+            location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
+        )
 
         self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
             (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+            language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng",
-                              constraints=[TextLengthConstraint(4, 15)],
-                              ddtype=self.name_type, required=False)
+            defaultValue="some default value", language="eng",
+            constraints=[TextLengthConstraint(4, 15)],
+            ddtype=self.name_type, required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type, required=False)
+            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type, required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
-                                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
+            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
 
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="clinic", type='survey', fields=[question1, question2, question3])
+            form_code="clinic", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 
@@ -87,6 +88,25 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)
+
+    def _prepare_submissions(self):
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
+            destination=12345, form_code=FORM_CODE,
+            values={'Q1': 'ans1', 'Q2': 'ans2'},
+            status=True, error_message="", data_record_id='2345678'))
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
+            destination=12345, form_code=FORM_CODE,
+            values={'Q1': 'ans12', 'Q2': 'ans22'},
+            status=True, error_message="", data_record_id='1234567'))
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
+            destination=12345, form_code=FORM_CODE,
+            values={'Q3': 'ans12', 'Q4': 'ans22'},
+            status=False, error_message="", data_record_id='1234567'))
+        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
+            destination=12345, form_code="def",
+            values={'defQ1': 'defans12', 'defQ2': 'defans22'},
+            status=False, error_message="", data_record_id='345678'))
+        return FORM_CODE
 
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
@@ -114,15 +134,15 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
     def test_should_save_submitted_sms_for_activity_report(self):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+            language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng",
-                              constraints=[TextLengthConstraint(4, 15)],
-                              ddtype=self.name_type)
+            defaultValue="some default value", language="eng",
+            constraints=[TextLengthConstraint(4, 15)],
+            ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
+            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
         activity_report = FormModel(self.manager, entity_type=["reporter"], name="report", label="reporting form_model",
-                                    form_code="acp", type='survey', fields=[question1, question2, question3])
+            form_code="acp", type='survey', fields=[question1, question2, question3])
         activity_report.save()
 
         text = "acp .name tester .ARV 50 "
@@ -155,22 +175,18 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertEqual(len(response.errors), 1)
 
     def test_get_submissions_for_form(self):
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="abc",
-                                                      values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                      status=False, error_message="", data_record_id='2345678'))
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="abc",
-                                                      values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                      status=False, error_message="", data_record_id='1234567'))
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="def",
-                                                      values={'defQ1': 'defans12', 'defQ2': 'defans22'},
-                                                      status=False, error_message="", data_record_id='345678'))
+        self._prepare_submissions()
 
-        oneDay = datetime.timedelta(days=1)
-        tomorrow = datetime.datetime.now() + oneDay
-        submissions = get_submissions(self.manager, "abc", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        submissions = get_submissions(self.manager, FORM_CODE, 0, self._tomorrow())
+        self.assertEquals(3, len(submissions))
+        self.assertEquals({'Q3': 'ans12', 'Q4': 'ans22'}, submissions[0].values)
+        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[1].values)
+        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[2].values)
+
+    def test_get_all_success_submissions_for_form(self):
+        self._prepare_submissions()
+
+        submissions = get_submissions(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_submission_log")
         self.assertEquals(2, len(submissions))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
@@ -178,12 +194,19 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "clinic .EID %s .ARV 150 " % self.entity.id
         self.send_sms(text)
-        oneDay = datetime.timedelta(days=1)
-        tomorrow = datetime.datetime.now() + oneDay
-        submissions= get_submissions(self.manager, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        submissions = get_submissions(self.manager, "clinic", 0, self._tomorrow())
         self.assertEquals(1, len(submissions))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
 
+    def test_should_get_count_of_all_success_submissions(self):
+        self._prepare_submissions()
+        count = submission_count(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_submission_log")
+        self.assertEqual(2, count)
+
+    def test_count_of_submissions_should_be_zero_when_form_code_not_existed(self):
+        self._prepare_submissions()
+        count = submission_count(self.manager, "not_existed_form_code", 0, self._tomorrow())
+        self.assertEqual(0, count)
 
     def test_should_register_new_entity(self):
         message1 = """reg .t  dog .n  Clinic in Diégo–Suarez .l  Diégo–Suarez .g  -12.35  49.3  .d This is a Clinic in
@@ -245,7 +268,6 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'g': '1 1'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
-
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = "reg .N buddy .S DOG3 .T dog .G 80 80 .D its a dog! .M 123456"
@@ -341,7 +363,6 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         submission_log = self.manager._load_document(response.submission_id, SubmissionLogDocument)
         self.assertTrue(submission_log.test)
 
-
     def test_should_register_entity_with_geo_code(self):
         message1 = """reg .t dog .n Dog in Diégo–Suarez .g -12.35  49.3  .d This is a Dog in
         Diégo–Suarez . m
@@ -384,20 +405,20 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
     def test_get_submissions_for_form_for_an_activity_period(self):
         self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="abc",
-                                                      values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                      status=False, error_message="", data_record_id='2345678',event_time=datetime.datetime(2011,9,1)))
+            destination=12345, form_code="abc",
+            values={'Q1': 'ans1', 'Q2': 'ans2'},
+            status=False, error_message="", data_record_id='2345678', event_time=datetime.datetime(2011, 9, 1)))
         self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="abc",
-                                                      values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                      status=False, error_message="", data_record_id='1234567',event_time=datetime.datetime(2011,3,3)))
+            destination=12345, form_code="abc",
+            values={'Q1': 'ans12', 'Q2': 'ans22'},
+            status=False, error_message="", data_record_id='1234567', event_time=datetime.datetime(2011, 3, 3)))
         self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-                                                      destination=12345, form_code="abc",
-                                                      values={'Q1': 'ans12', 'Q2': 'defans22'},
-                                                      status=False, error_message="", data_record_id='345678',event_time=datetime.datetime(2011,3,10)))
+            destination=12345, form_code="abc",
+            values={'Q1': 'ans12', 'Q2': 'defans22'},
+            status=False, error_message="", data_record_id='345678', event_time=datetime.datetime(2011, 3, 10)))
 
-        from_time = datetime.datetime(2011,3,1)
-        end_time = datetime.datetime(2011,3,30)
+        from_time = datetime.datetime(2011, 3, 1)
+        end_time = datetime.datetime(2011, 3, 30)
 
         submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
         self.assertEquals(2, len(submissions))
@@ -419,3 +440,8 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertTrue(SHORT_CODE in response.errors)
         self.assertTrue(ENTITY_TYPE_FIELD_CODE in response.errors)
+
+    def _tomorrow(self):
+        oneDay = datetime.timedelta(days=1)
+        tomorrow = datetime.datetime.now() + oneDay
+        return int(mktime(tomorrow.timetuple())) * 1000

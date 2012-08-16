@@ -2,6 +2,7 @@
 from collections import OrderedDict
 import csv
 from datetime import datetime
+from babel.dates import format_date
 import re
 import xlrd
 import xmldict
@@ -330,7 +331,7 @@ class XFormParser(object):
         return values
 
     def __get_formatted_date(self, date_format, date):
-        return date.strftime(DateField.DATE_DICTIONARY.get(date_format))
+        return format_date(date, DateField.FORMAT_DATE_DICTIONARY.get(date_format))
 
 class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):

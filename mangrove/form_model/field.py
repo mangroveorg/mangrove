@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from datetime import datetime
+from babel.dates import format_date
 from mangrove.data_cleaner import TelephoneNumber
 from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
@@ -216,6 +217,7 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
+    FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy'}
 
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
                  language=field_attributes.DEFAULT_LANGUAGE, required=True, event_time_field_flag=False):
@@ -247,8 +249,8 @@ class DateField(Field):
     def _to_str(self):
         if self.value is None :
             return unicode("--")
-        date_format = self.DATE_DICTIONARY.get(self.date_format)
-        return self.value.strftime(date_format) if isinstance(self.value, datetime) else unicode(self.value)
+        date_format = self.FORMAT_DATE_DICTIONARY.get(self.date_format)
+        return format_date(self.value, date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
 
 class TextField(Field):

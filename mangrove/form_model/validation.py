@@ -2,6 +2,7 @@
 import re
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
 from mangrove.utils.types import is_empty
+from mangrove.utils.helpers import find_index_represented
 
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 
@@ -75,12 +76,21 @@ class ChoiceConstraint(object):
         if not answer_string:
             raise AnswerHasNoValuesException(code=self.code, answer=answer)
         choices = []
-        if self.single_select_constraint and  len(answer_string) > 1:
+        responses = re.findall(r'[1-9]?[a-z]', answer_string)
+
+        if self.single_select_constraint and  len(responses) > 1:
             raise AnswerHasTooManyValuesException(code=self.code, answer=answer)
-        for character in answer_string:
-            index_represented = ord(character) - ord('a')
+
+        invalid_responses = re.split(r'[1-9]?[a-z]', answer_string)
+        invalid_responses = filter(None, invalid_responses)
+        
+        if len(invalid_responses) > 0:
+            raise AnswerNotInListException(code=self.code, answer=invalid_responses[0])
+
+        for response in responses:
+            index_represented = find_index_represented(response)
             if index_represented > len(self.list_of_valid_choices) - 1 or index_represented < 0:
-                raise AnswerNotInListException(code=self.code, answer=character)
+                raise AnswerNotInListException(code=self.code, answer=response)
             else:
                 choice_selected = self.list_of_valid_choices[index_represented]
                 if choice_selected not in choices:

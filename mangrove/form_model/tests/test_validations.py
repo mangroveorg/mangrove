@@ -108,15 +108,20 @@ class TestChoiceValidations(unittest.TestCase):
 
     def test_should_not_validate_wrong_choice(self):
         with self.assertRaises(AnswerNotInListException):
-            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"],
+            valid_choices = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+                             "s", "t", "u", "v","w","x", "y", "z", "1a", "1b", "1c"]
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=valid_choices,
                                           code="Q1")
-            constraint.validate("c")
+            constraint.validate("1d")
 
     def test_should_not_validate_multiple_values_sent_for_single_choice(self):
         with self.assertRaises(AnswerHasTooManyValuesException):
-            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=["village", "urban"],
+            valid_choices = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+                             "s", "t", "u", "v","w","x", "y","z", "1a", "1b must be returned", "1c"]
+            constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=valid_choices,
                                           code="Q1")
-            constraint.validate("ab")
+            self.assertEqual(constraint.validate("1b"), ["1b must be returned"])
+            constraint.validate("a1a")
 
     def test_should_not_validate_no_values_sent_for_choice(self):
         with self.assertRaises(AnswerHasNoValuesException):
@@ -124,12 +129,14 @@ class TestChoiceValidations(unittest.TestCase):
                                           code="Q1")
             constraint.validate("")
 
-    def test_should_not_validate_numeric_values_sent_for_choice(self):
+    def test_should_not_validate_answer_with_one_letter_followed_by_one_number_on_a_single_choice(self):
+        valid_choices = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r","s",
+                         "t", "u", "v","w","x", "y", "z", "1a", "1b", "1c"]
         with self.assertRaises(AnswerNotInListException):
-            constraint = ChoiceConstraint(single_select_constraint=False,
-                                          list_of_valid_choices=["village", "urban", "city", "country"],
+            constraint = ChoiceConstraint(single_select_constraint=True,
+                                          list_of_valid_choices=valid_choices,
                                           code="Q1")
-            constraint.validate("1b")
+            constraint.validate("a1")
 
     def test_should_invalidate_special_characters_sent_for_choice(self):
         with self.assertRaises(AnswerNotInListException):
@@ -137,6 +144,18 @@ class TestChoiceValidations(unittest.TestCase):
                                           list_of_valid_choices=["village", "urban", "city", "country"],
                                           code="Q1")
             constraint.validate("a!b")
+
+    def test_should_invalidate_answer_with_2_numbers(self):
+        valid_choices = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r","s",
+                         "t", "u", "v","w","x", "y", "z", "1a", "1b", "1c"]
+        with self.assertRaises(AnswerNotInListException):
+            constraint = ChoiceConstraint(single_select_constraint=False,
+                                          list_of_valid_choices=valid_choices,
+                                          code="Q1")
+            constraint.validate("abc1b341c")
+
+    
+        
 
 
 class TestLocationValidations(unittest.TestCase):

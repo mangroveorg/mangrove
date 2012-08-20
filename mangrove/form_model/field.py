@@ -228,10 +228,14 @@ class DateField(Field):
         if event_time_field_flag:
             self._dict['event_time_field_flag'] = event_time_field_flag
 
+    @classmethod
+    def get_datetime_format(cls, date_format):
+        return cls.DATE_DICTIONARY.get(date_format)
+
     def validate(self, value):
         Field.validate(self,value)
         try:
-            return datetime.strptime(value.strip(), self.DATE_DICTIONARY.get(self.date_format))
+            return datetime.strptime(value.strip(), DateField.get_datetime_format(self.date_format))
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
 

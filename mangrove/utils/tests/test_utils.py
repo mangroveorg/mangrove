@@ -3,7 +3,7 @@
 from unittest  import TestCase
 from datetime import datetime, date
 from mangrove import utils
-from mangrove.utils import types
+from mangrove.utils import types, json_codecs
 from mangrove.utils.dates import convert_date_time_to_epoch, convert_date_string_in_UTC_to_epoch
 
 import pytz
@@ -241,10 +241,10 @@ class TestJSONUtils(TestCase):
         strs = []
         try:
             for o in objs:
-                strs.append(utils.json_codecs.encode_json(o))
+                strs.append(json_codecs.encode_json(o))
         except Exception, ex:
             self.assertTrue(False, ex)
         self.assertEqual(len(objs), len(strs))
 
         for i in range(len(strs)):
-            self.assertDictEqual(utils.json_codecs.decode_json(strs[i]), objs[i])
+            self.assertDictEqual(json_codecs.decode_json(strs[i]), objs[i])

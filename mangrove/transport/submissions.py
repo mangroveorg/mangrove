@@ -68,7 +68,7 @@ class Submission(DataObject):
 
     @property
     def source(self):
-        return self._doc.source if not self._doc.test else "TEST"
+        return self._doc.source
 
     @property
     def test(self):

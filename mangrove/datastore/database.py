@@ -208,7 +208,7 @@ class DatabaseManager(object):
         result = self._save_documents([document], modified)[0]
         # first item is success/failure
         if not result[0]:
-            raise FailedToSaveDataObject(result[1])
+            raise FailedToSaveDataObject(str(result))
 
         # second item is doc ID
         return result[1]

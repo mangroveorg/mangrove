@@ -5,7 +5,7 @@ from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity, get_by_short_code_include_voided
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound, FailedToSaveDataObject
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
@@ -15,6 +15,20 @@ class TestEntity(MangroveTestCase):
         uuid = e.save()
         self.assertTrue(uuid)
         self.manager.delete(e)
+
+    def test_should_throw_excption_when_voiding_entity_which_has_been_updated_by_others(self):
+        e = Entity(self.manager, entity_type="clinic", location=["India", "MH", "Pune"])
+        uuid = e.save()
+        entity1 = self.manager.get(uuid, Entity)
+        entity2 = self.manager.get(uuid, Entity)
+
+        with self.assertRaises(FailedToSaveDataObject) as e:
+            entity1.void()
+            entity2.void()
+
+        self.assertTrue("ResourceConflict" in e.exception.message)
+
+        self.manager.delete(entity1)
 
     def test_should_invalidate_entity(self):
         short_code = "short_code"

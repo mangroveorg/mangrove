@@ -8,7 +8,7 @@ import xlrd
 import xmldict
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
-from mangrove.form_model.field import SelectField, GeoCodeField, DateField
+from mangrove.form_model.field import SelectField, GeoCodeField, DateField, IntegerField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
@@ -328,6 +328,8 @@ class XFormParser(object):
             if type(field) == DateField:
                 date = datetime.strptime(values[field.code], "%Y-%m-%d")
                 values[field.code] = self.__get_formatted_date(field.date_format, date)
+            if type(field) == IntegerField:
+                values[field.code] = "%g" % float(values[field.code])
         return values
 
     def __get_formatted_date(self, date_format, date):

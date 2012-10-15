@@ -265,7 +265,7 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'DOG3', 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'dog3', 't': 'dog', 'g': '1 1'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 

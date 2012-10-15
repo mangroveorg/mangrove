@@ -1,27 +1,31 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from unittest.case import TestCase
-from mock import Mock,patch
-from mangrove.form_model.field import HierarchyField
-from mangrove.form_model.form_model import FormModel
+from collections import OrderedDict
+from unittest import TestCase
+from mangrove.transport.submissions import Submission
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.facade import RegistrationWorkFlow
+from mangrove.datastore.entity import Entity
+from mangrove.transport.player.player import Player
+from mock import Mock, patch
+from mangrove.form_model.form_model import FormModel, FormSubmission, DataFormSubmission
 
-def get_location_hierarchy(foo):
-    return ["no_hierarchy"]
-
-class TestBasePlayer(TestCase):
-    def setUp(self):
-        loc_tree = Mock()
-        loc_tree.get_hierarchy_path.return_value = ['hierarchy']
+class TestPlayer(TestCase):
+    def test_should_use_submission_id_instead_of_submission(self):
         dbm = Mock(spec=DatabaseManager)
+        message = {'q1': 'CAPITAL'}
+
+        submission = Mock(spec=Submission)
+        submission.values = message
+
         form_model = Mock(spec=FormModel)
-        location_field = Mock(spec=HierarchyField)
-        form_model.get_field_by_name.return_value= location_field
-        location_field.code='l'
-        self.registration_workflow = RegistrationWorkFlow(dbm, form_model, loc_tree)
+        form_model.entity_question.code = 'q1'
+        form_model.is_inactive.return_value = False
+        form_model.validate_submission.return_value = OrderedDict(submission.values), None
+        form_model.is_registration_form.return_value = False
 
-    def test_should_not_resolve_location_hierarchy_if_hierarchy_already_passed_in(self):
-        values = dict(l='a,b,c', t='clinic')
-        self.registration_workflow._set_location_data(values=values)
-        self.assertEqual(['c', 'b', 'a'], values['l'])
+        with patch.object(FormSubmission, "get_entity_type") as get_entity_type:
+            with patch.object(DataFormSubmission, "create_entity") as create_entity:
+                create_entity.return_value = Mock(spec=Entity)
+                get_entity_type.return_value = ['subject']
+                response = Player(dbm).submit(form_model, message, submission, None)
 
+                self.assertTrue(response.success)
+                self.assertEqual(submission.values[form_model.entity_question.code], 'capital')

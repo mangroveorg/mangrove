@@ -4,12 +4,12 @@ from unittest import TestCase
 from mock import Mock, patch
 from mangrove.form_model.form_model import FormSubmissionFactory, FormModel
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.player.handler import SubmissionHandler
+from mangrove.transport.player.handler import EditRegistrationHandler
 
-class TestSubmissionHandler(TestCase):
+class TestEditRegistrationHandler(TestCase):
     def setUp(self):
         self.dbm = Mock(spec = DatabaseManager)
-        self.handler = SubmissionHandler(self.dbm)
+        self.handler = EditRegistrationHandler(self.dbm)
         self.form_submission_mock = Mock()
         self.form_model_mock = Mock(spec=FormModel)
         self.submission_uuid = '1'
@@ -27,7 +27,7 @@ class TestSubmissionHandler(TestCase):
             response = self.handler.handle(self.form_model_mock, OrderedDict(), OrderedDict(), self.submission_uuid,
                 self.reporter_names, self.location_tree)
             self.assertTrue(response.success)
-            self.assertEqual(1, self.form_submission_mock.save.call_count)
+            self.assertEqual(1, self.form_submission_mock.update.call_count)
             self.assertEqual('1', response.submission_id)
             self.assertEqual(self.reporter_names, response.reporters)
 

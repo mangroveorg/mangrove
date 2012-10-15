@@ -11,8 +11,7 @@ class TestDeleteHandler(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.handler = DeleteHandler(self.dbm)
         self.delete_form = Mock(spec=FormModel)
-        self.submission = Mock()
-        self.submission.uuid = '1'
+        self.submission_uuid = '1'
         self.reporter_names = []
         self.void_entity_patcher = patch('mangrove.transport.player.handler.void_entity')
         self.void_entity_mock = self.void_entity_patcher.start()
@@ -25,7 +24,7 @@ class TestDeleteHandler(TestCase):
         cleaned_data[ENTITY_TYPE_FIELD_CODE] = 'clinic'
         cleaned_data[SHORT_CODE] = 'cli1'
         errors = OrderedDict()
-        response = self.handler.handle(self.delete_form,cleaned_data,errors, self.submission, self.reporter_names)
+        response = self.handler.handle(self.delete_form,cleaned_data,errors, self.submission_uuid, self.reporter_names)
         self.assertTrue(response.success)
         self.assertEqual(self.reporter_names, response.reporters)
         self.assertEqual('1', response.submission_id)
@@ -41,7 +40,7 @@ class TestDeleteHandler(TestCase):
         errors[ENTITY_TYPE_FIELD_CODE] = 'some error'
         errors[SHORT_CODE] = 'some error'
 
-        response = self.handler.handle(self.delete_form,cleaned_data,errors, self.submission, self.reporter_names)
+        response = self.handler.handle(self.delete_form,cleaned_data,errors, self.submission_uuid, self.reporter_names)
         self.assertFalse(response.success)
         self.assertEqual(self.reporter_names, response.reporters)
         self.assertEqual('1', response.submission_id)

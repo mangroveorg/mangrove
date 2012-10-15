@@ -467,7 +467,7 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
-    def void_existing_data_records(self, dbm,form_code=None):
+    def void_existing_data_records(self, dbm, form_code=None):
         data_records = dbm.view.data_record_by_form_code(key = [REGISTRATION_FORM_CODE, self.short_code])
         for data_record in data_records:
             data_record_doc = data_record.value

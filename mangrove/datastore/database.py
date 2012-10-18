@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from threading import Lock
+from couchdb import http
 
 from couchdb.design import ViewDefinition
 from couchdb.http import ResourceNotFound
@@ -157,7 +158,7 @@ class DatabaseManager(object):
 
         self.url = (server if server is not None else settings.SERVER)
         self.database_name = database or settings.DATABASE
-        self.server = couchdb.client.Server(self.url)
+        self.server = couchdb.client.Server(self.url, session=http.Session(retry_delays=[5, 30]))
         try:
             self.database = self.server[self.database_name]
         except ResourceNotFound:

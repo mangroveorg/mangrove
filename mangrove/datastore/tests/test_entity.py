@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from datetime import datetime
+from mock import Mock, patch
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity, get_by_short_code_include_voided
@@ -121,33 +122,33 @@ class TestEntity(MangroveTestCase):
 
     def test_should_create_entity_with_short_code(self):
         with self.assertRaises(AssertionError):
-            entity = create_entity(self.manager, entity_type=["reporter"], short_code=None)
+            create_entity(self.manager, entity_type=["reporter"], short_code=None)
 
         with self.assertRaises(AssertionError):
-            entity = create_entity(self.manager, entity_type=["reporter"], short_code="")
+            create_entity(self.manager, entity_type=["reporter"], short_code="")
 
         with self.assertRaises(AssertionError):
-            entity = create_entity(self.manager, entity_type="Reporter", short_code="BLAH")
+            create_entity(self.manager, entity_type="Reporter", short_code="BLAH")
         with self.assertRaises(AssertionError):
-            entity = create_entity(self.manager, entity_type=[], short_code="BLAH")
+            create_entity(self.manager, entity_type=[], short_code="BLAH")
         with self.assertRaises(AssertionError):
-            entity = create_entity(self.manager, entity_type=("reporter"), short_code="BLAH")
+            create_entity(self.manager, entity_type=("reporter"), short_code="BLAH")
 
         define_type(self.manager, ["reporter"])
-        entity = create_entity(self.manager, entity_type=["reporter"], short_code="ABC")
-        saved_entity = get_by_short_code(self.manager, short_code="ABC", entity_type=["reporter"])
+        entity = create_entity(self.manager, entity_type=["reporter"], short_code="abc")
+        saved_entity = get_by_short_code(self.manager, short_code="abc", entity_type=["reporter"])
         self.assertEqual(saved_entity.id, entity.id)
 
         with self.assertRaises(DataObjectAlreadyExists):
-            create_entity(self.manager, entity_type=["reporter"], short_code="ABC")
+            create_entity(self.manager, entity_type=["reporter"], short_code="abc")
 
         with self.assertRaises(EntityTypeDoesNotExistsException):
-            create_entity(self.manager, entity_type=["Dog"], short_code="ABC")
+            create_entity(self.manager, entity_type=["Dog"], short_code="abc")
 
     def test_should_raise_exception_if_void_entity_with_same_short_code_exists(self):
         entity_type = ["reporter"]
         define_type(self.manager, entity_type)
-        short_code = "ABC"
+        short_code = "abc"
         entity = create_entity(self.manager, entity_type=entity_type, short_code=short_code)
         saved_entity = get_by_short_code(self.manager, short_code=short_code, entity_type=entity_type)
         self.assertEqual(saved_entity.id, entity.id)
@@ -163,11 +164,11 @@ class TestEntity(MangroveTestCase):
         reporter.save()
 
         entity = get_by_short_code(self.manager, short_code="repx", entity_type=["Reporter"])
-        self.assertTrue(entity is not None)
+        self.assertIsNotNone(entity)
         self.assertEqual("repx", entity.short_code)
 
         with self.assertRaises(DataObjectNotFound):
-            entity = get_by_short_code(self.manager, short_code="ABC", entity_type=["Waterpoint"])
+             get_by_short_code(self.manager, short_code="ABC", entity_type=["Waterpoint"])
 
     def test_should_get_entity_by_short_code_including_voided(self):
             short_code = "repx"
@@ -412,6 +413,20 @@ class TestEntity(MangroveTestCase):
         entity.set_location_and_geo_code(new_location,geometry)
         self.assertFalse(entity.location_path==["India", "MH", "Pune"])
         self.assertTrue(entity.location_path==["Canada","Calgary"])
+
+    def test_should_get_by_short_code_include_voided_ignore_short_code_case(self):
+        with patch("mangrove.datastore.entity.entity_by_short_code") as entity_by_short_code:
+            entity_by_short_code.return_value = Mock(spec=Entity)
+            get_by_short_code_include_voided(self.manager, "SHORT_CODE_IN_UPPER_CASE", ["reporter"])
+
+            entity_by_short_code.assert_called_once_with(self.manager, "short_code_in_upper_case", ["reporter"])
+
+    def test_should_get_by_short_code_ignore_short_code_case(self):
+        with patch("mangrove.datastore.entity.by_short_code") as by_short_code:
+            by_short_code.return_value = Mock(spec=Entity)
+            get_by_short_code(self.manager, "SHORT_CODE_IN_UPPER_CASE", ["reporter"])
+
+            by_short_code.assert_called_once_with(self.manager, "short_code_in_upper_case", ["reporter"])
 
 
 def get_entities(dbm, ids):

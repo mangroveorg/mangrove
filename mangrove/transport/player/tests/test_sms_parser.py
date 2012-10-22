@@ -7,16 +7,13 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import SMSParser
+from mangrove.datastore.datadict import DataDictType
+from mangrove.form_model.field import TextField
 
 class TestSMSParser(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.sms_parser = KeyBasedSMSParser(self.dbm)
-
-
-    def tearDown(self):
-        pass
-        #self.get_form_model_by_code_patch.stop()
         
 
     def test_should_return_form_code(self):

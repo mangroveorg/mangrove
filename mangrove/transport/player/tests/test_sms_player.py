@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from unittest.case import TestCase, SkipTest
 from mock import Mock, patch
-from mangrove.form_model.field import HierarchyField, GeoCodeField
+from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmissionFactory
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.datastore.database import DatabaseManager
@@ -14,6 +14,7 @@ from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.facade import Response
 from mangrove.transport.player.tests.test_web_player import mock_form_submission
+from mangrove.datastore.datadict import DataDictType
 
 
 class TestSMSPlayer(TestCase):
@@ -49,6 +50,8 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.get_field_by_name = self._location_field
+        field = TextField('q1', 'id', 'q1', Mock(spec=DataDictType), entity_question_flag=True)
+        self.form_model_mock.fields = [field]
         self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
         self.form_submission_mock = mock_form_submission(self.form_model_mock)
@@ -75,7 +78,7 @@ class TestSMSPlayer(TestCase):
 
     def test_sms_player_should_parse_message(self):
         parser_mock = Mock(spec=OrderSMSParser)
-        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
+        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         message = 'FORM_CODE 1'
 
         sms_player = SMSPlayer(self.dbm, self.loc_tree, parser_mock)
@@ -88,25 +91,28 @@ class TestSMSPlayer(TestCase):
     def test_should_call_parser_post_processor_and_continue_for_no_response(self):
         self.loc_tree.get_location_hierarchy.return_value = None
         parser_mock = Mock(spec=OrderSMSParser)
-        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
+        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         post_sms_processor_mock = Mock()
         post_sms_processor_mock.process.return_value = None
         message = 'FORM_CODE 1'
 
         sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,
             post_sms_parser_processors=[post_sms_processor_mock])
-        with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
-            get_form_submission_mock.return_value = self.form_submission_mock
-            response = sms_player.accept(Request(message=message, transportInfo=self.transport))
-            self.assertEqual(self.reporter_name, response.reporters[0][NAME_FIELD])
 
-            post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1'})
+        with patch("inspect.getargspec") as get_arg_spec_mock:
+            get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
+            with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
+                get_form_submission_mock.return_value = self.form_submission_mock
+                response = sms_player.accept(Request(message=message, transportInfo=self.transport))
+                self.assertEqual(self.reporter_name, response.reporters[0][NAME_FIELD])
+
+                post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1'}, [])
 
 
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
         parser_mock = Mock(spec=OrderSMSParser)
-        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
-        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'})
+        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
+        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         post_sms_processor_mock = Mock()
         expected_response = Response(reporters=None, submission_id=None)
         post_sms_processor_mock.process.return_value = expected_response
@@ -114,8 +120,10 @@ class TestSMSPlayer(TestCase):
 
         sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,
             post_sms_parser_processors=[post_sms_processor_mock])
-        response = sms_player.accept(Request(message=message, transportInfo=self.transport))
-        self.assertEqual(expected_response, response)
+        with patch("inspect.getargspec") as get_arg_spec_mock:
+            get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
+            response = sms_player.accept(Request(message=message, transportInfo=self.transport))
+            self.assertEqual(expected_response, response)
 
 
     def test_should_submit_if_parsing_is_successful(self):
@@ -167,8 +175,8 @@ class TestSMSPlayer(TestCase):
         request = Request(transportInfo=self.transport,
             message="questionnaire_code question1_answer question2_answer")
         order_sms_parser = OrderSMSParser(self.dbm)
-        order_sms_parser._get_question_codes = Mock()
-        order_sms_parser._get_question_codes.return_value = ['q1', 'q2'], self.form_model_mock
+        order_sms_parser.get_question_codes = Mock()
+        order_sms_parser.get_question_codes.return_value = ['q1', 'q2'], self.form_model_mock
         with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
             get_form_submission_mock.return_value = self.form_submission_mock
             response = SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(request)

@@ -9,6 +9,7 @@ from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
 from mangrove.utils.types import is_empty
+import inspect
 
 
 class Player(object):
@@ -57,9 +58,12 @@ class SMSPlayer(Player):
 
         return form_model, values
 
-    def _process_post_parse_callback(self, form_code, values):
+    def _process_post_parse_callback(self, form_code, values, extra_elements=[]):
         for post_sms_parser_processors in self.post_sms_parser_processor:
-            response = post_sms_parser_processors.process(form_code, values)
+            if len(inspect.getargspec(post_sms_parser_processors.process)[0]) == 4:
+                response = post_sms_parser_processors.process(form_code, values, extra_elements)
+            else:
+                response = post_sms_parser_processors.process(form_code, values)
             if response is not None:
                 return response
 
@@ -69,8 +73,8 @@ class SMSPlayer(Player):
         return self.parser.parse(message)
 
     def accept(self, request):
-        form_code, values = self._parse(request.message)
-        post_sms_processor_response = self._process_post_parse_callback(form_code, values)
+        form_code, values, extra_elements = self._parse(request.message)
+        post_sms_processor_response = self._process_post_parse_callback(form_code, values, extra_elements)
         if post_sms_processor_response is not None:
             return post_sms_processor_response
 

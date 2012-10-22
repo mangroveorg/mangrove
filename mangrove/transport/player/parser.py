@@ -18,13 +18,17 @@ class SMSParserFactory(object):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
 
     def getSMSParser(self, message, dbm=None):
-        clean_message = SMSParser().clean(message)
+        clean_message = SMSParser(dbm).clean(message)
         if re.match(self.MESSAGE_PREFIX, clean_message, flags=re.UNICODE):
-            return KeyBasedSMSParser()
+            return KeyBasedSMSParser(dbm)
         return OrderSMSParser(dbm)
 
 
 class SMSParser(object):
+    
+    def __init__(self, dbm):
+        self.dbm = dbm
+        
     def _to_unicode(self, message):
         if type(message) is not unicode:
             message = unicode(message, encoding='utf-8')
@@ -49,6 +53,16 @@ class SMSParser(object):
     def form_code(self, message):
         pass
 
+    def get_question_codes(self, form_code):
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        question_codes = []
+        form_fields = form_model.fields
+        if form_model.entity_type[0] == 'reporter':
+            form_fields.remove(form_fields[0])
+        for aField in form_fields:
+            question_codes.append(aField.code)
+        return question_codes, form_model
+
 
 class KeyBasedSMSParser(SMSParser):
     MESSAGE_PREFIX = ur'^(\w+)\s+\.(\w+)\s+(\w+)'
@@ -64,16 +78,21 @@ class KeyBasedSMSParser(SMSParser):
             new_tokens.append(token.strip())
         return new_tokens
 
-    def _parse_tokens(self, tokens):
+    def _parse_tokens(self, tokens, form_code):
         tokens = self._handle_tokens_with_only_separators(tokens)
         submission = OrderedDict()
+        question_codes, form_model = self.get_question_codes(form_code)
+        extra_data = []
+
         for token in tokens:
             if is_empty(token): continue
             field_code, answer = self._parse_token(token)
             if field_code in submission.keys():
                 raise MultipleSubmissionsForSameCodeException(field_code)
             submission[field_code] = answer
-        return submission
+            if field_code not in question_codes:
+                extra_data.append(answer)
+        return submission, extra_data
 
     def _parse_token(self, token):
         m = re.match(self.MESSAGE_TOKEN, token, flags=re.UNICODE)  # Match first non white space set of values.
@@ -85,12 +104,12 @@ class KeyBasedSMSParser(SMSParser):
         assert is_string(message)
         try:
             form_code, tokens = self.form_code(message)
-            submission = self._parse_tokens(tokens)
+            submission, extra_data = self._parse_tokens(tokens, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
         except MultipleSubmissionsForSameCodeException as ex:
             raise MultipleSubmissionsForSameCodeException(ex.data[0])
-        return form_code, submission
+        return form_code, submission, extra_data
 
     def form_code(self, message):
         message = self.clean(message)
@@ -108,23 +127,26 @@ class OrderSMSParser(SMSParser):
 
     def _parse_ordered_tokens(self, tokens, question_codes, form_code):
         submission = OrderedDict()
+        extra_data = []
 
         for token_index in range(len(tokens)):
             token = tokens[token_index]
             if is_empty(token): continue
-            if len(question_codes) <= token_index: break
-            submission[question_codes[token_index]] = token
-        return submission
+            if len(question_codes) <= token_index:
+                extra_data.append(token)
+            else:
+                submission[question_codes[token_index]] = token
+        return submission, extra_data
 
     def parse(self, message):
         assert is_string(message)
         try:
             form_code, tokens = self.form_code(message)
-            question_codes, form_model = self._get_question_codes(form_code)
-            submission = self._parse_ordered_tokens(tokens, question_codes, form_code)
+            question_codes, form_model = self.get_question_codes(form_code)
+            submission, extra_data = self._parse_ordered_tokens(tokens, question_codes, form_code)
         except SMSParserInvalidFormatException as ex:
             raise SMSParserInvalidFormatException(ex.data)
-        return form_code, submission
+        return form_code, submission, extra_data
 
     def form_code(self, message):
         message = self.clean(message)
@@ -133,15 +155,6 @@ class OrderSMSParser(SMSParser):
         form_code = self.pop_form_code(tokens)
         return form_code, tokens
 
-    def _get_question_codes(self, form_code):
-        form_model = get_form_model_by_code(self.dbm, form_code)
-        question_codes = []
-        form_fields = form_model.fields
-        if form_model.entity_type[0] == 'reporter':
-            form_fields.remove(form_fields[0])
-        for aField in form_fields:
-            question_codes.append(aField.code)
-        return question_codes, form_model
 
 
 class WebParser(object):

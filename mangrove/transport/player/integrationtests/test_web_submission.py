@@ -53,9 +53,9 @@ class TestWEBSubmission(MangroveTestCase):
 
         #Web submission Form Model
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+                               entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng",
+                              defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type, required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
@@ -68,9 +68,9 @@ class TestWEBSubmission(MangroveTestCase):
 
         #Activity Report Form Model
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+                               entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value", language="eng",
+                              defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)],
                               ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",

@@ -14,9 +14,9 @@ from mangrove.form_model.form_model import FormModel, FormSubmissionFactory
 class TestFormSubmission(unittest.TestCase):
     def _create_data_submission_form(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
+             entity_question_flag=True, ddtype=self.ddtype_mock)
         question2 = TextField(name="Name", code="Q1", label="What is your name",
-            defaultValue="some default value", language="eng", ddtype=self.ddtype_mock)
+            defaultValue="some default value",  ddtype=self.ddtype_mock)
         event_time_field_code = "ET"
         self.event_time_question = DateField(name="Event time", code=event_time_field_code,
             label="Event time field",

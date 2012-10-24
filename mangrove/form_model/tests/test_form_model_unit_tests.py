@@ -16,9 +16,9 @@ class TestFormModel(unittest.TestCase):
         self.ddtype_mock = Mock(spec=DataDictType)
 
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                       language="eng", entity_question_flag=True, ddtype=self.ddtype_mock)
+                        entity_question_flag=True, ddtype=self.ddtype_mock)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                       defaultValue="some default value", language="eng", constraints=[TextLengthConstraint(5, 10)],
+                       defaultValue="some default value",  constraints=[TextLengthConstraint(5, 10)],
                        ddtype=self.ddtype_mock, required=False)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                           constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock, required=False)
@@ -109,7 +109,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_assert_activity_report(self):
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng",
+                              defaultValue="some default value",
                               constraints=[TextLengthConstraint(5, 10)],
                               ddtype=self.ddtype_mock)
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",

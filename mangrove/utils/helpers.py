@@ -16,7 +16,7 @@ def slugify(text, delim=u'_'):
 
 def find_index_represented(response):
     assert len(response) <= 2
-    index = ord(response[len(response) - 1]) - ord('a')
+    index = ord(response[-1]) - ord('a')
     if len(response) == 2:
         index = index + int(response[0])*26
     return index

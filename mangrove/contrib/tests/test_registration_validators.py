@@ -13,11 +13,10 @@ class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
     def setUp(self):
         self.validator = AtLeastOneLocationFieldMustBeAnsweredValidator()
         self.field1 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
-            label="What is the subject's location?",
-            language="en", ddtype=Mock(spec=DataDictType), instruction="Enter a region, district, or commune",
+            label="What is the subject's location?", ddtype=Mock(spec=DataDictType), instruction="Enter a region, district, or commune",
             required=False)
         self.field2 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
-            language="en", ddtype=Mock(spec=DataDictType), instruction="Enter lat and long. Eg 20.6, 47.3",
+            ddtype=Mock(spec=DataDictType), instruction="Enter lat and long. Eg 20.6, 47.3",
             required=False)
         self.field3 = TextField('a', 'a', 'a', Mock(spec=DataDictType))
         self.field4 = TextField('b', 'b', 'b', Mock(spec=DataDictType))

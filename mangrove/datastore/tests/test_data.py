@@ -57,11 +57,9 @@ class TestData(object):
         self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
                                            primitive_type='string')
         self.default_ddtype.save()
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity", entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng",
-                              ddtype=self.default_ddtype)
+                              defaultValue="some default value", ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  ddtype=self.default_ddtype)
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",

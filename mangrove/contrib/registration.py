@@ -31,24 +31,23 @@ def construct_global_registration_form(manager):
     entity_id_type = get_or_create_data_dict(manager, name='Entity Id Type', slug='entity_id', primitive_type='string')
 
     question1 = HierarchyField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
-                               label="What is associated subject type?",
-                               language="en", ddtype=entity_id_type, instruction="Enter a type for the subject")
+                               label="What is associated subject type?", ddtype=entity_id_type, instruction="Enter a type for the subject")
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
-                          defaultValue="some default value", language="en", ddtype=name_type,
+                          defaultValue="some default value",  ddtype=name_type,
                           instruction="Enter a subject name")
     question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
-                          defaultValue="some default value", language="en", ddtype=name_type,
+                          defaultValue="some default value", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",
                           entity_question_flag=True, constraints=[TextLengthConstraint(max=12)], required=False)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
-                               language="en", ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
+                                ddtype=location_type, instruction="Enter a region, district, or commune", required=False)
     question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
-                             language="en", ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3", required=False)
+                             ddtype=geo_code_type, instruction="Enter lat and long. Eg 20.6, 47.3", required=False)
     question6 = TelephoneNumberField(name=MOBILE_NUMBER_FIELD, code=MOBILE_NUMBER_FIELD_CODE,
                                      label="What is the mobile number associated with the subject?",
-                                     defaultValue="some default value", language="en", ddtype=mobile_number_type,
+                                     defaultValue="some default value",  ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
     form_model = FormModel(manager, name=GLOBAL_REGISTRATION_FORM_CODE, form_code=REGISTRATION_FORM_CODE, fields=[

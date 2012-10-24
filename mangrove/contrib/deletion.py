@@ -20,10 +20,10 @@ def _construct_global_deletion_form(manager):
 
     question1 = HierarchyField(name=ENTITY_TYPE_FIELD_NAME, code=ENTITY_TYPE_FIELD_CODE,
         label="What is the entity type",
-        language="en", ddtype=entity_type_dd, instruction="Enter a type for the entity")
+        ddtype=entity_type_dd, instruction="Enter a type for the entity")
 
     question2 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the entity's Unique ID Number",
-        defaultValue="some default value", language="en", ddtype=entity_id_dd,
+        defaultValue="some default value", ddtype=entity_id_dd,
         instruction="Enter the id of the entity you want to delete",
         entity_question_flag=True, constraints=[TextLengthConstraint(max=12)])
 

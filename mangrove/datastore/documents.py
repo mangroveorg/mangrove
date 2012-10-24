@@ -178,7 +178,7 @@ class FormModelDocument(DocumentBase):
     metadata = DictField()
     name = TextField()
     type = TextField()
-    label = DictField()
+    label = TextField()
     form_code = TextField()
     state = TextField()
     is_registration_model = BooleanField(default=False)
@@ -198,8 +198,8 @@ class FormModelDocument(DocumentBase):
     def active_languages(self, language):
         self.metadata[attributes.ACTIVE_LANGUAGES]=language
 
-    def add_label(self, language, label):
-        self.label[language] = label
+    def set_label(self, label):
+        self.label = label
 
 
 class SubmissionLogDocument(DocumentBase):

@@ -68,9 +68,9 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
             (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-            language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+             entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-            defaultValue="some default value", language="eng",
+            defaultValue="some default value",
             constraints=[TextLengthConstraint(4, 15)],
             ddtype=self.name_type, required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
@@ -134,9 +134,9 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
     def test_should_save_submitted_sms_for_activity_report(self):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-            language="eng", entity_question_flag=True, ddtype=self.entity_id_type)
+             entity_question_flag=True, ddtype=self.entity_id_type)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-            defaultValue="some default value", language="eng",
+            defaultValue="some default value",
             constraints=[TextLengthConstraint(4, 15)],
             ddtype=self.name_type)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",

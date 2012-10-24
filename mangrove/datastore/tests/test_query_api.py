@@ -755,9 +755,9 @@ class TestQueryApi(MangroveTestCase):
                                            primitive_type='string')
         self.default_ddtype.save()
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="eng", entity_question_flag=True, ddtype=self.default_ddtype)
+                              entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", language="eng",
+                              defaultValue="some default value",
                               ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  ddtype=self.default_ddtype)

@@ -87,7 +87,7 @@ class FormModel(DataObject):
 
         doc = FormModelDocument()
         doc.name = name
-        doc.add_label(language, label)
+        doc.set_label(label)
         doc.form_code = form_code
         doc.entity_type = entity_type
         doc.type = type
@@ -202,11 +202,6 @@ class FormModel(DataObject):
     def delete_all_fields(self):
         self._form_fields = []
 
-    def add_language(self, language, label=None):
-        self._doc.active_languages.append(language)
-        if label is not None:
-            self._doc.add_label(language, label)
-
     def is_registration_form(self):
         return self._doc['is_registration_model']
 
@@ -248,7 +243,7 @@ class FormModel(DataObject):
 
         """
         if self._enforce_unique_labels:
-            label_list = [f.label[f.language].lower() for f in fields]
+            label_list = [f.label.lower() for f in fields]
             label_list_without_duplicates = list(set(label_list))
             if len(label_list) != len(label_list_without_duplicates):
                 raise QuestionAlreadyExistsException("All questions must be unique")

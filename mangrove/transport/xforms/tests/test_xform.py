@@ -69,7 +69,7 @@ class TestXform(unittest.TestCase):
     def test_should_escape_special_characters_from_requested_form(self):
         dbm = Mock()
         questionnaire_mock = Mock()
-        field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&', language="en",
+        field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&',
             options=[{'text': {'en': 'option1&'}}], ddtype=Mock())
         questionnaire_mock.name = '<mock_name'
         questionnaire_mock.fields = [field1]

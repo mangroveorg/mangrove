@@ -43,7 +43,7 @@ class TestFormModel(MangroveTestCase):
 
     def test_should_add_label(self):
         saved = self.manager.get(self.form_model__id, FormModel)
-        self.assertTrue(saved.label['en'] == "Aids form_model")
+        self.assertTrue(saved.label == "Aids form_model")
 
     def test_should_add_short_ids(self):
         saved = self.manager.get(self.form_model__id, FormModel)
@@ -92,13 +92,6 @@ class TestFormModel(MangroveTestCase):
     def test_should_add_english_as_default_language(self):
         activeLanguages = self.form_model.activeLanguages
         self.assertTrue("en" in activeLanguages)
-
-    def test_should_add_language_to_form_model(self):
-        self.form_model.add_language(language="fr", label="French Aids form_model")
-        activeLanguages = self.form_model.activeLanguages
-        self.assertEquals(len(activeLanguages), 2)
-        self.assertTrue("fr" in activeLanguages)
-        self.assertEquals(self.form_model.label['fr'], u'French Aids form_model')
 
     def test_should_delete_all_fields_from_document(self):
         form_model = self.manager.get(self.form_model__id, FormModel)
@@ -169,9 +162,7 @@ class TestFormModel(MangroveTestCase):
                 {
                     "name": "What are you reporting on?",
                     "defaultValue": "",
-                    "label": {
-                        "en": "Entity being reported on"
-                       },
+                    "label": "Entity being reported on",
                     "entity_question_flag": True,
                     "type": "text",
                     "ddtype": self.default_ddtype.to_json(),
@@ -184,7 +175,7 @@ class TestFormModel(MangroveTestCase):
                         "max": 10,
                         "min": 0
                         })],
-                    "label": {"en": ""},
+                    "label": "",
                     "type": "integer",
                     "ddtype": self.default_ddtype.to_json(),
                     "name": "What is your age?",
@@ -200,7 +191,7 @@ class TestFormModel(MangroveTestCase):
                             "text": {"en": "Bangalore"}
                         }
                     ],
-                    "label": {"en": ""},
+                    "label": "",
                     "type": "select",
                     "ddtype": self.default_ddtype.to_json(),
                     "name": "Where do you live?",
@@ -244,7 +235,7 @@ class TestFormModel(MangroveTestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+                              entity_question_flag=True, ddtype=self.default_ddtype)
         form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
@@ -253,7 +244,7 @@ class TestFormModel(MangroveTestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+                              entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                 form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -263,7 +254,7 @@ class TestFormModel(MangroveTestCase):
 
     def test_should_not_raise_exception_if_form_code_is_updated(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+                              entity_question_flag=True, ddtype=self.default_ddtype)
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                 form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -275,7 +266,7 @@ class TestFormModel(MangroveTestCase):
 
     def test_should_return_the_registration_form_model_for_the_entity_type(self):
         field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True, ddtype=self.default_ddtype)
         expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
             entity_type=self.entity_type, is_registration_model=True)
         expected_form_model.save()
@@ -310,9 +301,9 @@ class TestFormModel(MangroveTestCase):
             primitive_type='string')
         self.default_ddtype.save()
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            language="en", entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True, ddtype=self.default_ddtype)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-            defaultValue="some default value", language="en",
+            defaultValue="some default value",
             constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
             ddtype=self.default_ddtype)
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",

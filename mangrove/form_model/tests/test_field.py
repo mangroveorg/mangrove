@@ -140,8 +140,8 @@ class TestField(unittest.TestCase):
         expected_json = {
             "label" : "What is your favorite color",
             "name": "color",
-            "choices": [{"text": {"en": "RED"}, "val": 1}, {"text": {"en": "YELLOW"}, "val": 2},
-                        {"text": {'en': 'green'}, "val": 3}],
+            "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
+                        {"text": 'green', "val": 3}],
             "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
@@ -160,8 +160,8 @@ class TestField(unittest.TestCase):
         expected_json = {
             "label" : "What is your favorite color",
             "name": "color",
-            "choices": [{"text": {"en": "RED"}, "val": 1}, {"text": {"en": "YELLOW"}, "val": 2},
-                        {"text": {'en': 'green'}}],
+            "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
+                        {"text": 'green'}],
             "code": "Q3",
             "ddtype": self.DDTYPE_JSON,
             "type": "select",
@@ -228,7 +228,6 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label" : "What is your name",
-            "language": "en",
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
@@ -253,7 +252,6 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label": "What is your age",
-            "language": "en",
             "name": "field1_age",
             "code": "Q1",
             "type": "integer",
@@ -273,7 +271,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_integer_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "What is your age", "fr": "french label"}
+        LABEL = "What is your age"
         field_json = {
             "defaultValue": "",
             "label": LABEL,
@@ -302,8 +300,8 @@ class TestField(unittest.TestCase):
             "code": "qc3",
             "type": "select",
             "ddtype": self.DDTYPE_JSON,
-            "choices": [{"text": {"en": "option 1"}, "value": "c1"},
-                        {"text": {"en": "option 1"}, "value": "c2"}],
+            "choices": [{"text": "option 1", "value": "c1"},
+                        {"text": "option 1", "value": "c2"}],
             "required": False,
             "entity_field_flag": False,
             "label" : "select type field"}
@@ -315,14 +313,14 @@ class TestField(unittest.TestCase):
 
     def test_should_create_select_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "select type field", "mg": "malagast label"}
+        LABEL = "select type field"
         field_json = {
             "name": "q3",
             "code": "qc3",
             "type": "select",
             "ddtype": self.DDTYPE_JSON,
-            "choices": [{"text": {"en": "option 1"}, "value": "c1"},
-                        {"text": {"en": "option 1"}, "value": "c2"}],
+            "choices": [{"text": "option 1", "value": "c1"},
+                        {"text": "option 1", "value": "c2"}],
             "required": False,
             "entity_field_flag": False,
             "label": LABEL}
@@ -335,7 +333,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_hierarchy_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "hierarchy type field", "mg": "malagast label"}
+        LABEL = "hierarchy type field"
         field_json = {
             "name": "q3",
             "code": "qc3",
@@ -352,7 +350,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_telephone_number_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "telephone number field", "mg": "malagast label"}
+        LABEL = "telephone number field"
         field_json = {
             "name": "q3",
             "code": "qc3",
@@ -373,14 +371,14 @@ class TestField(unittest.TestCase):
             "code": "qc3",
             "type": "select1",
             "ddtype": self.DDTYPE_JSON,
-            "choices": [{"text": {"en": "hello", "fr": "bonjour"}, "value": "c1"},
-                        {"text": {"en": "world"}, "value": "c2"}],
+            "choices": [{"text": "hello", "value": "c1"},
+                        {"text": "world", "value": "c2"}],
             "required": False,
             "entity_field_flag": False,
             "label" : "select1 type question"}
 
-        expected_option_list = [{"text": {"en": "hello", "fr": "bonjour"}, "value": "c1"},
-                                {"text": {"en": "world"}, "value": "c2"}]
+        expected_option_list = [{"text": "hello", "value": "c1"},
+                                {"text": "world", "value": "c2"}]
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, SelectField)
         self.assertEqual(created_field.single_select_flag, True)
@@ -468,7 +466,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_date_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "What is your birth date", "es": "spanish label"}
+        LABEL = "What is your birth date"
         field_json = {
             "defaultValue": "",
             "label": LABEL,
@@ -503,7 +501,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_geo_code_field_with_multiple_labels(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "What is your location", "mg": "malagasy label"}
+        LABEL = "What is your location"
         field_json = {
             "label": LABEL,
             "name": "Birth_place",
@@ -600,7 +598,7 @@ class TestField(unittest.TestCase):
 
     def test_should_return_default_language_text(self):
         expected_json = {
-            "choices": [{"text": {"fr": "lake", "en": "Lake"}}, {"text": {"fr": "dam", "en": "Dam"}}],
+            "choices": [{"text": "Lake"}, {"text": "Dam"}],
             "name": "type",
             "ddtype": self.DDTYPE_JSON,
             "type": "select1",
@@ -611,7 +609,7 @@ class TestField(unittest.TestCase):
 
         }
         field = SelectField(name="type", code="T", label="What type?",
-            options=[{"text": {"fr": "lake", "en": "Lake"}}, {"text": {"fr": "dam", "en": "Dam"}}],
+            options=[{"text": "Lake"}, {"text": "Dam"}],
             ddtype=self.ddtype, instruction="test",
             single_select_flag=True)
         actual_json = field._to_json_view()
@@ -718,7 +716,7 @@ class TestField(unittest.TestCase):
 
     def test_should_create_telephone_number_field_from_dictionary(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
-        LABEL = {"en": "test", "fr": "french_label"}
+        LABEL = "test"
         field_json = {
             "defaultValue": "",
             "label": LABEL,
@@ -812,7 +810,6 @@ class TestField(unittest.TestCase):
         field_json = {
             "defaultValue": "",
             "label": "What is your birth date",
-            "language": "en",
             "name": "Birth_date",
             "code": "Q1",
             "type": "date",

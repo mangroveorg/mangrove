@@ -411,14 +411,14 @@ class SelectField(Field):
         if options is not None:
             for option in options:
                 if isinstance(option, tuple):
-                    single_language_specific_option = {'text': {'en': option[0]}, 'val': option[1]}
+                    single_language_specific_option = {'text': option[0], 'val': option[1]}
                 elif isinstance(option, dict):
                     single_language_specific_option = option
                 else:
-                    single_language_specific_option = {'text': {'en': option}}
+                    single_language_specific_option = {'text': option}
                 valid_choices.append(single_language_specific_option)
         self.constraint = ChoiceConstraint(
-            list_of_valid_choices=[each.get('text').get('en') for each in valid_choices],
+            list_of_valid_choices=[each.get('text') for each in valid_choices],
             single_select_constraint=single_select_flag, code=code)
 
     SINGLE_SELECT_FLAG = 'single_select_flag'
@@ -437,7 +437,7 @@ class SelectField(Field):
         return dict
 
     def get_constraint_text(self):
-        return [option["text"]['en'] for option in self.options]
+        return [option["text"] for option in self.options]
 
     def _to_str(self):
         if self.value is None :

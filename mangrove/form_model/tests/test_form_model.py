@@ -185,10 +185,10 @@ class TestFormModel(MangroveTestCase):
                 {
                     "choices": [
                             {
-                            "text": {"en": "Pune"}
+                            "text": "Pune"
                             },
                             {
-                            "text": {"en": "Bangalore"}
+                            "text": "Bangalore"
                         }
                     ],
                     "label": "",
@@ -213,7 +213,7 @@ class TestFormModel(MangroveTestCase):
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
                             constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype,required=False)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
-                             options=[{"text": {"en": "Pune"}}, {"text": {"en": "Bangalore"}}],
+                             options=[{"text": "Pune"}, {"text": "Bangalore"}],
                              single_select_flag=False, ddtype=self.default_ddtype,required=False)
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel.new_from_doc(self.manager, document)

@@ -70,7 +70,7 @@ class TestXform(unittest.TestCase):
         dbm = Mock()
         questionnaire_mock = Mock()
         field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&',
-            options=[{'text': {'en': 'option1&'}}], ddtype=Mock())
+            options=[{'text':'option1&'}], ddtype=Mock())
         questionnaire_mock.name = '<mock_name'
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'

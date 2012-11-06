@@ -3,7 +3,7 @@
     <hint>Choose answer(s) from the list.</hint>
     {% for option in field.options %}
         <item>
-            <label>{{ "".join(option.get('text').values()) }}</label>
+            <label>{{ "".join(option.get('text')) }}</label>
             <value>{{ option.get('val') }}</value>
         </item>
     {% endfor %}

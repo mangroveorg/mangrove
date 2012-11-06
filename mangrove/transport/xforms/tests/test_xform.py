@@ -65,7 +65,6 @@ class TestXform(unittest.TestCase):
                     unicode(expected_xform_for_project_on_subject), 0))
 
 
-    @SkipTest
     def test_should_escape_special_characters_from_requested_form(self):
         dbm = Mock()
         questionnaire_mock = Mock()
@@ -78,5 +77,7 @@ class TestXform(unittest.TestCase):
         questionnaire_mock.entity_defaults_to_reporter.return_value = True
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
             form_model_mock.get.return_value = questionnaire_mock
-            self.assertTrue(self.checker.check_output(xform_for(dbm, "someFormId", 'rep1'),
-                unicode(expected_xform_with_escaped_characters), 0))
+            one_of_unicode_unknown_ = xform_for(dbm, "someFormId", 'rep1')
+            u = unicode(expected_xform_with_escaped_characters)
+            self.assertTrue(self.checker.check_output(one_of_unicode_unknown_,
+                u, 0))

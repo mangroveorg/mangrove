@@ -44,7 +44,7 @@ expected_xform_with_escaped_characters = """
         xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
-        <h:title>&amp;lt;mock_name</h:title>
+        <h:title>&lt;mock_name</h:title>
         <model>
             <instance>
                 <data id="id">
@@ -53,21 +53,22 @@ expected_xform_with_escaped_characters = """
                     <form_code>form_code</form_code>
                 </data>
             </instance>
-                <bind nodeset="/data/selectcode" type="select1" constraint="" required="true()"/>
-                <bind nodeset="/data/form_code" type="string">form_code</bind>
+            <bind nodeset="/data/selectcode" type="select1" constraint="" required="true()"/>
+            <bind nodeset="/data/form_code" type="string">form_code</bind>
+
         </model>
     </h:head>
     <h:body>
         <select1 ref="selectcode" appearance="quick">
-            <label>name&amp;amp;</label>
+            <label>name&amp;</label>
             <hint>Choose answer(s) from the list.</hint>
             <item>
-                <label>option1&amp;amp;</label>
+                <label>option1&amp;</label>
                 <value>None</value>
-        </item>
-</select1>
+            </item>
 
-        </h:body>
+        </select1>
+    </h:body>
 </h:html>"""
 
 expected_xform_for_project_on_subject = """

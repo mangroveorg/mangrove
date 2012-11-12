@@ -202,6 +202,12 @@ class FormModel(DataObject):
     def delete_all_fields(self):
         self._form_fields = []
 
+    def create_snapshot(self):
+        pass
+
+    def snap_shots(self):
+        return []
+
     def is_registration_form(self):
         return self._doc['is_registration_model']
 

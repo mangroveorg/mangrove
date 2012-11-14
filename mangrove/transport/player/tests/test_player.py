@@ -1,25 +1,22 @@
 from collections import OrderedDict
-from unittest import TestCase
+from mangrove.form_model.field import TextField
+from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
+from mangrove.transport import TransportInfo
 from mangrove.transport.submissions import Submission
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.transport.player.player import Player
 from mock import Mock, patch
 from mangrove.form_model.form_model import FormModel, FormSubmission, DataFormSubmission
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
-class TestPlayer(TestCase):
-    def test_should_use_submission_id_instead_of_submission(self):
-        dbm = Mock(spec=DatabaseManager)
-        message = {'q1': 'CAPITAL'}
+class TestPlayer(MangroveTestCase):
 
-        submission = Mock(spec=Submission)
-        submission.values = message
+    def test_should_save_the_correct_case_of_subject_short_code_in_submisson(self):
+        form_model = self._create_form_model()
 
-        form_model = Mock(spec=FormModel)
-        form_model.entity_question.code = 'q1'
-        form_model.is_inactive.return_value = False
-        form_model.validate_submission.return_value = OrderedDict(submission.values), None
-        form_model.is_registration_form.return_value = False
+        Submission(self.manager, TransportInfo('sms', '8888567890', '123'), form_model.form_code,{'q1': 'Q1_VALUE'}).save()
+
 
         with patch.object(FormSubmission, "get_entity_type") as get_entity_type:
             with patch.object(DataFormSubmission, "create_entity") as create_entity:
@@ -29,3 +26,20 @@ class TestPlayer(TestCase):
 
                 self.assertTrue(response.success)
                 self.assertEqual(submission.values[form_model.entity_question.code], 'capital')
+
+
+    def test_should_save_revision_of_form_model_into_submission(self):
+        pass
+
+
+    def _create_form_model(self):
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+            entity_question_flag=True, ddtype=self.default_ddtype)
+        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
+            defaultValue="some default value", constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
+            ddtype=self.default_ddtype)
+        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+            form_code="form_code", type='survey', fields=[question1, question2])
+        self.form_model__id = self.form_model.save()
+        return self.form_model
+

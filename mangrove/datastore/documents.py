@@ -185,6 +185,7 @@ class FormModelDocument(DocumentBase):
     entity_type = ListField(TextField())
     json_fields = ListField(DictField())
     validators = ListField(DictField())
+    snapshots = DictField()
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')

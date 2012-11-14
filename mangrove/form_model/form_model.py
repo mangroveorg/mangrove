@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from couchdb.mapping import ListField, DictField
 from mangrove.form_model.location import Location
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
@@ -61,6 +62,11 @@ def get_form_model_by_entity_type(dbm, entity_type):
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
 
+    @classmethod
+    def new_from_doc(cls, dbm, doc):
+        if hasattr(doc, 'snapshots'): cls._snapshots = doc.snapshots
+        return super(FormModel, cls).new_from_doc(dbm, doc)
+
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
                  language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None, enforce_unique_labels = True):
         if not validators: validators = [MandatoryValidator()]
@@ -73,6 +79,7 @@ class FormModel(DataObject):
 
         DataObject.__init__(self, dbm)
 
+        self._snapshots = {}
         self._form_fields = []
         self.errors = []
         self.validators = validators
@@ -175,6 +182,8 @@ class FormModel(DataObject):
 
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         self._doc.validators = [validator.to_json() for validator in self.validators]
+        for key, value in self._snapshots.items():
+            self._doc.snapshots[key] = [each._to_json() for each in value]
         return DataObject.save(self)
 
 
@@ -203,10 +212,12 @@ class FormModel(DataObject):
         self._form_fields = []
 
     def create_snapshot(self):
-        pass
+        if self._form_fields:
+            self._snapshots[self._doc.rev] = self._form_fields
 
-    def snap_shots(self):
-        return []
+    @property
+    def snapshots(self):
+        return self._doc['snapshots']
 
     def is_registration_form(self):
         return self._doc['is_registration_model']

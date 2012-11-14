@@ -59,6 +59,15 @@ class TestFormModel(MangroveTestCase):
         self.assertTrue(saved.fields[1].name == "question1_Name")
         self.assertTrue(saved.fields[2].name == "Father's age")
 
+    def test_should_add_snapshot_when_modifying(self):
+        original_form = self.manager.get(self.form_model__id, FormModel)
+
+        original_form.create_snapshot()
+        original_form.save()
+        updated_form = self.manager.get(self.form_model__id, FormModel)
+
+        self.assertTrue(len(updated_form.snapshots) == 1)
+
     def test_should_add_integer_field_with_constraints(self):
         integer_question = self.manager.get(self.form_model__id, FormModel).fields[2]
         range_constraint = integer_question.constraints[0]
@@ -292,8 +301,6 @@ class TestFormModel(MangroveTestCase):
         self.assertEquals("25",stringified_dict.get("Q2"))
         self.assertEquals("RED",stringified_dict.get("Q3"))
 
-        
-
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]
         define_type(self.manager, ["HealthFacility", "Clinic"])
@@ -314,3 +321,4 @@ class TestFormModel(MangroveTestCase):
             form_code="1", type='survey', fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
+

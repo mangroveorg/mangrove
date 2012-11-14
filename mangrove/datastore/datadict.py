@@ -108,3 +108,9 @@ class DataDictType(DataObject):
     def create_from_json(cls, json, dbm):
         doc = DataDictDocument.wrap(json)
         return DataDictType.new_from_doc(dbm, doc)
+
+    def __eq__(self, other):
+        return isinstance(other, DataDictType) and self.to_json() == other.to_json()
+
+    def __ne__(self, other):
+        return not self == other

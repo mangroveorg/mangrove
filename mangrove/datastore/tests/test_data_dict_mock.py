@@ -33,6 +33,26 @@ class TestDataDict(unittest.TestCase):
                          'void': False}
         self.assertEqual(expected_json, name_type.to_json())
 
+    def test_should_be_equal_if_json_presentation_are_the_same(self):
+        _id = "1"
+        dd1 = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string', id=_id)
+        dd2 = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string', id=_id)
+
+        self.assertTrue(dd2 == dd1)
+
+    def test_should_be_not_equal_if_type_is_different(self):
+        _id = "1"
+        dd1 = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string', id=_id)
+        dd2 = None
+
+        self.assertFalse(dd2 == dd1)
+
+    def test_should_be_not_equal_if_type_is_same_and_json_repr_are_not_same(self):
+        _id = "1"
+        dd1 = DataDictType(self.dbm, name='First name', slug='first_Name', primitive_type='string', id=_id)
+        dd2 = DataDictType(self.dbm, name='Last name', slug='last_Name', primitive_type='string', id=_id)
+
+        self.assertTrue(dd2 != dd1)
 
     def test_should_create_from_json(self):
         _id = "1"

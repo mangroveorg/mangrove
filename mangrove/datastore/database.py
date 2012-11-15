@@ -104,7 +104,6 @@ class DataObject(object):
     def save(self):
         if self._doc is None:
             raise NoDocumentError('No document to save')
-        print self._doc
         return self._dbm._save_document(self._doc)
 
     def delete(self):

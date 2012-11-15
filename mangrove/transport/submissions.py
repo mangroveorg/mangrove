@@ -46,14 +46,15 @@ class Submission(DataObject):
 
     __document_class__ = SubmissionLogDocument
 
-    def __init__(self, dbm, transport_info=None, form_code=None, values=None):
+    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision = None, values=None):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
             doc = SubmissionLogDocument(channel=transport_info.transport, source=transport_info.source,
-                                      destination=transport_info.destination,
-                                      form_code=form_code,
-                                      values=values, status=False,
-                                      error_message="", test=False)
+                                        destination=transport_info.destination,
+                                        form_code=form_code,
+                                        form_model_revision=form_model_revision,
+                                        values=values, status=False,
+                                        error_message="", test=False)
 
             DataObject._set_document(self, doc)
 
@@ -89,6 +90,10 @@ class Submission(DataObject):
     @property
     def form_code(self):
         return self._doc.form_code
+
+    @property
+    def form_model_revision(self):
+        return self._doc.form_model_revision
 
     @property
     def values(self):

@@ -219,6 +219,10 @@ class FormModel(DataObject):
     def snapshots(self):
         return self._doc['snapshots']
 
+    @property
+    def revision(self):
+        return self._doc.rev
+
     def is_registration_form(self):
         return self._doc['is_registration_model']
 

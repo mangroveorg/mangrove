@@ -218,18 +218,20 @@ class SubmissionLogDocument(DocumentBase):
     status = BooleanField()
     error_message = TextField()
     form_code = TextField()
+    form_model_revision = TextField()
     data_record_id = TextField()
     test = BooleanField()
     event_time = TZAwareDateTimeField()
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None, data_record_id=None, test=None, event_time=None):
+                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None, event_time=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
         self.channel = channel
         self.destination = destination
         self.form_code = form_code
+        self.form_model_revision = form_model_revision
         self.values = values
         self.status = status
         self.error_message = error_message

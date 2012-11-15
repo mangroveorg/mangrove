@@ -18,7 +18,8 @@ class Player(object):
         self.location_tree = location_tree
 
     def _create_submission(self, transport_info, form_code, values):
-        submission = Submission(self.dbm, transport_info, form_code, values)
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        submission = Submission(self.dbm, transport_info, form_code, form_model.revision, values)
         submission.save()
         return submission
 

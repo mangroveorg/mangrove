@@ -10,6 +10,8 @@ from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField, DateField
 from mangrove.form_model.form_model import FormModel, FormSubmissionFactory
 
+ENTITY_TYPE = ["Clinic"]
+
 
 class TestFormSubmission(unittest.TestCase):
     def _create_data_submission_form(self):
@@ -21,7 +23,7 @@ class TestFormSubmission(unittest.TestCase):
         self.event_time_question = DateField(name="Event time", code=event_time_field_code,
             label="Event time field",
             date_format="dd.mm.yyyy", ddtype=self.ddtype_mock, required=False, event_time_field_flag=True)
-        return FormModel(self.dbm, entity_type=["Clinic"], name="aids", label="Aids form_model",
+        return FormModel(self.dbm, entity_type=ENTITY_TYPE, name="aids", label="Aids form_model",
             form_code="AIDS", type='survey',
             fields=[question1, question2, self.event_time_question])
 
@@ -33,11 +35,6 @@ class TestFormSubmission(unittest.TestCase):
         view_mock.by_short_codes.return_value = None
         self.dbm.view = view_mock
 
-
-
-    def tearDown(self):
-        pass
-
     def test_should_create_form_submission_with_entity_id(self):
         form_model = self._create_data_submission_form()
         answers = OrderedDict({"id": "1", "q1": "My Name"})
@@ -46,6 +43,7 @@ class TestFormSubmission(unittest.TestCase):
 
         self.assertEqual(form_submission.form_code, "AIDS")
         self.assertEqual(form_submission.short_code, "1")
+        self.assertEqual(form_submission.entity_type, [each.lower() for each in ENTITY_TYPE])
 
 
     def test_should_create_global_form_submission_location_tree(self):

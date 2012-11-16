@@ -1,14 +1,13 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from copy import copy
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
+from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport import reporter
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
-from mangrove.utils.types import is_empty
 import inspect
 
 
@@ -18,8 +17,13 @@ class Player(object):
         self.location_tree = location_tree
 
     def _create_submission(self, transport_info, form_code, values):
-        form_model = get_form_model_by_code(self.dbm, form_code)
-        submission = Submission(self.dbm, transport_info, form_code, form_model.revision, values)
+        try:
+            form_model = get_form_model_by_code(self.dbm, form_code)
+            form_model_revision = form_model.revision
+        except FormModelDoesNotExistsException:
+            form_model_revision = None
+
+        submission = Submission(self.dbm, transport_info, form_code, form_model_revision, values)
         submission.save()
         return submission
 

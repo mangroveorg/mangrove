@@ -1,4 +1,5 @@
 from mangrove.datastore.entity import create_entity, get_by_short_code
+from mangrove.datastore.entity_type import entity_type_already_defined, define_type
 from mangrove.errors.MangroveException import DataObjectNotFound
 
 class EntityBuilder(object):
@@ -26,6 +27,9 @@ class EntityBuilder(object):
         return self
 
     def build(self):
+        if not entity_type_already_defined(self._manager, self._entity_type):
+            define_type(self._manager, self._entity_type)
+
         entity = self.create_or_update_entity(self._manager, entity_type=self._entity_type, short_code=self._short_code,
             aggregation_paths=self._aggregation_paths, location=self._location, geometry=self._geometry)
         for each in self._data: entity.add_data(each)

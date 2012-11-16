@@ -363,11 +363,11 @@ class FormSubmission(object):
 
         self.form_model = form_model
         self._cleaned_data = form_answers
-        short_code = self.get_answer_for(form_model.entity_question.code)
-        self.short_code = short_code.lower() if short_code is not None else None
+        entity_short_code = self.get_answer_for(form_model.entity_question.code)
+        self.short_code = entity_short_code.lower() if entity_short_code is not None else None
+        self.entity_type = self.get_entity_type(form_model)
         self.is_valid = (errors is None or len(errors) == 0)
         self.errors = errors
-        self.entity_type = self.get_entity_type(form_model)
         self.data_record_id = None
         self.location_tree = location_tree
 

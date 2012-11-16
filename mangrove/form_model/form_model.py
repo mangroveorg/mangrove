@@ -199,6 +199,16 @@ class FormModel(DataObject):
                 return field
         return None
 
+    def get_field_by_code_and_revision(self, code, revision):
+        if self.revision == revision:
+            return get_form_model_by_code(code)
+        snapshot = self.snapshots.get(revision, [])
+
+        for json_field in snapshot:
+            if code is not None and json_field['code'].lower() == code.lower():
+                return field.create_question_from(json_field, self._dbm)
+        return None
+
     def add_field(self, field):
         self._validate_fields(self._form_fields + [field])
         self._form_fields.append(field)

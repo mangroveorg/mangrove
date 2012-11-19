@@ -1,21 +1,19 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from collections import OrderedDict
 from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
 
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.datastore.entity_type import  define_type
-from mangrove.form_model.field import  TextField, IntegerField, SelectField
+from mangrove.form_model.field import  TextField, IntegerField, SelectField, DateField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
+from mangrove.utils.form_model_builder import FormModelBuilder, create_default_ddtype
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
-class TestFormModel(MangroveTestCase):
+class FormModelTest(MangroveTestCase):
     def setUp(self):
         MangroveTestCase.setUp(self)
         self._create_form_model()
@@ -23,67 +21,101 @@ class TestFormModel(MangroveTestCase):
     def tearDown(self):
         MangroveTestCase.tearDown(self)
 
-    def test_create_form_model(self):
-        self.assertTrue(self.form_model__id)
-
     def test_get_form_model(self):
-        form = self.manager.get(self.form_model__id, FormModel)
-        self.assertTrue(form.id)
-        self.assertTrue(form.type == "survey")
+        form = FormModel.get(self.manager, self.form_model_id)
+        self.assertIsNotNone(form.id)
+        self.assertEqual(form.type, "survey")
         constraints = form.fields[1].constraints
         self.assertEqual(10, constraints[0].max)
         self.assertEqual(5, constraints[0].min)
         self.assertEqual("\w+", constraints[1].pattern)
 
-
     def test_should_add_name_of_form_model(self):
-        saved = self.manager.get(self.form_model__id, FormModel)
+        saved = FormModel.get(self.manager, self.form_model_id)
         self.assertTrue(saved.name == "aids")
 
-
     def test_should_add_label(self):
-        saved = self.manager.get(self.form_model__id, FormModel)
+        saved = FormModel.get(self.manager, self.form_model_id)
         self.assertTrue(saved.label == "Aids form_model")
 
     def test_should_add_short_ids(self):
-        saved = self.manager.get(self.form_model__id, FormModel)
+        saved = FormModel.get(self.manager, self.form_model_id)
         self.assertTrue(saved.form_code == "1")
 
     def test_should_add_entity_id(self):
-        saved = self.manager.get(self.form_model__id, FormModel)
+        saved = FormModel.get(self.manager, self.form_model_id)
         self.assertListEqual(saved.entity_type, self.entity_type)
 
     def test_should_add_fields(self):
-        saved = self.manager.get(self.form_model__id, FormModel)
+        saved = FormModel.get(self.manager, self.form_model_id)
         self.assertTrue(len(saved.fields) == 4)
         self.assertTrue(saved.fields[1].name == "question1_Name")
         self.assertTrue(saved.fields[2].name == "Father's age")
 
     def test_should_add_snapshot_when_modifying(self):
-        original_form = self.manager.get(self.form_model__id, FormModel)
+        original_form = self.form_model
 
         original_form.create_snapshot()
         original_form.save()
-        updated_form = self.manager.get(self.form_model__id, FormModel)
-
+        updated_form = FormModel.get(self.manager, self.form_model_id)
         self.assertTrue(len(updated_form.snapshots) == 1)
 
+    def test_should_get_latest_field_if_no_revision_provided(self):
+        self.form_model.create_snapshot()
+        self.form_model.delete_field(code="Q3")
+        field = SelectField(name="New Name", code="Q3", label="What is your favourite color",options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+        self.form_model.add_field(field)
+        self.form_model.save()
+        updated_form = FormModel.get(self.manager, self.form_model_id)
+        self.assertEqual("New Name", updated_form.get_field_by_code_and_rev("Q3").name)
+
+    def test_should_get_revision_field_if_revision_provided(self):
+        rev = self.form_model.revision
+        self.form_model.create_snapshot()
+        self.form_model.delete_field(code="Q3")
+        field = SelectField(name="New Name", code="Q3", label="What is your favourite color",options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+        self.form_model.add_field(field)
+        self.form_model.save()
+        updated_form = FormModel.get(self.manager, self.form_model_id)
+        self.assertEqual("Color", updated_form.get_field_by_code_and_rev("Q3", rev).name)
+
+    def test_should_get_fields_excludes_reporting_period_field(self):
+        dateField = DateField( name="f2", code="c2", label="f2",date_format="dd.mm.yyyy", ddtype=self.default_ddtype, event_time_field_flag=True)
+        self.form_model.add_field(dateField)
+        self.form_model.save()
+        form_model = FormModel.get(self.manager, self.form_model_id)
+
+        self.assertEqual(5, len(form_model.fields))
+        self.assertEqual(4, len(form_model.non_rp_fields_by()))
+
+    def test_should_get_fields_excludes_reporting_period_field_if_revision_provided(self):
+        dateField = DateField( name="f2", code="c2", label="f2", date_format="dd.mm.yyyy", ddtype=self.default_ddtype, event_time_field_flag=True)
+        rev = self.form_model.revision
+        self.form_model.add_field(dateField)
+        self.form_model.create_snapshot()
+        self.form_model.delete_field("c2")
+        self.form_model.save()
+        form_model = FormModel.get(self.manager, self.form_model_id)
+
+        self.assertEqual(4, len(form_model.fields))
+        self.assertEqual(4, len(form_model.non_rp_fields_by(rev)))
+
     def test_should_add_integer_field_with_constraints(self):
-        integer_question = self.manager.get(self.form_model__id, FormModel).fields[2]
+        integer_question = FormModel.get(self.manager, self.form_model_id).fields[2]
         range_constraint = integer_question.constraints[0]
         self.assertTrue(integer_question.name == "Father's age")
         self.assertTrue(range_constraint.min, 15)
         self.assertTrue(range_constraint.max, 120)
 
     def test_should_add_select1_field(self):
-        select_question = self.manager.get(self.form_model__id, FormModel).fields[3]
+        select_question = FormModel.get(self.manager, self.form_model_id).fields[3]
         option_constraint = select_question.options
 
         self.assertEquals(len(option_constraint), 2)
         self.assertEquals(option_constraint[0].get("val"), 1)
 
     def test_should_add_new_field(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         question = TextField(name="added_question", code="Q4", label="How are you", ddtype=self.default_ddtype)
         form_model.add_field(question)
         form_model.save()
@@ -92,76 +124,57 @@ class TestFormModel(MangroveTestCase):
         self.assertEquals(added_question.code, "Q4")
 
     def test_should_delete_field(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         form_model.delete_field(code="Q3")
         form_model.save()
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         self.assertEquals(len(form_model.fields), 3)
 
     def test_should_add_english_as_default_language(self):
         activeLanguages = self.form_model.activeLanguages
         self.assertTrue("en" in activeLanguages)
 
-    def test_should_delete_all_fields_from_document(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
-        form_model.delete_all_fields()
-        self.assertEquals(len(form_model.fields), 0)
-
     def test_should_delete_all_fields_from_questions(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         form_model.delete_all_fields()
         self.assertEquals(len(form_model.fields), 0)
 
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):
-            form_model = self.manager.get(self.form_model__id, FormModel)
-            question = TextField(name="added_question", code="Q5", label="How are you",
-                                 entity_question_flag=True, ddtype=self.default_ddtype)
+            form_model = FormModel.get(self.manager, self.form_model_id)
+            question = TextField(name="added_question", code="Q5", label="How are you",entity_question_flag=True, ddtype=self.default_ddtype)
             form_model.add_field(question)
             form_model.save()
 
     def test_should_raise_exception_if_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
-            form_model = self.manager.get(self.form_model__id, FormModel)
-            question = TextField(name="added_question", code="q1", label="How are you",
-                                 ddtype=self.default_ddtype)
+            form_model = FormModel.get(self.manager, self.form_model_id)
+            question = TextField(name="added_question", code="q1", label="How are you",ddtype=self.default_ddtype)
             form_model.add_field(question)
             form_model.save()
 
     def test_should_raise_exception_if_label_is_not_unique(self):
         with self.assertRaises(QuestionAlreadyExistsException):
-            form_model = self.manager.get(self.form_model__id, FormModel)
-            question = TextField(name="added_question", code="q5", label="What is your name",
-                                 ddtype=self.default_ddtype)
+            form_model = FormModel.get(self.manager, self.form_model_id)
+            question = TextField(name="added_question", code="q5", label="What is your name",ddtype=self.default_ddtype)
             form_model.add_field(question)
             form_model.save()
 
     def test_should_set_form_code(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         form_model.form_code = "xyz"
         self.assertEquals(form_model.form_code, "xyz")
 
     def test_should_persist_ddtype(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
 
-        self.assertEqual(form_model.fields[0].ddtype.slug, self.default_ddtype.slug)
-        self.assertEqual(form_model.fields[0].ddtype.id, self.default_ddtype.id)
-        self.assertEqual(form_model.fields[0].ddtype.name, self.default_ddtype.name)
-
-        self.assertEqual(form_model.fields[1].ddtype.slug, self.default_ddtype.slug)
-        self.assertEqual(form_model.fields[1].ddtype.id, self.default_ddtype.id)
-        self.assertEqual(form_model.fields[1].ddtype.name, self.default_ddtype.name)
-
-        self.assertEqual(form_model.fields[2].ddtype.slug, self.default_ddtype.slug)
-        self.assertEqual(form_model.fields[2].ddtype.id, self.default_ddtype.id)
-        self.assertEqual(form_model.fields[2].ddtype.name, self.default_ddtype.name)
-
-        self.assertEqual(form_model.fields[3].ddtype.slug, self.default_ddtype.slug)
-        self.assertEqual(form_model.fields[3].ddtype.id, self.default_ddtype.id)
-        self.assertEqual(form_model.fields[3].ddtype.name, self.default_ddtype.name)
+        for field in form_model.fields:
+            self.assertEqual(field.ddtype.slug, self.default_ddtype.slug)
+            self.assertEqual(field.ddtype.id, self.default_ddtype.id)
+            self.assertEqual(field.ddtype.name, self.default_ddtype.name)
 
     def test_should_set_entity_type(self):
-        form_model = self.manager.get(self.form_model__id, FormModel)
+        form_model = FormModel.get(self.manager, self.form_model_id)
         form_model.entity_id = "xyz"
         self.assertEquals(form_model.entity_id, "xyz")
 
@@ -250,7 +263,6 @@ class TestFormModel(MangroveTestCase):
         with self.assertRaises(DataObjectAlreadyExists):
             form_model.save()
 
-
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
                               entity_question_flag=True, ddtype=self.default_ddtype)
@@ -303,22 +315,12 @@ class TestFormModel(MangroveTestCase):
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]
-        define_type(self.manager, ["HealthFacility", "Clinic"])
-        self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
-        self.default_ddtype.save()
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
-        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-            defaultValue="some default value",
-            constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
-            ddtype=self.default_ddtype)
-        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
-        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
-        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
-            form_code="1", type='survey', fields=[
-                question1, question2, question3, question4])
-        self.form_model__id = self.form_model.save()
+        self.default_ddtype = create_default_ddtype(self.manager)
+        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",entity_question_flag=True, ddtype=self.default_ddtype)
+        question2 = TextField(name="question1_Name", code="Q1", label="What is your name",defaultValue="some default value",constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],ddtype=self.default_ddtype)
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
+        question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+        self.form_model = FormModelBuilder(self.manager, self.entity_type, "1", 'survey').label("Aids form_model").name("aids").add_fields(question1,
+            question2, question3, question4).build()
+        self.form_model_id = self.form_model.id
 

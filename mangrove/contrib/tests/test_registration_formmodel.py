@@ -18,11 +18,11 @@ class TestRegistrationFormModel(MangroveTestCase):
 
     def test_registration_form_should_have_entity_type_field(self):
         form = construct_global_registration_form(self.manager)
-        self.assertIsNotNone(form.get_field_by_code("T"))
+        self.assertIsNotNone(form._get_field_by_code("T"))
 
     def test_registration_form_should_have_multiple_constraints_on_mobile(self):
         form = construct_global_registration_form(self.manager)
-        field = form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
+        field = form._get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
         self.assertEqual(15, field.constraints[0].max)
         self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
 

@@ -1,6 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from couchdb.mapping import ListField, DictField
 from mangrove.form_model.location import Location
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
@@ -8,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
-from mangrove.form_model.field import TextField
+from mangrove.form_model.field import TextField, create_question_from
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -193,21 +192,35 @@ class FormModel(DataObject):
                 return field
         return None
 
-    def get_field_by_code(self, code):
+    def _get_field_by_code(self, code):
         for field in self._form_fields:
             if code is not None and field.code.lower() == code.lower():
                 return field
         return None
 
-    def get_field_by_code_and_revision(self, code, revision):
-        if self.revision == revision:
-            return get_form_model_by_code(code)
-        snapshot = self.snapshots.get(revision, [])
+    def get_field_by_code_and_rev(self, code, revision=None):
+        if revision is None or self.revision == revision:
+            return self._get_field_by_code(code)
 
+        snapshot = self.snapshots.get(revision, [])
         for json_field in snapshot:
             if code is not None and json_field['code'].lower() == code.lower():
                 return field.create_question_from(json_field, self._dbm)
         return None
+
+    def _non_rp_fields(self):
+        return [field for field in self.fields if not field.is_event_time_field]
+
+    def non_rp_fields_by(self, revision=None):
+        if revision is None or revision == self.revision:
+            return self._non_rp_fields()
+        else:
+            revisioned_non_rp_fields = []
+            for json_field in self.snapshots.get(revision, []):
+                if not json_field.get('event_time_field_flag', False):
+                    revisioned_non_rp_fields.append(json_field)
+
+            return [create_question_from(json_field, self._dbm) for json_field in revisioned_non_rp_fields]
 
     def add_field(self, field):
         self._validate_fields(self._form_fields + [field])
@@ -331,7 +344,7 @@ class FormModel(DataObject):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_unknown_fields(self, answers):
-        return OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
+        return OrderedDict([(k, v) for k, v in answers.items() if self._get_field_by_code(k) is not None])
 
     def validate_submission(self, values):
         assert values is not None
@@ -342,7 +355,7 @@ class FormModel(DataObject):
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:
-            field = self.get_field_by_code(key)
+            field = self._get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:
                 cleaned_values[field.code] = result
@@ -425,7 +438,7 @@ class FormSubmission(object):
         return self.data_record_id
 
     def _to_three_tuple(self):
-        return [(self.form_model.get_field_by_code(code).name, value, self.form_model.get_field_by_code(code).ddtype)
+        return [(self.form_model._get_field_by_code(code).name, value, self.form_model._get_field_by_code(code).ddtype)
         for (code, value) in
         (self.cleaned_data.items())]
 

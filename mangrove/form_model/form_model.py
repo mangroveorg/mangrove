@@ -327,7 +327,12 @@ class FormModel(DataObject):
             if validator not in self.validators:
                 self.validators.append(validator)
 
-        if hasattr(document, 'snapshots'): self._snapshots = document.snapshots
+        if hasattr(document, 'snapshots'):
+            for key, value in document.snapshots.items():
+                self._snapshots[key] = []
+                for each in value:
+                    f = field.create_question_from(each, self._dbm)
+                    self._snapshots[key].append(f)
 
     def _is_form_code_unique(self):
         try:

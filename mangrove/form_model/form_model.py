@@ -63,7 +63,6 @@ class FormModel(DataObject):
 
     @classmethod
     def new_from_doc(cls, dbm, doc):
-        if hasattr(doc, 'snapshots'): cls._snapshots = doc.snapshots
         return super(FormModel, cls).new_from_doc(dbm, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
@@ -181,8 +180,10 @@ class FormModel(DataObject):
 
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         self._doc.validators = [validator.to_json() for validator in self.validators]
+        json_snapshots = {}
         for key, value in self._snapshots.items():
-            self._doc.snapshots[key] = [each._to_json() for each in value]
+            json_snapshots[key] = [each._to_json() for each in value]
+        self._doc.snapshots = json_snapshots
         return DataObject.save(self)
 
 
@@ -325,6 +326,8 @@ class FormModel(DataObject):
             validator = validator_factory(validator_json)
             if validator not in self.validators:
                 self.validators.append(validator)
+
+        if hasattr(document, 'snapshots'): self._snapshots = document.snapshots
 
     def _is_form_code_unique(self):
         try:

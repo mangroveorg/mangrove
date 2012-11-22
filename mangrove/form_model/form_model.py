@@ -200,16 +200,15 @@ class FormModel(DataObject):
         return None
 
     def get_field_by_code_and_rev(self, code, revision=None):
-        if self.revision == revision or not self.snapshots:
+        if self.revision == revision or not self._snapshots:
             return self._get_field_by_code(code)
 
         if revision is None:
-            revision = min(self.snapshots, key=lambda x: x.split('-')[0])
+            revision = min(self._snapshots, key=lambda x: int(x.split('-')[0]))
 
-        snapshot = self.snapshots.get(revision, [])
-        for json_field in snapshot:
-            if code is not None and json_field['code'].lower() == code.lower():
-                return field.create_question_from(json_field, self._dbm)
+        snapshot = self._snapshots.get(revision, [])
+        for field in snapshot:
+            if field.code.lower() == code.lower(): return field
         return None
 
     def _non_rp_fields(self):
@@ -219,12 +218,7 @@ class FormModel(DataObject):
         if revision is None or revision == self.revision:
             return self._non_rp_fields()
         else:
-            revisioned_non_rp_fields = []
-            for json_field in self.snapshots.get(revision, []):
-                if not json_field.get('event_time_field_flag', False):
-                    revisioned_non_rp_fields.append(json_field)
-
-            return [create_question_from(json_field, self._dbm) for json_field in revisioned_non_rp_fields]
+            return [field for field in self._snapshots.get(revision, []) if not field.is_event_time_field]
 
     def add_field(self, field):
         self._validate_fields(self._form_fields + [field])
@@ -244,7 +238,7 @@ class FormModel(DataObject):
 
     @property
     def snapshots(self):
-        return self._doc['snapshots']
+        return self._snapshots
 
     @property
     def revision(self):

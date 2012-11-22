@@ -61,11 +61,13 @@ class FormModelTest(MangroveTestCase):
         self.assertTrue(len(updated_form.snapshots) == 1)
 
     def test_should_get_oldest_field_if_no_revision_provided(self):
-        self.form_model.create_snapshot()
-        self.form_model.delete_field(code="Q3")
-        field = SelectField(name="New Name", code="Q3", label="What is your favourite color",options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
-        self.form_model.add_field(field)
         self.form_model.save()
+        for i in range(15):
+            self.form_model.create_snapshot()
+            self.form_model.delete_field(code="Q3")
+            field = SelectField(name="New Name%s" % i, code="Q3", label="What is your favourite color",options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+            self.form_model.add_field(field)
+            self.form_model.save()
         updated_form = FormModel.get(self.manager, self.form_model_id)
         self.assertEqual("Color", updated_form.get_field_by_code_and_rev("Q3").name)
 

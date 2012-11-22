@@ -200,8 +200,11 @@ class FormModel(DataObject):
         return None
 
     def get_field_by_code_and_rev(self, code, revision=None):
-        if revision is None or self.revision == revision:
+        if self.revision == revision or not self.snapshots:
             return self._get_field_by_code(code)
+
+        if revision is None:
+            revision = min(self.snapshots, key=lambda x: x.split('-')[0])
 
         snapshot = self.snapshots.get(revision, [])
         for json_field in snapshot:

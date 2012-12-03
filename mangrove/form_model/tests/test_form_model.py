@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.form_model.form_model import get_form_model_by_entity_type, list_form_models_by_code
+from collections import OrderedDict
+from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
@@ -314,21 +315,6 @@ class FormModelTest(MangroveTestCase):
         self.assertEqual(2, len(form.validators))
         self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
         self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
-
-    def test_should_batch_get_form_models(self):
-        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
-        form = FormModel(self.manager, 'test_form', 'label', 'form_code1', fields=fields, entity_type=['Clinic'], validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
-        form.save()
-
-        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
-        form = FormModel(self.manager, 'test_form', 'label', 'form_code2', fields=fields, entity_type=['Clinic'], validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
-        form.save()
-
-        forms = list_form_models_by_code(self.manager, ['form_code1', 'form_code2'])
-
-        self.assertEqual(2, len(forms))
-        self.assertEqual('form_code1', forms[0].form_code)
-        self.assertEqual('form_code2', forms[1].form_code)
 
     def test_should_get_string_rep_of_form_model(self):
         submission = {"ID": "id", "Q1": "12345", "Q2": "25", "Q3": "a"}

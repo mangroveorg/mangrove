@@ -47,6 +47,17 @@ def get_form_model_by_code(dbm, code):
     doc = FormModelDocument.wrap(rows[0]['value'])
     return FormModel.new_from_doc(dbm, doc)
 
+def list_form_models_by_code(dbm, codes):
+    assert isinstance(dbm, DatabaseManager)
+    assert is_sequence(codes)
+
+    rows = dbm.load_all_rows_in_view('questionnaire', keys=codes)
+
+    def _row_to_form_model(row):
+        doc = FormModelDocument.wrap(row['value'])
+        return FormModel.new_from_doc(dbm, doc)
+
+    return map(_row_to_form_model, rows)
 
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)

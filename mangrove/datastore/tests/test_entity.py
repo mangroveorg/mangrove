@@ -428,12 +428,6 @@ class TestEntity(MangroveTestCase):
 
             by_short_code.assert_called_once_with(self.manager, "short_code_in_upper_case", ["reporter"])
 
-    def test_should_know_whether_the_entity_is_a_reporter(self):
-        short_code = "rep001"
-        entity_type = ["reporter"]
-        entity = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
-
-        self.assertTrue(entity.is_reporter)
 
 def get_entities(dbm, ids):
     return dbm.get_many(ids, Entity)

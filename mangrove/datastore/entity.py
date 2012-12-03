@@ -107,7 +107,7 @@ def get_entities_in(dbm, geo_path, type_path=None):
 
 
 
-def get_all_entities(dbm, entity_type=None):
+def get_all_entities(dbm,entity_type=None):
     """
     Returns all the entities in the Database
     """
@@ -200,10 +200,6 @@ class Entity(DataObject):
         Returns a copy of the path
         """
         return list(self._doc.entity_type)
-
-    @property
-    def is_reporter(self):
-        return self.type_path[0] == 'reporter'
 
     @property
     def location_path(self):

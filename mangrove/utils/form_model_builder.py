@@ -10,6 +10,7 @@ class FormModelBuilder(object):
         self._entity_type = entity_type
         self._label, self._name = 'form_model_label', 'form_model_name'
         self._fields = []
+        self._is_reg = False
 
     def name(self, name):
         self._name = name
@@ -27,12 +28,16 @@ class FormModelBuilder(object):
         self._fields.extend(fields)
         return self
 
+    def is_registration_model(self, _is_reg):
+        self._is_reg = _is_reg
+        return self
+
     def build(self):
         if not entity_type_already_defined(self._manager, self._entity_type):
             define_type(self._manager, self._entity_type)
 
         self.form_model = FormModel(self._manager, entity_type=self._entity_type, name=self._name, label=self._label,
-            form_code=self._form_code, type=self._type, fields=self._fields)
+            form_code=self._form_code, type=self._type, fields=self._fields, is_registration_model=self._is_reg)
         form_model_id = self.form_model.save()
         return FormModel.get(self._manager, form_model_id)
 

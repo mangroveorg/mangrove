@@ -10,3 +10,5 @@ jinja2
 xmldict
 lxml
 babel
+networkx
+gdata

@@ -28,6 +28,8 @@ def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size
                    rows]
     return submissions
 
+def submissions_by_form_code(dbm, form_code):
+    return get_submissions(dbm, form_code, None, None)
 
 def successful_submissions(dbm, form_code):
     return get_submissions(dbm, form_code, None, None, view_name=SUCCESS_SUBMISSION_LOG_VIEW_NAME)

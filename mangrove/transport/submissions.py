@@ -6,28 +6,36 @@ from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence
 
 ENTITY_QUESTION_DISPLAY_CODE = "q1"
+SUCCESS_SUBMISSION_LOG_VIEW_NAME = "success_submission_log"
 
 def submission_count(dbm, form_code, from_time, to_time, view_name="submissionlog"):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    rows = dbm.load_all_rows_in_view(view_name, descending=True, startkey=startkey, endkey = endkey )
+    rows = dbm.load_all_rows_in_view(view_name, descending=True, startkey=startkey, endkey=endkey)
     return len(rows) and rows[0]['value']['count']
+
 
 def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size=None, view_name="submissionlog"):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
     if page_size is None:
         rows = dbm.load_all_rows_in_view(view_name, reduce=False, descending=True,
-                                         startkey=startkey,
-                                         endkey=endkey)
+            startkey=startkey,
+            endkey=endkey)
     else:
         rows = dbm.load_all_rows_in_view(view_name, reduce=False, descending=True,
-                                         startkey=startkey,
-                                         endkey=endkey, skip=page_number * page_size, limit=page_size)
-    submissions = [Submission.new_from_doc(dbm=dbm, doc = Submission.__document_class__.wrap(row['value'])) for row in rows]
+            startkey=startkey,
+            endkey=endkey, skip=page_number * page_size, limit=page_size)
+    submissions = [Submission.new_from_doc(dbm=dbm, doc=Submission.__document_class__.wrap(row['value'])) for row in
+                   rows]
     return submissions
+
+
+def successful_submissions(dbm, form_code):
+    return get_submissions(dbm, form_code, None, None, view_name=SUCCESS_SUBMISSION_LOG_VIEW_NAME)
+
 
 def count_valid_web_submissions(dbm, form_code, from_time, to_time):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    rows = dbm.load_all_rows_in_view('web_submissionlog', descending=True, startkey=startkey, endkey = endkey )
+    rows = dbm.load_all_rows_in_view('web_submissionlog', descending=True, startkey=startkey, endkey=endkey)
     return 0 if len(rows) == 0 else rows[0]['value']['count']
 
 
@@ -35,26 +43,27 @@ def get_submissions_for_activity_period(dbm, form_code, from_time, to_time):
     from_time_in_epoch = convert_date_time_to_epoch(from_time) if from_time is not None else None
     to_time_in_epoch = convert_date_time_to_epoch(to_time) if to_time is not None else None
     startkey, endkey = _get_start_and_end_key(form_code, from_time_in_epoch, to_time_in_epoch)
-    
+
     rows = dbm.load_all_rows_in_view('submission_for_activity_period', descending=True,
-                                         startkey=startkey,
-                                         endkey=endkey)
-    submissions = [Submission.new_from_doc(dbm=dbm, doc = Submission.__document_class__.wrap(row['value'])) for row in rows]
+        startkey=startkey,
+        endkey=endkey)
+    submissions = [Submission.new_from_doc(dbm=dbm, doc=Submission.__document_class__.wrap(row['value'])) for row in
+                   rows]
     return submissions
 
-class Submission(DataObject):
 
+class Submission(DataObject):
     __document_class__ = SubmissionLogDocument
 
-    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision = None, values=None):
+    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
             doc = SubmissionLogDocument(channel=transport_info.transport, source=transport_info.source,
-                                        destination=transport_info.destination,
-                                        form_code=form_code,
-                                        form_model_revision=form_model_revision,
-                                        values=values, status=False,
-                                        error_message="", test=False)
+                destination=transport_info.destination,
+                form_code=form_code,
+                form_model_revision=form_model_revision,
+                values=values, status=False,
+                error_message="", test=False)
 
             DataObject._set_document(self, doc)
 
@@ -107,7 +116,7 @@ class Submission(DataObject):
     def event_time(self):
         return self._doc.event_time
 
-    def void(self, void = True):
+    def void(self, void=True):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:
             data_record = DataRecord.get(self._dbm, data_record_id)
@@ -122,7 +131,7 @@ class Submission(DataObject):
             data_record.delete()
         super(Submission, self).delete()
 
-    def update(self, status, errors, data_record_id = None, is_test_mode = False):
+    def update(self, status, errors, data_record_id=None, is_test_mode=False):
         self._doc.status = status
         self._doc.void = not status
         self._doc.data_record_id = data_record_id
@@ -141,6 +150,7 @@ class Submission(DataObject):
 
 
 def _get_start_and_end_key(form_code, from_time, to_time):
-    end = [form_code] if from_time is  None else [form_code, from_time]
-    start = [form_code,{}] if to_time  is None else [form_code, to_time]
+    end = [form_code] if from_time is None else [form_code, from_time]
+    start = [form_code, {}] if to_time is None else [form_code, to_time]
+
     return start, end

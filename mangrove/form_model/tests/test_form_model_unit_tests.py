@@ -5,7 +5,7 @@ from mock import Mock, patch
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField
 from mangrove.form_model.form_model import FormModel, get_form_model_by_entity_type
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 
@@ -27,9 +27,9 @@ class TestFormModel(unittest.TestCase):
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
         self.event_time_field_code = "Q6"
         q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field", date_format = "%m.%d.%Y",ddtype=self.ddtype_mock, required=False,event_time_field_flag=True)
-
+        q7 = GeoCodeField(name="My Location", code="Q7", label="Geo Location Field", ddtype=self.ddtype_mock, required=False)
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5,q6])
+                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5, q6, q7])
 
         self.form_model_patch = patch('mangrove.form_model.form_model.FormModel')
         self.form_model_document_patch = patch('mangrove.form_model.form_model.FormModelDocument')
@@ -52,6 +52,21 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual({'q2': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+        
+    def test_should_return_error_if_exceeding_value_of_the_word_field_limit(self):
+        answers = {"id": "1", "Q1": "TextThatLongerThanAllowed"}
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual({'Q1': 'Answer TextThatLongerThanAllowed for question Q1 is longer than allowed.'}, errors)
+        self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+        
+    def test_should_return_error_if_answering_with_invalid_geo_format(self):
+        answers = {"id": "1", "Q7": "127.178057 -78.007789"}
+        cleaned_answers, errors = self.form_model.validate_submission(answers)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual({'Q7': 'The answer 127.178057 must be between -90 and 90'}, errors)
+        self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
         answers = {"id": "1", "q1": "Asif Momin", "q2": "20"}

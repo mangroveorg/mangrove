@@ -146,7 +146,6 @@ class Submission(DataObject):
 
     def update(self, status, errors, data_record_id=None, is_test_mode=False):
         self._doc.status = status
-        self._doc.void = not status
         self._doc.data_record_id = data_record_id
         self._doc.error_message = self._to_string(errors)
         self._doc.test = is_test_mode

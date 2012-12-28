@@ -35,17 +35,6 @@ def submissions_by_form_code(dbm, form_code):
     return get_submissions(dbm, form_code, None, None)
 
 
-def successful_submissions(dbm, form_code):
-    return get_submissions(dbm, form_code, None, None, view_name=SUCCESS_SUBMISSION_LOG_VIEW_NAME)
-
-
-def undeleted_submissions(dbm, form_code):
-    return get_submissions(dbm, form_code, None, None, view_name=UNDELETED_SUBMISSION_LOG_VIEW_NAME)
-
-
-def deleted_submissions(dbm, form_code, from_time=None, to_time=None, page_number=0, page_size=None):
-    return get_submissions(dbm, form_code, from_time, to_time, page_number, page_size, DELETED_SUBMISSION_LOG_VIEW_NAME)
-
 def count_valid_web_submissions(dbm, form_code, from_time, to_time):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
     rows = dbm.load_all_rows_in_view('web_submissionlog', descending=True, startkey=startkey, endkey=endkey)

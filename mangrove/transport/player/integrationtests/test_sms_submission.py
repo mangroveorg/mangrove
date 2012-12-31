@@ -17,7 +17,8 @@ from mangrove.form_model.validation import NumericRangeConstraint, TextLengthCon
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period, submission_count, deleted_submissions
+from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period, submission_count
+from mangrove.utils.test_utils.submission_builder import SubmissionBuilder
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
 
@@ -104,6 +105,7 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
                 values={'defQ1': 'defans12', 'defQ2': 'defans22'}, status=False, error_message=""))
         return [doc_id1, doc_id2, doc_id3, doc_id4]
 
+
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         response = self.sms_player.accept(Request(message=text, transportInfo=transport_info))
@@ -186,14 +188,6 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertEquals(2, len(submissions))
         self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
-
-    def test_get_all_deleted_submissions_for_form(self):
-        submission_ids = self._prepare_submissions()
-        [Submission.get(self.manager, submission_id).void() for submission_id in submission_ids]
-
-        submissions = deleted_submissions(self.manager, FORM_CODE)
-        self.assertEquals(3, len(submissions))
-        self.assertTrue(all(map(lambda x: x.is_void(), submissions)))
 
     def test_error_messages_are_being_logged_in_submissions(self):
         text = "clinic .EID %s .ARV 150 " % self.entity.id

@@ -378,6 +378,7 @@ class TelephoneNumberField(TextField):
 
 
 class HierarchyField(Field):
+
     def __init__(self, name, code, label, ddtype, instruction=None,
                  required=True):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
@@ -446,6 +447,9 @@ class SelectField(Field):
 
 
 class GeoCodeField(Field):
+
+    type = field_attributes.LOCATION_FIELD
+
     def __init__(self, name, code, label, ddtype, instruction=None, required=True):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
                        label=label,  ddtype=ddtype, instruction=instruction,required=required)

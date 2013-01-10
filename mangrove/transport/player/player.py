@@ -77,17 +77,27 @@ class SMSPlayer(Player):
             self.parser = SMSParserFactory().getSMSParser(message, self.dbm)
         return self.parser.parse(message)
 
-    def accept(self, request):
+    def accept(self, request, logger=None):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._process_post_parse_callback(form_code, values, extra_elements)
+
+        log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
+
         if post_sms_processor_response is not None:
+            if logger is not None:
+                log_entry += "Status: False"
+                logger.info(log_entry)
             return post_sms_processor_response
 
         reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
         submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(values, form_code, reporter_entity)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
-        return self.submit(form_model, values, submission, reporter_entity_names)
+        response = self.submit(form_model, values, submission, reporter_entity_names)
+        if logger is not None:
+            log_entry += "Status: True" if response.success else "Status: False"
+            logger.info(log_entry)
+        return response
 
 
 class WebPlayer(Player):
@@ -106,12 +116,19 @@ class WebPlayer(Player):
 
         return form_model, values
 
-    def accept(self, request):
+    def accept(self, request, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(form_code, values)
-        return self.submit(form_model, values, submission, [], is_update=request.is_update)
+        response = self.submit(form_model, values, submission, [], is_update=request.is_update)
+
+        if logger is not None:
+            log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
+            log_entry += "status: True" if response.success else "status: False"
+            logger.info(log_entry)
+
+        return response
 
 
 class XFormPlayer(Player):
@@ -122,11 +139,18 @@ class XFormPlayer(Player):
     def _parse(self, message):
         return self.parser.parse(message)
 
-    def accept(self, request):
+    def accept(self, request, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
 
         submission = self._create_submission(request.transport, form_code, copy(values))
         form_model = get_form_model_by_code(self.dbm, form_code)
 
-        return self.submit(form_model, values, submission, [])
+        response = self.submit(form_model, values, submission, [])
+
+        if logger is not None:
+            log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
+            log_entry += "status: False" if response.errors else "status: True"
+            logger.info(log_entry)
+
+        return response

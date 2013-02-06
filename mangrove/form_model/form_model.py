@@ -4,7 +4,7 @@ from mangrove.form_model.location import Location
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import FormModelDocument, attributes
+from mangrove.datastore.documents import FormModelDocument, attributes, DocumentBase
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField, create_question_from
@@ -502,6 +502,11 @@ class DataFormSubmission(FormSubmission):
     def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
+    def update_existing_data_records(self, dbm, form_code, submission_uuid):
+        data_record_id = dbm._load_document(submission_uuid)._data['data_record_id']
+        data_record = dbm._load_document(data_record_id)
+        print data_record._data['data']
+        print 'something'
 
 class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):

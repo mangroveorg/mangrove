@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.datastore.entity import void_entity
-from mangrove.form_model.form_model import FormSubmissionFactory, ENTITY_TYPE_FIELD_CODE, SHORT_CODE, REGISTRATION_FORM_CODE, GlobalRegistrationFormSubmission
+from mangrove.form_model.form_model import FormSubmissionFactory, ENTITY_TYPE_FIELD_CODE, SHORT_CODE, REGISTRATION_FORM_CODE, GlobalRegistrationFormSubmission, DataFormSubmission
 from mangrove.transport.facade import Response
 from mangrove.utils.types import is_empty
 from mangrove.transport.facade import create_response_from_form_submission
@@ -39,7 +39,10 @@ class EditSubjectRegistrationHandler(object):
     def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
-            form_submission.void_existing_data_records(self.dbm,form_model.form_code)
+            if isinstance(form_submission,DataFormSubmission):
+                form_submission.update_existing_data_records(self.dbm,form_model.form_code,submission_uuid)
+            else:
+                form_submission.void_existing_data_records(self.dbm,form_model.form_code)
             form_submission.update(self.dbm)
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
             form_submission=form_submission)

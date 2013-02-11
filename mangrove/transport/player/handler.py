@@ -11,7 +11,7 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree,submission=None):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
             form_submission.save(self.dbm)
@@ -22,7 +22,7 @@ class EditRegistrationHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree,submission=None):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
             if isinstance(form_submission, GlobalRegistrationFormSubmission):
@@ -36,14 +36,16 @@ class EditSubjectRegistrationHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree,submission=None):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors, location_tree=location_tree)
         if form_submission.is_valid:
             if isinstance(form_submission,DataFormSubmission):
-                form_submission.update_existing_data_records(self.dbm,form_model.form_code,submission_uuid)
+                form_submission.update_existing_data_records(self.dbm,submission_uuid)
+                for key,value in form_model.submission.iteritems():
+                    submission.values[key] = value
             else:
                 form_submission.void_existing_data_records(self.dbm,form_model.form_code)
-            form_submission.update(self.dbm)
+                form_submission.update(self.dbm)
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
             form_submission=form_submission)
 

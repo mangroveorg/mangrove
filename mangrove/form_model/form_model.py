@@ -1,13 +1,14 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from mangrove.datastore.entity import DataRecord
 from mangrove.form_model.location import Location
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore import entity
 from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import FormModelDocument, attributes, DocumentBase
+from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
-from mangrove.form_model.field import TextField, create_question_from
+from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -455,8 +456,8 @@ class FormSubmission(object):
 
     def _to_three_tuple(self):
         return [(self.form_model._get_field_by_code(code).name, value, self.form_model._get_field_by_code(code).ddtype)
-        for (code, value) in
-        (self.cleaned_data.items())]
+                for (code, value) in
+                (self.cleaned_data.items())]
 
     def get_answer_for(self, code):
         for key in self._cleaned_data:
@@ -502,11 +503,16 @@ class DataFormSubmission(FormSubmission):
     def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
-    def update_existing_data_records(self, dbm, form_code, submission_uuid):
-        data_record_id = dbm._load_document(submission_uuid)._data['data_record_id']
-        data_record = dbm._load_document(data_record_id)
-        print data_record._data['data']
-        print 'something'
+    def update_existing_data_records(self, dbm, submission_uuid):
+        data_record_id = (dbm._load_document(submission_uuid))._data['data_record_id']
+        data_record = DataRecord.get(dbm,data_record_id)
+        for value_tuple in self._values:
+            if value_tuple[0] not in data_record._doc.entity['data'].keys():
+                data_record._doc.entity['data'].update({value_tuple[0]:value_tuple[1]})
+                continue
+            data_record._doc.entity['data'][value_tuple[0]]['value'] = value_tuple[1]
+        self.data_record_id = data_record_id
+        data_record.save()
 
 class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):

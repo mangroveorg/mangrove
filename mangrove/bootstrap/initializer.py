@@ -61,7 +61,8 @@ def sync_views(dbm):
 
 
 def _exists_view(aggregation, database_manager):
-    entity_type_views = database_manager._load_document('_design/%s' % aggregation)
+    entity_type_views = database_manager.\
+    _load_document('_design/%s' % aggregation)
     if entity_type_views is not None and entity_type_views['views'].get(aggregation):
         return True
     return False

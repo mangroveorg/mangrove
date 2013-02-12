@@ -370,13 +370,13 @@ class FormModel(DataObject):
             errors.update(validator.validate(values, self.fields, self._dbm))
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
-        for key in values:
+        for index, key in enumerate(values):
             field = self._get_field_by_code(key)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:
                 cleaned_values[field.code] = result
             else:
-                errors[key] = result
+                errors["q%s" % str(index + 1)] = result
         return cleaned_values, errors
 
     def _case_insensitive_lookup(self, values, code):

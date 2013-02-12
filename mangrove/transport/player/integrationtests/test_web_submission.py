@@ -119,14 +119,14 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer 150 for question ARV is greater than allowed.',response.errors.get('ARV'))
+        self.assertEqual(u'Answer 150 for question ARV is greater than allowed.',response.errors.get('q2'))
 
     def test_should_give_error_for_wrong_text_value(self):
         text = {'form_code': 'clinic', 'EID': 'CID001', 'NAME': 'ABC'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('NAME'))
+        self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('q1'))
 
     def test_should_get_submissions_for_form(self):
         self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
@@ -182,17 +182,17 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_GEOCODE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315'}, response.errors)
+        self.assertEqual({'q1': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315'}, response.errors)
         
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LATITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': u'The answer 380 must be between -90 and 90'}, response.errors)
+        self.assertEqual({'q1': u'The answer 380 must be between -90 and 90'}, response.errors)
 
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LONGITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': u'The answer -184 must be between -180 and 180'}, response.errors)
+        self.assertEqual({'q1': u'The answer -184 must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="web", source="tester150411@gmail.com", destination="")
@@ -270,7 +270,7 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'080'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEquals(u'The answer 480 must be between -90 and 90', response.errors.get('g'))
+        self.assertEquals(u'The answer 480 must be between -90 and 90', response.errors.get('q4'))
         self.assertIsNone(response.errors.get('m'))
 
     def test_should_raise_exception_for_inactive_form_model(self):

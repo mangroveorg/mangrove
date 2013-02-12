@@ -244,14 +244,14 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': 'The answer 380 must be between -90 and 90'}, response.errors)
+        self.assertEqual({'q3': 'The answer 380 must be between -90 and 90'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg .N buddy2 .T dog .G 80 %s .D its another dog! .M 78541" % (INVALID_LONGITUDE,)
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': 'The answer -184 must be between -180 and 180'}, response.errors)
+        self.assertEqual({'q3': 'The answer -184 must be between -180 and 180'}, response.errors)
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
@@ -288,13 +288,13 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         text = "reg .N buddy .T reporter .G 80 80 .M 1234@5678"
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertTrue(response.errors.get('m') is not None)
+        self.assertTrue(response.errors.get('q4') is not None)
 
     def test_should_throw_error_if_mobile_phone_is_too_long(self):
         text = "reg .N buddy .T reporter .G 80 80 .M 1234567889898989898989812312"
         response = self.send_sms(text)
         assert(response.success is False)
-        self.assertTrue(response.errors.get('m') is not None)
+        self.assertTrue(response.errors.get('q4') is not None)
 
     def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):
         text = "reg .N buddy2 .T reporter .L 80 80"

@@ -201,6 +201,7 @@ class Entity(DataObject):
         """
         return list(self._doc.entity_type)
 
+# This method should not be in mangrove. Reporter is not a generic concept.
     @property
     def is_reporter(self):
         return self.type_path[0] == 'reporter'

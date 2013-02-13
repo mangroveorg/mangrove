@@ -256,6 +256,7 @@ class FormModel(DataObject):
     def revision(self):
         return self._doc.rev
 
+
     def is_registration_form(self):
         return self._doc['is_registration_model']
 
@@ -528,7 +529,6 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         if is_empty(filter(self._contains_geo_code, values)):
             self._cleaned_data[GEO_CODE] = processed_geometry['coordinates'] if processed_geometry is not None else None
 
-
     def get_entity_type(self, form_model):
         entity_type = self.get_answer_for(ENTITY_TYPE_FIELD_CODE)
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
@@ -544,6 +544,7 @@ class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
         super(EntityRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
+# get method is doing an update!!!!
     def get_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
@@ -552,6 +553,7 @@ class EntityRegistrationFormSubmission(FormSubmission):
         existing_entity.save()
         return existing_entity
 
+# soft deletes data records
     def void_existing_data_records(self, dbm,form_code):
         data_records = dbm.view.data_record_by_form_code(key = [form_code, self.short_code])
         for data_record in data_records:

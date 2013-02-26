@@ -1,4 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+# coding=utf-8
+
 from copy import copy
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
@@ -81,7 +83,7 @@ class SMSPlayer(Player):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._process_post_parse_callback(form_code, values, extra_elements)
 
-        log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
+        log_entry = "message:message " + repr(request.message) + "|source: " + request.transport.source + "|"
 
         if post_sms_processor_response is not None:
             if logger is not None:

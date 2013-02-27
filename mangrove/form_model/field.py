@@ -1,4 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import re
+import abc
 
 from datetime import datetime
 from babel.dates import format_date
@@ -223,6 +225,10 @@ class Field(object):
     def xform_constraints(self):
         return " and ".join(filter(None, [constraint.xform_constraint() for constraint in self.constraints]))
 
+    @abc.abstractmethod
+    def formatted_field_values_for_excel(self):
+        pass
+
 class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None,
                  constraints=None, required=True):
@@ -267,6 +273,11 @@ class IntegerField(Field):
             max = constraint.max
         return max, min
 
+    def formatted_field_values_for_excel(self,value):
+        try:
+            return float(value)
+        except ValueError:
+            return value
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
@@ -310,6 +321,8 @@ class DateField(Field):
         date_format = self.FORMAT_DATE_DICTIONARY.get(self.date_format)
         return format_date(self.value, date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
+    def formatted_field_values_for_excel(self, value):
+        return value
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
@@ -358,7 +371,8 @@ class TextField(Field):
                 return constraint_text
         return ""
 
-
+    def formatted_field_values_for_excel(self, value):
+        return value
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
@@ -445,6 +459,24 @@ class SelectField(Field):
             return unicode("--")
         return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
 
+    def _get_value_by_option(self, option):
+        for opt in self.options:
+            opt_text = opt['text']
+            opt_value = opt['val']
+            if opt_value.lower() == option.lower():
+                return opt_text
+        return None
+
+    def formatted_field_values_for_excel(self, value):
+        if value is None: return []
+
+        options = re.findall(r'[1-9]?[a-zA-Z]', value)
+        result = []
+        for option in options:
+            option_value = self._get_value_by_option(option)
+            if option_value:
+                result.append(option_value)
+        return result
 
 class GeoCodeField(Field):
 
@@ -469,4 +501,9 @@ class GeoCodeField(Field):
             return unicode("--")
         return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value, tuple) else unicode(self.value)
 
+    def formatted_field_values_for_excel(self, value):
+        value_list = value.replace(',', ' ').split(' ')
+        return self._empty_if_no_data(value_list,0),self._empty_if_no_data(value_list,1)
 
+    def _empty_if_no_data(self,list, index):
+        return '' if len(list) < index + 1 else list[index]

@@ -506,4 +506,10 @@ class GeoCodeField(Field):
         return self._empty_if_no_data(value_list,0),self._empty_if_no_data(value_list,1)
 
     def _empty_if_no_data(self,list, index):
-        return '' if len(list) < index + 1 else list[index]
+        if len(list) < index + 1 :
+            return ''
+        else:
+            try:
+                return float(list[index])
+            except ValueError:
+                return list[index]

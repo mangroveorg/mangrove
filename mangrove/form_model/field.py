@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from dateutil.parser import parse
 import re
 import abc
 
@@ -226,7 +227,7 @@ class Field(object):
         return " and ".join(filter(None, [constraint.xform_constraint() for constraint in self.constraints]))
 
     @abc.abstractmethod
-    def formatted_field_values_for_excel(self):
+    def formatted_field_values_for_excel(self, value):
         pass
 
 class IntegerField(Field):
@@ -322,7 +323,10 @@ class DateField(Field):
         return format_date(self.value, date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
     def formatted_field_values_for_excel(self, value):
-        return value
+        try:
+            return datetime.strptime(value, self.DATE_DICTIONARY.get(self.date_format))
+        except ValueError:
+            return value
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"

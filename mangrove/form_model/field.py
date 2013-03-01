@@ -106,6 +106,7 @@ def _get_geo_code_field(code, ddtype, instruction, label, name, required):
 
     return field
 
+
 def field_to_json(object):
     #    assert isinstance(object, Field)
     if isinstance(object, datetime):
@@ -134,12 +135,12 @@ class field_attributes(object):
 
 class Field(object):
     def __init__(self, type="", name="", code="", label='', ddtype=None, instruction='',
-                  constraints=None,required=True):
+                 constraints=None, required=True):
         if not constraints: constraints = []
         self._dict = {}
         assert ddtype is not None
         self._dict = {'name': name, 'type': type, 'code': code, 'ddtype': ddtype, 'instruction': instruction,
-                      'label': label,'required':required}
+                      'label': label, 'required': required}
         self.constraints = constraints
         self.errors = []
         self.value = None
@@ -218,7 +219,7 @@ class Field(object):
             raise RequiredFieldNotPresentException(self.code)
 
     def _to_str(self):
-        if self.value is None :
+        if self.value is None:
             return unicode("--")
         return unicode(self.value)
 
@@ -229,15 +230,16 @@ class Field(object):
     def formatted_field_values_for_excel(self, value):
         pass
 
+
 class IntegerField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None,
                  constraints=None, required=True):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
+            label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
 
     def validate(self, value):
-        Field.validate(self,value)
+        Field.validate(self, value)
         try:
             for constraint in self.constraints:
                 constraint.validate(value)
@@ -273,11 +275,12 @@ class IntegerField(Field):
             max = constraint.max
         return max, min
 
-    def formatted_field_values_for_excel(self,value):
+    def formatted_field_values_for_excel(self, value):
         try:
             return float(value)
         except ValueError:
             return value
+
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
@@ -285,24 +288,16 @@ class DateField(Field):
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy'}
 
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
-                  required=True, event_time_field_flag=False):
+                 required=True, event_time_field_flag=False):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction, required=required)
-
+            label=label, ddtype=ddtype, instruction=instruction, required=required)
         self._dict[self.DATE_FORMAT] = date_format
         if event_time_field_flag:
             self._dict['event_time_field_flag'] = event_time_field_flag
 
-    @classmethod
-    def get_datetime_format(cls, date_format):
-        return cls.DATE_DICTIONARY.get(date_format)
-
     def validate(self, value):
-        Field.validate(self,value)
-        try:
-            return datetime.strptime(value.strip(), DateField.get_datetime_format(self.date_format))
-        except ValueError:
-            raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), value, self._dict.get(self.DATE_FORMAT))
+        Field.validate(self, value)
+        self.__date__(value)
 
     @property
     def date_format(self):
@@ -313,19 +308,39 @@ class DateField(Field):
 
     @property
     def is_event_time_field(self):
-        return self._dict.get('event_time_field_flag',False)
+        return self._dict.get('event_time_field_flag', False)
 
     def _to_str(self):
-        if self.value is None :
+        if self.value is None:
             return unicode("--")
         date_format = self.FORMAT_DATE_DICTIONARY.get(self.date_format)
         return format_date(self.value, date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
     def formatted_field_values_for_excel(self, value):
         try:
-            return datetime.strptime(value, self.DATE_DICTIONARY.get(self.date_format))
-        except ValueError:
+            return ExcelDate(self.__date__(value), self.date_format)
+        except IncorrectDate:
             return value
+
+    def __date__(self, date_string):
+        try:
+            return datetime.strptime(date_string.strip(), DateField.DATE_DICTIONARY.get(self.date_format))
+        except ValueError:
+            raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), date_string,
+                self._dict.get(self.DATE_FORMAT))
+
+
+class ExcelDate(object):
+    EXCEL_DATE_DICTIONARY = {'mm.yyyy': 'MMM, YYYY', 'dd.mm.yyyy': 'MMM DD, YYYY', 'mm.dd.yyyy': 'MMM DD, YYYY',
+                             'submission_date': 'MMM DD, YYYY hh:mm:ss'}
+
+    def __init__(self, date, date_format):
+        self.date = date
+        self.excel_cell_date_format = ExcelDate.EXCEL_DATE_DICTIONARY.get(date_format)
+
+    def __eq__(self, other):
+        return self.date == other.date and self.excel_cell_date_format == other.excel_cell_date_format
+
 
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
@@ -333,17 +348,17 @@ class TextField(Field):
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue="", instruction=None,
-                  entity_question_flag=False,required=True):
+                 entity_question_flag=False, required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction, constraints=constraints,required=required)
+            label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
     def validate(self, value):
-        Field.validate(self,value)
+        Field.validate(self, value)
         try:
             value = value.strip()
             for constraint in self.constraints:
@@ -377,13 +392,14 @@ class TextField(Field):
     def formatted_field_values_for_excel(self, value):
         return value
 
+
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
-                  required=True):
+                 required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        TextField.__init__(self, name=name, code=code, label=label,  ddtype=ddtype,
-                           instruction=instruction, constraints=constraints, defaultValue=defaultValue, required=required)
+        TextField.__init__(self, name=name, code=code, label=label, ddtype=ddtype,
+            instruction=instruction, constraints=constraints, defaultValue=defaultValue, required=required)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
     def _clean(self, value):
@@ -395,20 +411,19 @@ class TelephoneNumberField(TextField):
 
 
 class HierarchyField(Field):
-
     def __init__(self, name, code, label, ddtype, instruction=None,
                  required=True):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction,required=required)
+            label=label, ddtype=ddtype, instruction=instruction, required=required)
 
     def validate(self, value):
-        Field.validate(self,value)
+        Field.validate(self, value)
         if is_sequence(value) or value is None:
             return value
         return [value]
 
     def _to_str(self):
-        if self.value is None :
+        if self.value is None:
             return unicode("--")
         return sequence_to_str(self.value) if isinstance(self.value, list) else unicode(self.value)
 
@@ -418,12 +433,12 @@ class SelectField(Field):
 
     def __init__(self, name, code, label, options, ddtype, instruction=None,
 
-                 single_select_flag=True,required=True):
+                 single_select_flag=True, required=True):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction,required=required)
+            label=label, ddtype=ddtype, instruction=instruction, required=required)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -442,8 +457,8 @@ class SelectField(Field):
     SINGLE_SELECT_FLAG = 'single_select_flag'
 
     def validate(self, value):
-        Field.validate(self,value)
-        return self.constraint.validate(answer=value.replace(' ','')) #data from ODK collect is submitted with spaces
+        Field.validate(self, value)
+        return self.constraint.validate(answer=value.replace(' ', '')) #data from ODK collect is submitted with spaces
 
     @property
     def options(self):
@@ -458,7 +473,7 @@ class SelectField(Field):
         return [option["text"] for option in self.options]
 
     def _to_str(self):
-        if self.value is None :
+        if self.value is None:
             return unicode("--")
         return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
 
@@ -481,16 +496,16 @@ class SelectField(Field):
                 result.append(option_value)
         return result
 
-class GeoCodeField(Field):
 
+class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD
 
     def __init__(self, name, code, label, ddtype, instruction=None, required=True):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
-                       label=label,  ddtype=ddtype, instruction=instruction,required=required)
+            label=label, ddtype=ddtype, instruction=instruction, required=required)
 
     def validate(self, lat_long_string):
-        Field.validate(self,lat_long_string)
+        Field.validate(self, lat_long_string)
         lat_long = lat_long_string.replace(",", " ").strip().split()
         if len(lat_long) < 2:
             raise GeoCodeFormatException(self.code)
@@ -500,16 +515,17 @@ class GeoCodeField(Field):
         return "xx.xxxx yy.yyyy"
 
     def _to_str(self):
-        if self.value is None :
+        if self.value is None:
             return unicode("--")
-        return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value, tuple) else unicode(self.value)
+        return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value,
+            tuple) else unicode(self.value)
 
     def formatted_field_values_for_excel(self, value):
         value_list = value.replace(',', ' ').split(' ')
-        return self._empty_if_no_data(value_list,0),self._empty_if_no_data(value_list,1)
+        return self._empty_if_no_data(value_list, 0), self._empty_if_no_data(value_list, 1)
 
-    def _empty_if_no_data(self,list, index):
-        if len(list) < index + 1 :
+    def _empty_if_no_data(self, list, index):
+        if len(list) < index + 1:
             return ''
         else:
             try:

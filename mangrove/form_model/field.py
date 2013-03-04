@@ -297,7 +297,7 @@ class DateField(Field):
 
     def validate(self, value):
         Field.validate(self, value)
-        self.__date__(value)
+        return self.__date__(value)
 
     @property
     def date_format(self):

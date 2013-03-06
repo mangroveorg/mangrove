@@ -32,9 +32,9 @@ def get_submissions(dbm, form_code, from_time, to_time, page_number=0, page_size
 
 def get_submission_by_id(dbm,submission_id):
     rows = dbm.load_all_rows_in_view("submission_by_submission_id", key=submission_id)
-    submission = [Submission.new_from_doc(dbm=dbm, doc=Submission.__document_class__.wrap(row['value'])) for row in
+    submissions = [Submission.new_from_doc(dbm=dbm, doc=Submission.__document_class__.wrap(row['value'])) for row in
                    rows]
-    return submission
+    return submissions[0] if submissions.__len__() > 0 else None
 
 def submissions_by_form_code(dbm, form_code):
     return get_submissions(dbm, form_code, None, None)

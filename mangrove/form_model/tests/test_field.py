@@ -859,3 +859,18 @@ class TestField(unittest.TestCase):
 
         field = Field(constraints=[first_constraint, second_constraint, third_constraint], ddtype=Mock())
         self.assertEqual("first", field.xform_constraints())
+
+    def test_should_split_gps_field_based_on_comma(self):
+        field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+            instruction="test_instruction", )
+        expected = (12.32,14.32)
+        seperated_values = field.formatted_field_values_for_excel('12.32,14.32')
+        self.assertEqual(expected,seperated_values)
+
+    def test_should_split_gps_irrespective_of_space_after_comma(self):
+        field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
+            instruction="test_instruction", )
+
+        expected = (12.32, 14.32)
+        seperated_values = field.formatted_field_values_for_excel('12.32,   14.32')
+        self.assertEqual(expected, seperated_values)

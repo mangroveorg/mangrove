@@ -529,7 +529,7 @@ class GeoCodeField(Field):
             tuple) else unicode(self.value)
 
     def formatted_field_values_for_excel(self, value):
-        value_list = value.replace(',', ' ').split(' ')
+        value_list = value.split(',')
         return self._empty_if_no_data(value_list, 0), self._empty_if_no_data(value_list, 1)
 
     def _empty_if_no_data(self, list, index):

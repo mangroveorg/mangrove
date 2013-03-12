@@ -15,8 +15,8 @@ class TestData(object):
         
     def setup(self):
 #        Two forms with data for two months with monthly frequency
-        self.ENTITY_TYPE = ["Health_Facility", "Clinic"]
-        self.entity_type_string="Health_Facility.Clinic"
+        self.ENTITY_TYPE = ["health_facility", "clinic"]
+        self.entity_type_string="health_facility.clinic"
         self.create_clinic_type(self.ENTITY_TYPE)
         self._create_form_model("CL2")
         self._create_form_model("CL1")

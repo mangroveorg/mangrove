@@ -27,7 +27,7 @@ class SurveyResponseService(object):
         return submission
 
     def save_survey_response(self, request, logger=None):
-        self.parser = SurveyResponseService.PARSERS.get(request.transport)
+        self.parser = SurveyResponseService.PARSERS.get(request.transport.transport)
         assert request is not None
         form_code, values = self.parser.parse(request.message)
         submission = self._create_submission_log(request.transport, form_code, copy(values))
@@ -39,8 +39,8 @@ class SurveyResponseService(object):
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
-            response = SubmissionHandler.handle(form_model, cleaned_data, errors, submission.uuid, [],
-                self.location_tree, submission)
+            response = SubmissionHandler(self.dbm).handle(form_model, cleaned_data, errors, submission.uuid, [],
+                self.location_tree)
             submission.values[form_model.entity_question.code] = response.short_code
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())
@@ -59,15 +59,3 @@ class SurveyResponseService(object):
 
     def delete_survey_response(self):
         pass
-
-#class EntityService:
-#    def save_entity(self):
-#        pass
-#
-#
-#    def edit_entity(self):
-#        pass
-#
-#
-#    def delete_entity(self ):
-#        pass

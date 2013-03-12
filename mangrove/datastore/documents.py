@@ -240,6 +240,43 @@ class SubmissionLogDocument(DocumentBase):
         self.event_time = event_time if event_time is not None else self.created
 
 
+class SurveyResponseDocument(DocumentBase):
+    """
+    The processed submission log document. It will contain metadata about the submission. (Eg: source,
+    submitted_on etc.)
+    along with the parsed key value pairs of the sms that came in
+    """
+
+    submitted_on = TZAwareDateTimeField()
+    source = TextField()
+    destination = TextField()
+    channel = TextField()
+    values = DictField()
+    status = BooleanField()
+    error_message = TextField()
+    form_code = TextField()
+    form_model_revision = TextField()
+    data_record_id = TextField()
+    test = BooleanField()
+    event_time = TZAwareDateTimeField()
+
+    def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
+                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
+                 event_time=None):
+        DocumentBase.__init__(self, id, 'SubmissionLog')
+        self.source = source
+        self.submitted_on = utcnow()
+        self.channel = channel
+        self.destination = destination
+        self.form_code = form_code
+        self.form_model_revision = form_model_revision
+        self.values = values
+        self.status = status
+        self.error_message = error_message
+        self.data_record_id = data_record_id
+        self.test = test
+        self.event_time = event_time if event_time is not None else self.created
+
 class AggregationTreeDocument(DocumentBase):
     root = DictField()
     root_id = TextField()

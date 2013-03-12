@@ -12,7 +12,7 @@ class TestOrderSMSParser(unittest.TestCase):
     def _mock_get_question_codes_from_couchdb(self, question_code,is_registration_form=True):
         self.sms_parser._get_question_codes = Mock()
         form_model = Mock(spec=FormModel)
-        form_model.is_registration_form.return_value=is_registration_form
+        form_model.is_entity_registration_form.return_value=is_registration_form
         self.get_question_codes_patch = patch.object(SMSParser, "get_question_codes")
         self.get_question_codes_mock = self.get_question_codes_patch.start()
         self.get_question_codes_mock.return_value = question_code, form_model

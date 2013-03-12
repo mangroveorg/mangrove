@@ -37,7 +37,6 @@ REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 
 
-
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
@@ -47,6 +46,7 @@ def get_form_model_by_code(dbm, code):
 
     doc = FormModelDocument.wrap(rows[0]['value'])
     return FormModel.new_from_doc(dbm, doc)
+
 
 def list_form_models_by_code(dbm, codes):
     assert isinstance(dbm, DatabaseManager)
@@ -59,6 +59,7 @@ def list_form_models_by_code(dbm, codes):
         return FormModel.new_from_doc(dbm, doc)
 
     return map(_row_to_form_model, rows)
+
 
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
@@ -78,7 +79,8 @@ class FormModel(DataObject):
         return super(FormModel, cls).new_from_doc(dbm, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None, enforce_unique_labels = True):
+                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None,
+                 enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
@@ -256,8 +258,10 @@ class FormModel(DataObject):
     def revision(self):
         return self._doc.rev
 
+    def is_global_registration_form(self):
+        return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
 
-    def is_registration_form(self):
+    def is_entity_registration_form(self):
         return self._doc['is_registration_model']
 
     def entity_defaults_to_reporter(self):
@@ -426,7 +430,7 @@ class FormSubmission(object):
 
     @property
     def is_registration(self):
-        return self.form_model.is_registration_form()
+        return self.form_model.is_entity_registration_form()
 
     def save_new(self, dbm):
         entity = self.create_entity(dbm)
@@ -504,16 +508,17 @@ class DataFormSubmission(FormSubmission):
     def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
-    def update_existing_data_records(self, dbm, submission_uuid):
-        data_record_id = (dbm._load_document(submission_uuid))._data['data_record_id']
-        data_record = DataRecord.get(dbm,data_record_id)
-        for value_tuple in self._values:
-            if value_tuple[0] not in data_record._doc.entity['data'].keys():
-                data_record._doc.entity['data'].update({value_tuple[0]:value_tuple[1]})
-                continue
-            data_record._doc.entity['data'][value_tuple[0]]['value'] = value_tuple[1]
-        self.data_record_id = data_record_id
-        data_record.save()
+#    def update_existing_data_records(self, dbm, submission_uuid):
+#        data_record_id = (dbm._load_document(submission_uuid))._data['data_record_id']
+#        data_record = DataRecord.get(dbm, data_record_id)
+#        for value_tuple in self._values:
+#            if value_tuple[0] not in data_record._doc.entity['data'].keys():
+#                data_record._doc.entity['data'].update({value_tuple[0]: value_tuple[1]})
+#                continue
+#            data_record._doc.entity['data'][value_tuple[0]]['value'] = value_tuple[1]
+#        self.data_record_id = data_record_id
+#        data_record.save()
+
 
 class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
@@ -534,17 +539,18 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
     def void_existing_data_records(self, dbm, form_code=None):
-        data_records = dbm.view.data_record_by_form_code(key = [REGISTRATION_FORM_CODE, self.short_code])
+        data_records = dbm.view.data_record_by_form_code(key=[REGISTRATION_FORM_CODE, self.short_code])
         for data_record in data_records:
             data_record_doc = data_record.value
             data_record_doc['void'] = True
             dbm.database.save(data_record_doc)
 
+
 class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
         super(EntityRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
-# get method is doing an update!!!!
+    # get method is doing an update!!!!
     def get_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
@@ -553,9 +559,9 @@ class EntityRegistrationFormSubmission(FormSubmission):
         existing_entity.save()
         return existing_entity
 
-# soft deletes data records
-    def void_existing_data_records(self, dbm,form_code):
-        data_records = dbm.view.data_record_by_form_code(key = [form_code, self.short_code])
+    # soft deletes data records
+    def void_existing_data_records(self, dbm, form_code):
+        data_records = dbm.view.data_record_by_form_code(key=[form_code, self.short_code])
         for data_record in data_records:
             data_record_doc = data_record.value
             data_record_doc['void'] = True
@@ -563,12 +569,10 @@ class EntityRegistrationFormSubmission(FormSubmission):
 
 
 class FormSubmissionFactory(object):
-    def _is_global_registration_form(self, form_model):
-        return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in form_model.entity_type
-
     def get_form_submission(self, form_model, answers, errors=None, location_tree=None):
-        if not form_model.is_registration_form():
+        if not form_model.is_entity_registration_form():
             return DataFormSubmission(form_model, answers, errors)
-        return GlobalRegistrationFormSubmission(form_model, answers, errors,
-            location_tree=location_tree) if self._is_global_registration_form(
-            form_model) else EntityRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)
+        elif form_model.is_global_registration_form() :
+            return GlobalRegistrationFormSubmission(form_model, answers, errors,location_tree=location_tree)
+        else :
+            return EntityRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)

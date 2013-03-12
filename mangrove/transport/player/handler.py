@@ -10,7 +10,7 @@ class SubmissionHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree, submission=None):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors,
             location_tree=location_tree)
         if form_submission.is_valid:
@@ -18,41 +18,11 @@ class SubmissionHandler(object):
         return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
             form_submission=form_submission)
 
-
-class UpdateSubmissionHandler(object):
+class UpdateEntityHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, reporter_names, location_tree, submission):
-        submission_form = DataFormSubmission(form_model, cleaned_data, errors)
-        submission_form.update_existing_data_records(self.dbm, submission.data_record)
-        for key, value in form_model.submission.iteritems():
-            submission.values[key] = value
-        return create_response_from_form_submission(reporters=reporter_names, submission_id=submission.uuid,
-            form_submission=submission)
-
-# Looks like its only doing delete of what comes in GlobalRegistration?? Why would someone name it EditRegistrationHandler???
-class EditRegistrationHandler(object):
-    def __init__(self, dbm):
-        self.dbm = dbm
-
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree, submission=None):
-        form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors,
-            location_tree=location_tree)
-        if form_submission.is_valid:
-            if isinstance(form_submission, GlobalRegistrationFormSubmission):
-                form_submission.void_existing_data_records(self.dbm)
-                form_submission.update_location_and_geo_code(self.dbm)
-            form_submission.update(self.dbm)
-        return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
-            form_submission=form_submission)
-
-# Looks like its only doing delete of submissions?? Why would someone name it EditSubjectRegistrationHandler???
-class EditSubjectRegistrationHandler(object):
-    def __init__(self, dbm):
-        self.dbm = dbm
-
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree, submission=None):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors,
             location_tree=location_tree)
         if form_submission.is_valid:
@@ -66,7 +36,7 @@ class DeleteHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree=None,submission=None):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree=None):
         short_code = cleaned_data[SHORT_CODE]
         entity_type = cleaned_data[ENTITY_TYPE_FIELD_CODE]
         if is_empty(errors):
@@ -77,11 +47,8 @@ class DeleteHandler(object):
 
 def handler_factory(dbm, form_model, is_update=False):
     default_handler = SubmissionHandler
-#    REGISTRATION_FORM_CODE is used when registering datasenders.
-    if form_model.form_code == REGISTRATION_FORM_CODE and is_update:
-        default_handler = EditRegistrationHandler
-    elif form_model.is_registration_form and is_update:
-        default_handler = EditSubjectRegistrationHandler
+    if form_model.is_entity_registration_form and is_update:
+        default_handler = UpdateEntityHandler
     handler_cls = handlers.get(form_model.form_code, default_handler)
 
     return handler_cls(dbm)

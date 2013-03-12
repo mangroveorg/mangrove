@@ -37,7 +37,7 @@ class Player(object):
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)
-            response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names, self.location_tree, submission)
+            response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names, self.location_tree)
             submission.values[form_model.entity_question.code] = response.short_code
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())
@@ -45,7 +45,6 @@ class Player(object):
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
-
 
 class SMSPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None,
@@ -58,7 +57,7 @@ class SMSPlayer(Player):
     def _process(self, values, form_code, reporter_entity):
         form_model = get_form_model_by_code(self.dbm, form_code)
         values = GeneralWorkFlow().process(values)
-        if form_model.is_registration_form():
+        if form_model.is_entity_registration_form():
             values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
         if form_model.entity_defaults_to_reporter():
             values = ActivityReportWorkFlow(form_model, reporter_entity).process(values)
@@ -101,7 +100,6 @@ class SMSPlayer(Player):
             logger.info(log_entry)
         return response
 
-
 class WebPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None):
         self.parser = parser or WebParser()
@@ -113,7 +111,7 @@ class WebPlayer(Player):
     def _process(self, form_code, values):
         form_model = get_form_model_by_code(self.dbm, form_code)
         values = GeneralWorkFlow().process(values)
-        if form_model.is_registration_form():
+        if form_model.is_entity_registration_form():
             values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
 
         return form_model, values

@@ -46,7 +46,7 @@ class TestSMSPlayer(TestCase):
         get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
         get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
         self.form_model_mock = Mock(spec=FormModel)
-        self.form_model_mock.is_registration_form.return_value = True
+        self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.get_field_by_name = self._location_field

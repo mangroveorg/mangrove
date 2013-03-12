@@ -4,12 +4,12 @@ from unittest import TestCase
 from mock import Mock, patch
 from mangrove.form_model.form_model import FormSubmissionFactory, FormModel
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.player.handler import   EditSubjectRegistrationHandler
+from mangrove.transport.player.handler import   UpdateEntityHandler
 
 class TestEditSubjectRegistrationHandler(TestCase):
     def setUp(self):
         self.dbm = Mock(spec = DatabaseManager)
-        self.handler = EditSubjectRegistrationHandler(self.dbm)
+        self.handler = UpdateEntityHandler(self.dbm)
         self.form_submission_mock = Mock()
         self.form_model_mock = Mock(spec=FormModel)
         self.submission_uuid = '1'

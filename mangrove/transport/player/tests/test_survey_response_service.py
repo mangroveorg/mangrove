@@ -9,7 +9,7 @@ from mangrove.form_model.form_model import FormModel
 from mangrove.transport import Request, TransportInfo
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from transport.submissions import Submission
+from mangrove.transport.submissions import Submission
 
 class TestSurveyResponseService(TestCase):
     def setUp(self):

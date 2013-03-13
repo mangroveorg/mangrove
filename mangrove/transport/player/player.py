@@ -111,7 +111,6 @@ class WebPlayer(Player):
     def _process(self, form_code, values):
         form_model = get_form_model_by_code(self.dbm, form_code)
         values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
-
         return form_model, values
 
     def accept(self, request, logger=None):
@@ -127,6 +126,7 @@ class WebPlayer(Player):
             logger.info(log_entry)
 
         return response
+
 
 class XFormPlayer(Player):
     def __init__(self, dbm):

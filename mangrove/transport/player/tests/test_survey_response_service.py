@@ -23,7 +23,7 @@ class TestSurveyResponseService(TestCase):
             values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
             try:
                 request = Request(values, transport_info)
-                self.survey_response_service.save_survey_response(request)
+                self.survey_response_service.save_survey('nonexistant_form_code', values, [], transport_info, request.message)
                 self.fail('Expected FormModelDoesNotExistsException')
             except FormModelDoesNotExistsException:
                 pass
@@ -38,24 +38,27 @@ class TestSurveyResponseService(TestCase):
             self.dbm._save_document.return_value = SubmissionLogDocument()
 
             try:
-                request = Request({'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'},
-                    TransportInfo('web', 'src', 'dest'))
-                self.survey_response_service.save_survey_response(request)
+                values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
+                transport_info = TransportInfo('web', 'src', 'dest')
+                request = Request(values,transport_info)
+
+                self.survey_response_service.save_survey('some_form_code', values, [], transport_info, request.message)
                 self.fail('Since the form model is inactive it should raise an exception')
             except InactiveFormModelException:
                 pass
             calls = [call(self.dbm, 'some_form_code')]
             patched_form_model.assert_has_calls(calls)
 
-
 class TestSurveyResponseServiceIT(MangroveTestCase):
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)
         survey_response_service = SurveyResponseService(self.manager)
 
-        request = Request({'form_code': 'CL1', 'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'},
-            TransportInfo('web', 'src', 'dest'))
-        response = survey_response_service.save_survey_response(request)
+        values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values,transport_info)
+        response = survey_response_service.save_survey('CL1', values, [], transport_info,
+            request.message)
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())

@@ -110,9 +110,7 @@ class WebPlayer(Player):
 
     def _process(self, form_code, values):
         form_model = get_form_model_by_code(self.dbm, form_code)
-        values = GeneralWorkFlow().process(values)
-        if form_model.is_entity_registration_form():
-            values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
+        values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
 
         return form_model, values
 

@@ -6,11 +6,11 @@ from mangrove.transport.facade import Response
 from mangrove.utils.types import is_empty
 from mangrove.transport.facade import create_response_from_form_submission
 
-class SubmissionHandler(object):
+class CreateEntityHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names, location_tree):
+    def handle(self, form_model, cleaned_data, errors, submission_uuid, reporter_names = [], location_tree=None):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors,
             location_tree=location_tree)
         if form_submission.is_valid:
@@ -46,7 +46,7 @@ class DeleteHandler(object):
 
 
 def handler_factory(dbm, form_model, is_update=False):
-    default_handler = SubmissionHandler
+    default_handler = CreateEntityHandler
     if form_model.is_entity_registration_form and is_update:
         default_handler = UpdateEntityHandler
     handler_cls = handlers.get(form_model.form_code, default_handler)

@@ -14,7 +14,7 @@ class SurveyResponseService(object):
         self.logger = logger
 
     def _create_submission_log(self, transport, form_code, values):
-        submission = Submission(self.dbm, transport, form_code, copy(values))
+        submission = Submission(self.dbm, transport, form_code, values=copy(values))
         submission.save()
         return submission
 

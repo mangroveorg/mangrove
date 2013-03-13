@@ -17,18 +17,16 @@ class TestSurveyResponseService(TestCase):
 
     def test_create_submission_for_a_survey_response_for_non_existent_form_code(self):
         with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
-            patched_form_model.side_effect = FormModelDoesNotExistsException('form_code')
-            self.dbm._save_document.return_value = SubmissionLogDocument()
-
+            patched_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
+            transport_info = TransportInfo('web', 'src', 'dest')
+            values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
             try:
-                request = Request({'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'},
-                    TransportInfo('web', 'src', 'dest'))
+                request = Request(values, transport_info)
                 self.survey_response_service.save_survey_response(request)
-                self.fail(
-                    'get_form_model_by_code should have thrown exception as that is the way we have set it up and its called twice with the second call leading to exception propagation')
+                self.fail('Expected FormModelDoesNotExistsException')
             except FormModelDoesNotExistsException:
                 pass
-            calls = [call(self.dbm, 'some_form_code'), call(self.dbm, 'some_form_code')]
+            calls = [call(self.dbm, 'nonexistant_form_code')]
             patched_form_model.assert_has_calls(calls)
 
     def test_create_submission_for_a_survey_response_for_inactive_form_code(self):
@@ -45,7 +43,7 @@ class TestSurveyResponseService(TestCase):
                 self.fail('Since the form model is inactive it should raise an exception')
             except InactiveFormModelException:
                 pass
-            calls = [call(self.dbm, 'some_form_code'), call(self.dbm, 'some_form_code')]
+            calls = [call(self.dbm, 'some_form_code')]
             patched_form_model.assert_has_calls(calls)
 
 

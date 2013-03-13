@@ -75,6 +75,16 @@ class Submission(DataObject):
             DataObject._set_document(self, doc)
 
 
+        def __init__(self, dbm, transport_info=None, form_code=None, values=None):
+            DataObject.__init__(self, dbm)
+            if transport_info is not None:
+                doc = SubmissionLogDocument(channel=transport_info.transport, source=transport_info.source,
+                    destination=transport_info.destination,
+                    values=values, status=False,
+                    error_message="", test=False)
+
+                DataObject._set_document(self, doc)
+
     @property
     def data_record(self):
         return DataRecord.get(self._dbm, self._doc.data_record_id) if self._doc.data_record_id is not None else None
@@ -137,6 +147,10 @@ class Submission(DataObject):
             data_record = DataRecord.get(self._dbm, data_record_id)
             data_record.delete()
         super(Submission, self).delete()
+
+    def update_form_model_revision(self, form_model_revision):
+        self._doc.form_model_revision = form_model_revision
+        self.save()
 
     def update(self, status, errors, data_record_id=None, is_test_mode=False):
         self._doc.status = status

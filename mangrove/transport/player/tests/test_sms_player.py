@@ -1,16 +1,14 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
-from unittest.case import TestCase, SkipTest
+from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmissionFactory
-from mangrove.form_model.form_model import NAME_FIELD
+from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import  OrderSMSParser
-from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.facade import Response
 from mangrove.transport.player.tests.test_web_player import mock_form_submission
@@ -126,11 +124,10 @@ class TestSMSPlayer(TestCase):
         post_sms_processor_mock.process.return_value = expected_response
         message = 'FORM_CODE 1'
 
-        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,
-            post_sms_parser_processors=[post_sms_processor_mock])
+        sms_player = SMSPlayerV2(self.dbm, post_sms_parser_processors=[post_sms_processor_mock])
         with patch("inspect.getargspec") as get_arg_spec_mock:
             get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
-            response = sms_player.accept(Request(message=message, transportInfo=self.transport))
+            response = sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
             self.assertEqual(expected_response, response)
 
     def test_should_check_if_submission_by_unregistered_reporter(self):

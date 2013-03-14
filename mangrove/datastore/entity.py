@@ -15,8 +15,9 @@ from database import DatabaseManager, DataObject
 def void_entity(dbm, entity_type, short_code):
     if is_string(entity_type):
         entity_type = [entity_type]
-    entity = get_by_short_code(dbm,short_code, entity_type)
+    entity = get_by_short_code(dbm, short_code, entity_type)
     entity.void()
+
 
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """
@@ -31,7 +32,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     if _check_if_entity_exists(dbm, entity_type, short_code):
         raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
     e = Entity(dbm, entity_type=entity_type, location=location,
-               aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
+        aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
     e.save()
     return e
 
@@ -46,6 +47,7 @@ def get_by_short_code(dbm, short_code, entity_type):
     assert is_string(short_code)
     assert is_sequence(entity_type)
     return by_short_code(dbm, short_code.lower(), entity_type)
+
 
 def by_short_code(dbm, short_code, entity_type):
     rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False, include_docs=True)
@@ -106,7 +108,6 @@ def get_entities_in(dbm, geo_path, type_path=None):
     return entities
 
 
-
 def get_all_entities(dbm, entity_type=None):
     """
     Returns all the entities in the Database
@@ -131,6 +132,7 @@ def get_entities_by_value(dbm, label, value, as_of=None):
     entities = dbm.get_many([row[u'value'] for row in rows], Entity)
 
     return [e for e in entities if e.values({label: u'latest'}, asof=as_of) == {label: value}]
+
 
 def entities_exists_with_value(dbm, entity_type, label, value):
     """
@@ -201,7 +203,7 @@ class Entity(DataObject):
         """
         return list(self._doc.entity_type)
 
-# This method should not be in mangrove. Reporter is not a generic concept.
+    # This method should not be in mangrove. Reporter is not a generic concept.
     @property
     def is_reporter(self):
         return self.type_path[0] == 'reporter'
@@ -340,7 +342,6 @@ class Entity(DataObject):
             self.invalidate_data(id)
 
 
-
     def get_all_data(self):
         """
         Return a dict where the first level of keys is the event time,
@@ -411,14 +412,14 @@ class Entity(DataObject):
         return result
 
     def latest_values(self):
-        return {field_name:values['value'] for field_name,values in self.data.items()}
+        return {field_name: values['value'] for field_name, values in self.data.items()}
 
     def _get_aggregate_value(self, field, aggregate_fn, date):
         entity_id = self._doc.id
         time_since_epoch_of_date = convert_date_time_to_epoch(date)
         rows = self._dbm.load_all_rows_in_view(aggregate_fn, group_level=3, descending=False,
-                                               startkey=[self.type_path, entity_id, field],
-                                               endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
+            startkey=[self.type_path, entity_id, field],
+            endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
 
         # The above will return rows in the format described:
         # Row key=['clinic', 'e4540e0ae93042f4b583b54b6fa7d77a'],
@@ -475,7 +476,7 @@ class Entity(DataObject):
                     raise ValueError(u'Attempted to add an aggregation path with a reserved name')
                 self.set_aggregation_path(name, aggregation_paths[name])
 
-    def set_location_and_geo_code(self,location,geometry):
+    def set_location_and_geo_code(self, location, geometry):
         self._doc.location = location
         self._doc.geometry = geometry
 
@@ -540,14 +541,16 @@ def _make_short_code(entity_type, num):
 
 
 def _get_all_entities(dbm):
-    rows= dbm.view.by_short_codes(reduce=False, include_docs=True)
+    rows = dbm.view.by_short_codes(reduce=False, include_docs=True)
     return [_from_row_to_entity(dbm, row) for row in rows]
+
 
 def _get_all_entities_of_type(dbm, entity_type):
     startkey = [entity_type]
     endkey = [entity_type, {}]
-    rows=dbm.view.by_short_codes(reduce=False, include_docs=True, startkey=startkey, endkey=endkey)
+    rows = dbm.view.by_short_codes(reduce=False, include_docs=True, startkey=startkey, endkey=endkey)
     return [_from_row_to_entity(dbm, row) for row in rows]
+
 
 def _from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))

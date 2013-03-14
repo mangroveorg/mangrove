@@ -15,6 +15,7 @@ from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.facade import Response
 from mangrove.transport.player.tests.test_web_player import mock_form_submission
 from mangrove.datastore.datadict import DataDictType
+from mangrove.transport.player.new_players import SMSPlayerV2
 
 
 class TestSMSPlayer(TestCase):
@@ -24,24 +25,34 @@ class TestSMSPlayer(TestCase):
         self.reporter_mock.value.return_value = self.reporter_name
         self.reporter_module.find_reporter_entity.return_value = self.reporter_mock
 
+
     def setUp(self):
         self.loc_tree = Mock()
         self.loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self._mock_form_model()
-        self.reporter_patcher = patch('mangrove.transport.player.player.reporter')
+        self.reporter_patcher = patch('mangrove.transport.player.new_players.reporter')
         self.reporter_module = self.reporter_patcher.start()
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.message = "FORM_CODE .ID 1 .M hello world"
-        self.sms_player = SMSPlayer(self.dbm, self.loc_tree)
         self.generate_code_patcher = patch(
             "mangrove.transport.facade._set_short_code")
         self.generate_code_patcher.start()
 
+        self.post_sms_processor_mock = Mock()
+        self.post_sms_processor_mock.process = lambda x, y, z=None: None
+        self.post_sms_processors = [self.post_sms_processor_mock]
+
+        self.sms_player = SMSPlayerV2(self.dbm, self.post_sms_processors)
+
+    @staticmethod
+    def mocked_post_sms_processor():
+        return
 
     def _mock_form_model(self):
-        self.get_form_model_mock_player_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
+        self.get_form_model_mock_player_patcher = patch(
+            'mangrove.transport.services.survey_response_service.get_form_model_by_code')
         self.get_form_model_mock_parser_patcher = patch('mangrove.transport.player.parser.get_form_model_by_code')
         get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
         get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
@@ -81,32 +92,29 @@ class TestSMSPlayer(TestCase):
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         message = 'FORM_CODE 1'
 
-        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser_mock)
+        sms_player = SMSPlayerV2(self.dbm, [])
 
-        with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
+        with patch(
+            'mangrove.transport.services.survey_response_service.SurveyResponseService.save') as get_form_submission_mock:
             get_form_submission_mock.return_value = self.form_submission_mock
-            sms_player.accept(Request(message=message, transportInfo=self.transport))
-            parser_mock.parse.assert_called_once_with(message)
+            sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
 
     def test_should_call_parser_post_processor_and_continue_for_no_response(self):
         self.loc_tree.get_location_hierarchy.return_value = None
-        parser_mock = Mock(spec=OrderSMSParser)
-        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
+        message = 'SOME_FORM_CODE 1'
+
         post_sms_processor_mock = Mock()
-        post_sms_processor_mock.process.return_value = None
-        message = 'FORM_CODE 1'
+        post_sms_processors = [post_sms_processor_mock]
 
-        sms_player = SMSPlayer(self.dbm, self.loc_tree, parser=parser_mock,
-            post_sms_parser_processors=[post_sms_processor_mock])
-
+        sms_player = SMSPlayerV2(self.dbm, post_sms_processors)
         with patch("inspect.getargspec") as get_arg_spec_mock:
-            get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
-            with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
-                get_form_submission_mock.return_value = self.form_submission_mock
-                response = sms_player.accept(Request(message=message, transportInfo=self.transport))
-                self.assertEqual(self.reporter_name, response.reporters[0][NAME_FIELD])
+            with patch('mangrove.transport.player.new_players.SurveyResponseService.save_survey') as save_survey:
+                get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
 
-                post_sms_processor_mock.process.assert_called_once_with('FORM_CODE', {'id': '1'}, [])
+                sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
+
+                save_survey.assert_called_once('some_form_code', {'id': '1'}, [{'name': '1234'}], 'sms', message)
+                post_sms_processor_mock.process.assert_called_once_with('some_form_code', {'id': '1'}, [])
 
 
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
@@ -125,38 +133,15 @@ class TestSMSPlayer(TestCase):
             response = sms_player.accept(Request(message=message, transportInfo=self.transport))
             self.assertEqual(expected_response, response)
 
-
-    def test_should_submit_if_parsing_is_successful(self):
-        with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
-            self.loc_tree.get_location_hierarchy.return_value = None
-            get_form_submission_mock.return_value = self.form_submission_mock
-            response = self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
-            values = OrderedDict([(u'id', u'1'), (u'm', u'hello world')])
-            self.form_model_mock.validate_submission.assert_called_once_with(values=values)
-            self.form_submission_mock.save.assert_called_once_with(self.dbm)
-            self.assertEqual('', response.datarecord_id)
-            self.assertEqual([''], response.entity_type)
-
-        #    TODO: Rewrite below test, skipping for now
-    @SkipTest
-    def test_should_submit_if_submission_by_registered_reporter(self):
-        self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
-
-        self.assertEqual(1, self.form_model_mock.submit.call_count)
-
-        submission_request = self.form_model_mock.submit.call_args[0][0]
-        self.assertEqual(self.reporter_mock, submission_request.reporter)
-
-
     def test_should_check_if_submission_by_unregistered_reporter(self):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
         with self.assertRaises(NumberNotRegisteredException):
-            self.sms_player.accept(Request(message=self.message, transportInfo=self.transport))
+            self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
 
 
     def test_should_not_submit_if_parsing_is_not_successful(self):
         with self.assertRaises(SMSParserInvalidFormatException):
-            self.sms_player.accept(Request(message="invalid .format", transportInfo=self.transport))
+            self.sms_player.add_survey_response(Request(message="invalid .format", transportInfo=self.transport))
 
         self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
 
@@ -164,24 +149,20 @@ class TestSMSPlayer(TestCase):
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
         with self.assertRaises(MultipleSubmissionsForSameCodeException):
-            self.sms_player.accept(Request(message="cli001 .na tester1 .na tester2", transportInfo=transport))
+            self.sms_player.add_survey_response(
+                Request(message="cli001 .na tester1 .na tester2", transportInfo=transport))
 
         self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
 
 
     def test_should_accept_ordered_sms_message(self):
-        values = OrderedDict([('q1', u'question1_answer'), ('q2', u'question2_answer')])
         self.loc_tree.get_location_hierarchy.return_value = None
-        request = Request(transportInfo=self.transport,
-            message="questionnaire_code question1_answer question2_answer")
-        order_sms_parser = OrderSMSParser(self.dbm)
-        order_sms_parser.get_question_codes = Mock()
-        order_sms_parser.get_question_codes.return_value = ['q1', 'q2'], self.form_model_mock
-        with patch.object(FormSubmissionFactory, 'get_form_submission') as get_form_submission_mock:
-            get_form_submission_mock.return_value = self.form_submission_mock
-            response = SMSPlayer(self.dbm, self.loc_tree, order_sms_parser).accept(request)
-            self.form_model_mock.validate_submission.assert_called_once_with(values=values)
-            self.form_submission_mock.save.assert_called_once_with(self.dbm)
-            self.assertEqual('', response.datarecord_id)
-            self.assertEqual([''], response.entity_type)
+        sms_message = "questionnaire_code question1_answer question2_answer"
+        request = Request(transportInfo=self.transport, message=sms_message)
+        with patch(
+            'mangrove.transport.services.survey_response_service.SurveyResponseService.save_survey') as save_survey:
+            save_survey.return_value = Mock(spec=Response)
+            self.sms_player.add_survey_response(request)
+            save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}], 'sms',
+                sms_message)
 

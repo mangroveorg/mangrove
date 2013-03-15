@@ -339,10 +339,9 @@ class ExcelDate(object):
         self.date = date
         self.date_format = date_format
 
-
     def date_as_string(self):
         '''This is implemented for KeywordFilter.filter method. Ideally we should pass in the keyword here and return true or false.'''
-        return self.date.strftime(ExcelDate.DATE_DICTIONARY.get(self.date_format))
+        return self.date.strftime(ExcelDate.DATE_DICTIONARY.get(self.date_format, '%b. %d, %Y, %H:%M %p'))
 
     def __eq__(self, other):
         return self.date == other.date

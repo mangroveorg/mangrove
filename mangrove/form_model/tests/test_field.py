@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatExcept
 from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field, field_attributes
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, ExcelDate
 
 from mangrove.form_model import field
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint, constraints_factory
@@ -874,3 +874,10 @@ class TestField(unittest.TestCase):
         expected = (12.32, 14.32)
         seperated_values = field.formatted_field_values_for_excel('12.32,   14.32')
         self.assertEqual(expected, seperated_values)
+
+
+    def test_use_default_format_when_provided_format_not_found(self):
+        expected_date_string = 'Feb. 24, 2013, 12:45 PM'
+        input_date = datetime.strptime(expected_date_string, '%b. %d, %Y, %H:%M %p')
+        actual_date_string = ExcelDate(input_date, 'submission_date').date_as_string()
+        self.assertEqual(expected_date_string, actual_date_string)

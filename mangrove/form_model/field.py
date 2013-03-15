@@ -332,14 +332,12 @@ class DateField(Field):
 #All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
 #That will require atleast a couple of days of work
 class ExcelDate(object):
-    EXCEL_DATE_DICTIONARY = {'mm.yyyy': 'MMM, YYYY', 'dd.mm.yyyy': 'MMM DD, YYYY', 'mm.dd.yyyy': 'MMM DD, YYYY',
-                             'submission_date': 'MMM DD, YYYY hh:mm:ss'}
+
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
 
     def __init__(self, date, date_format):
         self.date = date
         self.date_format = date_format
-        self.excel_cell_date_format = ExcelDate.EXCEL_DATE_DICTIONARY.get(date_format)
 
 
     def date_as_string(self):
@@ -347,7 +345,7 @@ class ExcelDate(object):
         return self.date.strftime(ExcelDate.DATE_DICTIONARY.get(self.date_format))
 
     def __eq__(self, other):
-        return self.date == other.date and self.excel_cell_date_format == other.excel_cell_date_format
+        return self.date == other.date
 
 
 class TextField(Field):

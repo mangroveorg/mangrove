@@ -1,7 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
 from unittest.case import TestCase
-from mock import Mock, patch
+from mock import Mock, patch, PropertyMock
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
@@ -163,3 +163,18 @@ class TestSMSPlayer(TestCase):
             save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}], 'sms',
                 sms_message)
 
+
+    def test_use_reporter_as_entity_for_summary_reports(self):
+        sms_player_v2 = SMSPlayerV2(self.dbm, [])
+        with patch('mangrove.transport.player.new_players.get_form_model_by_code') as form_model__by_code_mock:
+            with patch('mangrove.transport.player.new_players.is_empty') as is_empty_mock:
+                is_empty_mock.return_value = True
+                form_model_mock = Mock(spec=FormModel)
+                form_model__by_code_mock.return_value = form_model_mock
+                form_model_mock.entity_defaults_to_reporter.return_value = True
+                p = PropertyMock(return_value = 'eid')
+                entity_question = Mock(spec= TextField)
+                type(form_model_mock).entity_question = PropertyMock(return_value= entity_question)
+                type(entity_question).code = p
+                actual_values = sms_player_v2._use_reporter_as_entity_if_summary_report('form_code', {'id': 'question1_answer'}, 'rep12')
+                self.assertEquals({'id': 'question1_answer', 'eid' : 'rep12'}, actual_values)

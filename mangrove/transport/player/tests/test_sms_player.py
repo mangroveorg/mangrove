@@ -94,8 +94,12 @@ class TestSMSPlayer(TestCase):
 
         with patch(
             'mangrove.transport.services.survey_response_service.SurveyResponseService.save') as get_form_submission_mock:
-            get_form_submission_mock.return_value = self.form_submission_mock
-            sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
+            with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
+                mock_form_model = Mock(spec=FormModel)
+                mock_get_form_model_by_code.return_value = mock_form_model
+                mock_form_model.entity_defaults_to_reporter.return_value = False
+                get_form_submission_mock.return_value = self.form_submission_mock
+                sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
 
     def test_should_call_parser_post_processor_and_continue_for_no_response(self):
         self.loc_tree.get_location_hierarchy.return_value = None
@@ -113,7 +117,6 @@ class TestSMSPlayer(TestCase):
 
                 save_survey.assert_called_once('some_form_code', {'id': '1'}, [{'name': '1234'}], 'sms', message)
                 post_sms_processor_mock.process.assert_called_once_with('some_form_code', {'id': '1'}, [])
-
 
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
         parser_mock = Mock(spec=OrderSMSParser)
@@ -158,10 +161,15 @@ class TestSMSPlayer(TestCase):
         request = Request(transportInfo=self.transport, message=sms_message)
         with patch(
             'mangrove.transport.services.survey_response_service.SurveyResponseService.save_survey') as save_survey:
-            save_survey.return_value = Mock(spec=Response)
-            self.sms_player.add_survey_response(request)
-            save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}], 'sms',
-                sms_message)
+            with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
+                mock_form_model = Mock(spec=FormModel)
+                mock_get_form_model_by_code.return_value = mock_form_model
+                mock_form_model.entity_defaults_to_reporter.return_value = False
+                save_survey.return_value = Mock(spec=Response)
+                self.sms_player.add_survey_response(request)
+                save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
+                    'sms',
+                    sms_message)
 
 
     def test_use_reporter_as_entity_for_summary_reports(self):
@@ -172,9 +180,10 @@ class TestSMSPlayer(TestCase):
                 form_model_mock = Mock(spec=FormModel)
                 form_model__by_code_mock.return_value = form_model_mock
                 form_model_mock.entity_defaults_to_reporter.return_value = True
-                p = PropertyMock(return_value = 'eid')
-                entity_question = Mock(spec= TextField)
-                type(form_model_mock).entity_question = PropertyMock(return_value= entity_question)
+                p = PropertyMock(return_value='eid')
+                entity_question = Mock(spec=TextField)
+                type(form_model_mock).entity_question = PropertyMock(return_value=entity_question)
                 type(entity_question).code = p
-                actual_values = sms_player_v2._use_reporter_as_entity_if_summary_report('form_code', {'id': 'question1_answer'}, 'rep12')
-                self.assertEquals({'id': 'question1_answer', 'eid' : 'rep12'}, actual_values)
+                actual_values = sms_player_v2._use_reporter_as_entity_if_summary_report('form_code',
+                    {'id': 'question1_answer'}, 'rep12')
+                self.assertEquals({'id': 'question1_answer', 'eid': 'rep12'}, actual_values)

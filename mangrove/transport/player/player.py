@@ -6,6 +6,7 @@ from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport import reporter
+from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.submissions import  Submission
 from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
@@ -37,7 +38,8 @@ class Player(object):
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)
-            response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names, self.location_tree)
+            response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names,
+                self.location_tree)
             submission.values[form_model.entity_question.code] = response.short_code
             submission.update(response.success, response.errors, response.datarecord_id,
                 form_model.is_in_test_mode())
@@ -45,6 +47,7 @@ class Player(object):
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
+
 
 class SMSPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None,
@@ -79,6 +82,17 @@ class SMSPlayer(Player):
         return self.parser.parse(message)
 
     def accept(self, request, logger=None):
+        ''' This is a single point of entry for all SMS based workflows, we do not have  a separation on the view layer for different sms
+        workflows, hence we will be branching to different methods here. Current implementation does the parse twice but that will go away
+        once the entity registration is separated '''
+        form_code, values, extra_elements = self._parse(request.message)
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        if form_model.is_entity_registration_form():
+            return self.register_entity(request, logger)
+        sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor)
+        return sms_player_v2.add_survey_response(request, logger)
+
+    def register_entity(self, request, logger):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._process_post_parse_callback(form_code, values, extra_elements)
 

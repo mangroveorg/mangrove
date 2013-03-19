@@ -70,8 +70,8 @@ Submit data to the player
 
     text = "MNET .ID rep45 .DATE 10.2010 .NETS 50"
     transport_info = TransportInfo(transport="sms", source="9923712345", destination="5678")
-    sms_player = SMSPlayerV2(dbm,[])
-    response = sms_player.add_survey_response(Request(transportInfo=transport_info, message=text))
+    sms_player = SMSPlayer(dbm)
+    response = sms_player.accept(Request(transportInfo=transport_info, message=text))
 
     The player will also log the submission for you in Mangrove.
 

@@ -161,6 +161,10 @@ class Field(object):
     def set_instruction(self, new_instruction):
         self._dict["instruction"] = new_instruction
 
+    def set_constraints(self, new_constraints):
+        self._dict["constraints"] = new_constraints
+        self.constraints = new_constraints
+
     @property
     def label(self):
         return self._dict.get('label')
@@ -332,7 +336,6 @@ class DateField(Field):
 #All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
 #That will require atleast a couple of days of work
 class ExcelDate(object):
-
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
 
     def __init__(self, date, date_format):

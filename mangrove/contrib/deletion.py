@@ -25,7 +25,7 @@ def _construct_global_deletion_form(manager):
     question2 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the entity's Unique ID Number",
         defaultValue="some default value", ddtype=entity_id_dd,
         instruction="Enter the id of the entity you want to delete",
-        entity_question_flag=True, constraints=[TextLengthConstraint(max=12)])
+        entity_question_flag=True, constraints=[])
 
     form_model = FormModel(manager, name=ENTITY_DELETION_FORM_CODE, form_code=ENTITY_DELETION_FORM_CODE, fields=[
         question1, question2], entity_type=["deletion"],

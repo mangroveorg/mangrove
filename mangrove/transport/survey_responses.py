@@ -77,7 +77,6 @@ class SurveyResponse(DataObject):
 
             DataObject._set_document(self, doc)
 
-
     @property
     def data_record(self):
         return DataRecord.get(self._dbm, self._doc.data_record_id) if self._doc.data_record_id is not None else None
@@ -148,6 +147,10 @@ class SurveyResponse(DataObject):
         self._doc.test = is_test_mode
         self.save()
 
+    def update_form_model_revision(self, form_model_revision):
+        self._doc.form_model_revision = form_model_revision
+        self.save()
+
     def _to_string(self, errors):
         if is_string(errors):
             return errors
@@ -156,7 +159,6 @@ class SurveyResponse(DataObject):
         if is_sequence(errors):
             return sequence_to_str(errors)
         return None
-
 
 def _get_start_and_end_key(form_code, from_time, to_time):
     end = [form_code] if from_time is None else [form_code, from_time]

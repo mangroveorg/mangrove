@@ -41,11 +41,12 @@ def create_response_from_form_submission(reporters, submission_id, form_submissi
     return Response(reporters, submission_id)
 
 class Response(object):
-    def __init__(self, reporters, submission_id, success=False, errors=None, data_record_id=None, short_code=None,
+    def __init__(self, reporters, submission_id, survey_response_id, success=False, errors=None, data_record_id=None, short_code=None,
                  cleaned_data=None, is_registration=False, entity_type=None, form_code=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.submission_id = submission_id
+        self.survey_response_id = survey_response_id
         self.errors = errors or {}
         self.datarecord_id = data_record_id
         self.short_code = short_code

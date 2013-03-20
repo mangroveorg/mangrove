@@ -30,6 +30,7 @@ class SurveyResponseService(object):
 
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
+        survey_response.update_form_model_revision(form_model.revision)
 
         if form_model.is_inactive():
             raise InactiveFormModelException(form_model.form_code)
@@ -44,7 +45,7 @@ class SurveyResponseService(object):
                 form_model.is_in_test_mode())
             self.log_request(form_submission.saved, transport_info.source, message)
 
-            return Response(reporter_names, submission.uuid, form_submission.saved, form_submission.errors,
+            return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved, form_submission.errors,
                 form_submission.data_record_id,
                 form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,
                 form_submission.entity_type,

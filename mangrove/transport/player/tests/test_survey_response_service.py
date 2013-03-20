@@ -6,21 +6,26 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, get_form_model_by_code
 from mangrove.transport import Request, TransportInfo
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
+from transport.survey_responses import SurveyResponse
 
-def assert_submission_log_is(form_code) :
-    def _assert(self, other) :
+def assert_submission_log_is(form_code):
+    def _assert(self, other):
         return other.form_code == form_code
+
     return _assert
 
-def assert_survey_response_doc_is(form_code) :
-    def _assert(self, other) :
+
+def assert_survey_response_doc_is(form_code):
+    def _assert(self, other):
         return other.form_code == form_code
+
     return _assert
+
 
 class TestSurveyResponseService(TestCase):
     def setUp(self):
@@ -38,7 +43,8 @@ class TestSurveyResponseService(TestCase):
                 values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
                 try:
                     request = Request(values, transport_info)
-                    self.survey_response_service.save_survey('nonexistant_form_code', values, [], transport_info, request.message)
+                    self.survey_response_service.save_survey('nonexistant_form_code', values, [], transport_info,
+                        request.message)
                     self.fail('Expected FormModelDoesNotExistsException')
                 except FormModelDoesNotExistsException:
                     pass
@@ -56,7 +62,7 @@ class TestSurveyResponseService(TestCase):
             try:
                 values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
                 transport_info = TransportInfo('web', 'src', 'dest')
-                request = Request(values,transport_info)
+                request = Request(values, transport_info)
 
                 self.survey_response_service.save_survey('some_form_code', values, [], transport_info, request.message)
                 self.fail('Since the form model is inactive it should raise an exception')
@@ -65,6 +71,7 @@ class TestSurveyResponseService(TestCase):
             calls = [call(self.dbm, 'some_form_code')]
             patched_form_model.assert_has_calls(calls)
 
+
 class TestSurveyResponseServiceIT(MangroveTestCase):
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)
@@ -72,7 +79,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
         values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
-        request = Request(values,transport_info)
+        request = Request(values, transport_info)
         response = survey_response_service.save_survey('CL1', values, [], transport_info,
             request.message)
 
@@ -89,4 +96,8 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         submission = Submission.get(self.manager, response.submission_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
-        pass
+
+        survey_response = SurveyResponse.get(self.manager, response.survey_response_id)
+        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
+        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
+        self.assertEqual(get_form_model_by_code(self.manager, "CL1").revision, survey_response.form_model_revision)

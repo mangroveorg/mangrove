@@ -258,6 +258,10 @@ class FormModel(DataObject):
     def revision(self):
         return self._doc.rev
 
+    @revision.setter
+    def revision(self, rev):
+        self._doc.rev = rev
+
     def is_global_registration_form(self):
         return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
 

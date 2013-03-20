@@ -73,6 +73,7 @@ class TestSurveyResponseService(TestCase):
 
 
 class TestSurveyResponseServiceIT(MangroveTestCase):
+
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)
         survey_response_service = SurveyResponseService(self.manager)
@@ -96,8 +97,16 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         submission = Submission.get(self.manager, response.submission_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
+        self.assertEqual(test_data.form_model.revision, submission.form_model_revision)
+        self.assertEqual(test_data.entity1.short_code, submission.get_entity_short_code('ID'))
+        self.assertEqual(True, submission.status)
+        self.assertIsNotNone(submission.data_record)
 
         survey_response = SurveyResponse.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
-        self.assertEqual(get_form_model_by_code(self.manager, "CL1").revision, survey_response.form_model_revision)
+        self.assertEqual(test_data.form_model.revision, survey_response.form_model_revision)
+        self.assertEqual(test_data.entity1.short_code, survey_response.get_entity_short_code('ID'))
+        self.assertEqual(True, survey_response.status)
+        self.assertIsNotNone(survey_response.data_record)
+

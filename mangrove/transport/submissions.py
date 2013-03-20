@@ -137,11 +137,18 @@ class Submission(DataObject):
             data_record.delete()
         super(Submission, self).delete()
 
+    def get_entity_short_code(self, entity_question_code):
+        return self.values[entity_question_code]
+
+    def set_entity(self, entity_question_code, entity_short_code):
+        self.values[entity_question_code] = entity_short_code
+
     def update_form_model_revision(self, form_model_revision):
         self._doc.form_model_revision = form_model_revision
         self.save()
 
-    def update(self, status, errors, data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code, entity_short_code, data_record_id=None, is_test_mode=False):
+        self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id
         self._doc.error_message = self._to_string(errors)

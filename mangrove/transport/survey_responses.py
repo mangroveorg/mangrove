@@ -133,6 +133,12 @@ class SurveyResponse(DataObject):
 
         DataObject.void(self, void)
 
+    def get_entity_short_code(self, entity_question_code):
+        return self.values[entity_question_code]
+
+    def set_entity(self, entity_question_code, entity_short_code):
+        self.values[entity_question_code] = entity_short_code
+
     def delete(self):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:
@@ -140,7 +146,8 @@ class SurveyResponse(DataObject):
             data_record.delete()
         super(SurveyResponse, self).delete()
 
-    def update(self, status, errors, data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code, entity_short_code, data_record_id=None, is_test_mode=False):
+        self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id
         self._doc.error_message = self._to_string(errors)

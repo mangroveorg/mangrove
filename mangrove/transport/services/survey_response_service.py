@@ -40,12 +40,17 @@ class SurveyResponseService(object):
             cleaned_data, errors = form_model.validate_submission(values=values)
             form_submission = self.save(form_model, cleaned_data, errors)
 
-            submission.values[form_model.entity_question.code] = form_submission.short_code
-            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
+            submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
+                form_submission.short_code, form_submission.data_record_id,
                 form_model.is_in_test_mode())
+            survey_response.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
+                form_submission.short_code, form_submission.data_record_id,
+                form_model.is_in_test_mode())
+
             self.log_request(form_submission.saved, transport_info.source, message)
 
-            return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved, form_submission.errors,
+            return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
+                form_submission.errors,
                 form_submission.data_record_id,
                 form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,
                 form_submission.entity_type,
@@ -62,39 +67,39 @@ class SurveyResponseService(object):
             self.logger.info(log_entry)
 
 
-#    def save_survey_response(self, request):
-#        self.parser = SurveyResponseService.PARSERS.get(request.transport.transport)
-#        assert request is not None
-#        form_code, values = self.parser.parse(request.message)
-#
-#        submission = self._create_submission_log(request.transport, form_code, copy(values))
-#        form_model = get_form_model_by_code(self.dbm, form_code)
-#        submission.update_form_model_revision(form_model.revision)
-#
-#        if form_model.is_inactive():
-#            raise InactiveFormModelException(form_model.form_code)
-#
-#        try:
-#            form_model.bind(values)
-#            cleaned_data, errors = form_model.validate_submission(values=values)
-#            form_submission = self.save(form_model, cleaned_data, errors)
-#
-#            submission.values[form_model.entity_question.code] = form_submission.short_code
-#            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
-#                form_model.is_in_test_mode())
-#
-#            self.log_request(form_submission, request)
-#
-#            return Response([], submission.uuid, form_submission.saved, form_submission.errors,
-#                form_submission.data_record_id,
-#                form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,
-#                form_submission.entity_type,
-#                form_submission.form_model.form_code)
-#        except (MangroveException, FormModelDoesNotExistsException) as exception:
-#            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
-#            raise
-#
-#
+            #    def save_survey_response(self, request):
+            #        self.parser = SurveyResponseService.PARSERS.get(request.transport.transport)
+            #        assert request is not None
+            #        form_code, values = self.parser.parse(request.message)
+            #
+            #        submission = self._create_submission_log(request.transport, form_code, copy(values))
+            #        form_model = get_form_model_by_code(self.dbm, form_code)
+            #        submission.update_form_model_revision(form_model.revision)
+            #
+            #        if form_model.is_inactive():
+            #            raise InactiveFormModelException(form_model.form_code)
+            #
+            #        try:
+            #            form_model.bind(values)
+            #            cleaned_data, errors = form_model.validate_submission(values=values)
+            #            form_submission = self.save(form_model, cleaned_data, errors)
+            #
+            #            submission.values[form_model.entity_question.code] = form_submission.short_code
+            #            submission.update(form_submission.saved, form_submission.errors, form_submission.data_record_id,
+            #                form_model.is_in_test_mode())
+            #
+            #            self.log_request(form_submission, request)
+            #
+            #            return Response([], submission.uuid, form_submission.saved, form_submission.errors,
+            #                form_submission.data_record_id,
+            #                form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,
+            #                form_submission.entity_type,
+            #                form_submission.form_model.form_code)
+            #        except (MangroveException, FormModelDoesNotExistsException) as exception:
+            #            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
+            #            raise
+            #
+            #
 
     def save(self, form_model, cleaned_data, errors):
         form_submission = DataFormSubmission(form_model, cleaned_data, errors)

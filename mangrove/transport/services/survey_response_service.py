@@ -5,6 +5,7 @@ from mangrove.form_model.form_model import get_form_model_by_code, DataFormSubmi
 from mangrove.transport.player.parser import WebParser
 from mangrove.transport.submissions import Submission
 from mangrove.transport import Response
+from transport.survey_responses import SurveyResponse
 
 class SurveyResponseService(object):
     PARSERS = {'web': WebParser()}
@@ -18,8 +19,15 @@ class SurveyResponseService(object):
         submission.save()
         return submission
 
+    def _create_survey_response(self, transport_info, form_code, values):
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=copy(values))
+        survey_response.save()
+        return survey_response
+
     def save_survey(self, form_code, values, reporter_names, transport_info, message):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
+        survey_response = self._create_survey_response(transport_info, form_code, copy(values))
+
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
 

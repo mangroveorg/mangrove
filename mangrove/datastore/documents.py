@@ -263,7 +263,7 @@ class SurveyResponseDocument(DocumentBase):
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
                  error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
                  event_time=None):
-        DocumentBase.__init__(self, id, 'SubmissionLog')
+        DocumentBase.__init__(self, id, 'SurveyResponse')
         self.source = source
         self.submitted_on = utcnow()
         self.channel = channel

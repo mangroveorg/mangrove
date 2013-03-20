@@ -1,6 +1,5 @@
 import inspect
 from mangrove.form_model.form_model import NAME_FIELD, get_form_model_by_code
-from mangrove.transport.facade import ActivityReportWorkFlow
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport import reporter

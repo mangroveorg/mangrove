@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from unittest import TestCase
 from mock import Mock, patch, call
+from datastore.documents import SurveyResponseDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.tests.test_data import TestData
@@ -11,24 +12,39 @@ from mangrove.transport.services.survey_response_service import SurveyResponseSe
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
 
+def assert_submission_log_is(form_code) :
+    def _assert(self, other) :
+        return other.form_code == form_code
+    return _assert
+
+def assert_survey_response_doc_is(form_code) :
+    def _assert(self, other) :
+        return other.form_code == form_code
+    return _assert
+
 class TestSurveyResponseService(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
 
-    def test_create_submission_for_a_survey_response_for_non_existent_form_code(self):
-        with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
-            patched_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
-            transport_info = TransportInfo('web', 'src', 'dest')
-            values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
-            try:
-                request = Request(values, transport_info)
-                self.survey_response_service.save_survey('nonexistant_form_code', values, [], transport_info, request.message)
-                self.fail('Expected FormModelDoesNotExistsException')
-            except FormModelDoesNotExistsException:
-                pass
-            calls = [call(self.dbm, 'nonexistant_form_code')]
-            patched_form_model.assert_has_calls(calls)
+    def test_create_survey_response_when_form_code_is_non_existent(self):
+        SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
+        SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
+
+        with patch.object(self.dbm, '_save_document') as save_document:
+            with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
+                get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
+                transport_info = TransportInfo('web', 'src', 'dest')
+                values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
+                try:
+                    request = Request(values, transport_info)
+                    self.survey_response_service.save_survey('nonexistant_form_code', values, [], transport_info, request.message)
+                    self.fail('Expected FormModelDoesNotExistsException')
+                except FormModelDoesNotExistsException:
+                    pass
+                get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
+                save_document.assert_has_calls([call(SubmissionLogDocument()), call(SurveyResponseDocument())])
+
 
     def test_create_submission_for_a_survey_response_for_inactive_form_code(self):
         form_model = Mock(spec=FormModel)

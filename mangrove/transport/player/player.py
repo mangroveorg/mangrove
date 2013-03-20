@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from copy import copy
+from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import NAME_FIELD
@@ -87,12 +88,12 @@ class SMSPlayer(Player):
         once the entity registration is separated '''
         form_code, values, extra_elements = self._parse(request.message)
         form_model = get_form_model_by_code(self.dbm, form_code)
-        if form_model.is_entity_registration_form():
-            return self.register_entity(request, logger)
+        if form_model.is_entity_registration_form() or form_model.form_code == ENTITY_DELETION_FORM_CODE:
+            return self.entity_api(request, logger)
         sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor)
         return sms_player_v2.add_survey_response(request, logger)
 
-    def register_entity(self, request, logger):
+    def entity_api(self, request, logger):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._process_post_parse_callback(form_code, values, extra_elements)
 

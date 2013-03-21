@@ -36,16 +36,6 @@ def get_submission_by_id(dbm,submission_id):
                    rows]
     return submissions[0] if submissions.__len__() > 0 else None
 
-def submissions_by_form_code(dbm, form_code):
-    return get_submissions(dbm, form_code, None, None)
-
-
-def count_valid_web_submissions(dbm, form_code, from_time, to_time):
-    startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    rows = dbm.load_all_rows_in_view('web_submissionlog', descending=True, startkey=startkey, endkey=endkey)
-    return 0 if len(rows) == 0 else rows[0]['value']['count']
-
-
 def get_submissions_for_activity_period(dbm, form_code, from_time, to_time):
     from_time_in_epoch = convert_date_time_to_epoch(from_time) if from_time is not None else None
     to_time_in_epoch = convert_date_time_to_epoch(to_time) if to_time is not None else None

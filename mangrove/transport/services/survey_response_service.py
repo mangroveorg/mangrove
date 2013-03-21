@@ -5,7 +5,7 @@ from mangrove.form_model.form_model import get_form_model_by_code, DataFormSubmi
 from mangrove.transport.player.parser import WebParser
 from mangrove.transport.submissions import Submission
 from mangrove.transport import Response
-from transport.survey_responses import SurveyResponse
+from mangrove.transport.survey_responses import SurveyResponse
 
 class SurveyResponseService(object):
     PARSERS = {'web': WebParser()}

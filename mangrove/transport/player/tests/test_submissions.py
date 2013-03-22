@@ -13,6 +13,7 @@ from mangrove.transport.facade import Channel
 #TODO: Now that submission handler has been deleted, move these tests to the player.
 @SkipTest
 class TestSubmissionHandler(TestCase):
+
     def setUp(self):
         self.FORM_CODE = "QR1"
         self.VALUES = {"EID": "100", "Q1": "20"}
@@ -67,6 +68,8 @@ class TestSubmissionHandler(TestCase):
     def _invalid_form_submission(self):
         return FormSubmission(self.form_model_mock, {}, {"field": "Invalid"})
 
+
+    @SkipTest
     def test_should_return_true_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
@@ -77,6 +80,7 @@ class TestSubmissionHandler(TestCase):
         self.assertFalse(response.is_registration)
 
 
+    @SkipTest
     def test_should_save_data_record_if_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
 
@@ -85,6 +89,7 @@ class TestSubmissionHandler(TestCase):
         self.assertTrue(self.form_submission_entity_module.get_by_short_code.called)
 
 
+    @SkipTest
     def test_should_not_save_data_record_if_in_valid_form_submission(self):
         self.form_model_mock.validate_submission.return_value = self._invalid_form_submission()
 
@@ -100,12 +105,15 @@ class TestSubmissionHandler(TestCase):
             self.submission_handler.accept(self.submission_request)
 
 
+    @SkipTest
     def test_should_fail_submission_if_invalid_form_code(self):
         self.get_form_model_mock.side_effect = FormModelDoesNotExistsException("INVALID_CODE")
 
         with self.assertRaises(FormModelDoesNotExistsException):
             self.submission_handler.accept(self.submission_request)
 
+
+    @SkipTest
     def test_should_fail_submission_if_invalid_short_code(self):
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
@@ -116,6 +124,8 @@ class TestSubmissionHandler(TestCase):
         with self.assertRaises(DataObjectNotFound):
             self.submission_handler.accept(self.submission_request)
 
+
+    @SkipTest
     def test_should_register_entity_if_form_submission_valid(self):
         self.form_model_mock.validate_submission.return_value = self._valid_form_submission()
         self.form_model_mock.is_registration_form.return_value = True
@@ -130,7 +140,7 @@ class TestSubmissionHandler(TestCase):
         .ENTITY_TYPE,
                                                                                  location=None,
                                                                                  short_code="cid001", geometry=None)
-
+    @SkipTest
     def test_should_not_register_entity_if_form_submission_invalid(self):
         form_submission = self._invalid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
@@ -143,6 +153,8 @@ class TestSubmissionHandler(TestCase):
         self.assertTrue(response.is_registration)
         self.assertFalse(self.form_submission_entity_module.create_entity.called)
 
+
+    @SkipTest
     def test_should_return_expanded_response(self):
         form_submission = self._valid_form_submission_with_choices()
         self.form_model_mock.validate_submission.return_value = form_submission
@@ -152,6 +164,8 @@ class TestSubmissionHandler(TestCase):
         expected_message = form_submission.cleaned_data
         self.assertEquals(expected_message, response.processed_data)
 
+
+    @SkipTest
     def test_should_accept_unicodes_for_valid_submission(self):
         form_submission = self._valid_form_submission_unicode()
         self.form_model_mock.validate_submission.return_value = form_submission
@@ -161,6 +175,8 @@ class TestSubmissionHandler(TestCase):
         self.assertTrue(response.success)
         self.assertEqual({}, response.errors)
 
+
+    @SkipTest
     def test_should_accept_unicodes_for_invalid_submission(self):
         form_submission = self._invalid_form_submission_unicode()
         self.form_model_mock.validate_submission.return_value = form_submission
@@ -170,12 +186,15 @@ class TestSubmissionHandler(TestCase):
         self.assertFalse(response.success)
         self.assertEqual({'field': u'Āgra'}, response.errors)
 
+
+    @SkipTest
     def test_should_raise_inactive_form_model_exception(self):
         self.form_model_mock.is_inactive.return_value = True
         with self.assertRaises(InactiveFormModelException):
             self.submission_handler.accept(self.submission_request)
 
 
+    @SkipTest
     def test_should_log_submissions_in_test_mode(self):
         self.form_model_mock.is_in_test_mode.return_value = True
         self.form_model_mock.is_inactive.return_value = False

@@ -49,7 +49,7 @@ class SurveyResponseService(object):
 
             self.log_request(form_submission.saved, transport_info.source, message)
 
-            return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
+            return Response(reporter_names, None, survey_response.uuid, form_submission.saved,
                 form_submission.errors,
                 form_submission.data_record_id,
                 form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,

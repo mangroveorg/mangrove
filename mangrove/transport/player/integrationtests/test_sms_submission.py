@@ -14,13 +14,13 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
     SHORT_CODE, ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
-from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period, submission_count
-from mangrove.utils.test_utils.submission_builder import SubmissionBuilder
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
+from mangrove.transport.player.new_players import SMSPlayerV2
+from mangrove.transport.player.player import SMSPlayer
 
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):
@@ -35,6 +35,7 @@ class LocationTree(object):
 FORM_CODE = "abc"
 
 class TestShouldSaveSMSSubmission(MangroveTestCase):
+
     def setUp(self):
         MangroveTestCase.setUp(self)
         initializer.run(self.manager)
@@ -86,6 +87,7 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
         self.submission_handler = None
         self.sms_player = SMSPlayer(self.manager, LocationTree())
+        self.sms_player_v2 = SMSPlayerV2(self.manager, [])
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)
@@ -109,6 +111,11 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
     def send_sms(self, text):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         response = self.sms_player.accept(Request(message=text, transportInfo=transport_info))
+        return response
+
+    def send_sms_v2(self, text):
+        transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
+        response = self.sms_player_v2.add_survey_response(Request(message=text, transportInfo=transport_info))
         return response
 
     def test_should_save_submitted_sms(self):
@@ -253,19 +260,19 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertEqual({'q3': 'The answer -184 must be between -180 and 180'}, response.errors)
 
-    def test_should_log_submission(self):
+    def test_should_add_survey_response(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         response = self.send_sms("reg .N buddy .S DOG3 .T dog .G 1 1")
-        submission_log = Submission.get(self.manager, response.submission_id)
-        self.assertIsInstance(submission_log, Submission)
-        self.assertEquals(transport_info.transport, submission_log.channel)
-        self.assertEquals(transport_info.source, submission_log.source)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(True, submission_log. status)
-        self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'dog3', 't': 'dog', 'g': '1 1'}, submission_log.values)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(response.datarecord_id, submission_log.data_record.id)
+        survey_response = Submission.get(self.manager, response.submission_id)
+        self.assertIsInstance(survey_response, Submission)
+        self.assertEquals(transport_info.transport, survey_response.channel)
+        self.assertEquals(transport_info.source, survey_response.source)
+        self.assertEquals(transport_info.destination, survey_response.destination)
+        self.assertEquals(True, survey_response. status)
+        self.assertEquals("reg", survey_response.form_code)
+        self.assertEquals({'n': 'buddy', 's': 'dog3', 't': 'dog', 'g': '1 1'}, survey_response.values)
+        self.assertEquals(transport_info.destination, survey_response.destination)
+        self.assertEquals(response.datarecord_id, survey_response.data_record.id)
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = "reg .N buddy .S DOG3 .T dog .G 80 80 .D its a dog! .M 123456"
@@ -357,8 +364,8 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
 
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        self.assertIsNotNone(response.submission_id)
-        submission_log = self.manager._load_document(response.submission_id, SubmissionLogDocument)
+        self.assertIsNotNone(response.survey_response_id)
+        submission_log = self.manager._load_document(response.survey_response_id, SubmissionLogDocument)
         self.assertTrue(submission_log.test)
 
     def test_should_register_entity_with_geo_code(self):

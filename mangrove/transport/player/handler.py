@@ -15,7 +15,7 @@ class CreateEntityHandler(object):
             location_tree=location_tree)
         if form_submission.is_valid:
             form_submission.save(self.dbm)
-        return create_response_from_form_submission(reporters=reporter_names, survey_response_id=submission_uuid,
+        return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
             form_submission=form_submission)
 
 class UpdateEntityHandler(object):
@@ -28,7 +28,7 @@ class UpdateEntityHandler(object):
         if form_submission.is_valid:
             form_submission.void_existing_data_records(self.dbm, form_model.form_code)
             form_submission.update(self.dbm)
-        return create_response_from_form_submission(reporters=reporter_names, survey_response_id=submission_uuid,
+        return create_response_from_form_submission(reporters=reporter_names, submission_id=submission_uuid,
             form_submission=form_submission)
 
 
@@ -41,7 +41,7 @@ class DeleteHandler(object):
         entity_type = cleaned_data[ENTITY_TYPE_FIELD_CODE]
         if is_empty(errors):
             void_entity(self.dbm, entity_type, short_code)
-        return Response(reporter_names, submission_uuid, is_empty(errors), errors, None, short_code, cleaned_data,
+        return Response(reporter_names, submission_uuid, None, is_empty(errors), errors, None, short_code, cleaned_data,
             False, entity_type, form_model.form_code)
 
 

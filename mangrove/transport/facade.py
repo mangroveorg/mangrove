@@ -33,20 +33,26 @@ class Request(object):
         self.message = message
         self.is_update = is_update
 
-def create_response_from_form_submission(reporters, survey_response_id, form_submission=None):
+
+def create_response_from_form_submission(reporters, submission_id, form_submission=None):
     if form_submission is not None:
-        return Response(reporters, survey_response_id, form_submission.saved, form_submission.errors, form_submission.data_record_id,
-        form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
-        form_submission.form_model.form_code)
-    return Response(reporters, survey_response_id)
+        return Response(reporters, submission_id, None, form_submission.saved, form_submission.errors,
+            form_submission.data_record_id,
+            form_submission.short_code, form_submission.cleaned_data, form_submission.is_registration,
+            form_submission.entity_type,
+            form_submission.form_model.form_code)
+    return Response(reporters, submission_id)
+
 
 class Response(object):
-    def __init__(self, reporters, survey_response_id, success=False, errors=None, data_record_id=None, short_code=None,
+    def __init__(self, reporters, submission_id=None, survey_response_id=None, success=False, errors=None,
+                 data_record_id=None, short_code=None,
                  cleaned_data=None, is_registration=False, entity_type=None, form_code=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.survey_response_id = survey_response_id
         self.errors = errors or {}
+        self.submission_id = submission_id
         self.datarecord_id = data_record_id
         self.short_code = short_code
         self.processed_data = cleaned_data
@@ -54,9 +60,11 @@ class Response(object):
         self.entity_type = entity_type
         self.form_code = form_code
 
+
 class GeneralWorkFlow(object):
     def process(self, values):
         return values
+
 
 class ActivityReportWorkFlow(object):
     def __init__(self, form_model, reporter_entity):
@@ -68,6 +76,7 @@ class ActivityReportWorkFlow(object):
             if self.form_model.entity_defaults_to_reporter():
                 values[self.form_model.entity_question.code] = self.reporter_entity.short_code
         return values
+
 
 class RegistrationWorkFlow(object):
     def __init__(self, dbm, form_model, location_tree):
@@ -95,7 +104,7 @@ class RegistrationWorkFlow(object):
             try:
                 lat_string, long_string = tuple(geo_code.split())
                 location_hierarchy = tree.get_location_hierarchy_for_geocode(lat=float(lat_string),
-                                                                             long=float(long_string))
+                    long=float(long_string))
             except ValueError as e:
                 raise GeoCodeFormatException(e.args)
         elif is_not_empty(location_hierarchy) and is_empty(geo_code):
@@ -117,7 +126,7 @@ class RegistrationWorkFlow(object):
         location_hierarchy = self.get_location_hierarchy(lowest_level_location)
         return location_hierarchy
 
-    def _get_field_code_by_name(self,field_name):
+    def _get_field_code_by_name(self, field_name):
         field = self.form_model.get_field_by_name(name=field_name)
         return field.code if field is not None else None
 
@@ -137,7 +146,6 @@ def _set_short_code(dbm, form_model, values):
             values[entity_q_code] = _generate_short_code(dbm, form_model.entity_type[0])
     except KeyError:
         raise MangroveException(ENTITY_TYPE_FIELD_CODE + " should be present")
-
 
 
 def _generate_short_code(dbm, entity_type):

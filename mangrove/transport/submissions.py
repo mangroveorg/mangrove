@@ -137,7 +137,7 @@ class Submission(DataObject):
         self._doc.form_model_revision = form_model_revision
         self.save()
 
-    def update(self, status, errors, entity_question_code, entity_short_code, data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code=None, entity_short_code=None, data_record_id=None, is_test_mode=False):
         self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id

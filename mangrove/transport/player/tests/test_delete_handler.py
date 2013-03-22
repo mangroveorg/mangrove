@@ -7,6 +7,7 @@ from mangrove.form_model.form_model import FormModel, SHORT_CODE, ENTITY_TYPE_FI
 from mangrove.transport.player.handler import DeleteHandler
 
 class TestDeleteHandler(TestCase):
+
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.handler = DeleteHandler(self.dbm)

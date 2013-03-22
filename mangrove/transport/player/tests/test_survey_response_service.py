@@ -1,17 +1,17 @@
 from collections import OrderedDict
 from unittest import TestCase
 from mock import Mock, patch, call
-from datastore.documents import SurveyResponseDocument
+from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
-from mangrove.form_model.form_model import FormModel, get_form_model_by_code
+from mangrove.form_model.form_model import FormModel
 from mangrove.transport import Request, TransportInfo
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.submissions import Submission
-from transport.survey_responses import SurveyResponse
+from mangrove.transport.survey_responses import SurveyResponse
 
 def assert_submission_log_is(form_code):
     def _assert(self, other):
@@ -28,6 +28,7 @@ def assert_survey_response_doc_is(form_code):
 
 
 class TestSurveyResponseService(TestCase):
+
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
@@ -87,14 +88,14 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
         self.assertIsNotNone(response.datarecord_id)
-        self.assertIsNotNone(response.submission_id)
+        self.assertIsNotNone(response.survey_response_id)
         self.assertEqual(test_data.entity_type, response.entity_type)
         self.assertEqual('CL1', response.form_code)
         self.assertEqual('1', response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
             response.processed_data)
 
-        submission = Submission.get(self.manager, response.submission_id)
+        submission = Submission.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
         self.assertEqual(test_data.form_model.revision, submission.form_model_revision)

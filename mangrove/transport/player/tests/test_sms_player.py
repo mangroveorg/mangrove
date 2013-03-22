@@ -123,7 +123,7 @@ class TestSMSPlayer(TestCase):
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
         post_sms_processor_mock = Mock()
-        expected_response = Response(reporters=None, submission_id=None)
+        expected_response = Response(reporters=None, survey_response_id=None)
         post_sms_processor_mock.process.return_value = expected_response
         message = 'FORM_CODE 1'
 

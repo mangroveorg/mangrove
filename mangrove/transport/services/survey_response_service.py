@@ -3,9 +3,9 @@ from mangrove.errors import MangroveException
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code, DataFormSubmission
 from mangrove.transport.player.parser import WebParser
-from mangrove.transport.submissions import Submission
-from mangrove.transport import Response
-from mangrove.transport.survey_responses import SurveyResponse
+from mangrove.transport.contract.submission import Submission
+from mangrove.transport.contract.response import Response
+from mangrove.transport.repository.survey_responses import SurveyResponse
 
 class SurveyResponseService(object):
     PARSERS = {'web': WebParser()}

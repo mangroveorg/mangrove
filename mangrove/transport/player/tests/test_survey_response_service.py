@@ -7,11 +7,12 @@ from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport import Request, TransportInfo
+from mangrove.transport.contract.request import Request
+from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from mangrove.transport.submissions import Submission
-from mangrove.transport.survey_responses import SurveyResponse
+from mangrove.transport.contract.submission import Submission
+from mangrove.transport.repository.survey_responses import SurveyResponse
 
 def assert_submission_log_is(form_code):
     def _assert(self, other):

@@ -1,8 +1,9 @@
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.facade import Request, TransportInfo
 from mangrove.transport.player.player import  XFormPlayer, Player
+from mangrove.transport.contract.transport_info import TransportInfo
+from mangrove.transport.contract.request import Request
 
 class TestXFormPlayer(TestCase):
     def setUp(self):

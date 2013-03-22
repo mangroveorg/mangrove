@@ -2,10 +2,8 @@
 #  This is an integration test.
 # Send message via web, parse them and save.
 
-from time import mktime
-import datetime
 from mangrove.bootstrap import initializer
-from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
+from mangrove.datastore.documents import  DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
@@ -14,11 +12,11 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import WebPlayer
-from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions_for_activity_period, get_submissions, Submission
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-
+from mangrove.transport.contract.submission import Submission
+from mangrove.transport.contract.transport_info import TransportInfo
+from mangrove.transport.contract.request import Request
 
 class TestWEBSubmission(MangroveTestCase):
     def setUp(self):
@@ -128,23 +126,6 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEqual(len(response.errors), 1)
         self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('q1'))
 
-    def test_should_get_submissions_for_form(self):
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
-                                                          values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                          status=False, error_message="", data_record_id='2345678'))
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
-                                                          values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                          status=False, error_message="", data_record_id='1234567'))
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="def",
-                                                          values={'defQ1': 'defans12', 'defQ2': 'defans22'},
-                                                          status=False, error_message="", data_record_id='345678'))
-
-        oneDay = datetime.timedelta(days=1)
-        tomorrow = datetime.datetime.now() + oneDay
-        submissions = get_submissions(self.manager, "abc", 0, int(mktime(tomorrow.timetuple())) * 1000)
-        self.assertEquals(2, len(submissions))
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
         text = {'form_code':'reg', 't': 'dog', 'n': 'Clinic in Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
@@ -208,15 +189,6 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
-
-    def test_error_messages_are_being_logged_in_submissions(self):
-        text = {'form_code':'clinic', 'EID': self.entity.short_code, 'ARV': '150'}
-        self.send_request_to_web_player(text)
-        oneDay = datetime.timedelta(days=1)
-        tomorrow = datetime.datetime.now() + oneDay
-        submissions= get_submissions(self.manager, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
-        self.assertEquals(1, len(submissions))
-        self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = {'form_code':'reg', 'n':'buddy', 's':'dog3', 't': 'dog', 'g':'80 80', 'd':'its a dog!', 'm':'12345'}
@@ -322,23 +294,6 @@ class TestWEBSubmission(MangroveTestCase):
         dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
         self.assertEqual([u'arantany'], dog.location_path)
-
-    def test_get_submissions_for_form_for_an_activity_period(self):
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
-                                                          values={'Q1': 'ans1', 'Q2': 'ans2'},
-                                                          status=False, error_message="", data_record_id='2345678',event_time=datetime.datetime(2011,9,1)))
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
-                                                          values={'Q1': 'ans12', 'Q2': 'ans22'},
-                                                          status=False, error_message="", data_record_id='1234567',event_time=datetime.datetime(2011,3,3)))
-        self.manager._save_document(SubmissionLogDocument(channel="web", source="tester150411@gmail.com", destination="",form_code="abc",
-                                                          values={'Q1': 'ans12', 'Q2': 'defans22'},
-                                                          status=False, error_message="", data_record_id='345678',event_time=datetime.datetime(2011,3,10)))
-
-        from_time = datetime.datetime(2011,3,1)
-        end_time = datetime.datetime(2011,3,30)
-
-        submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
-        self.assertEquals(2, len(submissions))
 
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):

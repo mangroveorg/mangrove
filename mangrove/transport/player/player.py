@@ -6,11 +6,11 @@ from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import NAME_FIELD
-from mangrove.transport import reporter
+from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
-from mangrove.transport.submissions import  Submission
-from mangrove.transport.facade import  ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
+from mangrove.transport.contract.submission import Submission
+from mangrove.transport.work_flow import ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
 import inspect
 
@@ -41,7 +41,8 @@ class Player(object):
             handler = handler_factory(self.dbm, form_model, is_update)
             response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names,
                 self.location_tree)
-            submission.update(response.success, response.errors, form_model.entity_question.code, response.short_code, response.datarecord_id,
+            submission.update(response.success, response.errors, form_model.entity_question.code, response.short_code,
+                response.datarecord_id,
                 form_model.is_in_test_mode())
             return response
         except MangroveException as exception:
@@ -104,7 +105,7 @@ class SMSPlayer(Player):
                 logger.info(log_entry)
             return post_sms_processor_response
 
-        reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
+        reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
         submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(values, form_code, reporter_entity)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
@@ -113,6 +114,7 @@ class SMSPlayer(Player):
             log_entry += "Status: True" if response.success else "Status: False"
             logger.info(log_entry)
         return response
+
 
 class WebPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None):

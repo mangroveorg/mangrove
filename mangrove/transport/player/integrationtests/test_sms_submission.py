@@ -9,18 +9,18 @@ from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocume
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
-    InactiveFormModelException, DataObjectNotFound
+InactiveFormModelException, DataObjectNotFound
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
-    SHORT_CODE, ENTITY_TYPE_FIELD_CODE
+SHORT_CODE, ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
-from mangrove.transport.facade import TransportInfo, Request
 from mangrove.datastore.datadict import DataDictType
-from mangrove.transport.submissions import get_submissions, get_submissions_for_activity_period, submission_count
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from mangrove.transport.submissions import Submission
+from mangrove.transport.contract.submission import Submission
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.player import SMSPlayer
+from mangrove.transport.contract.transport_info import TransportInfo
+from mangrove.transport.contract.request import Request
 
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):
@@ -179,39 +179,6 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
-    def test_get_submissions_for_form(self):
-        self._prepare_submissions()
-
-        submissions = get_submissions(self.manager, FORM_CODE, 0, self._tomorrow())
-        self.assertEquals(3, len(submissions))
-        self.assertEquals({'Q3': 'ans12', 'Q4': 'ans22'}, submissions[0].values)
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[1].values)
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[2].values)
-
-    def test_get_all_success_submissions_for_form(self):
-        self._prepare_submissions()
-
-        submissions = get_submissions(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_submission_log")
-        self.assertEquals(2, len(submissions))
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, submissions[0].values)
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, submissions[1].values)
-
-    def test_error_messages_are_being_logged_in_submissions(self):
-        text = "clinic .EID %s .ARV 150 " % self.entity.id
-        self.send_sms(text)
-        submissions = get_submissions(self.manager, "clinic", 0, self._tomorrow())
-        self.assertEquals(1, len(submissions))
-        self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", submissions[0].errors)
-
-    def test_should_get_count_of_all_success_submissions(self):
-        self._prepare_submissions()
-        count = submission_count(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_submission_log")
-        self.assertEqual(2, count)
-
-    def test_count_of_submissions_should_be_zero_when_form_code_not_existed(self):
-        self._prepare_submissions()
-        count = submission_count(self.manager, "not_existed_form_code", 0, self._tomorrow())
-        self.assertEqual(0, count)
 
     def test_should_register_new_entity(self):
         message1 = """reg .t  dog .n  Clinic in Diégo–Suarez .l  Diégo–Suarez .g  -12.35  49.3  .d This is a Clinic in
@@ -407,26 +374,6 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
         self.assertEqual([u'arantany'], dog.location_path)
-
-    def test_get_submissions_for_form_for_an_activity_period(self):
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-            destination=12345, form_code="abc",
-            values={'Q1': 'ans1', 'Q2': 'ans2'},
-            status=False, error_message="", data_record_id='2345678', event_time=datetime.datetime(2011, 9, 1)))
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-            destination=12345, form_code="abc",
-            values={'Q1': 'ans12', 'Q2': 'ans22'},
-            status=False, error_message="", data_record_id='1234567', event_time=datetime.datetime(2011, 3, 3)))
-        self.manager._save_document(SubmissionLogDocument(channel="transport", source=1234,
-            destination=12345, form_code="abc",
-            values={'Q1': 'ans12', 'Q2': 'defans22'},
-            status=False, error_message="", data_record_id='345678', event_time=datetime.datetime(2011, 3, 10)))
-
-        from_time = datetime.datetime(2011, 3, 1)
-        end_time = datetime.datetime(2011, 3, 30)
-
-        submissions = get_submissions_for_activity_period(self.manager, "abc", from_time, end_time)
-        self.assertEquals(2, len(submissions))
 
     def test_should_delete_entity_instance_by_sms(self):
         entity = get_by_short_code(self.manager, 'rep1', ["reporter"])

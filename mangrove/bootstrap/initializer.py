@@ -5,7 +5,7 @@ from mangrove.contrib.registration import create_default_reg_form_model
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityTypeAlreadyDefined
 from mangrove.form_model.form_model import get_form_model_by_code, REGISTRATION_FORM_CODE
-from mangrove.transport.reporter import REPORTER_ENTITY_TYPE
+from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 
 
 def run(manager):

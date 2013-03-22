@@ -45,13 +45,14 @@ class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
 
 
 class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unittest.TestCase):
+
     def setUp(self):
         self.validator = MobileNumberValidationsForReporterRegistrationValidator()
         self.field1 = TextField('t', 't', 't', Mock(spec=DataDictType), entity_question_flag=True)
         self.field2 = TextField('m', 'm', 'm', Mock(spec=DataDictType))
         self.fields = [self.field1, self.field2]
         self.dbm = Mock(spec=DatabaseManager)
-        self.patcher = patch('mangrove.transport.reporter.get_all_entities')
+        self.patcher = patch('mangrove.transport.repository.reporters.get_all_entities')
         self.get_all_entities_mock = self.patcher.start()
 
     def tearDown(self):

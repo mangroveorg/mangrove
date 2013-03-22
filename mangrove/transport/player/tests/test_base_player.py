@@ -4,7 +4,7 @@ from mock import Mock,patch
 from mangrove.form_model.field import HierarchyField
 from mangrove.form_model.form_model import FormModel
 from mangrove.datastore.database import DatabaseManager
-from mangrove.transport.facade import RegistrationWorkFlow
+from mangrove.transport.work_flow import RegistrationWorkFlow
 
 def get_location_hierarchy(foo):
     return ["no_hierarchy"]

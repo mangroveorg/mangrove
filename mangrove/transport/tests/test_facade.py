@@ -6,11 +6,13 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
-from mangrove.transport.facade import ActivityReportWorkFlow, RegistrationWorkFlow, create_response_from_form_submission
 from mangrove.utils.test_utils.dummy_location_tree import DummyLocationTree
 from mangrove.utils.types import is_empty
+from mangrove.transport.work_flow import ActivityReportWorkFlow, RegistrationWorkFlow
+from mangrove.transport.contract.response import create_response_from_form_submission
 
 class TestActivityWorkFlow(unittest.TestCase):
+
     def setUp(self):
         self.form_model_mock = Mock(spec=FormModel)
         self.reporter_entity_mock = Mock(spec=Entity)
@@ -53,8 +55,8 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.get_field_by_name = self._location_field
-        self.get_entity_count = patch('mangrove.transport.facade.get_entity_count_for_type', new=dummy_get_entity_count_for_type,spec=True)
-        self.get_entity_count.start()
+        self.get_entity_count = patch('mangrove.transport.work_flow.get_entity_count_for_type', new=dummy_get_entity_count_for_type,spec=True)
+        self.get_entity_count.start()`
 
     def tearDown(self):
         self.get_entity_count.stop()

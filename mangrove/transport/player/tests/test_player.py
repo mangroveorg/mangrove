@@ -1,6 +1,6 @@
 from mangrove.form_model.field import TextField
 from mangrove.transport import TransportInfo
-from mangrove.transport.submissions import Submission
+from mangrove.transport.contract.submission import Submission
 from mangrove.transport.player.player import Player
 from mangrove.form_model.form_model import FormModel
 from mangrove.utils.entity_builder import EntityBuilder

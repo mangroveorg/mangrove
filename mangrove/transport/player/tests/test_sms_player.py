@@ -9,14 +9,16 @@ from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import  OrderSMSParser
-from mangrove.transport.facade import Request, TransportInfo
-from mangrove.transport.facade import Response
+from mangrove.transport.contract.request import Request
+from mangrove.transport.contract.transport_info import TransportInfo
+from mangrove.transport.contract.response import Response
 from mangrove.transport.player.tests.test_web_player import mock_form_submission
 from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.player.new_players import SMSPlayerV2
 
 
 class TestSMSPlayer(TestCase):
+
     def _mock_reporter(self):
         self.reporter_mock = Mock(spec=Entity)
         self.reporter_name = "1234"
@@ -29,7 +31,7 @@ class TestSMSPlayer(TestCase):
         self.loc_tree.get_hierarchy_path.return_value = None
         self.dbm = Mock(spec=DatabaseManager)
         self._mock_form_model()
-        self.reporter_patcher = patch('mangrove.transport.player.new_players.reporter')
+        self.reporter_patcher = patch('mangrove.transport.player.new_players.reporters')
         self.reporter_module = self.reporter_patcher.start()
         self._mock_reporter()
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")

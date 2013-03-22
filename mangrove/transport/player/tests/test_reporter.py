@@ -5,17 +5,16 @@ from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
-from mangrove.transport.facade import TransportInfo
-from mangrove.transport.reporter import find_reporter, get_reporters_who_submitted_data_for_frequency_period
-from mangrove.transport.submissions import Submission
+from mangrove.transport.repository.reporters import find_reporter, get_reporters_who_submitted_data_for_frequency_period
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-
+from mangrove.transport.contract.survey_response import SurveyResponse
+from mangrove.transport.contract.transport_info import TransportInfo
 
 class TestReporter(MangroveTestCase):
     def register(self, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
     #    manager = get_db_manager()
         e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
-                          short_code=short_code)
+            short_code=short_code)
         e.add_data(data=data)
         return e
 
@@ -23,31 +22,31 @@ class TestReporter(MangroveTestCase):
         MangroveTestCase.setUp(self)
         define_type(self.manager, ["reporter"])
         self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
-                                              primitive_type='string')
+            primitive_type='string')
         self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name',
-                                            primitive_type='string')
+            primitive_type='string')
         #Register Reporter
         self.register(self.manager, entity_type=["reporter"],
-                      data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                          (NAME_FIELD, "A", self.first_name_type)],
-                      location=[],
-                      source="sms", short_code="REP1")
+            data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
+                  (NAME_FIELD, "A", self.first_name_type)],
+            location=[],
+            source="sms", short_code="REP1")
         self.register(self.manager, entity_type=["reporter"],
-                      data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
-                          (NAME_FIELD, "B", self.first_name_type)],
-                      location=[],
-                      source="sms", short_code="rep5")
+            data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
+                  (NAME_FIELD, "B", self.first_name_type)],
+            location=[],
+            source="sms", short_code="rep5")
         self.register(self.manager, entity_type=["reporter"],
-                      data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                          (NAME_FIELD, "B", self.first_name_type)],
-                      location=[],
-                      source="sms", short_code="REP2")
+            data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
+                  (NAME_FIELD, "B", self.first_name_type)],
+            location=[],
+            source="sms", short_code="REP2")
 
         self.register(self.manager, entity_type=["reporter"],
-                      data=[(MOBILE_NUMBER_FIELD, "1234567891", self.phone_number_type),
-                          (NAME_FIELD, "C", self.first_name_type)],
-                      location=[],
-                      source="sms", short_code="REP3")
+            data=[(MOBILE_NUMBER_FIELD, "1234567891", self.phone_number_type),
+                  (NAME_FIELD, "C", self.first_name_type)],
+            location=[],
+            source="sms", short_code="REP3")
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)
@@ -70,23 +69,23 @@ class TestReporter(MangroveTestCase):
         self.assertTrue({NAME_FIELD: "B", MOBILE_NUMBER_FIELD: "1234567890"} in reporter_list)
 
     def test_should_return_reporter_submitted_data(self):
-        Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test').save()
+        SurveyResponse(self.manager, TransportInfo('sms', '8888567890', '123'), 'test').save()
         reporters = get_reporters_who_submitted_data_for_frequency_period(self.manager, 'test')
-        self.assertEqual(1,len(reporters))
+        self.assertEqual(1, len(reporters))
         self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 
     def test_should_return_reporter_submitted_data_in_a_time_period(self):
-        submission1= Submission(self.manager, TransportInfo('sms', '8888567890', '123'), 'test')
-        submission1._doc.event_time = datetime(2011,2,2)
-        submission1.save()
+        survey_response_1 = SurveyResponse(self.manager, TransportInfo('sms', '8888567890', '123'), 'test')
+        survey_response_1._doc.event_time = datetime(2011, 2, 2)
+        survey_response_1.save()
 
-        submission2 = Submission(self.manager, TransportInfo('sms', '1234567891', '123'), 'test')
-        submission2._doc.event_time = datetime(2011,1,2)
-        submission2.save()
+        survey_response_2 = SurveyResponse(self.manager, TransportInfo('sms', '1234567891', '123'), 'test')
+        survey_response_2._doc.event_time = datetime(2011, 1, 2)
+        survey_response_2.save()
 
-        from_time = datetime(2011,2,1)
-        to_time = datetime(2011,2,27)
-        reporters = get_reporters_who_submitted_data_for_frequency_period(self.manager, 'test',from_time,to_time)
-        self.assertEqual(1,len(reporters))
+        from_time = datetime(2011, 2, 1)
+        to_time = datetime(2011, 2, 27)
+        reporters = get_reporters_who_submitted_data_for_frequency_period(self.manager, 'test', from_time, to_time)
+        self.assertEqual(1, len(reporters))
         self.assertEqual('8888567890', reporters[0].value('mobile_number'))
 

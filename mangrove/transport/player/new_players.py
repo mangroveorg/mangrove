@@ -2,8 +2,8 @@ import inspect
 from mangrove.form_model.form_model import NAME_FIELD, get_form_model_by_code
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
 from mangrove.transport.services.survey_response_service import SurveyResponseService
-from mangrove.transport import reporter
 from mangrove.utils.types import is_empty
+from mangrove.transport.repository import reporters
 
 class WebPlayerV2(object):
     def __init__(self, dbm):
@@ -44,7 +44,7 @@ class SMSPlayerV2(object):
                 logger.info(log_entry)
             return post_sms_processor_response
 
-        reporter_entity = reporter.find_reporter_entity(self.dbm, request.transport.source)
+        reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
 
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)

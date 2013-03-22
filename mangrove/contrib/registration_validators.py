@@ -52,7 +52,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
         return False
 
     def _is_phone_number_unique(self, dbm, phone_number, reporter_id):
-        from mangrove.transport.reporter import find_reporters_by_from_number
+        from mangrove.transport.repository.reporters import find_reporters_by_from_number
         try:
             registered_reporters = find_reporters_by_from_number(dbm, self._clean(phone_number))
         except NumberNotRegisteredException:

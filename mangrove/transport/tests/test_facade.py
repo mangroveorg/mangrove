@@ -56,7 +56,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.get_field_by_name = self._location_field
         self.get_entity_count = patch('mangrove.transport.work_flow.get_entity_count_for_type', new=dummy_get_entity_count_for_type,spec=True)
-        self.get_entity_count.start()`
+        self.get_entity_count.start()
 
     def tearDown(self):
         self.get_entity_count.stop()

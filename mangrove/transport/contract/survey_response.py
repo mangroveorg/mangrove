@@ -58,6 +58,10 @@ class SurveyResponse(DataObject):
     def values(self):
         return self._doc.values
 
+    @values.setter
+    def values(self, values):
+        self._doc.values = values
+
     @property
     def errors(self):
         return self._doc.error_message
@@ -87,12 +91,14 @@ class SurveyResponse(DataObject):
             data_record.delete()
         super(SurveyResponse, self).delete()
 
-    def update(self, status, errors, entity_question_code, entity_short_code, data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code, entity_short_code, values=None,data_record_id=None, is_test_mode=False):
         self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id
         self._doc.error_message = self._to_string(errors)
         self._doc.test = is_test_mode
+        if values:
+            self.values = values
         self.save()
 
     def update_form_model_revision(self, form_model_revision):

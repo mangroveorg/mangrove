@@ -98,7 +98,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
         submission = Submission.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
-        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
         self.assertEqual(test_data.form_model.revision, submission.form_model_revision)
         self.assertEqual(test_data.entity1.short_code, submission.get_entity_short_code('ID'))
         self.assertEqual(True, submission.status)
@@ -112,3 +111,31 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual(True, survey_response.status)
         self.assertIsNotNone(survey_response.data_record)
 
+    def test_survey_response_is_edited_and_new_submission_is_created(self):
+        test_data = TestData(self.manager)
+        survey_response_service = SurveyResponseService(self.manager)
+
+        values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values, transport_info)
+
+        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info,request.message)
+        self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
+            saved_response.processed_data)
+
+        new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
+        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,saved_response.survey_response_id)
+        self.assertTrue(edited_response.success)
+        self.assertEqual(0, edited_response.errors.__len__())
+        self.assertIsNotNone(edited_response.datarecord_id)
+        self.assertIsNotNone(edited_response.survey_response_id)
+        self.assertEqual(test_data.entity_type, edited_response.entity_type)
+        self.assertEqual('CL1', edited_response.form_code)
+        self.assertEqual('1', edited_response.short_code)
+        self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
+            edited_response.processed_data)
+
+        submission = Submission.get(self.manager, edited_response.submission_id)
+        self.assertNotEquals(saved_response.submission_id,edited_response.submission_id)
+        self.assertIsNotNone(submission.form_model_revision)
+        self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)

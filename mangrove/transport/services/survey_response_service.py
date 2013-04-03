@@ -75,9 +75,8 @@ class SurveyResponseService(object):
             form_submission.save(self.dbm)
         return form_submission
 
-    def edit_survey(self, form_code, values, reporter_names, transport_info, message,survey_response_id):
+    def edit_survey(self, form_code, values, reporter_names, transport_info, message,survey_response):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
-        survey_response = get_survey_response_by_id(self.dbm, survey_response_id)
         return self.update_survey_response_and_submission(submission,survey_response,form_code,values,reporter_names,transport_info,message)
 
     def delete_survey_response(self):

@@ -124,7 +124,8 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
             saved_response.processed_data)
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
-        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,saved_response.survey_response_id)
+        survey_response = SurveyResponse.get(self.manager,saved_response.survey_response_id)
+        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,survey_response)
         self.assertTrue(edited_response.success)
         self.assertEqual(0, edited_response.errors.__len__())
         self.assertIsNotNone(edited_response.datarecord_id)

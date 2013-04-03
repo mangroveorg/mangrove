@@ -18,11 +18,11 @@ class WebPlayerV2(object):
     def _parse(self, message):
         return WebParser().parse(message)
 
-    def edit_survey_response(self,request,survey_response_id,logger=None):
+    def edit_survey_response(self,request,survey_response,logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger)
-        return service.edit_survey(form_code, values, [],request.transport, request.message,survey_response_id)
+        return service.edit_survey(form_code, values, [],request.transport, request.message,survey_response)
 
 
 class SMSPlayerV2(object):

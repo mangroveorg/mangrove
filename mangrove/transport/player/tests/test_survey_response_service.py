@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from unittest import TestCase
 from mock import Mock, patch, call
 from mangrove.datastore.documents import SurveyResponseDocument
@@ -29,7 +30,6 @@ def assert_survey_response_doc_is(form_code):
 
 
 class TestSurveyResponseService(TestCase):
-
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
@@ -73,9 +73,7 @@ class TestSurveyResponseService(TestCase):
             calls = [call(self.dbm, 'some_form_code')]
             patched_form_model.assert_has_calls(calls)
 
-
 class TestSurveyResponseServiceIT(MangroveTestCase):
-
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)
         survey_response_service = SurveyResponseService(self.manager)
@@ -119,13 +117,14 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
 
-        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info,request.message)
+        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message)
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
             saved_response.processed_data)
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
-        survey_response = SurveyResponse.get(self.manager,saved_response.survey_response_id)
-        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,survey_response)
+        survey_response = SurveyResponse.get(self.manager, saved_response.survey_response_id)
+        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
+            survey_response)
         self.assertTrue(edited_response.success)
         self.assertEqual(0, edited_response.errors.__len__())
         self.assertIsNotNone(edited_response.datarecord_id)
@@ -137,6 +136,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
             edited_response.processed_data)
 
         submission = Submission.get(self.manager, edited_response.submission_id)
-        self.assertNotEquals(saved_response.submission_id,edited_response.submission_id)
+        self.assertNotEquals(saved_response.submission_id, edited_response.submission_id)
         self.assertIsNotNone(submission.form_model_revision)
         self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)

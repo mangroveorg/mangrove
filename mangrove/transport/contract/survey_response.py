@@ -1,3 +1,4 @@
+from copy import  deepcopy
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.entity import DataRecord
@@ -91,7 +92,8 @@ class SurveyResponse(DataObject):
             data_record.delete()
         super(SurveyResponse, self).delete()
 
-    def update(self, status, errors, entity_question_code, entity_short_code, values=None,data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code, entity_short_code, values=None, data_record_id=None,
+               is_test_mode=False):
         self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id
@@ -113,3 +115,32 @@ class SurveyResponse(DataObject):
         if is_sequence(errors):
             return sequence_to_str(errors)
         return None
+
+    def differs_from(self, older_response):
+        difference = SurveyResponseDifference(older_response.created, self.status != older_response.status)
+        for key in self.values.keys():
+            if self.values[key] != older_response.values[key]:
+                difference.add(key, older_response.values[key], self.values[key])
+        return difference
+
+    def copy(self):
+        survey_copy = SurveyResponse(None)
+        survey_copy._doc = SurveyResponseDocument(self._doc.source, self._doc.channel, self._doc.destination,
+            deepcopy(self.values), self.id, self.status, self.errors, self.form_code, self.form_model_revision,
+            self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
+        return survey_copy
+
+
+class SurveyResponseDifference(object):
+    def __init__(self, created, status_changed):
+        self.created = created
+        self.status_changed = status_changed
+        self.changed_answers = {}
+
+    def add(self, key, old_value, new_value):
+        self.changed_answers[key] = {'old': old_value, 'new': new_value}
+
+    def __eq__(self, other):
+        assert isinstance(other, SurveyResponseDifference)
+        if self.created == other.created and self.status_changed == other.status_changed and self.changed_answers == other.changed_answers:
+            return True

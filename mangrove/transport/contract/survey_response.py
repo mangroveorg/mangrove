@@ -119,8 +119,11 @@ class SurveyResponse(DataObject):
     def differs_from(self, older_response):
         difference = SurveyResponseDifference(older_response.created, self.status != older_response.status)
         for key in self.values.keys():
-            if self.values[key] != older_response.values[key]:
-                difference.add(key, older_response.values[key], self.values[key])
+            if key in older_response.values:
+                if self.values[key] != older_response.values[key]:
+                    difference.add(key, older_response.values[key], self.values[key])
+            else:
+                difference.add(key,'', self.values[key])
         return difference
 
     def copy(self):

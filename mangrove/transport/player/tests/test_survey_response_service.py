@@ -5,6 +5,7 @@ from mock import Mock, patch, call
 from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
+from mangrove.datastore.entity import DataRecord
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
 from mangrove.form_model.form_model import FormModel
@@ -109,7 +110,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual(True, survey_response.status)
         self.assertIsNotNone(survey_response.data_record)
 
-    def test_survey_response_is_edited_and_new_submission_is_created(self):
+    def test_survey_response_is_edited_and_new_submission_and_datarecord_are_created(self):
         test_data = TestData(self.manager)
         survey_response_service = SurveyResponseService(self.manager)
 
@@ -122,20 +123,27 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
             saved_response.processed_data)
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
-        survey_response = SurveyResponse.get(self.manager, saved_response.survey_response_id)
-        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
-            survey_response)
-        self.assertTrue(edited_response.success)
-        self.assertEqual(0, edited_response.errors.__len__())
-        self.assertIsNotNone(edited_response.datarecord_id)
-        self.assertIsNotNone(edited_response.survey_response_id)
-        self.assertEqual(test_data.entity_type, edited_response.entity_type)
-        self.assertEqual('CL1', edited_response.form_code)
-        self.assertEqual('1', edited_response.short_code)
-        self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
-            edited_response.processed_data)
+        survey_response_to_edit = SurveyResponse.get(self.manager,saved_response.survey_response_id)
+        edit_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,survey_response_to_edit)
 
-        submission = Submission.get(self.manager, edited_response.submission_id)
-        self.assertNotEquals(saved_response.submission_id, edited_response.submission_id)
+        self.assertTrue(edit_response.success)
+        self.assertEqual(0, edit_response.errors.__len__())
+        self.assertIsNotNone(edit_response.datarecord_id)
+        self.assertIsNotNone(edit_response.survey_response_id)
+        self.assertEqual(test_data.entity_type, edit_response.entity_type)
+        self.assertEqual('CL1', edit_response.form_code)
+        self.assertEqual('1', edit_response.short_code)
+        self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
+            edit_response.processed_data)
+
+        submission = Submission.get(self.manager, edit_response.submission_id)
+        self.assertNotEquals(saved_response.submission_id, edit_response.submission_id)
         self.assertIsNotNone(submission.form_model_revision)
         self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)
+
+        self.assertNotEquals(saved_response.datarecord_id,edit_response.datarecord_id)
+
+        old_data_record = DataRecord.get(self.manager,saved_response.datarecord_id)
+        self.assertTrue(old_data_record.voided)
+        new_data_record = DataRecord.get(self.manager, edit_response.datarecord_id)
+        self.assertFalse(new_data_record.voided)

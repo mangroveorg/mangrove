@@ -71,12 +71,14 @@ class SurveyResponse(DataObject):
     def event_time(self):
         return self._doc.event_time
 
-    def void(self, void=True):
+    def void_existing_data_record(self, void=True):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:
             data_record = DataRecord.get(self._dbm, data_record_id)
             data_record.void(void)
 
+    def void(self, void=True):
+        self.void_existing_data_record(void)
         DataObject.void(self, void)
 
     def get_entity_short_code(self, entity_question_code):

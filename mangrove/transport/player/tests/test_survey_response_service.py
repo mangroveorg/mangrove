@@ -35,7 +35,7 @@ class TestSurveyResponseService(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
 
-    def test_create_survey_response_when_form_code_is_non_existent(self):
+    def test_create_submission_log_when_form_code_is_non_existent(self):
         SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
         SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
 
@@ -52,7 +52,7 @@ class TestSurveyResponseService(TestCase):
                 except FormModelDoesNotExistsException:
                     pass
                 get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
-                save_document.assert_has_calls([call(SubmissionLogDocument()), call(SurveyResponseDocument())])
+                save_document.assert_has_calls([call(SubmissionLogDocument())])
 
 
     def test_create_submission_for_a_survey_response_for_inactive_form_code(self):
@@ -106,7 +106,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
         self.assertEqual(test_data.form_model.revision, survey_response.form_model_revision)
-        self.assertEqual(test_data.entity1.short_code, survey_response.get_entity_short_code('ID'))
         self.assertEqual(True, survey_response.status)
         self.assertIsNotNone(survey_response.data_record)
 

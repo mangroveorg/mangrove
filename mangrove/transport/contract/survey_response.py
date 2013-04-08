@@ -59,10 +59,6 @@ class SurveyResponse(DataObject):
     def values(self):
         return self._doc.values
 
-    @values.setter
-    def values(self, values):
-        self._doc.values = values
-
     @property
     def errors(self):
         return self._doc.error_message
@@ -71,43 +67,41 @@ class SurveyResponse(DataObject):
     def event_time(self):
         return self._doc.event_time
 
-    def void_existing_data_record(self, void=True):
-        data_record_id = self._doc.data_record_id
-        if data_record_id is not None:
-            data_record = DataRecord.get(self._dbm, data_record_id)
-            data_record.void(void)
+    def set_form(self, form_model):
+        self._doc.form_model_revision = form_model.revision
+        self.entity_question_code = form_model.entity_question.code
+        self._doc.test = form_model.is_in_test_mode()
 
-    def void(self, void=True):
-        self.void_existing_data_record(void)
-        DataObject.void(self, void)
-
-    def get_entity_short_code(self, entity_question_code):
-        return self.values[entity_question_code]
-
-    def set_entity(self, entity_question_code, entity_short_code):
-        self.values[entity_question_code] = entity_short_code
-
-    def delete(self):
-        data_record_id = self._doc.data_record_id
-        if data_record_id is not None:
-            data_record = DataRecord.get(self._dbm, data_record_id)
-            data_record.delete()
-        super(SurveyResponse, self).delete()
-
-    def update(self, status, errors, entity_question_code, entity_short_code, values=None, data_record_id=None,
-               is_test_mode=False):
-        self.set_entity(entity_question_code, entity_short_code)
-        self._doc.status = status
-        self._doc.data_record_id = data_record_id
-        self._doc.error_message = self._to_string(errors)
-        self._doc.test = is_test_mode
+    def set_answers(self, entity_short_code, values):
         if values:
-            self.values = values
+            self._doc.values = values
+            self.values[self.entity_question_code] = entity_short_code
+
+    def set_status(self, errors):
+        if errors.__len__() == 0:
+            self._doc.status = True
+        else:
+            self._doc.status = False
+            self._doc.error_message = self._to_string(errors)
+
+    def _void_existing_data_record(self):
+        data_record_id = self._doc.data_record_id
+        if data_record_id is not None:
+            data_record = DataRecord.get(self._dbm, data_record_id)
+            data_record.void()
+
+    def create(self, data_record_id):
+        self._doc.data_record_id = data_record_id
         self.save()
 
-    def update_form_model_revision(self, form_model_revision):
-        self._doc.form_model_revision = form_model_revision
+    def update(self, data_record_id):
+        self._void_existing_data_record()
+        self._doc.data_record_id = data_record_id
         self.save()
+
+    def void(self):
+        self._void_existing_data_record()
+        super(SurveyResponse, self).void()
 
     def _to_string(self, errors):
         if is_string(errors):

@@ -504,25 +504,12 @@ class FormSubmission(object):
         entity_type = self.form_model.entity_type
         return [e_type.lower() for e_type in entity_type] if is_not_empty(entity_type) else None
 
-
 class DataFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors):
         super(DataFormSubmission, self).__init__(form_model, answers, errors)
 
     def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
-
-#    def update_existing_data_records(self, dbm, submission_uuid):
-#        data_record_id = (dbm._load_document(submission_uuid))._data['data_record_id']
-#        data_record = DataRecord.get(dbm, data_record_id)
-#        for value_tuple in self._values:
-#            if value_tuple[0] not in data_record._doc.entity['data'].keys():
-#                data_record._doc.entity['data'].update({value_tuple[0]: value_tuple[1]})
-#                continue
-#            data_record._doc.entity['data'][value_tuple[0]]['value'] = value_tuple[1]
-#        self.data_record_id = data_record_id
-#        data_record.save()
-
 
 class GlobalRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
@@ -548,7 +535,6 @@ class GlobalRegistrationFormSubmission(FormSubmission):
             data_record_doc = data_record.value
             data_record_doc['void'] = True
             dbm.database.save(data_record_doc)
-
 
 class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):

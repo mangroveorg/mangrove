@@ -1,7 +1,8 @@
 import unittest
 from mock import Mock, patch
+from mangrove.form_model.form_submission import FormSubmission
 from mangrove.form_model.field import HierarchyField, GeoCodeField
-from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, FormSubmission
+from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField

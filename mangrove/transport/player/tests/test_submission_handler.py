@@ -2,7 +2,8 @@
 from collections import OrderedDict
 from unittest import TestCase
 from mock import Mock, patch
-from mangrove.form_model.form_model import FormSubmissionFactory, FormModel
+from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_submission import FormSubmissionFactory
 from mangrove.datastore.database import DatabaseManager
 from mangrove.transport.player.handler import CreateEntityHandler
 

@@ -6,8 +6,8 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException,\
     DataObjectNotFound, InactiveFormModelException
-
-from mangrove.form_model.form_model import FormModel, FormSubmission
+from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_submission import FormSubmission
 
 #TODO: Now that submission handler has been deleted, move these tests to the player.
 from mangrove.transport.contract.transport_info import Channel

@@ -1,7 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.datastore.entity import void_entity
-from mangrove.form_model.form_model import FormSubmissionFactory, ENTITY_TYPE_FIELD_CODE, SHORT_CODE
+from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, SHORT_CODE
+from mangrove.form_model.form_submission import FormSubmissionFactory
 from mangrove.transport.contract.response import Response
 from mangrove.utils.types import is_empty
 from mangrove.transport.contract.response import create_response_from_form_submission

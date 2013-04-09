@@ -2,7 +2,8 @@ from collections import OrderedDict
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.form_model.form_model import FormModel, FormSubmissionFactory, FormSubmission
+from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_submission import FormSubmissionFactory, FormSubmission
 from mangrove.transport.player.player import WebPlayer
 from mangrove.utils.test_utils.dummy_location_tree import DummyLocationTree
 from mangrove.transport.contract.transport_info import TransportInfo

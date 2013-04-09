@@ -1,7 +1,8 @@
 from copy import copy
+from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors import MangroveException
 from mangrove.errors.MangroveException import InactiveFormModelException
-from mangrove.form_model.form_model import get_form_model_by_code, DataFormSubmission
+from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.player.parser import WebParser
 from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.response import Response

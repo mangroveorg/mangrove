@@ -8,7 +8,8 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField, DateField
-from mangrove.form_model.form_model import FormModel, FormSubmissionFactory
+from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_submission import FormSubmissionFactory
 
 ENTITY_TYPE = ["Clinic"]
 

@@ -3,13 +3,13 @@ import unittest
 from couchdb.mapping import Document
 from django.utils.unittest.case import SkipTest
 from mock import Mock, patch
+from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.documents import  DataRecordDocument, EntityDocument, DocumentBase
 from mangrove.datastore.entity import DataRecord
-from mangrove.form_model.form_model import EntityRegistrationFormSubmission
-from mangrove.form_model.form_model import GlobalRegistrationFormSubmission, GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
-from mangrove.form_model.form_model import DataFormSubmission, FormSubmissionFactory, FormModel
+from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+from mangrove.form_model.form_model import FormModel
 
 class TestFormSubmissionFactory(unittest.TestCase):
     def test_should_give_data_form_submission(self):

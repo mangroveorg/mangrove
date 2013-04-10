@@ -2,9 +2,12 @@ from mangrove.errors import MangroveException
 from mangrove.datastore.entity import get_by_short_code
 
 class EditSurveyResponseForm(object):
+
     def __init__(self, dbm, survey_response, form_model, form_answers):
         assert form_model is not None
         assert dbm is not None
+
+        self.saved = False
 
         self.dbm = dbm
         self.form_model = form_model
@@ -22,10 +25,6 @@ class EditSurveyResponseForm(object):
         self.survey_response.set_answers(self.short_code, form_answers)
 
     @property
-    def status(self):
-        return self.is_valid
-
-    @property
     def entity_question_code(self):
         return self.form_model.entity_question.code
 
@@ -38,6 +37,7 @@ class EditSurveyResponseForm(object):
         return self.form_model.is_entity_registration_form()
 
     def save(self):
+        assert self.is_valid
         try:
             self.survey_response.update(self.form_model, self.data(), self.entity)
             self.entity.update_latest_data(data=self.data())
@@ -46,6 +46,8 @@ class EditSurveyResponseForm(object):
             raise
         finally:
             self.survey_response.set_status(self.errors)
+
+        self.saved = True
         return self.survey_response
 
     def get_answer_for(self, code):

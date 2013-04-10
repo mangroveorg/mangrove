@@ -69,16 +69,16 @@ class SurveyResponseService(object):
 
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, values)
         try:
-            survey_response = form.save()
-            submission.update(form.status, form.errors, form.entity_question_code,
+            if form.is_valid:
+                survey_response = form.save()
+            submission.update(form.saved, form.errors, form.entity_question_code,
                 form.short_code, form.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
-            self.log_request(form.status, transport_info.source, message)
-
-        return Response(reporter_names, submission.uuid, survey_response.uuid, form.status,
+            self.log_request(form.saved, transport_info.source, message)
+        return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
             form.errors, form.data_record_id, form.short_code,
             form._cleaned_data, form.is_registration, form.entity_type,
             form.form_model.form_code)
@@ -88,7 +88,3 @@ class SurveyResponseService(object):
             log_entry = "message: " + str(message) + "|source: " + source + "|"
             log_entry += "status: True" if status else "status: False"
             self.logger.info(log_entry)
-
-
-        def delete_survey_response(self):
-            pass

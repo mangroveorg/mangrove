@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FIELD_NAME, GEO_CODE, ENTITY_TYPE_FIELD_CODE, REGISTRATION_FORM_CODE
 from mangrove.form_model.location import Location
 from mangrove.datastore import entity
 from mangrove.utils.types import  is_empty, is_not_empty

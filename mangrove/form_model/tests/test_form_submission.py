@@ -104,14 +104,14 @@ class TestFormSubmission(unittest.TestCase):
             event_time=event_time, submission=submission_information)
 
     def _get_entity_mock(self):
-        entity_patcher = patch('mangrove.form_model.form_model.entity.get_by_short_code')
+        entity_patcher = patch('mangrove.form_model.form_submission.entity.get_by_short_code')
         entity_patcher_mock = entity_patcher.start()
         entity_mock = Mock(spec=Entity)
         entity_patcher_mock.return_value = entity_mock
         return entity_mock, entity_patcher
 
     def _create_entity_mock(self):
-        entity_patcher = patch('mangrove.form_model.form_model.entity.create_entity')
+        entity_patcher = patch('mangrove.form_model.form_submission.entity.create_entity')
         entity_patcher_mock = entity_patcher.start()
         entity_mock = Mock(spec=Entity)
         entity_patcher_mock.return_value = entity_mock

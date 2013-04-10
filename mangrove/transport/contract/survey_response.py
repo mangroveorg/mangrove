@@ -1,8 +1,11 @@
 from copy import  deepcopy
+from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.database import DataObject
-from mangrove.datastore.documents import SurveyResponseDocument
+from mangrove.datastore.documents import SurveyResponseDocument, DataRecordDocument
 from mangrove.datastore.entity import DataRecord
-from mangrove.utils.types import is_string, sequence_to_str, is_sequence
+from mangrove.utils.types import is_string, sequence_to_str, is_sequence, is_empty
+from datetime import datetime
+from mangrove.utils.dates import utcnow
 
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
@@ -22,6 +25,10 @@ class SurveyResponse(DataObject):
     @property
     def data_record(self):
         return DataRecord.get(self._dbm, self._doc.data_record_id) if self._doc.data_record_id is not None else None
+
+    @property
+    def data_record_id(self):
+        return self._doc.data_record_id
 
     @property
     def destination(self):
@@ -94,7 +101,11 @@ class SurveyResponse(DataObject):
         self._doc.data_record_id = data_record_id
         self.save()
 
-    def update(self, data_record_id):
+    def update(self, bound_form_model, data, entity):
+        assert self.errors == ''
+        submission_information = dict(form_code=self.form_code)
+        data_record_id = self.add_data(entity, data=data, event_time=bound_form_model._get_event_time_value(),
+            submission=submission_information)
         self._void_existing_data_record()
         self._doc.data_record_id = data_record_id
         self.save()
@@ -102,6 +113,49 @@ class SurveyResponse(DataObject):
     def void(self):
         self._void_existing_data_record()
         super(SurveyResponse, self).void()
+
+    def add_data(self, entity, data=(), event_time=None, submission=None, multiple_records=False):
+        """
+        Add a new datarecord to this Entity and return a UUID for the datarecord.
+        Arguments:
+            data: a sequence of ordered tuples, (label, value, type)
+                where type is a DataDictType
+            event_time: the time at which the event occured rather than
+                when it was reported
+            submission_id: an id to a 'submission' document in the
+                submission log from which this data came
+        """
+        assert is_sequence(data)
+        assert event_time is None or isinstance(event_time, datetime)
+        assert self.id is not None, u"id should never be none, even if haven't been saved,an entity should have a UUID."
+        # TODO: should we have a flag that says that this has been
+        # saved at least once to avoid adding data records for an
+        # Entity that may never be saved? Should docs just be saved on
+        # init?
+        if event_time is None:
+            event_time = utcnow()
+        for (label, value, dd_type) in data:
+            if not isinstance(dd_type, DataDictType) or is_empty(label):
+                raise ValueError(u'Data must be of the form (label, value, DataDictType).')
+        if multiple_records:
+            data_list = []
+            for (label, value, dd_type) in data:
+                data_record = DataRecordDocument(
+                    entity_doc=entity._doc,
+                    event_time=event_time,
+                    data=[(label, value, dd_type)],
+                    submission=submission
+                )
+                data_list.append(data_record)
+            return self._dbm._save_documents(data_list)
+        else:
+            data_record_doc = DataRecordDocument(
+                entity_doc=entity._doc,
+                event_time=event_time,
+                data=data,
+                submission=submission
+            )
+            return self._dbm._save_document(data_record_doc)
 
     def _to_string(self, errors):
         if is_string(errors):
@@ -119,7 +173,7 @@ class SurveyResponse(DataObject):
                 if self.values[key] != older_response.values[key]:
                     difference.add(key, older_response.values[key], self.values[key])
             else:
-                difference.add(key,'', self.values[key])
+                difference.add(key, '', self.values[key])
         return difference
 
     def copy(self):

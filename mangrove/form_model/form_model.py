@@ -141,6 +141,10 @@ class FormModel(DataObject):
                                 event_time_question.is_event_time_field]
         return event_time_questions[0] if event_time_questions else None
 
+    def _get_event_time_value(self):
+        event_time_question_code = self.event_time_question.code if self.event_time_question else None
+        return  self._get_field_by_code(event_time_question_code).value if event_time_question_code else None
+
     @property
     def form_code(self):
         return self._doc.form_code

@@ -74,6 +74,7 @@ class TestSurveyResponseService(TestCase):
             calls = [call(self.dbm, 'some_form_code')]
             patched_form_model.assert_has_calls(calls)
 
+
 class TestSurveyResponseServiceIT(MangroveTestCase):
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)
@@ -122,8 +123,9 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
             saved_response.processed_data)
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
-        survey_response_to_edit = SurveyResponse.get(self.manager,saved_response.survey_response_id)
-        edit_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info,request.message,survey_response_to_edit)
+        survey_response_to_edit = SurveyResponse.get(self.manager, saved_response.survey_response_id)
+        edit_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
+            survey_response_to_edit)
 
         self.assertTrue(edit_response.success)
         self.assertEqual(0, edit_response.errors.__len__())
@@ -140,9 +142,9 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertIsNotNone(submission.form_model_revision)
         self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)
 
-        self.assertNotEquals(saved_response.datarecord_id,edit_response.datarecord_id)
+        self.assertNotEquals(saved_response.datarecord_id, edit_response.datarecord_id)
 
-        old_data_record = DataRecord.get(self.manager,saved_response.datarecord_id)
+        old_data_record = DataRecord.get(self.manager, saved_response.datarecord_id)
         self.assertTrue(old_data_record.voided)
         new_data_record = DataRecord.get(self.manager, edit_response.datarecord_id)
         self.assertFalse(new_data_record.voided)

@@ -1,5 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
+from datetime import *
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
@@ -142,8 +143,10 @@ class FormModel(DataObject):
         return event_time_questions[0] if event_time_questions else None
 
     def _get_event_time_value(self):
-        event_time_question_code = self.event_time_question.code if self.event_time_question else None
-        return  self._get_field_by_code(event_time_question_code).value if event_time_question_code else None
+        if self.event_time_question and self.event_time_question.code:
+            field = self._get_field_by_code(self.event_time_question.code)
+            return datetime.strptime(field.value, field.DATE_DICTIONARY.get(field.date_format)) if field.value else None
+        return None
 
     @property
     def form_code(self):

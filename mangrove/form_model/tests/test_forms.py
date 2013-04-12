@@ -1,5 +1,4 @@
 from unittest import TestCase
-from mangrove.transport.survey_responses import SurveyResponse
 from mock import Mock, patch
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField
@@ -7,6 +6,7 @@ from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.forms import EditSurveyResponseForm
+from mangrove.transport.contract.survey_response import SurveyResponse
 
 class TestEditSurveyResponseForm(TestCase):
 

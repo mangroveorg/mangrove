@@ -1,4 +1,5 @@
 from copy import copy
+import datetime
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors import MangroveException
@@ -82,6 +83,13 @@ class SurveyResponseService(object):
             form.errors, form.data_record_id, form.short_code,
             form._cleaned_data, form.is_registration, form.entity_type,
             form.form_model.form_code)
+
+    def delete_survey(self, reporter_names, survey_response):
+        try:
+            survey_response.void()
+        except MangroveException as e:
+            return Response(reporter_names, errors=e.message)
+        return Response(reporter_names, success=True)
 
     def log_request(self, status, source, message):
         if self.logger is not None:

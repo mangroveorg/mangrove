@@ -73,14 +73,6 @@ class Submission(DataObject):
     def event_time(self):
         return self._doc.event_time
 
-    def void(self):
-        data_record_id = self._doc.data_record_id
-        if data_record_id is not None:
-            data_record = DataRecord.get(self._dbm, data_record_id)
-            data_record.void()
-
-        DataObject.void(self)
-
     def delete(self):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:

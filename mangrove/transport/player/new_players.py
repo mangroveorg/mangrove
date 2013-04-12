@@ -24,6 +24,11 @@ class WebPlayerV2(object):
         service = SurveyResponseService(self.dbm, logger)
         return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response)
 
+    def delete_survey_response(self, survey_response, logger=None):
+        assert survey_response is not None
+        service = SurveyResponseService(self.dbm, logger)
+        return service.delete_survey([], survey_response)
+
 
 class SMSPlayerV2(object):
     def __init__(self, dbm, post_sms_parser_processors):

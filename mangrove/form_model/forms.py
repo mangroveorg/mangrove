@@ -4,8 +4,9 @@ from mangrove.datastore.entity import get_by_short_code
 class EditSurveyResponseForm(object):
 
     def __init__(self, dbm, survey_response, form_model, form_answers):
-        assert form_model is not None
         assert dbm is not None
+        assert survey_response is not None
+        assert form_model is not None
 
         self.saved = False
 

@@ -373,6 +373,7 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if self._get_field_by_code(k) is not None])
 
+#TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
     def validate_submission(self, values):
         assert values is not None
         cleaned_values = OrderedDict()

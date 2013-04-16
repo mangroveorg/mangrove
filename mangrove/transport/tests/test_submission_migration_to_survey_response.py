@@ -3,7 +3,7 @@ from pytz import UTC
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.transport.contract.submission import Submission
-from utils.test_utils.mangrove_test_case import MangroveTestCase
+from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 class TestMigration(MangroveTestCase):
 

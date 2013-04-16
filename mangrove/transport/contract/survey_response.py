@@ -74,6 +74,10 @@ class SurveyResponse(DataObject):
     def event_time(self):
         return self._doc.event_time
 
+    @property
+    def submitted_on(self):
+        return self._doc.submitted_on
+
     def set_form(self, form_model):
         self._doc.form_model_revision = form_model.revision
         self.entity_question_code = form_model.entity_question.code
@@ -167,7 +171,7 @@ class SurveyResponse(DataObject):
         return None
 
     def differs_from(self, older_response):
-        difference = SurveyResponseDifference(older_response.created, self.status != older_response.status)
+        difference = SurveyResponseDifference(older_response.submitted_on, self.status != older_response.status)
         for key in self.values.keys():
             if key in older_response.values:
                 if self.values[key] != older_response.values[key]:
@@ -183,10 +187,19 @@ class SurveyResponse(DataObject):
             self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
         return survey_copy
 
+    def create_migrated_response(self, status, error_message, void, submitted_on, test, event_time,data_record_id):
+        '''This method is only used for migration and should not be used for any functional implementation'''
+        self._doc.status = status
+        self._doc.error_message = error_message
+        self._doc.void = void
+        self._doc.submitted_on = submitted_on
+        self._doc.test = test
+        self._doc.event_time = event_time
+        self.create(data_record_id)
 
 class SurveyResponseDifference(object):
-    def __init__(self, created, status_changed):
-        self.created = created
+    def __init__(self, submitted_on, status_changed):
+        self.created = submitted_on
         self.status_changed = status_changed
         self.changed_answers = {}
 

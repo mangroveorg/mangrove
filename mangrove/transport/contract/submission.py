@@ -1,9 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from copy import copy
+from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord
-from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence
+from mangrove.transport.contract.survey_response import SurveyResponse
 
 ENTITY_QUESTION_DISPLAY_CODE = "q1"
 SUCCESS_SUBMISSION_LOG_VIEW_NAME = "success_submission_log"
@@ -90,7 +92,8 @@ class Submission(DataObject):
         self._doc.form_model_revision = form_model_revision
         self.save()
 
-    def update(self, status, errors, entity_question_code=None, entity_short_code=None, data_record_id=None, is_test_mode=False):
+    def update(self, status, errors, entity_question_code=None, entity_short_code=None, data_record_id=None,
+               is_test_mode=False):
         self.set_entity(entity_question_code, entity_short_code)
         self._doc.status = status
         self._doc.data_record_id = data_record_id
@@ -106,3 +109,11 @@ class Submission(DataObject):
         if is_sequence(errors):
             return sequence_to_str(errors)
         return None
+
+    def create_survey_response(self, dbm):
+        response = SurveyResponse(dbm, TransportInfo(self.channel, self.source,
+            self.destination), form_code=self.form_code, form_model_revision=self.form_model_revision,
+            values=copy(self.values))
+        response.create_migrated_response(self.status, self.errors, self.is_void(), self._doc.submitted_on,
+        self.test, self.event_time, self._doc.data_record_id)
+        return response

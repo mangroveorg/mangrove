@@ -91,6 +91,7 @@ class SurveyResponse(DataObject):
     def set_status(self, errors):
         if errors.__len__() == 0:
             self._doc.status = True
+            self._doc.error_message = ''
         else:
             self._doc.status = False
             self._doc.error_message = self._to_string(errors)

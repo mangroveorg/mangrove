@@ -1,6 +1,6 @@
 import inspect
 from mangrove.form_model.form_model import NAME_FIELD, get_form_model_by_code
-from mangrove.transport.player.parser import WebParser, SMSParserFactory
+from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.types import is_empty
 from mangrove.transport.repository import reporters
@@ -68,6 +68,20 @@ class SMSPlayerV2(object):
             values[form_model.entity_question.code] = reporter_entity_short_code
         return values
 
-
     def _parse(self, message):
         return SMSParserFactory().getSMSParser(message, self.dbm).parse(message)
+
+
+class XFormPlayerV2(object):
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def _parse(self, message):
+        return XFormParser(self.dbm).parse(message)
+
+    def add_survey_response(self, request, logger=None):
+        assert request is not None
+        form_code, values = self._parse(request.message)
+        service = SurveyResponseService(self.dbm, logger)
+        return service.save_survey(form_code, values, [], request.transport, request.message)
+

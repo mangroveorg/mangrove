@@ -8,7 +8,7 @@ from mangrove.errors.MangroveException import MangroveException, InactiveFormMod
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
-from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
+from mangrove.transport.player.parser import WebParser, SMSParserFactory
 from mangrove.transport.contract.submission import Submission
 from mangrove.transport.work_flow import ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
@@ -40,10 +40,10 @@ class Player(object):
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)
             response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names,
-                self.location_tree)
+                                      self.location_tree)
             submission.update(response.success, response.errors, form_model.entity_question.code, response.short_code,
-                response.datarecord_id,
-                form_model.is_in_test_mode())
+                              response.datarecord_id,
+                              form_model.is_in_test_mode())
             return response
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
@@ -115,7 +115,6 @@ class SMSPlayer(Player):
             logger.info(log_entry)
         return response
 
-
 class WebPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None):
         self.parser = parser or WebParser()
@@ -139,31 +138,6 @@ class WebPlayer(Player):
         if logger is not None:
             log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
             log_entry += "status: True" if response.success else "status: False"
-            logger.info(log_entry)
-
-        return response
-
-
-class XFormPlayer(Player):
-    def __init__(self, dbm):
-        self.parser = XFormParser(dbm)
-        Player.__init__(self, dbm)
-
-    def _parse(self, message):
-        return self.parser.parse(message)
-
-    def accept(self, request, logger=None):
-        assert request is not None
-        form_code, values = self._parse(request.message)
-
-        submission = self._create_submission(request.transport, form_code, copy(values))
-        form_model = get_form_model_by_code(self.dbm, form_code)
-
-        response = self.submit(form_model, values, submission, [])
-
-        if logger is not None:
-            log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"
-            log_entry += "status: False" if response.errors else "status: True"
             logger.info(log_entry)
 
         return response

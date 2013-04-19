@@ -197,7 +197,7 @@ class FormModelDocument(DocumentBase):
 
     @active_languages.setter
     def active_languages(self, language):
-        self.metadata[attributes.ACTIVE_LANGUAGES]=language
+        self.metadata[attributes.ACTIVE_LANGUAGES] = language
 
     def set_label(self, label):
         self.label = label
@@ -224,7 +224,8 @@ class SubmissionLogDocument(DocumentBase):
     event_time = TZAwareDateTimeField()
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None, event_time=None):
+                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
+                 event_time=None):
         DocumentBase.__init__(self, id, 'SubmissionLog')
         self.source = source
         self.submitted_on = utcnow()
@@ -259,6 +260,7 @@ class SurveyResponseDocument(DocumentBase):
     data_record_id = TextField()
     test = BooleanField()
     event_time = TZAwareDateTimeField()
+    data_record_history = ListField(TextField())
 
     def __init__(self, source=None, channel=None, destination=None, values=None, id=None, status=None,
                  error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
@@ -276,6 +278,8 @@ class SurveyResponseDocument(DocumentBase):
         self.data_record_id = data_record_id
         self.test = test
         self.event_time = event_time if event_time is not None else self.created
+        self.data_record_history = []
+
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

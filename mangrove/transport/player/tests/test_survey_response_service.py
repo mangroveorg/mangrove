@@ -33,7 +33,6 @@ def assert_survey_response_doc_is(form_code):
 
 
 class TestSurveyResponseService(TestCase):
-
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
@@ -122,16 +121,19 @@ class TestSurveyResponseService(TestCase):
                 save_document.assert_has_calls([call(SubmissionLogDocument())])
 
     def form_model(self):
-        string_type = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',primitive_type='string')
-        integer_type = DataDictType(self.dbm, name='Default String Integer Type', slug='integer_default', primitive_type='integer')
+        string_type = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
+            primitive_type='string')
+        integer_type = DataDictType(self.dbm, name='Default String Integer Type', slug='integer_default',
+            primitive_type='integer')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
             entity_question_flag=True, ddtype=string_type)
-        question2 = IntegerField(name="question1_Name", code="q2", label="What is your name", constraints=[NumericRangeConstraint(min=10, max=100)],
+        question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
+            constraints=[NumericRangeConstraint(min=10, max=100)],
             ddtype=integer_type)
         return FormModel(self.dbm, entity_type=["clinic"], name="aids", label="Aids form_model",
             form_code="aids", type=['survey'], fields=[question1, question2])
 
-#TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
+    #TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
     def test_edit_survey_response_when_fields_constraints_are_not_satisfied(self):
         survey_response = Mock(spec=SurveyResponse)
         with patch('mangrove.datastore.entity.by_short_code') as get_entity:
@@ -142,15 +144,18 @@ class TestSurveyResponseService(TestCase):
                 values = {'form_code': 'aids', 'q1': 'a1', 'q2': '200'}
 
                 request = Request(values, transport_info)
-                response = self.survey_response_service.edit_survey('aids', values, [], transport_info, request.message,survey_response)
+                response = self.survey_response_service.edit_survey('aids', values, [], transport_info, request.message,
+                    survey_response)
                 self.assertFalse(response.success)
                 self.assertEquals('aids', response.form_code)
-                self.assertEquals(OrderedDict([('q2', u'Answer 200 for question q2 is greater than allowed.')]), response.errors)
+                self.assertEquals(OrderedDict([('q2', u'Answer 200 for question q2 is greater than allowed.')]),
+                    response.errors)
                 self.assertEquals(['clinic'], response.entity_type)
                 self.assertEquals(OrderedDict([('q1', 'a1')]), response.processed_data)
                 self.assertIsNotNone(response.submission_id)
 
                 assert not survey_response.update.called
+
 
 class TestSurveyResponseServiceIT(MangroveTestCase):
     def test_survey_response_is_saved(self):
@@ -201,27 +206,31 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
         survey_response_to_edit = SurveyResponse.get(self.manager, saved_response.survey_response_id)
-        edit_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
+        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
             survey_response_to_edit)
 
-        self.assertTrue(edit_response.success)
-        self.assertEqual(0, edit_response.errors.__len__())
-        self.assertIsNotNone(edit_response.datarecord_id)
-        self.assertIsNotNone(edit_response.survey_response_id)
-        self.assertEqual(test_data.entity_type, edit_response.entity_type)
-        self.assertEqual('CL1', edit_response.form_code)
-        self.assertEqual('1', edit_response.short_code)
+        self.assertTrue(edited_response.success)
+        self.assertEqual(0, edited_response.errors.__len__())
+        self.assertIsNotNone(edited_response.datarecord_id)
+        self.assertIsNotNone(edited_response.survey_response_id)
+        self.assertEqual(test_data.entity_type, edited_response.entity_type)
+        self.assertEqual('CL1', edited_response.form_code)
+        self.assertEqual('1', edited_response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
-            edit_response.processed_data)
+            edited_response.processed_data)
 
-        submission = Submission.get(self.manager, edit_response.submission_id)
-        self.assertNotEquals(saved_response.submission_id, edit_response.submission_id)
+        submission = Submission.get(self.manager, edited_response.submission_id)
+        self.assertNotEquals(saved_response.submission_id, edited_response.submission_id)
         self.assertIsNotNone(submission.form_model_revision)
         self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)
 
-        self.assertNotEquals(saved_response.datarecord_id, edit_response.datarecord_id)
+        self.assertNotEquals(saved_response.datarecord_id, edited_response.datarecord_id)
 
         old_data_record = DataRecord.get(self.manager, saved_response.datarecord_id)
         self.assertTrue(old_data_record.voided)
-        new_data_record = DataRecord.get(self.manager, edit_response.datarecord_id)
+        new_data_record = DataRecord.get(self.manager, edited_response.datarecord_id)
         self.assertFalse(new_data_record.voided)
+
+        edited_survey_response = SurveyResponse.get(self.manager, edited_response.survey_response_id)
+        self.assertEquals(1, len(edited_survey_response._doc.data_record_history))
+        self.assertEquals(old_data_record.id, edited_survey_response._doc.data_record_history[0])

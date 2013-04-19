@@ -101,6 +101,7 @@ class SurveyResponse(DataObject):
         if data_record_id is not None:
             data_record = DataRecord.get(self._dbm, data_record_id)
             data_record.void()
+            self._doc.data_record_history.append(data_record_id)
 
     def create(self, data_record_id):
         self._doc.data_record_id = data_record_id
@@ -188,7 +189,7 @@ class SurveyResponse(DataObject):
             self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
         return survey_copy
 
-    def create_migrated_response(self, status, error_message, void, submitted_on, test, event_time,data_record_id):
+    def create_migrated_response(self, status, error_message, void, submitted_on, test, event_time, data_record_id):
         '''This method is only used for migration and should not be used for any functional implementation'''
         self._doc.status = status
         self._doc.error_message = error_message
@@ -197,6 +198,7 @@ class SurveyResponse(DataObject):
         self._doc.test = test
         self._doc.event_time = event_time
         self.create(data_record_id)
+
 
 class SurveyResponseDifference(object):
     def __init__(self, submitted_on, status_changed):

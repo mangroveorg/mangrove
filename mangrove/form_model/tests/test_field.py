@@ -641,7 +641,7 @@ class TestField(unittest.TestCase):
     def test_should_validate_location_with_whitespaces(self):
         expect_lat_long = (89.1, 100.1)
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype)
-        actual_lat_long = field.validate(lat_long_string=" 89.1    100.1  ")
+        actual_lat_long = field.validate(lat_long_string="89.1    100.1")
         self.assertEqual(expect_lat_long, actual_lat_long)
 
     def test_should_give_error_for_invalid_location(self):

@@ -514,8 +514,9 @@ class GeoCodeField(Field):
 
     def validate(self, lat_long_string):
         Field.validate(self, lat_long_string)
-        lat_long = lat_long_string.replace(",", " ").strip().split()
-        if len(lat_long) < 2:
+        lat_long = lat_long_string.replace(",", " ")
+        lat_long = re.sub(' +', ' ', lat_long).split(" ")
+        if len(lat_long) != 2:
             raise GeoCodeFormatException(self.code)
         return GeoCodeConstraint().validate(latitude=lat_long[0], longitude=lat_long[1])
 

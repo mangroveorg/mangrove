@@ -50,21 +50,21 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q2": "200"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'q1': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
+        self.assertEqual({'q3': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
         
     def test_should_return_error_if_exceeding_value_of_the_word_field_limit(self):
         answers = {"id": "1", "Q1": "TextThatLongerThanAllowed"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'q1': 'Answer TextThatLongerThanAllowed for question Q1 is longer than allowed.'}, errors)
+        self.assertEqual({'q2': 'Answer TextThatLongerThanAllowed for question Q1 is longer than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
         
     def test_should_return_error_if_answering_with_invalid_geo_format(self):
         answers = {"id": "1", "Q7": "127.178057 -78.007789"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'q2': 'The answer 127.178057 must be between -90 and 90'}, errors)
+        self.assertEqual({'q7': 'The answer 127.178057 must be between -90 and 90'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
 
 
@@ -91,7 +91,7 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
-        self.assertEqual({'q1': 'Answer Asif for question Q1 is shorter than allowed.',
+        self.assertEqual({'q2': 'Answer Asif for question Q1 is shorter than allowed.',
                           'q3': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
         self.assertEqual(OrderedDict([('Q3', ['RED']), ('ID', '1')]), cleaned_answers)
 

@@ -385,8 +385,9 @@ class FormModel(DataObject):
             errors.update(validator.validate(values, self.fields, self._dbm))
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
-        for index, key in enumerate(values):
+        for key in values:
             field = self._get_field_by_code(key)
+            index = self.fields.index(field)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:
                 cleaned_values[field.code] = result

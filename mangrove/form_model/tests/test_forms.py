@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mangrove.transport.facade import TransportInfo
+from mangrove.transport.contract.transport_info import TransportInfo
 from mock import Mock, patch
 from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.documents import EntityDocument

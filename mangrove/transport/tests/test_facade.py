@@ -71,7 +71,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['pune', 'mh', 'india']}, values)
 
     def test_should_set_location_data(self):
-        self._generate_short_code_if_empty_patch = patch('mangrove.transport.facade.RegistrationWorkFlow._generate_short_code_if_empty')
+        self._generate_short_code_if_empty_patch = patch('mangrove.transport.work_flow.RegistrationWorkFlow._generate_short_code_if_empty')
         self._generate_short_code_if_empty_mock = self._generate_short_code_if_empty_patch.start()
         self.process_submission_patch = patch('mangrove.form_model.location.Location.process_submission')
         self.process_submission_mock = self.process_submission_patch.start()

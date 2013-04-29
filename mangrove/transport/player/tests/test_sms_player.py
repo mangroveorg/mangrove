@@ -37,7 +37,7 @@ class TestSMSPlayer(TestCase):
         self.transport = TransportInfo(transport="sms", source="1234", destination="5678")
         self.message = "FORM_CODE .ID 1 .M hello world"
         self.generate_code_patcher = patch(
-            "mangrove.transport.facade._set_short_code")
+            "mangrove.transport.work_flow._set_short_code")
         self.generate_code_patcher.start()
 
         self.post_sms_processor_mock = Mock()

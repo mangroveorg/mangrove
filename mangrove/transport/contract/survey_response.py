@@ -68,6 +68,10 @@ class SurveyResponse(DataObject):
     def form_model_revision(self):
         return self._doc.form_model_revision
 
+    @form_model_revision.setter
+    def form_model_revision(self, form_model_revision):
+        self._doc.form_model_revision = form_model_revision
+
     @property
     def values(self):
         return self._doc.values

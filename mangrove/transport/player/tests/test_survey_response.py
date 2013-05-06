@@ -1,7 +1,7 @@
 import datetime
 from unittest import TestCase
 from mock import Mock
-from mangrove.transport.contract.survey_response import SurveyResponse, SurveyResponseDifference
+from mangrove.transport.contract.survey_response import SurveyResponse, SurveyResponseDifference, convert_dict_keys_to_lowercase
 from mangrove.transport.contract.transport_info import TransportInfo
 
 class TestSurveyResponse(TestCase):
@@ -77,3 +77,9 @@ class TestSurveyResponse(TestCase):
         self.assertNotEqual(original.values['q1'], duplicate.values['q1'])
         self.assertNotEqual(original.values['q2'], duplicate.values['q2'])
         self.assertNotEqual(original.values['q3'], duplicate.values['q3'])
+
+    def test_convert_dict_keys_to_lowercase(self):
+        somedict = {'ABC' : 'XyZ', 'PQR' : 'hIj'}
+        expected = {'abc' : 'XyZ', 'pqr' : 'hIj'}
+        result = convert_dict_keys_to_lowercase(somedict)
+        self.assertEquals(expected,result)

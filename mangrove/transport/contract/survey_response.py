@@ -7,6 +7,12 @@ from mangrove.utils.types import is_string, sequence_to_str, is_sequence, is_emp
 from datetime import datetime
 from mangrove.utils.dates import utcnow
 
+#todo: put it in utils and use it while returning SurveyResponse values itself
+def convert_dict_keys_to_lowercase(dictionary):
+    for key in dictionary.keys():
+        dictionary[key.lower()] = dictionary.pop(key)
+    return dictionary
+
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 
@@ -61,6 +67,10 @@ class SurveyResponse(DataObject):
     @property
     def form_model_revision(self):
         return self._doc.form_model_revision
+
+    @form_model_revision.setter
+    def form_model_revision(self, form_model_revision):
+        self._doc.form_model_revision = form_model_revision
 
     @property
     def values(self):
@@ -174,12 +184,15 @@ class SurveyResponse(DataObject):
 
     def differs_from(self, older_response):
         difference = SurveyResponseDifference(older_response.submitted_on, self.status != older_response.status)
-        for key in self.values.keys():
-            if key in older_response.values:
-                if self.values[key] != older_response.values[key]:
-                    difference.add(key, older_response.values[key], self.values[key])
+        older_response_values = convert_dict_keys_to_lowercase(older_response.values)
+        new_response_values = convert_dict_keys_to_lowercase(self.values)
+
+        for key in new_response_values.keys():
+            if key in older_response_values.keys():
+                if new_response_values[key] != older_response_values[key]:
+                    difference.add(key, older_response_values[key], new_response_values[key])
             else:
-                difference.add(key, '', self.values[key])
+                difference.add(key, '', new_response_values[key])
         return difference
 
     def copy(self):

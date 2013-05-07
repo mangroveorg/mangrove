@@ -218,6 +218,9 @@ class Field(object):
     def is_required(self):
         return self._dict['required']
 
+    def set_required(self,required):
+        self._dict["required"] = required
+
     def validate(self, value):
         if self.is_required() and is_empty(value):
             raise RequiredFieldNotPresentException(self.code)
@@ -281,6 +284,8 @@ class IntegerField(Field):
 
     def formatted_field_values_for_excel(self, value):
         try:
+            if value is None:
+                return ""
             return float(value)
         except ValueError:
             return value
@@ -322,6 +327,8 @@ class DateField(Field):
 
     def formatted_field_values_for_excel(self, value):
         try:
+            if value is None:
+                return ""
             return ExcelDate(self.__date__(value), self.date_format)
         except IncorrectDate:
             return value

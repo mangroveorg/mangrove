@@ -82,7 +82,7 @@ class SMSPlayer(Player):
             self.parser = SMSParserFactory().getSMSParser(message, self.dbm)
         return self.parser.parse(message)
 
-    def accept(self, request, logger=None):
+    def accept(self, request, logger=None, additional_feed_dictionary = None):
         ''' This is a single point of entry for all SMS based workflows, we do not have  a separation on the view layer for different sms
         workflows, hence we will be branching to different methods here. Current implementation does the parse twice but that will go away
         once the entity registration is separated '''
@@ -91,7 +91,7 @@ class SMSPlayer(Player):
         if form_model.is_entity_registration_form() or form_model.form_code == ENTITY_DELETION_FORM_CODE:
             return self.entity_api(request, logger)
         sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor)
-        return sms_player_v2.add_survey_response(request, logger)
+        return sms_player_v2.add_survey_response(request, logger, additional_feed_dictionary)
 
     def entity_api(self, request, logger):
         form_code, values, extra_elements = self._parse(request.message)

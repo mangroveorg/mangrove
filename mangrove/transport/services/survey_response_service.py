@@ -1,28 +1,26 @@
 from copy import copy
-import datetime
+from mangrove.feeds.survey_response_event import SurveyResponseEventBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors import MangroveException
 from mangrove.errors.MangroveException import InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.transport.player.parser import WebParser
 from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.survey_responses import SurveyResponse
 
 class SurveyResponseService(object):
-    PARSERS = {'web': WebParser()}
-
-    def __init__(self, dbm, logger=None):
+    def __init__(self, dbm, logger=None, feeds_dbm=None):
         self.dbm = dbm
         self.logger = logger
+        self.feeds_dbm = feeds_dbm
 
     def _create_submission_log(self, transport_info, form_code, values):
         submission = Submission(self.dbm, transport_info, form_code, values=copy(values))
         submission.save()
         return submission
 
-    def save_survey(self, form_code, values, reporter_names, transport_info, message):
+    def save_survey(self, form_code, values, reporter_names, transport_info, message, additional_feed_dictionary=None):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
         survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values))
 
@@ -33,7 +31,7 @@ class SurveyResponseService(object):
         if form_model.is_inactive():
             raise InactiveFormModelException(form_model.form_code)
 
-        #        TODO : validate_submission should use form_model's bound values
+        #TODO : validate_submission should use form_model's bound values
         form_model.bind(values)
         cleaned_data, errors = form_model.validate_submission(values=values)
 
@@ -54,6 +52,10 @@ class SurveyResponseService(object):
             survey_response.create(form_submission.data_record_id)
             self.log_request(form_submission.saved, transport_info.source, message)
 
+        if self.feeds_dbm:
+            builder = SurveyResponseEventBuilder(survey_response, form_model, additional_feed_dictionary)
+            event_document = builder.event_document()
+            self.feeds_dbm._save_document(event_document)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
             form_submission.errors, form_submission.data_record_id, form_submission.short_code,
             form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,

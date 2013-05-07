@@ -6,13 +6,14 @@ from mangrove.utils.types import is_empty
 from mangrove.transport.repository import reporters
 
 class WebPlayerV2(object):
-    def __init__(self, dbm):
+    def __init__(self, dbm, feeds_dbm=None):
         self.dbm = dbm
+        self.feeds_dbm = feeds_dbm
 
     def add_survey_response(self, request, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        service = SurveyResponseService(self.dbm, logger)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, [], request.transport, request.message)
 
     def _parse(self, message):
@@ -31,9 +32,10 @@ class WebPlayerV2(object):
 
 
 class SMSPlayerV2(object):
-    def __init__(self, dbm, post_sms_parser_processors):
+    def __init__(self, dbm, post_sms_parser_processors, feeds_dbm=None):
         self.post_sms_parser_processor = post_sms_parser_processors if post_sms_parser_processors else []
         self.dbm = dbm
+        self.feeds_dbm = feeds_dbm
 
     def _post_parse_processor(self, form_code, values, extra_elements=[]):
         for post_sms_parser_processors in self.post_sms_parser_processor:
@@ -44,7 +46,7 @@ class SMSPlayerV2(object):
             if response is not None:
                 return response
 
-    def add_survey_response(self, request, logger=None):
+    def add_survey_response(self, request, logger=None, additional_feed_dictionary=None):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._post_parse_processor(form_code, values, extra_elements)
 
@@ -59,8 +61,9 @@ class SMSPlayerV2(object):
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
 
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
-        service = SurveyResponseService(self.dbm, logger)
-        return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
+        return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
+            additional_feed_dictionary)
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -73,8 +76,9 @@ class SMSPlayerV2(object):
 
 
 class XFormPlayerV2(object):
-    def __init__(self, dbm):
+    def __init__(self, dbm, feeds_dbm=None):
         self.dbm = dbm
+        self.feeds_dbm = feeds_dbm
 
     def _parse(self, message):
         return XFormParser(self.dbm).parse(message)
@@ -82,6 +86,6 @@ class XFormPlayerV2(object):
     def add_survey_response(self, request, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        service = SurveyResponseService(self.dbm, logger)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, [], request.transport, request.message)
 

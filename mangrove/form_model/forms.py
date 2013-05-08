@@ -1,4 +1,4 @@
-from mangrove.errors import MangroveException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.datastore.entity import get_by_short_code
 
 class EditSurveyResponseForm(object):

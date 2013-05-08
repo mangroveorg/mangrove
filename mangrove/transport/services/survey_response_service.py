@@ -2,7 +2,7 @@ from copy import copy
 from mangrove.feeds.survey_response_event import SurveyResponseEventBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
-from mangrove.errors import MangroveException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.errors.MangroveException import InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.contract.submission import Submission
@@ -37,9 +37,9 @@ class SurveyResponseService(object):
 
         form_submission = DataFormSubmission(form_model, cleaned_data, errors)
         try:
+            survey_response.set_answers(form_submission.short_code, values)
             if form_submission.is_valid:
                 form_submission.save(self.dbm)
-            survey_response.set_answers(form_submission.short_code, values)
 
             submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
                 form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())

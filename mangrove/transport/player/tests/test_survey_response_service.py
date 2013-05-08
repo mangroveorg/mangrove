@@ -10,7 +10,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord, Entity
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException, MangroveException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.contract.request import Request
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -220,6 +220,15 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual(test_data.form_model.revision, survey_response.form_model_revision)
         self.assertEqual(True, survey_response.status)
         self.assertIsNotNone(survey_response.data_record)
+
+    def test_exception_is_raised_for_invalid_short_code_submissions(self):
+        survey_response_service = SurveyResponseService(self.manager)
+
+        values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values, transport_info)
+        self.assertRaises(MangroveException,survey_response_service.save_survey,'CL1', values, [], transport_info,
+            request.message)
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)

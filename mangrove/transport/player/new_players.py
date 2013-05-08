@@ -10,11 +10,11 @@ class WebPlayerV2(object):
         self.dbm = dbm
         self.feeds_dbm = feeds_dbm
 
-    def add_survey_response(self, request, logger=None):
+    def add_survey_response(self, request, logger=None, additional_feed_dictionary = None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.save_survey(form_code, values, [], request.transport, request.message)
+        return service.save_survey(form_code, values, [], request.transport, request.message, additional_feed_dictionary)
 
     def _parse(self, message):
         return WebParser().parse(message)

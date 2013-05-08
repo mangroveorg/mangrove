@@ -16,7 +16,7 @@ class SurveyResponseEventBuilder(object):
         values = {}
         for field in self.form_model.fields:
             answer_dictionary = self._create_answer_dictionary(field)
-            values.update({field.code: answer_dictionary})
+            values.update({lower(field.code): answer_dictionary})
 
         status = 'success' if self.survey_response.status else 'error'
 

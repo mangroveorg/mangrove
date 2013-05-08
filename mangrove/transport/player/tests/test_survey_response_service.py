@@ -6,7 +6,7 @@ from mangrove.form_model.validation import NumericRangeConstraint
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField
 from mangrove.datastore.documents import SurveyResponseDocument
-from mangrove.datastore.database import DatabaseManager, get_db_manager
+from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord, Entity
 from mangrove.datastore.tests.test_data import TestData

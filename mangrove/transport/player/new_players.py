@@ -5,16 +5,18 @@ from mangrove.transport.services.survey_response_service import SurveyResponseSe
 from mangrove.utils.types import is_empty
 from mangrove.transport.repository import reporters
 
+
 class WebPlayerV2(object):
     def __init__(self, dbm, feeds_dbm=None):
         self.dbm = dbm
         self.feeds_dbm = feeds_dbm
 
-    def add_survey_response(self, request, logger=None, additional_feed_dictionary = None):
+    def add_survey_response(self, request, reporter_id, additional_feed_dictionary=None, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.save_survey(form_code, values, [], request.transport, request.message, additional_feed_dictionary)
+        return service.save_survey(form_code, values, [], request.transport, request.message,
+                                   reporter_id, additional_feed_dictionary)
 
     def _parse(self, message):
         return WebParser().parse(message)
@@ -63,11 +65,11 @@ class SMSPlayerV2(object):
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-            additional_feed_dictionary)
+                                   additional_feed_dictionary)
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
         form_model = get_form_model_by_code(self.dbm, form_code)
-        if form_model.entity_defaults_to_reporter() and  is_empty(form_model.get_short_code(values)):
+        if form_model.entity_defaults_to_reporter() and is_empty(form_model.get_short_code(values)):
             values[form_model.entity_question.code] = reporter_entity_short_code
         return values
 

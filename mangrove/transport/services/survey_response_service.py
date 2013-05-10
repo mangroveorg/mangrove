@@ -9,6 +9,7 @@ from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.survey_responses import SurveyResponse
 
+
 class SurveyResponseService(object):
     def __init__(self, dbm, logger=None, feeds_dbm=None):
         self.dbm = dbm
@@ -20,7 +21,8 @@ class SurveyResponseService(object):
         submission.save()
         return submission
 
-    def save_survey(self, form_code, values, reporter_names, transport_info, message, additional_feed_dictionary=None):
+    def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id=None,
+                    additional_feed_dictionary=None):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
         survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values))
 
@@ -42,7 +44,7 @@ class SurveyResponseService(object):
                 form_submission.save(self.dbm)
 
             submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
-                form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
+                              form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             errors = exception.message
@@ -53,13 +55,14 @@ class SurveyResponseService(object):
             self.log_request(form_submission.saved, transport_info.source, message)
 
         if self.feeds_dbm:
-            builder = SurveyResponseEventBuilder(survey_response, form_model, additional_feed_dictionary)
+            builder = SurveyResponseEventBuilder(self.dbm, survey_response, form_model, reporter_id,
+                                                 additional_feed_dictionary)
             event_document = builder.event_document()
             self.feeds_dbm._save_document(event_document)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
-            form_submission.errors, form_submission.data_record_id, form_submission.short_code,
-            form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
-            form_submission.form_model.form_code)
+                        form_submission.errors, form_submission.data_record_id, form_submission.short_code,
+                        form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
+                        form_submission.form_model.form_code)
 
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response):
@@ -75,16 +78,16 @@ class SurveyResponseService(object):
             if form.is_valid:
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
-                form.short_code, form.data_record_id, form_model.is_in_test_mode())
+                              form.short_code, form.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
-            form.errors, form.data_record_id, form.short_code,
-            form._cleaned_data, form.is_registration, form.entity_type,
-            form.form_model.form_code)
+                        form.errors, form.data_record_id, form.short_code,
+                        form._cleaned_data, form.is_registration, form.entity_type,
+                        form.form_model.form_code)
 
     def delete_survey(self, reporter_names, survey_response):
         try:

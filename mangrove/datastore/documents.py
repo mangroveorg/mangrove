@@ -289,15 +289,15 @@ class SurveyResponseEventDocument(DocumentBase):
     channel = TextField()
     form_code = TextField()
     form_model_revision = TextField()
-    values = DictField() # code dict of label answer type format for date actual choice for select
-    status = BooleanField()
+    values = DictField()
+    status = TextField()
     error_message = TextField()
     test = BooleanField()
     data_sender = DictField() # should be name, id, phone, email
-    project_details = DictField()
+    additional_detail = DictField()
 
     def __init__(self, channel=None, form_code=None, form_model_revision=None, values=None, status=None,
-                 error_message=None, test=None, data_sender=None, project_details=None):
+                 error_message=None, test=None, data_sender=None, additional_detail=None):
         DocumentBase.__init__(self, document_type='SurveyResponseEvent')
         self.channel = channel
         self.form_code = form_code
@@ -307,7 +307,7 @@ class SurveyResponseEventDocument(DocumentBase):
         self.error_message = error_message
         self.test = test
         self.data_sender = data_sender
-        self.project_details = project_details
+        self.additional_detail = additional_detail
 
 
 class AggregationTreeDocument(DocumentBase):

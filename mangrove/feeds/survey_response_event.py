@@ -37,7 +37,7 @@ class SurveyResponseEventBuilder(object):
                 break
 
         name = get_subject_name(self.dbm, ['reporter'], data_sender_id)
-        return {'data_sender': {'id': data_sender_id, 'name': name}}
+        return {'id': data_sender_id, 'name': name}
 
     def _create_answer_dictionary(self, field):
         answer_dictionary = {}

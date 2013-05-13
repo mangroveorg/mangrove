@@ -26,7 +26,7 @@ class SurveyResponseEventBuilder(object):
 
         return SurveyResponseEventDocument(self.survey_response.channel, self.survey_response.form_code,
                                            self.survey_response.form_model_revision, values, status,
-                                           self.survey_response.errors, self.survey_response.test, self._data_sender(),
+                                           self.survey_response.errors, self._data_sender(),
                                            self.additional_details)
 
     def _data_sender(self):

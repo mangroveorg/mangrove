@@ -133,6 +133,6 @@ class TestSurveyResponseEventBuilder(TestCase):
             builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
             doc = builder.event_document()
 
-            get_subject_name.assert_called_once_with(self.dbm, 'reporter', 'rep023')
+            get_subject_name.assert_called_once_with(self.dbm, ['reporter'], 'rep12')
 
-            self.assertDictEqual({'id': 'rep023', 'name': 'real data sender'}, doc._data_sender)
+            self.assertDictEqual({'id': 'rep12', 'name': 'real data sender'}, doc.data_sender)

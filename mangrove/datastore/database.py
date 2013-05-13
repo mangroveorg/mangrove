@@ -19,20 +19,21 @@ _dbms = {}
 _dbms_lock = Lock()
 
 
-def get_db_manager(server=None, database=None):
+def get_db_manager(server=None, database=None, credentials=settings.COUCHDB_CREDENTIALS):
     global _dbms
     assert _dbms is not None
 
     # use defaults if not passed
     srv = (server if server is not None else settings.SERVER)
     db = (database if database is not None else settings.DATABASE)
+
     k = (srv, db)
     # check if already created and in dict
     if k not in _dbms or _dbms[k] is None:
         with _dbms_lock:
             if k not in _dbms or _dbms[k] is None:
                 # nope, create it
-                _dbms[k] = DatabaseManager(server, database)
+                _dbms[k] = DatabaseManager(credentials, server, database)
 
     return _dbms[k]
 
@@ -126,9 +127,10 @@ class DataObject(object):
     def created(self):
         return self._doc.created
 
+
 class View(object):
-    def __init__(self,database):
-        self.database=database
+    def __init__(self, database):
+        self.database = database
 
     def _load_all_rows_in_view(self, **values):
         full_view_name = self.name + '/' + self.name
@@ -141,15 +143,16 @@ class View(object):
               (delta_t.seconds, delta_t.microseconds, len(rows))
         return rows
 
-    def _execute(self,**values):
+    def _execute(self, **values):
         return self._load_all_rows_in_view(**values)
 
     def __getattr__(self, name):
-        self.name=name
+        self.name = name
         return self._execute
 
+
 class DatabaseManager(object):
-    def __init__(self, server=None, database=None):
+    def __init__(self, credentials, server=None, database=None  ):
         """
         Connect to the CouchDB server. If no database name is given,
         use the name provided in the settings
@@ -158,12 +161,13 @@ class DatabaseManager(object):
         self.url = (server if server is not None else settings.SERVER)
         self.database_name = database or settings.DATABASE
         self.server = couchdb.client.Server(self.url, session=http.Session(retry_delays=[5, 30]))
+        self.server.resource.credentials = credentials
         try:
             self.database = self.server[self.database_name]
         except ResourceNotFound:
             self.database = self.server.create(self.database_name)
 
-        self.view= View(self.database)
+        self.view = View(self.database)
 
 
     def __unicode__(self):

@@ -9,9 +9,6 @@ class MangroveTestCase(unittest.TestCase):
         _delete_db_and_remove_db_manager(self.manager)
         self.manager = get_db_manager('http://localhost:5984/', 'mangrove-test')
         initializer._create_views(self.manager)
-        self.feed_manager = get_db_manager('http://localhost:6984', 'feed_mangrove-test')
-        _delete_db_and_remove_db_manager(self.feed_manager)
-        self.feed_manager = get_db_manager('http://localhost:6984', 'feed_mangrove-test')
 
 
     def tearDown(self):

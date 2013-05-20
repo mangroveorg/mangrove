@@ -1,5 +1,5 @@
 from copy import copy
-from mangrove.feeds.enriched_survey_response import SurveyResponseEventBuilder
+from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException
@@ -55,7 +55,7 @@ class SurveyResponseService(object):
             self.log_request(form_submission.saved, transport_info.source, message)
 
         if self.feeds_dbm:
-            builder = SurveyResponseEventBuilder(self.dbm, survey_response, form_model, reporter_id,
+            builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
                                                  additional_feed_dictionary)
             event_document = builder.event_document()
             self.feeds_dbm._save_document(event_document)

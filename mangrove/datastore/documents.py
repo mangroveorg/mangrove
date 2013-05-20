@@ -281,7 +281,7 @@ class SurveyResponseDocument(DocumentBase):
         self.data_record_history = []
 
 
-class SurveyResponseEventDocument(DocumentBase):
+class EnrichedSurveyResponseDocument(DocumentBase):
     """
     The is the event document that will be used for feeds.
     """

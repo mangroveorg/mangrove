@@ -1,10 +1,10 @@
 from string import lower
-from mangrove.datastore.documents import SurveyResponseEventDocument
+from mangrove.datastore.documents import EnrichedSurveyResponseDocument
 from mangrove.datastore.entity import by_short_code
 from mangrove.form_model.field import DateField, SelectField
 
 
-class SurveyResponseEventBuilder(object):
+class EnrichedSurveyResponseBuilder(object):
     def __init__(self, dbm, survey_response, form_model, reporter_id, additional_details, logger=None):
         assert additional_details is not None
         self.dbm = dbm
@@ -24,7 +24,7 @@ class SurveyResponseEventBuilder(object):
 
         status = 'success' if self.survey_response.status else 'error'
 
-        return SurveyResponseEventDocument(self.survey_response.uuid, self.survey_response.channel,
+        return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.channel,
             self.survey_response.form_code, self.survey_response.form_model_revision, values, status,
             self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
 

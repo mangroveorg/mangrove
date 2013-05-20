@@ -1,11 +1,11 @@
-import trace
 from unittest import TestCase
 from mock import Mock, PropertyMock, patch
+from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import SelectField, DateField, TextField, IntegerField
 from mangrove.form_model.form_model import FormModel
-from mangrove.feeds.survey_response_event import SurveyResponseEventBuilder
+from mangrove.feeds.enriched_survey_response import SurveyResponseEventBuilder
 from mangrove.transport.contract.survey_response import SurveyResponse
 
 
@@ -30,14 +30,14 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.fail('Since We dont have the correct values for options this should raised an exception')
         except Exception as e:
             self.assertEqual('Survey Response Id : someid, field code q1, value not found for selected choice b',
-                             e.message)
+                e.message)
 
 
     def test_format_is_present_for_date_fields(self):
         value_mock = PropertyMock(return_value={'q3': '21.03.2011'})
         type(self.survey_response).values = value_mock
 
-        builder = SurveyResponseEventBuilder(None, self.survey_response, self.form_model,'rep1', {})
+        builder = SurveyResponseEventBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(DateField('name', 'q3', 'date lab', 'dd.mm.yyyy', self.ddtype))
         self.assertEquals('dd.mm.yyyy', dictionary.get('format'))
         self.assertEquals('21.03.2011', dictionary.get('answer'))
@@ -49,11 +49,11 @@ class TestSurveyResponseEventBuilder(TestCase):
         value_mock = PropertyMock(return_value={'q4': 'ac'})
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'multi select',
-                                   [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-                                    {'text': 'apple', 'val': 'c'}], self.ddtype,
-                                   single_select_flag=False)
+            [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
+             {'text': 'apple', 'val': 'c'}], self.ddtype,
+            single_select_flag=False)
 
-        builder = SurveyResponseEventBuilder(None, self.survey_response, self.form_model,'rep1', {})
+        builder = SurveyResponseEventBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(select_field)
         self.assertEquals({'a': 'orange', 'c': 'apple'}, dictionary.get('answer'))
         self.assertEquals('multi select', dictionary.get('label'))
@@ -64,8 +64,8 @@ class TestSurveyResponseEventBuilder(TestCase):
         value_mock = PropertyMock(return_value={'q4': 'b'})
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'select',
-                                   [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-                                    {'text': 'apple', 'val': 'c'}], self.ddtype)
+            [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
+             {'text': 'apple', 'val': 'c'}], self.ddtype)
 
         builder = SurveyResponseEventBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(select_field)
@@ -94,8 +94,10 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
         builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep1', {})
 
-        with patch('mangrove.feeds.survey_response_event.get_subject_name') as get_subject_name:
-            get_subject_name.return_value = 'Kormanagala Clinic'
+        with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
+            entity = Mock(spec=Entity)
+            by_short_code.return_value = entity
+            type(entity).data = PropertyMock(return_value={'name': {'value': 'Kormanagala Clinic'}})
 
             dictionary = builder._create_answer_dictionary(subject_field)
 
@@ -128,11 +130,65 @@ class TestSurveyResponseEventBuilder(TestCase):
 
         self.form_model.fields = [data_sender_field]
 
-        with patch('mangrove.feeds.survey_response_event.get_subject_name') as get_subject_name:
-            get_subject_name.return_value = 'real data sender'
+        with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
+            entity = Mock(spec=Entity)
+            by_short_code.return_value = entity
+            type(entity).data = PropertyMock(
+                return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
+
             builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
             doc = builder.event_document()
 
-            get_subject_name.assert_called_once_with(self.dbm, ['reporter'], 'rep12')
+            by_short_code.assert_called_once_with(self.dbm, 'rep12', ['reporter'], )
+            self.assertDictEqual({'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'},
+                doc.data_sender)
 
-            self.assertDictEqual({'id': 'rep12', 'name': 'real data sender'}, doc.data_sender)
+    def test_delete_status_updated(self):
+        type(self.survey_response).status = PropertyMock(return_value=True)
+        self.survey_response.is_void.return_value = True
+        type(self.survey_response).values = PropertyMock(return_value={})
+        type(self.form_model).fields = PropertyMock(return_value=[])
+        builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
+
+        def patch_data_sender():
+            return {}
+
+        builder._data_sender = patch_data_sender
+        doc = builder.event_document()
+
+        self.assertTrue(doc.void)
+
+    def test_status_is_success_for_valid_non_deleted_survey_response(self):
+        type(self.survey_response).status = PropertyMock(return_value=True)
+        self.survey_response.is_void.return_value = False
+        type(self.survey_response).values = PropertyMock(return_value={'q1': 'something'})
+        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        type(self.form_model).fields = PropertyMock(return_value=[field])
+        builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
+
+        def patch_data_sender():
+            return {}
+
+        builder._data_sender = patch_data_sender
+        doc = builder.event_document()
+
+        self.assertEqual('success', doc.status)
+        self.assertFalse(doc.void)
+
+    def test_status_is_error_for_invalid_not_deleted_survey_response(self):
+        type(self.survey_response).status = PropertyMock(return_value=False)
+        self.survey_response.is_void.return_value = False
+        type(self.survey_response).values = PropertyMock(return_value={})
+        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        type(self.form_model).fields = PropertyMock(return_value=[field])
+        builder = SurveyResponseEventBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
+
+        def patch_data_sender():
+            return {}
+
+        builder._data_sender = patch_data_sender
+        doc = builder.event_document()
+
+        self.assertEqual('error', doc.status)
+        self.assertFalse(doc.void)
+

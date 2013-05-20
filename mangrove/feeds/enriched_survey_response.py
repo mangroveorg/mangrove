@@ -1,6 +1,6 @@
 from string import lower
 from mangrove.datastore.documents import SurveyResponseEventDocument
-from mangrove.datastore.entity import by_short_code, Entity
+from mangrove.datastore.entity import by_short_code
 from mangrove.form_model.field import DateField, SelectField
 
 
@@ -24,10 +24,9 @@ class SurveyResponseEventBuilder(object):
 
         status = 'success' if self.survey_response.status else 'error'
 
-        return SurveyResponseEventDocument(self.survey_response.channel, self.survey_response.form_code,
-                                           self.survey_response.form_model_revision, values, status,
-                                           self.survey_response.errors, self._data_sender(),
-                                           self.additional_details)
+        return SurveyResponseEventDocument(self.survey_response.uuid, self.survey_response.channel,
+            self.survey_response.form_code, self.survey_response.form_model_revision, values, status,
+            self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
 
     def _data_sender(self):
         data_sender_id = self.reporter_id
@@ -36,8 +35,10 @@ class SurveyResponseEventBuilder(object):
                 data_sender_id = self.values_lower_case_dict.get(field.code)
                 break
 
-        name = get_subject_name(self.dbm, ['reporter'], data_sender_id)
-        return {'id': data_sender_id, 'name': name}
+        data_sender = by_short_code(self.dbm, data_sender_id, ['reporter'])
+        return {'id': data_sender_id,
+                'last_name': data_sender.data['name']['value'],
+                'mobile_number': data_sender.data['mobile_number']['value']}
 
     def _create_answer_dictionary(self, field):
         answer_dictionary = {}
@@ -53,8 +54,9 @@ class SurveyResponseEventBuilder(object):
         if field.code == self.form_model.entity_question.code:
             answer_dictionary.update({'is_entity_question': 'true'})
             if self.form_model.entity_type != "reporter":
+                subject = by_short_code(self.dbm, value, self.form_model.entity_type)
                 answer_dictionary.update(
-                    {'answer': {value: get_subject_name(self.dbm, self.form_model.entity_type, value)}})
+                    {'answer': {value: subject.data['name']['value']}})
         return answer_dictionary
 
     def _select_field_values(self, choices, field):
@@ -86,7 +88,3 @@ class LowerCaseKeyDict():
     def get(self, key):
         return None if key is None else self.dictionary.get(lower(key))
 
-
-def get_subject_name(dbm, subject_type, subject_code):
-    subject = by_short_code(dbm, subject_code, subject_type)
-    return subject.data['name']['value']

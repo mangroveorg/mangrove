@@ -1,5 +1,5 @@
 from copy import copy
-from mangrove.feeds.survey_response_event import SurveyResponseEventBuilder
+from mangrove.feeds.enriched_survey_response import SurveyResponseEventBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException

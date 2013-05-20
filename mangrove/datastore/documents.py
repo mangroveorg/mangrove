@@ -285,7 +285,7 @@ class SurveyResponseEventDocument(DocumentBase):
     """
     The is the event document that will be used for feeds.
     """
-
+    survey_response_id = TextField()
     channel = TextField()
     form_code = TextField()
     form_model_revision = TextField()
@@ -295,9 +295,10 @@ class SurveyResponseEventDocument(DocumentBase):
     data_sender = DictField() # should be name, id, phone, email
     additional_detail = DictField()
 
-    def __init__(self, channel=None, form_code=None, form_model_revision=None, values=None, status=None,
-                 error_message=None, data_sender=None, additional_detail=None):
-        DocumentBase.__init__(self, document_type='SurveyResponseEvent')
+    def __init__(self, survey_response_id, channel=None, form_code=None, form_model_revision=None, values=None,
+                 status=None, error_message=None, data_sender=None, additional_detail=None, void=False):
+        DocumentBase.__init__(self, document_type='EnrichedSurveyResponse')
+        self.survey_response_id = survey_response_id
         self.channel = channel
         self.form_code = form_code
         self.form_model_revision = form_model_revision
@@ -306,6 +307,7 @@ class SurveyResponseEventDocument(DocumentBase):
         self.error_message = error_message
         self.data_sender = data_sender
         self.additional_detail = additional_detail
+        self.void = void
 
 
 class AggregationTreeDocument(DocumentBase):

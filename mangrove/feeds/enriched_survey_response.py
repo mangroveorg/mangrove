@@ -6,7 +6,6 @@ from mangrove.form_model.field import DateField, SelectField
 
 class EnrichedSurveyResponseBuilder(object):
     def __init__(self, dbm, survey_response, form_model, reporter_id, additional_details, logger=None):
-        assert additional_details is not None
         self.dbm = dbm
         self.reporter_id = reporter_id
         self.additional_details = additional_details

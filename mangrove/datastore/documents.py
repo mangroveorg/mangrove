@@ -292,7 +292,8 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     values = DictField()
     status = TextField()
     error_message = TextField()
-    data_sender = DictField() # should be name, id, phone, email
+    data_sender = DictField()
+    #additional_detail can be empty, for example we will not have the project info when the submission is made via SMS or Xform
     additional_detail = DictField()
 
     def __init__(self, survey_response_id, channel=None, form_code=None, form_model_revision=None, values=None,

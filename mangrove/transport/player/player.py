@@ -40,10 +40,10 @@ class Player(object):
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)
             response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names,
-                                      self.location_tree)
+                self.location_tree)
             submission.update(response.success, response.errors, form_model.entity_question.code, response.short_code,
-                              response.datarecord_id,
-                              form_model.is_in_test_mode())
+                response.datarecord_id,
+                form_model.is_in_test_mode())
             return response
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
@@ -52,11 +52,12 @@ class Player(object):
 
 class SMSPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None,
-                 post_sms_parser_processors=None):
+                 post_sms_parser_processors=None, feeds_dbm=None):
         if not post_sms_parser_processors: post_sms_parser_processors = []
         Player.__init__(self, dbm, location_tree)
         self.parser = parser
         self.post_sms_parser_processor = post_sms_parser_processors
+        self.feeds_dbm = feeds_dbm
 
     def _process(self, values, form_code, reporter_entity):
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -82,7 +83,7 @@ class SMSPlayer(Player):
             self.parser = SMSParserFactory().getSMSParser(message, self.dbm)
         return self.parser.parse(message)
 
-    def accept(self, request, logger=None, additional_feed_dictionary = None):
+    def accept(self, request, logger=None, additional_feed_dictionary=None):
         ''' This is a single point of entry for all SMS based workflows, we do not have  a separation on the view layer for different sms
         workflows, hence we will be branching to different methods here. Current implementation does the parse twice but that will go away
         once the entity registration is separated '''
@@ -90,7 +91,8 @@ class SMSPlayer(Player):
         form_model = get_form_model_by_code(self.dbm, form_code)
         if form_model.is_entity_registration_form() or form_model.form_code == ENTITY_DELETION_FORM_CODE:
             return self.entity_api(request, logger)
-        sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor)
+        sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor,
+            feeds_dbm=self.feeds_dbm)
         return sms_player_v2.add_survey_response(request, logger, additional_feed_dictionary)
 
     def entity_api(self, request, logger):
@@ -114,6 +116,7 @@ class SMSPlayer(Player):
             log_entry += "Status: True" if response.success else "Status: False"
             logger.info(log_entry)
         return response
+
 
 class WebPlayer(Player):
     def __init__(self, dbm, location_tree=None, parser=None):

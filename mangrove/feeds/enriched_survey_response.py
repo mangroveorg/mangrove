@@ -15,16 +15,21 @@ class EnrichedSurveyResponseBuilder(object):
         self.values_lower_case_dict = LowerCaseKeyDict(self.survey_response.values)
 
 
-    def event_document(self):
+    def _values(self):
         values = {}
-        for field in self.form_model.fields:
-            answer_dictionary = self._create_answer_dictionary(field)
-            values.update({lower(field.code): answer_dictionary})
+        if self.survey_response.status:
+            for field in self.form_model.fields:
+                answer_dictionary = self._create_answer_dictionary(field)
+                values.update({lower(field.code): answer_dictionary})
+        else:
+            values = self.survey_response.values
+        return values
 
+    def event_document(self):
         status = 'success' if self.survey_response.status else 'error'
 
         return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.channel,
-            self.survey_response.form_code, self.survey_response.form_model_revision, values, status,
+            self.survey_response.form_code, self.survey_response.form_model_revision, self._values(), status,
             self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
 
     def _data_sender(self):

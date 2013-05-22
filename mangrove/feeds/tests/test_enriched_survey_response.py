@@ -192,3 +192,18 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.assertEqual('error', doc.status)
         self.assertFalse(doc.void)
 
+    def test_field_values_not_calculated_when_submission_is_error(self):
+        type(self.survey_response).status = PropertyMock(return_value=False)
+        type(self.survey_response).values = PropertyMock(return_value={'q1': '1', 'q2': 'abc'})
+        fields_property_mock = PropertyMock(return_value={})
+        type(self.form_model).fields = fields_property_mock
+        builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
+
+        def patch_data_sender():
+            return {}
+
+        builder._data_sender = patch_data_sender
+        doc = builder.event_document()
+
+        self.assertFalse(fields_property_mock.called)
+        self.assertDictEqual({'q1': '1', 'q2': 'abc'}, doc.values)

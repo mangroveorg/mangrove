@@ -64,16 +64,18 @@ class EnrichedSurveyResponseBuilder(object):
         return answer_dictionary
 
     def _select_field_values(self, choices, field):
+        choice_array = field.get_option_list(choices)
+        value_array = field.get_option_value_list(choices)
+        if len(choice_array) != len(value_array):
+            error_message = 'Survey Response Id : %s, ' % self.survey_response.id
+            error_message += 'field code %s, ' % field.code
+            error_message += 'number of values not equal to number of selected choices: %s' % choices
+            if self.logger: self.logger.error(error_message)
+            raise Exception(error_message)
+
         selected = {}
-        for choice in choices:
-            option_value = self._option_value(field, choice)
-            if option_value is None:
-                error_message = 'Survey Response Id : %s, ' % self.survey_response.id
-                error_message += 'field code %s, ' % field.code
-                error_message += 'value not found for selected choice %s' % choice
-                if self.logger: self.logger.error(error_message)
-                raise Exception(error_message)
-            selected.update({choice: option_value})
+        for i in range(len(choice_array)):
+            selected.update({choice_array[i]: value_array[i]})
         return selected
 
     def _option_value(self, field, value):

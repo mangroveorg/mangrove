@@ -29,7 +29,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             builder.event_document()
             self.fail('Since We dont have the correct values for options this should raised an exception')
         except Exception as e:
-            self.assertEqual('Survey Response Id : someid, field code q1, value not found for selected choice b',
+            self.assertEqual('Survey Response Id : someid, field code q1, number of values not equal to number of selected choices: ba',
                 e.message)
 
 
@@ -207,3 +207,20 @@ class TestSurveyResponseEventBuilder(TestCase):
 
         self.assertFalse(fields_property_mock.called)
         self.assertDictEqual({'q1': '1', 'q2': 'abc'}, doc.values)
+
+
+    def test_identify_multi_select_answer_with_more_than_26_options(self):
+        value_mock = PropertyMock(return_value={'q4': '1a1c'})
+        type(self.survey_response).values = value_mock
+        select_field = SelectField('name', 'q4', 'multi select',
+            [{'text': 'orange', 'val': '1a'},
+             {'text': 'watermelon', 'val': '1b'},
+             {'text': 'strawberry', 'val': '1c'},
+             {'text': 'apple', 'val': 'c'}], self.ddtype,
+            single_select_flag=False)
+
+        builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, 'rep1', {})
+        dictionary = builder._create_answer_dictionary(select_field)
+        self.assertEquals({'1a': 'orange', '1c': 'strawberry'}, dictionary.get('answer'))
+        self.assertEquals('multi select', dictionary.get('label'))
+        self.assertEquals('select', dictionary.get('type'))

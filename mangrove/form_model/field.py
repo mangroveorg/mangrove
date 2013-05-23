@@ -500,13 +500,36 @@ class SelectField(Field):
                 return opt_text
         return None
 
+    def get_value_by_option(self, option):
+        for opt in self.options:
+            opt_text = opt['text']
+            opt_value = opt['val']
+            if opt_value.lower() == option.lower():
+                return opt_text
+        return None
+
+
+    def get_option_value_list(self, question_value):
+        options = self.get_option_list( question_value)
+        result = []
+        for option in options:
+            option_value = self.get_value_by_option(option)
+            if option_value:
+                result.append(option_value)
+        return result
+
+    def get_option_list(self, question_value):
+        if question_value is None: return []
+        return re.findall(r'[1-9]?[a-zA-Z]', question_value)
+
+
     def formatted_field_values_for_excel(self, value):
         if value is None: return []
 
         options = re.findall(r'[1-9]?[a-zA-Z]', value)
         result = []
         for option in options:
-            option_value = self._get_value_by_option(option)
+            option_value = self.get_value_by_option(option)
             if option_value:
                 result.append(option_value)
         return result

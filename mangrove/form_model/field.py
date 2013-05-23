@@ -444,6 +444,8 @@ class HierarchyField(Field):
 
 
 class SelectField(Field):
+    '''option values for this should contain single letters like a,b,c,d etc and after 26 options should start with a number followed by single character
+    like 1a,1b,1c,1d etc '''
     OPTIONS = "choices"
 
     def __init__(self, name, code, label, options, ddtype, instruction=None,

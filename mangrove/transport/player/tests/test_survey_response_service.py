@@ -1,7 +1,8 @@
 from collections import OrderedDict
 from unittest import TestCase
 from mock import Mock, patch, call, PropertyMock
-from mangrove.feeds.survey_response_event import SurveyResponseEventBuilder
+from mangrove.form_model.form_submission import DataFormSubmission
+from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.validation import NumericRangeConstraint
 from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField
@@ -170,8 +171,9 @@ class TestSurveyResponseService(TestCase):
         with patch(
             'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
             with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
-                with patch('mangrove.transport.services.survey_response_service.SurveyResponseEventBuilder')as builder:
-                    builder.return_value = Mock(spec=SurveyResponseEventBuilder)
+                with patch(
+                    'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                    builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
                     by_short_code.return_value = Mock(spec=Entity)
                     mock_form_model = Mock(spec=FormModel)
                     get_form_model_by_code.return_value = mock_form_model
@@ -184,6 +186,44 @@ class TestSurveyResponseService(TestCase):
                     survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
                         additional_dictionary)
                     self.assertEquals(1, feed_manager._save_document.call_count)
+
+
+    def test_feeds_created_if_subject_not_found_for_a_submission(self):
+        manager = Mock(spec=DatabaseManager)
+        feed_manager = Mock(spec=DatabaseManager)
+        values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values, transport_info)
+
+        additional_dictionary = {'project': {'name': 'someproject', 'status': 'active', 'id': 'someid'}}
+
+        survey_response_service = SurveyResponseService(manager, feeds_dbm=feed_manager)
+
+        with patch(
+            'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
+            with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
+                with patch(
+                    'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
+                    with patch(
+                        'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                        builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
+                        instance_mock = data_form_submission.return_value
+                        type(instance_mock).is_valid = PropertyMock(return_value=True)
+                        type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
+                        instance_mock.save.side_effect = MangroveException("subject not found")
+
+                        by_short_code.return_value = Mock(spec=Entity)
+                        mock_form_model = Mock(spec=FormModel)
+                        mock_form_model.is_inactive.return_value = False
+                        mock_form_model.validate_submission.return_value = values, ""
+                        get_form_model_by_code.return_value = mock_form_model
+
+                        try:
+                            survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                                additional_dictionary)
+                            self.fail('the subject not found exception should be propagated')
+                        except MangroveException:
+                            feed_manager._save_document.assert_called_once()
 
 
 class TestSurveyResponseServiceIT(MangroveTestCase):
@@ -227,7 +267,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        self.assertRaises(MangroveException,survey_response_service.save_survey,'CL1', values, [], transport_info,
+        self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info,
             request.message)
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):

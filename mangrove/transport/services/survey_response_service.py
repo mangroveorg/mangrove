@@ -44,7 +44,7 @@ class SurveyResponseService(object):
                 form_submission.save(self.dbm)
 
             submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
-                              form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
+                form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             errors = exception.message
@@ -53,16 +53,15 @@ class SurveyResponseService(object):
             survey_response.set_status(errors)
             survey_response.create(form_submission.data_record_id)
             self.log_request(form_submission.saved, transport_info.source, message)
-
-        if self.feeds_dbm:
-            builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
-                                                 additional_feed_dictionary)
-            event_document = builder.event_document()
-            self.feeds_dbm._save_document(event_document)
+            if self.feeds_dbm:
+                builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                    additional_feed_dictionary)
+                event_document = builder.event_document()
+                self.feeds_dbm._save_document(event_document)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
-                        form_submission.errors, form_submission.data_record_id, form_submission.short_code,
-                        form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
-                        form_submission.form_model.form_code)
+            form_submission.errors, form_submission.data_record_id, form_submission.short_code,
+            form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
+            form_submission.form_model.form_code)
 
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response):
@@ -78,16 +77,16 @@ class SurveyResponseService(object):
             if form.is_valid:
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
-                              form.short_code, form.data_record_id, form_model.is_in_test_mode())
+                form.short_code, form.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
-                        form.errors, form.data_record_id, form.short_code,
-                        form._cleaned_data, form.is_registration, form.entity_type,
-                        form.form_model.form_code)
+            form.errors, form.data_record_id, form.short_code,
+            form._cleaned_data, form.is_registration, form.entity_type,
+            form.form_model.form_code)
 
     def delete_survey(self, reporter_names, survey_response):
         try:

@@ -16,7 +16,7 @@ class WebPlayerV2(object):
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, [], request.transport, request.message,
-                                   reporter_id, additional_feed_dictionary)
+            reporter_id, additional_feed_dictionary)
 
     def _parse(self, message):
         return WebParser().parse(message)
@@ -65,7 +65,7 @@ class SMSPlayerV2(object):
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-                                   additional_feed_dictionary)
+            reporter_id=reporter_entity.short_code, additional_feed_dictionary=additional_feed_dictionary)
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
         form_model = get_form_model_by_code(self.dbm, form_code)

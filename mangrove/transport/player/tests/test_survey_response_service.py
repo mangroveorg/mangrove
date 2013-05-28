@@ -226,6 +226,41 @@ class TestSurveyResponseService(TestCase):
                             feed_manager._save_document.assert_called_once()
 
 
+    def test_response_has_error_when_feed_creation_fails(self):
+        manager = Mock(spec=DatabaseManager)
+        feed_manager = Mock(spec=DatabaseManager)
+        values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values, transport_info)
+
+        additional_dictionary = {'project': {'name': 'someproject', 'status': 'active', 'id': 'someid'}}
+
+        survey_response_service = SurveyResponseService(manager, feeds_dbm=feed_manager)
+
+        with patch(
+            'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
+            with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
+                with patch(
+                    'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
+                    with patch(
+                        'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                        builder.event_document.side_effect = Exception('Some error')
+                        builder.return_value = builder
+                        instance_mock = data_form_submission.return_value
+                        type(instance_mock).is_valid = PropertyMock(return_value=True)
+                        type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
+
+                        by_short_code.return_value = Mock(spec=Entity)
+                        mock_form_model = Mock(spec=FormModel)
+                        mock_form_model.is_inactive.return_value = False
+                        mock_form_model.validate_submission.return_value = values, ""
+                        get_form_model_by_code.return_value = mock_form_model
+                        response = survey_response_service.save_survey('CL1', values, [], transport_info,
+                            request.message,
+                            additional_dictionary)
+                        self.assertTrue(response.feed_create_errors)
+
+
 class TestSurveyResponseServiceIT(MangroveTestCase):
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)

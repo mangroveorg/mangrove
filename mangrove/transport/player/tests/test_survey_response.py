@@ -1,6 +1,10 @@
 import datetime
 from unittest import TestCase
-from mock import Mock
+from mock import Mock, PropertyMock
+from mangrove.datastore.database import DatabaseManager
+from mangrove.datastore.datadict import DataDictType
+from mangrove.form_model.field import TextField
+from mangrove.form_model.form_model import FormModel
 from mangrove.transport.contract.survey_response import SurveyResponse, SurveyResponseDifference, convert_dict_keys_to_lowercase
 from mangrove.transport.contract.transport_info import TransportInfo
 
@@ -79,7 +83,16 @@ class TestSurveyResponse(TestCase):
         self.assertNotEqual(original.values['q3'], duplicate.values['q3'])
 
     def test_convert_dict_keys_to_lowercase(self):
-        somedict = {'ABC' : 'XyZ', 'PQR' : 'hIj'}
-        expected = {'abc' : 'XyZ', 'pqr' : 'hIj'}
+        somedict = {'ABC': 'XyZ', 'PQR': 'hIj'}
+        expected = {'abc': 'XyZ', 'pqr': 'hIj'}
         result = convert_dict_keys_to_lowercase(somedict)
-        self.assertEquals(expected,result)
+        self.assertEquals(expected, result)
+
+    def test_set_answers_uses_case_insensitive_key_value(self):
+        values = {'eid': 'cli001'}
+        survey_response = SurveyResponse(Mock(), transport_info=TransportInfo('web', 'test@gmail.com', 'destination'),
+            values=values)
+        survey_response.entity_question_code = 'EID'
+        survey_response.set_answers('cli001', values)
+        self.assertEquals(1, len(values))
+

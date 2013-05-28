@@ -96,6 +96,10 @@ class SurveyResponse(DataObject):
     def set_answers(self, entity_short_code, values):
         if values:
             self._doc.values = values
+            for key in self.values :
+                if key.lower() ==  self.entity_question_code.lower():
+                    self.values[key] = entity_short_code
+                    return
             self.values[self.entity_question_code] = entity_short_code
 
     def set_status(self, errors):

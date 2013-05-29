@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 from mock import Mock, PropertyMock, patch
 from mangrove.datastore.entity import Entity
@@ -124,6 +125,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_override_data_sender_info(self):
         value_mock = PropertyMock(return_value={'Q1': 'rep023'})
         type(self.survey_response).values = value_mock
+        type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', self.ddtype, entity_question_flag=True)
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
         type(self.form_model).entity_type = PropertyMock(return_value='reporter')
@@ -147,6 +149,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).status = PropertyMock(return_value=True)
         self.survey_response.is_void.return_value = True
         type(self.survey_response).values = PropertyMock(return_value={})
+        type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         type(self.form_model).fields = PropertyMock(return_value=[])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
 
@@ -162,6 +165,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).status = PropertyMock(return_value=True)
         self.survey_response.is_void.return_value = False
         type(self.survey_response).values = PropertyMock(return_value={'q1': 'something'})
+        type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         field = TextField('name', 'q1', 'A Question', self.ddtype)
         type(self.form_model).fields = PropertyMock(return_value=[field])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
@@ -179,6 +183,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).status = PropertyMock(return_value=False)
         self.survey_response.is_void.return_value = False
         type(self.survey_response).values = PropertyMock(return_value={})
+        type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         field = TextField('name', 'q1', 'A Question', self.ddtype)
         type(self.form_model).fields = PropertyMock(return_value=[field])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
@@ -195,6 +200,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_field_values_not_calculated_when_submission_is_error(self):
         type(self.survey_response).status = PropertyMock(return_value=False)
         type(self.survey_response).values = PropertyMock(return_value={'q1': '1', 'q2': 'abc'})
+        type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         fields_property_mock = PropertyMock(return_value={})
         type(self.form_model).fields = fields_property_mock
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})

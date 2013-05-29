@@ -226,7 +226,7 @@ class TestSurveyResponseService(TestCase):
                             feed_manager._save_document.assert_called_once()
 
 
-    def test_response_has_error_when_feed_creation_fails(self):
+    def test_response_has_no_error_when_feed_creation_fails(self):
         manager = Mock(spec=DatabaseManager)
         feed_manager = Mock(spec=DatabaseManager)
         values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
@@ -249,6 +249,7 @@ class TestSurveyResponseService(TestCase):
                         instance_mock = data_form_submission.return_value
                         type(instance_mock).is_valid = PropertyMock(return_value=True)
                         type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
+                        type(instance_mock).errors = PropertyMock(return_value='')
 
                         by_short_code.return_value = Mock(spec=Entity)
                         mock_form_model = Mock(spec=FormModel)
@@ -258,7 +259,8 @@ class TestSurveyResponseService(TestCase):
                         response = survey_response_service.save_survey('CL1', values, [], transport_info,
                             request.message,
                             additional_dictionary)
-                        self.assertTrue(response.feed_create_errors)
+                        self.assertFalse(response.errors)
+                        self.assertTrue(response.feed_error_message)
 
 
 class TestSurveyResponseServiceIT(MangroveTestCase):

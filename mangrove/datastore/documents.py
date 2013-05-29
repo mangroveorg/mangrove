@@ -286,6 +286,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     The is the event document that will be used for feeds.
     """
     survey_response_id = TextField()
+    survey_response_modified_time = DateTimeField()
     channel = TextField()
     form_code = TextField()
     form_model_revision = TextField()
@@ -296,10 +297,12 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     #additional_detail can be empty, for example we will not have the project info when the submission is made via SMS or Xform
     additional_detail = DictField()
 
-    def __init__(self, survey_response_id, channel=None, form_code=None, form_model_revision=None, values=None,
+    def __init__(self, survey_response_id, survey_response_modified_time, channel=None, form_code=None,
+                 form_model_revision=None, values=None,
                  status=None, error_message=None, data_sender=None, additional_detail=None, void=False):
         DocumentBase.__init__(self, document_type='EnrichedSurveyResponse')
         self.survey_response_id = survey_response_id
+        self.survey_response_modified_time = survey_response_modified_time
         self.channel = channel
         self.form_code = form_code
         self.form_model_revision = form_model_revision

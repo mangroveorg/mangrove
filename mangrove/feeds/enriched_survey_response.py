@@ -28,7 +28,7 @@ class EnrichedSurveyResponseBuilder(object):
     def event_document(self):
         status = 'success' if self.survey_response.status else 'error'
 
-        return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.channel,
+        return EnrichedSurveyResponseDocument(self.survey_response.uuid,self.survey_response.modified, self.survey_response.channel,
             self.survey_response.form_code, self.survey_response.form_model_revision, self._values(), status,
             self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
 

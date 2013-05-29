@@ -88,6 +88,10 @@ class SurveyResponse(DataObject):
     def submitted_on(self):
         return self._doc.submitted_on
 
+    @property
+    def modified(self):
+        return self._doc.modified
+
     def set_form(self, form_model):
         self._doc.form_model_revision = form_model.revision
         self.entity_question_code = form_model.entity_question.code

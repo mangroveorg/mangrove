@@ -286,7 +286,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     The is the event document that will be used for feeds.
     """
     survey_response_id = TextField()
-    survey_response_modified_time = DateTimeField()
+    survey_response_modified_time = TZAwareDateTimeField()
     channel = TextField()
     form_code = TextField()
     form_model_revision = TextField()
@@ -297,7 +297,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     #additional_detail can be empty, for example we will not have the project info when the submission is made via SMS or Xform
     additional_detail = DictField()
 
-    def __init__(self, survey_response_id, survey_response_modified_time, channel=None, form_code=None,
+    def __init__(self, survey_response_id=None, survey_response_modified_time=None, channel=None, form_code=None,
                  form_model_revision=None, values=None,
                  status=None, error_message=None, data_sender=None, additional_detail=None, void=False):
         DocumentBase.__init__(self, document_type='EnrichedSurveyResponse')
@@ -313,6 +313,16 @@ class EnrichedSurveyResponseDocument(DocumentBase):
         self.additional_detail = additional_detail
         self.void = void
 
+    def update(self,new_document):
+        self.survey_response_modified_time = new_document.survey_response_modified_time
+        self.form_code = new_document.form_code
+        self.form_model_revision = new_document.form_model_revision
+        self.values = new_document.values
+        self.status = new_document.status
+        self.error_message = new_document.error_message
+        self.data_sender = new_document.data_sender
+        self.additional_detail = new_document.additional_detail
+        self.void = new_document.void
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

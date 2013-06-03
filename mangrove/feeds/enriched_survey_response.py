@@ -28,9 +28,24 @@ class EnrichedSurveyResponseBuilder(object):
     def event_document(self):
         status = 'success' if self.survey_response.status else 'error'
 
-        return EnrichedSurveyResponseDocument(self.survey_response.uuid,self.survey_response.modified, self.survey_response.channel,
+        return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.modified,
+            self.survey_response.channel,
             self.survey_response.form_code, self.survey_response.form_model_revision, self._values(), status,
             self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
+
+    def get_document(self, feed_dbm):
+        rows = feed_dbm.view.feed_by_survey_response(key=self.survey_response.uuid, include_docs=True)
+        enriched_survey_response = EnrichedSurveyResponseDocument.wrap(rows[0]['value'])
+        return enriched_survey_response
+
+    def update_event_document(self, feeds_dbm):
+        enriched_survey_response = self.get_document(feeds_dbm)
+        new_document = self.event_document()
+        if self.form_model.entity_type[0] != 'reporter':
+            data_sender_id = enriched_survey_response.data_sender.get('id')
+            new_document.data_sender = self.get_data_sender_info_dict(data_sender_id)
+        enriched_survey_response.update(new_document)
+        return enriched_survey_response
 
     def _data_sender(self):
         data_sender_id = self.reporter_id
@@ -38,7 +53,9 @@ class EnrichedSurveyResponseBuilder(object):
             if field.code == self.form_model.entity_question.code and self.form_model.entity_type[0] == 'reporter':
                 data_sender_id = self.values_lower_case_dict.get(field.code)
                 break
+        return self.get_data_sender_info_dict(data_sender_id)
 
+    def get_data_sender_info_dict(self, data_sender_id):
         data_sender = by_short_code(self.dbm, data_sender_id, ['reporter'])
         return {'id': data_sender_id,
                 'last_name': data_sender.data['name']['value'],

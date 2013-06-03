@@ -71,7 +71,7 @@ class SurveyResponseService(object):
             form_submission.form_model.form_code, feed_create_errors)
 
 
-    def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response):
+    def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,additional_feed_dictionary=None,reporter_id=None):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
@@ -89,6 +89,12 @@ class SurveyResponseService(object):
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
+            if self.feeds_dbm:
+                builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                    additional_feed_dictionary)
+                event_document = builder.update_event_document(self.feeds_dbm)
+                self.feeds_dbm._save_document(event_document)
+
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
             form.errors, form.data_record_id, form.short_code,

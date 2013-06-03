@@ -21,11 +21,11 @@ class WebPlayerV2(object):
     def _parse(self, message):
         return WebParser().parse(message)
 
-    def edit_survey_response(self, request, survey_response, logger=None):
+    def edit_survey_response(self, request, survey_response,reporter_id,additional_feed_dictionary=None, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        service = SurveyResponseService(self.dbm, logger)
-        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response)
+        service = SurveyResponseService(self.dbm, logger,feeds_dbm=self.feeds_dbm)
+        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,additional_feed_dictionary,reporter_id)
 
     def delete_survey_response(self, survey_response, logger=None):
         assert survey_response is not None

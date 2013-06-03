@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from mock import Mock, PropertyMock, patch
+from mangrove.datastore.documents import  SurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -30,7 +31,8 @@ class TestSurveyResponseEventBuilder(TestCase):
             builder.event_document()
             self.fail('Since We dont have the correct values for options this should raised an exception')
         except Exception as e:
-            self.assertEqual('Survey Response Id : someid, field code q1, number of values not equal to number of selected choices: ba',
+            self.assertEqual(
+                'Survey Response Id : someid, field code q1, number of values not equal to number of selected choices: ba',
                 e.message)
 
 
@@ -230,3 +232,116 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.assertEquals({'1a': 'orange', '1c': 'strawberry'}, dictionary.get('answer'))
         self.assertEquals('multi select', dictionary.get('label'))
         self.assertEquals('select', dictionary.get('type'))
+
+    def test_update_enriched_survey_response_with_new_survey_response_values(self):
+        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        type(self.form_model).fields = PropertyMock(return_value=[field])
+
+        type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
+
+        self.form_model.form_code = 'form_code'
+        survey_response = SurveyResponse(Mock())
+        survey_response._doc = SurveyResponseDocument(status=False, values={'q1': 'answer1'},
+            form_code='form_code')
+        builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
+
+        def patch_data_sender():
+            return {}
+
+        builder._data_sender = patch_data_sender
+        doc = builder.event_document()
+
+        self.assertEquals(doc.values, {'q1': 'answer1'})
+
+        edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'answer2'},
+            form_code='form_code')
+        edited_survey_response = SurveyResponse(Mock())
+        edited_survey_response._doc = edited_survey_response_doc
+
+        new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
+        new_builder._data_sender = patch_data_sender
+        feeds_dbm = Mock(spec=DatabaseManager)
+
+        def patch_get_doc(feeds_dbm):
+            return doc
+
+        new_builder.get_document = patch_get_doc
+        edited_doc = new_builder.update_event_document(feeds_dbm)
+        self.assertEquals(edited_doc.values, {'q1': {'answer': 'answer2', 'label': 'A Question', 'type': 'text'}})
+
+    def test_update_datasender_info_for_summary_reports(self):
+        data_sender_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
+        type(self.form_model).fields = PropertyMock(return_value=[data_sender_field])
+        type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
+        type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
+        self.form_model.form_code = 'form_code'
+        survey_response = SurveyResponse(Mock())
+        survey_response._doc = SurveyResponseDocument(status=False, values={'q1': 'rep1'}, form_code='form_code')
+        builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
+
+        with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
+            entity = Mock(spec=Entity)
+            by_short_code.return_value = entity
+            type(entity).data = PropertyMock(
+                return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
+            doc = builder.event_document()
+
+            self.assertEquals(doc.values, {'q1': 'rep1'})
+            self.assertDictEqual(doc.data_sender,
+                {'id': 'rep1', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+
+            edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'rep2'},
+                form_code='form_code')
+            edited_survey_response = SurveyResponse(Mock())
+            edited_survey_response._doc = edited_survey_response_doc
+
+            new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
+            feeds_dbm = Mock(spec=DatabaseManager)
+
+            def patch_get_doc(feeds_dbm):
+                return doc
+
+            new_builder.get_document = patch_get_doc
+            edited_doc = new_builder.update_event_document(feeds_dbm)
+            self.assertEquals(edited_doc.data_sender,
+                {'id': 'rep2', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+
+    def test_should_not_update_datasender_info_for_individual_reports(self):
+        subject_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
+        question_field = TextField('name', 'q2', 'Another Question', self.ddtype)
+        type(self.form_model).fields = PropertyMock(return_value=[subject_field,question_field])
+        type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
+        type(self.form_model).entity_type = PropertyMock(return_value=['school'])
+        self.form_model.form_code = 'form_code'
+        survey_response = SurveyResponse(Mock())
+        survey_response._doc = SurveyResponseDocument(status=True, values={'q1': 'sch01','q2':'answer1'}, form_code='form_code')
+        builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
+
+        with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
+            entity = Mock(spec=Entity)
+            by_short_code.return_value = entity
+            type(entity).data = PropertyMock(
+                return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
+            doc = builder.event_document()
+
+            self.assertDictEqual(doc.data_sender,
+                {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+
+            edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'sch02','q2':'answer2'},
+                form_code='form_code')
+            edited_survey_response = SurveyResponse(Mock())
+            edited_survey_response._doc = edited_survey_response_doc
+
+            new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'admin', {})
+            feeds_dbm = Mock(spec=DatabaseManager)
+
+            def patch_get_doc(feeds_dbm):
+                return doc
+
+            new_builder.get_document = patch_get_doc
+            edited_doc = new_builder.update_event_document(feeds_dbm)
+            self.assertEquals(edited_doc.data_sender,
+                {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+
+
+

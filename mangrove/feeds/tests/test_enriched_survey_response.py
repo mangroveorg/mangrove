@@ -5,6 +5,7 @@ from mangrove.datastore.documents import  SurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
+from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.field import SelectField, DateField, TextField, IntegerField
 from mangrove.form_model.form_model import FormModel
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
@@ -309,12 +310,13 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_should_not_update_datasender_info_for_individual_reports(self):
         subject_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
         question_field = TextField('name', 'q2', 'Another Question', self.ddtype)
-        type(self.form_model).fields = PropertyMock(return_value=[subject_field,question_field])
+        type(self.form_model).fields = PropertyMock(return_value=[subject_field, question_field])
         type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
         type(self.form_model).entity_type = PropertyMock(return_value=['school'])
         self.form_model.form_code = 'form_code'
         survey_response = SurveyResponse(Mock())
-        survey_response._doc = SurveyResponseDocument(status=True, values={'q1': 'sch01','q2':'answer1'}, form_code='form_code')
+        survey_response._doc = SurveyResponseDocument(status=True, values={'q1': 'sch01', 'q2': 'answer1'},
+            form_code='form_code')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
 
         with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
@@ -327,7 +329,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertDictEqual(doc.data_sender,
                 {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
 
-            edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'sch02','q2':'answer2'},
+            edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'sch02', 'q2': 'answer2'},
                 form_code='form_code')
             edited_survey_response = SurveyResponse(Mock())
             edited_survey_response._doc = edited_survey_response_doc
@@ -343,5 +345,13 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertEquals(edited_doc.data_sender,
                 {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
 
+    def test_should_update_datasender_as_deleted_if_datasender_is_deleted_when_submission_is_edited(self):
+        type(self.survey_response).values = PropertyMock(return_value = {'q1':'ans'})
+        builder = EnrichedSurveyResponseBuilder(self.dbm,self.survey_response,self.form_model,'rep',{})
+        with patch("mangrove.feeds.enriched_survey_response.by_short_code") as by_short_code:
+            by_short_code.side_effect = DataObjectNotFound('Entity', 'some_id', 'value')
+            sender_info_dict = builder._get_data_sender_info_dict('some_id')
+            expected_data_sender_info = {'id': 'Deleted data sender', 'last_name': '', 'mobile_number': ''}
+            self.assertDictEqual(expected_data_sender_info, sender_info_dict)
 
 

@@ -1,6 +1,7 @@
 from string import lower
 from mangrove.datastore.documents import EnrichedSurveyResponseDocument
 from mangrove.datastore.entity import by_short_code
+from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.field import DateField, SelectField
 
 
@@ -43,7 +44,7 @@ class EnrichedSurveyResponseBuilder(object):
         new_document = self.event_document()
         if self.form_model.entity_type[0] != 'reporter':
             data_sender_id = enriched_survey_response.data_sender.get('id')
-            new_document.data_sender = self.get_data_sender_info_dict(data_sender_id)
+            new_document.data_sender = self._get_data_sender_info_dict(data_sender_id)
         enriched_survey_response.update(new_document)
         return enriched_survey_response
 
@@ -53,13 +54,20 @@ class EnrichedSurveyResponseBuilder(object):
             if field.code == self.form_model.entity_question.code and self.form_model.entity_type[0] == 'reporter':
                 data_sender_id = self.values_lower_case_dict.get(field.code)
                 break
-        return self.get_data_sender_info_dict(data_sender_id)
+        return self._get_data_sender_info_dict(data_sender_id)
 
-    def get_data_sender_info_dict(self, data_sender_id):
-        data_sender = by_short_code(self.dbm, data_sender_id, ['reporter'])
-        return {'id': data_sender_id,
-                'last_name': data_sender.data['name']['value'],
-                'mobile_number': data_sender.data['mobile_number']['value']}
+    def _get_data_sender_info_dict(self, data_sender_id):
+        try:
+            data_sender = by_short_code(self.dbm, data_sender_id, ['reporter'])
+            return {'id': data_sender_id,
+                    'last_name': data_sender.data['name']['value'],
+                    'mobile_number': data_sender.data['mobile_number']['value']}
+        except DataObjectNotFound:
+            return {
+                'id': 'Deleted data sender',
+                'last_name': '',
+                'mobile_number': ''
+            }
 
     def _create_answer_dictionary(self, field):
         answer_dictionary = {}

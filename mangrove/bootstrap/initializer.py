@@ -1,4 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from glob import iglob
+import string
+import os
 from views import view_js
 from mangrove.contrib.deletion import create_default_delete_form_model, ENTITY_DELETION_FORM_CODE
 from mangrove.contrib.registration import create_default_reg_form_model
@@ -52,6 +55,31 @@ def _create_views(dbm):
 
 def sync_views(dbm):
     """Updates or Creates a standard set of views in the database"""
+    database_manager = dbm
+    for v in view_js.keys():
+        funcs = view_js[v]
+        map = (funcs['map'] if 'map' in funcs else None)
+        reduce = (funcs['reduce'] if 'reduce' in funcs else None)
+        database_manager.create_view(v, map, reduce)
+
+
+def find_views(view_dir):
+    views = {}
+    for fn in iglob(os.path.join(os.path.dirname(__file__), view_dir, '*.js')):
+        try:
+            func, name = string.split(os.path.splitext(os.path.basename(fn))[0], '_', 1)
+            with open(fn) as f:
+                if name not in views:
+                    views[name] = {}
+                views[name][func] = f.read()
+        except Exception:
+            # doesn't match pattern, or file could be read, just skip
+            pass
+    return views
+
+def sync_feed_views(dbm):
+    """Updates or Creates a standard set of views in the feeds database"""
+    view_js = find_views('feed_views')
     database_manager = dbm
     for v in view_js.keys():
         funcs = view_js[v]

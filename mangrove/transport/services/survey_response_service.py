@@ -85,21 +85,27 @@ class SurveyResponseService(object):
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
                 form.short_code, form.data_record_id, form_model.is_in_test_mode())
+            try:
+                feed_create_errors = None
+                if self.feeds_dbm:
+                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                        additional_feed_dictionary)
+                    event_document = builder.update_event_document(self.feeds_dbm)
+                    self.feeds_dbm._save_document(event_document)
+            except Exception as e:
+                feed_create_errors = 'error while creating feed doc for %s \n' % survey_response.id
+                feed_create_errors += e.message + '\n'
+                feed_create_errors += traceback.format_exc()
+
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
-            if self.feeds_dbm:
-                builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
-                    additional_feed_dictionary)
-                event_document = builder.update_event_document(self.feeds_dbm)
-                self.feeds_dbm._save_document(event_document)
-
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
             form.errors, form.data_record_id, form.short_code,
             form._cleaned_data, form.is_registration, form.entity_type,
-            form.form_model.form_code)
+            form.form_model.form_code,feed_create_errors)
 
     def delete_survey(self, reporter_names, survey_response):
         try:

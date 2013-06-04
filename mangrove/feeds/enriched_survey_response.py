@@ -34,13 +34,9 @@ class EnrichedSurveyResponseBuilder(object):
             self.survey_response.form_code, self.survey_response.form_model_revision, self._values(), status,
             self.survey_response.errors, self._data_sender(), self.additional_details, self.survey_response.is_void())
 
-    def get_document(self, feed_dbm):
-        rows = feed_dbm.view.feed_by_survey_response(key=self.survey_response.uuid, include_docs=True)
-        enriched_survey_response = EnrichedSurveyResponseDocument.wrap(rows[0]['value'])
-        return enriched_survey_response
 
     def update_event_document(self, feeds_dbm):
-        enriched_survey_response = self.get_document(feeds_dbm)
+        enriched_survey_response = get_document(feeds_dbm,self.survey_response.uuid)
         new_document = self.event_document()
         if self.form_model.entity_type[0] != 'reporter':
             data_sender_id = enriched_survey_response.data_sender.get('id')
@@ -119,3 +115,8 @@ class LowerCaseKeyDict():
     def get(self, key):
         return None if key is None else self.dictionary.get(lower(key))
 
+
+def get_document(feed_dbm,survey_response_id):
+    rows = feed_dbm.view.feed_by_survey_response(key=survey_response_id, include_docs=True)
+    enriched_survey_response = EnrichedSurveyResponseDocument.wrap(rows[0]['value'])
+    return enriched_survey_response

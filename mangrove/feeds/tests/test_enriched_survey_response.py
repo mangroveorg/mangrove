@@ -262,13 +262,10 @@ class TestSurveyResponseEventBuilder(TestCase):
         new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
         new_builder._data_sender = patch_data_sender
         feeds_dbm = Mock(spec=DatabaseManager)
-
-        def patch_get_doc(feeds_dbm):
-            return doc
-
-        new_builder.get_document = patch_get_doc
-        edited_doc = new_builder.update_event_document(feeds_dbm)
-        self.assertEquals(edited_doc.values, {'q1': {'answer': 'answer2', 'label': 'A Question', 'type': 'text'}})
+        with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+            get_document.return_value = doc
+            edited_doc = new_builder.update_event_document(feeds_dbm)
+            self.assertEquals(edited_doc.values, {'q1': {'answer': 'answer2', 'label': 'A Question', 'type': 'text'}})
 
     def test_update_datasender_info_for_summary_reports(self):
         data_sender_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
@@ -298,14 +295,12 @@ class TestSurveyResponseEventBuilder(TestCase):
 
             new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
             feeds_dbm = Mock(spec=DatabaseManager)
+            with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+                get_document.return_value = doc
 
-            def patch_get_doc(feeds_dbm):
-                return doc
-
-            new_builder.get_document = patch_get_doc
-            edited_doc = new_builder.update_event_document(feeds_dbm)
-            self.assertEquals(edited_doc.data_sender,
-                {'id': 'rep2', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+                edited_doc = new_builder.update_event_document(feeds_dbm)
+                self.assertEquals(edited_doc.data_sender,
+                    {'id': 'rep2', 'last_name': 'real data sender', 'mobile_number': '929388193'})
 
     def test_should_not_update_datasender_info_for_individual_reports(self):
         subject_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
@@ -337,13 +332,11 @@ class TestSurveyResponseEventBuilder(TestCase):
             new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'admin', {})
             feeds_dbm = Mock(spec=DatabaseManager)
 
-            def patch_get_doc(feeds_dbm):
-                return doc
-
-            new_builder.get_document = patch_get_doc
-            edited_doc = new_builder.update_event_document(feeds_dbm)
-            self.assertEquals(edited_doc.data_sender,
-                {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+            with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+                get_document.return_value = doc
+                edited_doc = new_builder.update_event_document(feeds_dbm)
+                self.assertEquals(edited_doc.data_sender,
+                    {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
 
     def test_should_update_datasender_as_deleted_if_datasender_is_deleted_when_submission_is_edited(self):
         type(self.survey_response).values = PropertyMock(return_value = {'q1':'ans'})

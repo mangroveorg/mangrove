@@ -29,11 +29,13 @@ def _delete_reg_form_if_exists(manager):
     except FormModelDoesNotExistsException:
         pass
 
+
 def _delete_entity_delete_form_if_exists(manager):
     try:
         get_form_model_by_code(manager, ENTITY_DELETION_FORM_CODE).delete()
     except FormModelDoesNotExistsException:
         pass
+
 
 def _create_entity_types(manager, entity_types):
     for entity_type in entity_types:
@@ -41,6 +43,7 @@ def _create_entity_types(manager, entity_types):
             define_type(manager, entity_type)
         except EntityTypeAlreadyDefined:
             pass
+
 
 def _create_views(dbm):
     """Creates a standard set of views in the database"""
@@ -76,17 +79,6 @@ def find_views(view_dir):
             # doesn't match pattern, or file could be read, just skip
             pass
     return views
-
-def sync_feed_views(dbm):
-    """Updates or Creates a standard set of views in the feeds database"""
-    view_js = find_views('feed_views')
-    database_manager = dbm
-    for v in view_js.keys():
-        funcs = view_js[v]
-        map = (funcs['map'] if 'map' in funcs else None)
-        reduce = (funcs['reduce'] if 'reduce' in funcs else None)
-        database_manager.create_view(v, map, reduce)
-
 
 def _exists_view(aggregation, database_manager):
     entity_type_views = database_manager.\

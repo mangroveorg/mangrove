@@ -13,25 +13,25 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         self.feed_manager = get_db_manager('http://localhost:6984/', 'feed-mangrove-test')
         _delete_db_and_remove_db_manager(self.feed_manager)
         self.feed_manager = get_db_manager('http://localhost:6984/', 'feed-mangrove-test')
-        initializer.sync_feed_views(self.feed_manager)
         self.create_reporter()
         TestData(self.manager)
 
     def test_should_update_enriched_survey_response(self):
         survey_response = TestSurveyResponseBuilder(self.manager, form_code='CL1',
             values={'ID': '1', 'Q1': 'name', 'Q2': 21, 'Q3': 'a'}).build()
-        form_model = get_form_model_by_code(self.manager,'CL1')
-        self.feed_manager._save_document(EnrichedSurveyResponseBuilder(self.manager, survey_response,form_model, 'ashwin',
-            {}).event_document())
-        edited_values={'ID': '1', 'Q1': 'name2', 'Q2': 24, 'Q3': 'b'}
+        form_model = get_form_model_by_code(self.manager, 'CL1')
+        self.feed_manager._save_document(
+            EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
+                {}).event_document())
+        edited_values = {'ID': '1', 'Q1': 'name2', 'Q2': 24, 'Q3': 'b'}
         survey_response.set_form(form_model)
-        survey_response.set_answers('1',edited_values)
+        survey_response.set_answers('1', edited_values)
         survey_response.save()
         doc = EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
             {}).update_event_document(self.feed_manager)
         self.feed_manager._save_document(doc)
         edited_feed_document = get_document(self.feed_manager, survey_response.uuid)
-        expected_values ={
+        expected_values = {
             'id': {'answer': {'1': 'clinic1'}, 'is_entity_question': 'true', 'type': 'text',
                    'label': 'What is associated entity'},
             'q1': {'answer': 'name2', 'type': 'text', 'label': 'What is your name'},
@@ -39,7 +39,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
             'q3': {'answer': {'b': 'YELLOW'}, 'type': 'select1', 'label': 'What is your favourite color'}
         }
 
-        self.assertDictEqual(edited_feed_document.values,expected_values)
+        self.assertDictEqual(edited_feed_document.values, expected_values)
 
 
     def create_reporter(self):

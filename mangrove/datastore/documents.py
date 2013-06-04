@@ -285,7 +285,6 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     """
     The is the event document that will be used for feeds.
     """
-    survey_response_id = TextField()
     survey_response_modified_time = TZAwareDateTimeField()
     channel = TextField()
     form_code = TextField()
@@ -300,8 +299,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     def __init__(self, survey_response_id=None, survey_response_modified_time=None, channel=None, form_code=None,
                  form_model_revision=None, values=None,
                  status=None, error_message=None, data_sender=None, additional_detail=None, void=False):
-        DocumentBase.__init__(self, document_type='EnrichedSurveyResponse')
-        self.survey_response_id = survey_response_id
+        DocumentBase.__init__(self, id=survey_response_id,document_type='EnrichedSurveyResponse')
         self.survey_response_modified_time = survey_response_modified_time
         self.channel = channel
         self.form_code = form_code

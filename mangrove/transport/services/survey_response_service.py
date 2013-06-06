@@ -59,7 +59,7 @@ class SurveyResponseService(object):
                 if self.feeds_dbm:
                     builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
                         additional_feed_dictionary)
-                    event_document = builder.event_document()
+                    event_document = builder.feed_document()
                     self.feeds_dbm._save_document(event_document)
             except Exception as e:
                 feed_create_errors = 'error while creating feed doc for %s \n' % survey_response.id

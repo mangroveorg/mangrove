@@ -22,7 +22,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         form_model = get_form_model_by_code(self.manager, 'CL1')
         self.feed_manager._save_document(
             EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
-                {}).event_document())
+                {}).feed_document())
         edited_values = {'ID': '1', 'Q1': 'name2', 'Q2': 24, 'Q3': 'b'}
         survey_response.set_form(form_model)
         survey_response.set_answers('1', edited_values)

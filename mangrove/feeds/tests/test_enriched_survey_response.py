@@ -29,7 +29,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.survey_response.id = 'someid'
 
             builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, 'rep1', {})
-            builder.event_document()
+            builder.feed_document()
             self.fail('Since We dont have the correct values for options this should raised an exception')
         except Exception as e:
             self.assertEqual(
@@ -142,7 +142,7 @@ class TestSurveyResponseEventBuilder(TestCase):
                 return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
 
             builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
-            doc = builder.event_document()
+            doc = builder.feed_document()
 
             by_short_code.assert_called_once_with(self.dbm, 'rep12', ['reporter'], )
             self.assertDictEqual({'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'},
@@ -160,7 +160,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             return {}
 
         builder._data_sender = patch_data_sender
-        doc = builder.event_document()
+        doc = builder.feed_document()
 
         self.assertTrue(doc.void)
 
@@ -177,7 +177,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             return {}
 
         builder._data_sender = patch_data_sender
-        doc = builder.event_document()
+        doc = builder.feed_document()
 
         self.assertEqual('success', doc.status)
         self.assertFalse(doc.void)
@@ -195,7 +195,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             return {}
 
         builder._data_sender = patch_data_sender
-        doc = builder.event_document()
+        doc = builder.feed_document()
 
         self.assertEqual('error', doc.status)
         self.assertFalse(doc.void)
@@ -212,7 +212,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             return {}
 
         builder._data_sender = patch_data_sender
-        doc = builder.event_document()
+        doc = builder.feed_document()
 
         self.assertFalse(fields_property_mock.called)
         self.assertDictEqual({'q1': '1', 'q2': 'abc'}, doc.values)
@@ -250,7 +250,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             return {}
 
         builder._data_sender = patch_data_sender
-        doc = builder.event_document()
+        doc = builder.feed_document()
 
         self.assertEquals(doc.values, {'q1': 'answer1'})
 
@@ -282,7 +282,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             by_short_code.return_value = entity
             type(entity).data = PropertyMock(
                 return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
-            doc = builder.event_document()
+            doc = builder.feed_document()
 
             self.assertEquals(doc.values, {'q1': 'rep1'})
             self.assertDictEqual(doc.data_sender,
@@ -319,7 +319,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             by_short_code.return_value = entity
             type(entity).data = PropertyMock(
                 return_value={'name': {'value': 'real data sender'}, 'mobile_number': {'value': '929388193'}})
-            doc = builder.event_document()
+            doc = builder.feed_document()
 
             self.assertDictEqual(doc.data_sender,
                 {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})

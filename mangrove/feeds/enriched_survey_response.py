@@ -26,7 +26,7 @@ class EnrichedSurveyResponseBuilder(object):
             values = self.survey_response.values
         return values
 
-    def event_document(self):
+    def feed_document(self):
         status = 'success' if self.survey_response.status else 'error'
 
         return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.modified,
@@ -37,7 +37,7 @@ class EnrichedSurveyResponseBuilder(object):
 
     def update_event_document(self, feeds_dbm):
         enriched_survey_response = get_document(feeds_dbm, self.survey_response.uuid)
-        new_document = self.event_document()
+        new_document = self.feed_document()
         if self.form_model.entity_type[0] != 'reporter':
             data_sender_id = enriched_survey_response.data_sender.get('id')
             new_document.data_sender = self._get_data_sender_info_dict(data_sender_id)
@@ -78,7 +78,7 @@ class EnrichedSurveyResponseBuilder(object):
             answer_dictionary.update({'answer': selected})
         if field.code == self.form_model.entity_question.code:
             answer_dictionary.update({'is_entity_question': 'true'})
-            if self.form_model.entity_type != "reporter":
+            if self.form_model.entity_type != ["reporter"]:
                 subject = by_short_code(self.dbm, value, self.form_model.entity_type)
                 answer_dictionary.update(
                     {'answer': {value: subject.data['name']['value']}})

@@ -244,7 +244,7 @@ class TestSurveyResponseService(TestCase):
                     'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
                     with patch(
                         'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
-                        builder.event_document.side_effect = Exception('Some error')
+                        builder.feed_document.side_effect = Exception('Some error')
                         builder.return_value = builder
                         instance_mock = data_form_submission.return_value
                         type(instance_mock).is_valid = PropertyMock(return_value=True)

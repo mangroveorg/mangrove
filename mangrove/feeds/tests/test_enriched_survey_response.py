@@ -116,7 +116,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).values = value_mock
         data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', self.ddtype, entity_question_flag=True)
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
-        type(self.form_model).entity_type = PropertyMock(return_value='reporter')
+        type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep023', {})
         dictionary = builder._create_answer_dictionary(data_sender_field)
 
@@ -131,7 +131,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
         data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', self.ddtype, entity_question_flag=True)
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
-        type(self.form_model).entity_type = PropertyMock(return_value='reporter')
+        type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
 
         self.form_model.fields = [data_sender_field]
 
@@ -144,8 +144,8 @@ class TestSurveyResponseEventBuilder(TestCase):
             builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep12', {})
             doc = builder.feed_document()
 
-            by_short_code.assert_called_once_with(self.dbm, 'rep12', ['reporter'], )
-            self.assertDictEqual({'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'},
+            by_short_code.assert_called_once_with(self.dbm, 'rep023', ['reporter'], )
+            self.assertDictEqual({'id': 'rep023', 'last_name': 'real data sender', 'mobile_number': '929388193'},
                 doc.data_sender)
 
     def test_delete_status_updated(self):

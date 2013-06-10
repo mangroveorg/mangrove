@@ -29,7 +29,7 @@ class WebPlayerV2(object):
 
     def delete_survey_response(self, survey_response, logger=None):
         assert survey_response is not None
-        service = SurveyResponseService(self.dbm, logger)
+        service = SurveyResponseService(self.dbm, logger,self.feeds_dbm)
         return service.delete_survey([], survey_response)
 
 

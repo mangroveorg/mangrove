@@ -322,6 +322,9 @@ class EnrichedSurveyResponseDocument(DocumentBase):
         self.additional_detail = new_document.additional_detail
         self.void = new_document.void
 
+    def delete(self):
+        self.void = True
+
 class AggregationTreeDocument(DocumentBase):
     root = DictField()
     root_id = TextField()

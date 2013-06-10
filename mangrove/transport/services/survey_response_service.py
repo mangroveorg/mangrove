@@ -1,6 +1,6 @@
 from copy import copy
 import traceback
-from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
+from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_feed_document_by_id
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException
@@ -93,7 +93,7 @@ class SurveyResponseService(object):
                     event_document = builder.update_event_document(self.feeds_dbm)
                     self.feeds_dbm._save_document(event_document)
             except Exception as e:
-                feed_create_errors = 'error while creating feed doc for %s \n' % survey_response.id
+                feed_create_errors = 'error while editing feed doc for %s \n' % survey_response.id
                 feed_create_errors += e.message + '\n'
                 feed_create_errors += traceback.format_exc()
 
@@ -108,11 +108,14 @@ class SurveyResponseService(object):
             form.form_model.form_code,feed_create_errors)
 
     def delete_survey(self, reporter_names, survey_response):
+        feed_delete_errors = None
         try:
             survey_response.void()
+            if self.feeds_dbm:
+                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response).delete_feed_document(self.feeds_dbm)
         except MangroveException as e:
-            return Response(reporter_names, errors=e.message)
-        return Response(reporter_names, success=True)
+            return Response(reporter_names, errors=e.message,feed_error_message=feed_delete_errors)
+        return Response(reporter_names, success=True,feed_error_message=feed_delete_errors)
 
     def log_request(self, status, source, message):
         if self.logger is not None:

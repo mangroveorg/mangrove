@@ -2,7 +2,7 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_document
+from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_feed_document_by_id
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.utils.test_utils.survey_response_builder import TestSurveyResponseBuilder
@@ -30,7 +30,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         doc = EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
             {}).update_event_document(self.feed_manager)
         self.feed_manager._save_document(doc)
-        edited_feed_document = get_document(self.feed_manager, survey_response.uuid)
+        edited_feed_document = get_feed_document_by_id(self.feed_manager, survey_response.uuid)
         expected_values = {
             'id': {'answer': {'1': 'clinic1'}, 'is_entity_question': 'true', 'type': 'text',
                    'label': 'What is associated entity'},
@@ -41,6 +41,16 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
 
         self.assertDictEqual(edited_feed_document.values, expected_values)
 
+    def test_should_void_feed_document_and_set_status_as_deleted_when_submission_deleted(self):
+        survey_response = TestSurveyResponseBuilder(self.manager, form_code='CL1',
+            values={'ID': '1', 'Q1': 'name', 'Q2': 21, 'Q3': 'a'}).build()
+        form_model = get_form_model_by_code(self.manager, 'CL1')
+        self.feed_manager._save_document(
+            EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
+                {}).feed_document())
+        EnrichedSurveyResponseBuilder(self.manager,survey_response).delete_feed_document(self.feed_manager)
+        deleted_feed_document = get_feed_document_by_id(self.feed_manager, survey_response.uuid)
+        self.assertTrue(deleted_feed_document.void)
 
     def create_reporter(self):
         r = Entity(self.manager, entity_type=["Reporter"], short_code='ashwin')

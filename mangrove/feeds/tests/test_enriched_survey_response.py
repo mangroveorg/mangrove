@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from mock import Mock, PropertyMock, patch
-from mangrove.datastore.documents import  SurveyResponseDocument
+from mangrove.datastore.documents import  SurveyResponseDocument, EnrichedSurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -262,7 +262,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
         new_builder._data_sender = patch_data_sender
         feeds_dbm = Mock(spec=DatabaseManager)
-        with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+        with patch('mangrove.feeds.enriched_survey_response.get_feed_document_by_id') as get_document:
             get_document.return_value = doc
             edited_doc = new_builder.update_event_document(feeds_dbm)
             self.assertEquals(edited_doc.values, {'q1': {'answer': 'answer2', 'label': 'A Question', 'type': 'text'}})
@@ -295,7 +295,7 @@ class TestSurveyResponseEventBuilder(TestCase):
 
             new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'rep12', {})
             feeds_dbm = Mock(spec=DatabaseManager)
-            with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+            with patch('mangrove.feeds.enriched_survey_response.get_feed_document_by_id') as get_document:
                 get_document.return_value = doc
 
                 edited_doc = new_builder.update_event_document(feeds_dbm)
@@ -332,7 +332,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             new_builder = EnrichedSurveyResponseBuilder(self.dbm, edited_survey_response, self.form_model, 'admin', {})
             feeds_dbm = Mock(spec=DatabaseManager)
 
-            with patch('mangrove.feeds.enriched_survey_response.get_document') as get_document:
+            with patch('mangrove.feeds.enriched_survey_response.get_feed_document_by_id') as get_document:
                 get_document.return_value = doc
                 edited_doc = new_builder.update_event_document(feeds_dbm)
                 self.assertEquals(edited_doc.data_sender,
@@ -346,5 +346,3 @@ class TestSurveyResponseEventBuilder(TestCase):
             sender_info_dict = builder._get_data_sender_info_dict('some_id')
             expected_data_sender_info = {'id': 'Deleted data sender', 'last_name': '', 'mobile_number': ''}
             self.assertDictEqual(expected_data_sender_info, sender_info_dict)
-
-

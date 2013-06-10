@@ -48,7 +48,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         self.feed_manager._save_document(
             EnrichedSurveyResponseBuilder(self.manager, survey_response, form_model, 'ashwin',
                 {}).feed_document())
-        EnrichedSurveyResponseBuilder(self.manager,survey_response).delete_feed_document(self.feed_manager)
+        EnrichedSurveyResponseBuilder(self.manager,survey_response,form_model,'ashwin',{}).delete_feed_document(self.feed_manager)
         deleted_feed_document = get_feed_document_by_id(self.feed_manager, survey_response.uuid)
         self.assertTrue(deleted_feed_document.void)
 

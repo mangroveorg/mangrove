@@ -107,15 +107,16 @@ class SurveyResponseService(object):
             form._cleaned_data, form.is_registration, form.entity_type,
             form.form_model.form_code,feed_create_errors)
 
-    def delete_survey(self, reporter_names, survey_response):
+    def delete_survey(self, survey_response,reporter_id,additional_details):
         feed_delete_errors = None
         try:
             survey_response.void()
+            form_model = get_form_model_by_code(self.dbm, survey_response.form_code)
             if self.feeds_dbm:
-                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response).delete_feed_document(self.feeds_dbm)
+                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response,form_model,reporter_id,additional_details).delete_feed_document(self.feeds_dbm)
         except MangroveException as e:
-            return Response(reporter_names, errors=e.message,feed_error_message=feed_delete_errors)
-        return Response(reporter_names, success=True,feed_error_message=feed_delete_errors)
+            return Response(errors=e.message,feed_error_message=feed_delete_errors)
+        return Response(success=True,feed_error_message=feed_delete_errors)
 
     def log_request(self, status, source, message):
         if self.logger is not None:

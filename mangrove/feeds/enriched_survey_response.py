@@ -7,7 +7,7 @@ from mangrove.form_model.field import DateField, SelectField
 
 
 class EnrichedSurveyResponseBuilder(object):
-    def __init__(self, dbm, survey_response, form_model=None, reporter_id=None, additional_details=None, logger=None):
+    def __init__(self, dbm, survey_response, form_model, reporter_id, additional_details, logger=None):
         self.dbm = dbm
         self.reporter_id = reporter_id
         self.additional_details = additional_details
@@ -38,18 +38,14 @@ class EnrichedSurveyResponseBuilder(object):
 
     def update_event_document(self, feeds_dbm):
         enriched_survey_response = get_feed_document_by_id(feeds_dbm, self.survey_response.uuid)
-        new_document = self.feed_document()
-        if self.form_model.entity_type[0] != 'reporter':
-            data_sender_id = enriched_survey_response.data_sender.get('id')
-            new_document.data_sender = self._get_data_sender_info_dict(data_sender_id)
-        enriched_survey_response.update(new_document)
+        self._update_feed_with_latest_info(enriched_survey_response)
         return enriched_survey_response
 
     def delete_feed_document(self,feeds_dbm):
         error = None
         try:
             enriched_survey_response = get_feed_document_by_id(feeds_dbm, self.survey_response.uuid)
-            enriched_survey_response.survey_response_modified_time = self.survey_response.modified
+            self._update_feed_with_latest_info(enriched_survey_response)
             enriched_survey_response.delete()
             feeds_dbm._save_document(enriched_survey_response)
         except Exception as e:
@@ -58,6 +54,13 @@ class EnrichedSurveyResponseBuilder(object):
             error += traceback.format_exc()
         finally:
             return error
+
+    def _update_feed_with_latest_info(self, enriched_survey_response):
+        new_document = self.feed_document()
+        if self.form_model.entity_type[0] != 'reporter':
+            data_sender_id = enriched_survey_response.data_sender.get('id')
+            new_document.data_sender = self._get_data_sender_info_dict(data_sender_id)
+        enriched_survey_response.update(new_document)
 
     def _data_sender(self):
         data_sender_id = self.reporter_id

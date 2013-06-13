@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from mock import Mock, PropertyMock, patch
-from mangrove.datastore.documents import  SurveyResponseDocument, EnrichedSurveyResponseDocument
+from mangrove.datastore.documents import  SurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
@@ -53,9 +53,9 @@ class TestSurveyResponseEventBuilder(TestCase):
         value_mock = PropertyMock(return_value={'q4': 'ac'})
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'multi select',
-            [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-             {'text': 'apple', 'val': 'c'}], self.ddtype,
-            single_select_flag=False)
+                                   [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
+                                    {'text': 'apple', 'val': 'c'}], self.ddtype,
+                                   single_select_flag=False)
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(select_field)
@@ -68,8 +68,8 @@ class TestSurveyResponseEventBuilder(TestCase):
         value_mock = PropertyMock(return_value={'q4': 'b'})
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'select',
-            [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-             {'text': 'apple', 'val': 'c'}], self.ddtype)
+                                   [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
+                                    {'text': 'apple', 'val': 'c'}], self.ddtype)
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(select_field)
@@ -105,25 +105,43 @@ class TestSurveyResponseEventBuilder(TestCase):
 
             dictionary = builder._create_answer_dictionary(subject_field)
 
-            self.assertEquals({'cli001': 'Kormanagala Clinic'}, dictionary.get('answer'))
+            self.assertEquals({'id': 'cli001', 'name': 'Kormanagala Clinic', 'deleted': False},
+                              dictionary.get('answer'))
+            self.assertEquals('Reporting for Subject', dictionary.get('label'))
+            self.assertEquals('text', dictionary.get('type'))
+            self.assertEquals('true', dictionary.get('is_entity_question'))
+
+    def test_subject_answer_id_as_value_rather_than_name_when_subject_is_not_existing(self):
+        survey_response = Mock(spec=SurveyResponse)
+        type(survey_response).values = PropertyMock(return_value={'q1': 'cli001'})
+        subject_field = TextField('name', 'q1', 'Reporting for Subject', self.ddtype, entity_question_flag=True)
+        type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
+        type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
+        builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep1', {})
+
+        with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
+            by_short_code.side_effect = DataObjectNotFound("Entity", "id", "cli001")
+
+            dictionary = builder._create_answer_dictionary(subject_field)
+
+            self.assertEquals({'id': 'cli001', 'name': '', 'deleted': True}, dictionary.get('answer'))
             self.assertEquals('Reporting for Subject', dictionary.get('label'))
             self.assertEquals('text', dictionary.get('type'))
             self.assertEquals('true', dictionary.get('is_entity_question'))
 
 
-    def test_data_sender_answer_has_code_only(self):
+    def test_data_sender_answer_not_included(self):
         value_mock = PropertyMock(return_value={'Q1': 'rep023'})
         type(self.survey_response).values = value_mock
         data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', self.ddtype, entity_question_flag=True)
+        type(self.form_model).fields = [data_sender_field]
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
         type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
+        type(self.survey_response).status = PropertyMock(return_value=True)
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep023', {})
-        dictionary = builder._create_answer_dictionary(data_sender_field)
+        dictionary = builder._values()
 
-        self.assertEquals('rep023', dictionary.get('answer'))
-        self.assertEquals('Reporting on Behalf of', dictionary.get('label'))
-        self.assertEquals('text', dictionary.get('type'))
-        self.assertEquals('true', dictionary.get('is_entity_question'))
+        self.assertFalse(dictionary)
 
     def test_override_data_sender_info(self):
         value_mock = PropertyMock(return_value={'Q1': 'rep023'})
@@ -145,7 +163,8 @@ class TestSurveyResponseEventBuilder(TestCase):
             doc = builder.feed_document()
 
             by_short_code.assert_called_once_with(self.dbm, 'rep023', ['reporter'], )
-            self.assertDictEqual({'id': 'rep023', 'last_name': 'real data sender', 'mobile_number': '929388193'},
+            self.assertDictEqual(
+                {'id': 'rep023', 'last_name': 'real data sender', 'mobile_number': '929388193', 'question_code': 'q1'},
                 doc.data_sender)
 
     def test_delete_status_updated(self):
@@ -222,11 +241,11 @@ class TestSurveyResponseEventBuilder(TestCase):
         value_mock = PropertyMock(return_value={'q4': '1a1c'})
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'multi select',
-            [{'text': 'orange', 'val': '1a'},
-             {'text': 'watermelon', 'val': '1b'},
-             {'text': 'strawberry', 'val': '1c'},
-             {'text': 'apple', 'val': 'c'}], self.ddtype,
-            single_select_flag=False)
+                                   [{'text': 'orange', 'val': '1a'},
+                                    {'text': 'watermelon', 'val': '1b'},
+                                    {'text': 'strawberry', 'val': '1c'},
+                                    {'text': 'apple', 'val': 'c'}], self.ddtype,
+                                   single_select_flag=False)
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, 'rep1', {})
         dictionary = builder._create_answer_dictionary(select_field)
@@ -243,7 +262,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.form_model.form_code = 'form_code'
         survey_response = SurveyResponse(Mock())
         survey_response._doc = SurveyResponseDocument(status=False, values={'q1': 'answer1'},
-            form_code='form_code')
+                                                      form_code='form_code')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
 
         def patch_data_sender():
@@ -255,7 +274,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.assertEquals(doc.values, {'q1': 'answer1'})
 
         edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'answer2'},
-            form_code='form_code')
+                                                            form_code='form_code')
         edited_survey_response = SurveyResponse(Mock())
         edited_survey_response._doc = edited_survey_response_doc
 
@@ -286,10 +305,11 @@ class TestSurveyResponseEventBuilder(TestCase):
 
             self.assertEquals(doc.values, {'q1': 'rep1'})
             self.assertDictEqual(doc.data_sender,
-                {'id': 'rep1', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+                                 {'id': 'rep1', 'last_name': 'real data sender', 'mobile_number': '929388193',
+                                  'question_code': 'q1'})
 
             edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'rep2'},
-                form_code='form_code')
+                                                                form_code='form_code')
             edited_survey_response = SurveyResponse(Mock())
             edited_survey_response._doc = edited_survey_response_doc
 
@@ -300,7 +320,8 @@ class TestSurveyResponseEventBuilder(TestCase):
 
                 edited_doc = new_builder.update_event_document(feeds_dbm)
                 self.assertEquals(edited_doc.data_sender,
-                    {'id': 'rep2', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+                                  {'id': 'rep2', 'last_name': 'real data sender', 'mobile_number': '929388193',
+                                   'question_code': 'q1'})
 
     def test_should_not_update_datasender_info_for_individual_reports(self):
         subject_field = TextField('name', 'q1', 'A Question', self.ddtype, entity_question_flag=True)
@@ -311,7 +332,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.form_model.form_code = 'form_code'
         survey_response = SurveyResponse(Mock())
         survey_response._doc = SurveyResponseDocument(status=True, values={'q1': 'sch01', 'q2': 'answer1'},
-            form_code='form_code')
+                                                      form_code='form_code')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, 'rep12', {})
 
         with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
@@ -322,10 +343,11 @@ class TestSurveyResponseEventBuilder(TestCase):
             doc = builder.feed_document()
 
             self.assertDictEqual(doc.data_sender,
-                {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+                                 {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193',
+                                  'question_code': ''})
 
             edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'sch02', 'q2': 'answer2'},
-                form_code='form_code')
+                                                                form_code='form_code')
             edited_survey_response = SurveyResponse(Mock())
             edited_survey_response._doc = edited_survey_response_doc
 
@@ -335,14 +357,16 @@ class TestSurveyResponseEventBuilder(TestCase):
             with patch('mangrove.feeds.enriched_survey_response.get_feed_document_by_id') as get_document:
                 get_document.return_value = doc
                 edited_doc = new_builder.update_event_document(feeds_dbm)
-                self.assertEquals(edited_doc.data_sender,
-                    {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193'})
+                self.assertDictEqual(edited_doc.data_sender,
+                                     {'id': 'rep12', 'last_name': 'real data sender', 'mobile_number': '929388193',
+                                      'question_code': ''})
 
     def test_should_update_datasender_as_deleted_if_datasender_is_deleted_when_submission_is_edited(self):
-        type(self.survey_response).values = PropertyMock(return_value = {'q1':'ans'})
-        builder = EnrichedSurveyResponseBuilder(self.dbm,self.survey_response,self.form_model,'rep',{})
+        '''This use case is for individual reports'''
+        type(self.survey_response).values = PropertyMock(return_value={'q1': 'ans'})
+        builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, 'rep', {})
         with patch("mangrove.feeds.enriched_survey_response.by_short_code") as by_short_code:
             by_short_code.side_effect = DataObjectNotFound('Entity', 'some_id', 'value')
-            sender_info_dict = builder._get_data_sender_info_dict('some_id')
-            expected_data_sender_info = {'id': 'Deleted data sender', 'last_name': '', 'mobile_number': ''}
+            sender_info_dict = builder._get_data_sender_info_dict('some_id', '')
+            expected_data_sender_info = {'id': 'deleted', 'last_name': '', 'mobile_number': '', 'question_code': ''}
             self.assertDictEqual(expected_data_sender_info, sender_info_dict)

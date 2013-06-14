@@ -85,13 +85,17 @@ class EnrichedSurveyResponseBuilder(object):
             return {'id': data_sender_id,
                     'last_name': data_sender.data['name']['value'],
                     'mobile_number': data_sender.data['mobile_number']['value'],
-                    'question_code': question_code}
+                    'question_code': question_code,
+                    'deleted': False
+            }
         except DataObjectNotFound:
             return {
-                'id': 'deleted',
+                'id': data_sender_id,
                 'last_name': '',
                 'mobile_number': '',
-                'question_code': question_code
+                'question_code': question_code,
+                'deleted': True
+
             }
 
     def _update_entity_answer_in_dictionary(self, answer_dictionary, value):

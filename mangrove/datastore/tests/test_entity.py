@@ -415,11 +415,11 @@ class TestEntity(MangroveTestCase):
         self.assertTrue(entity.location_path==["Canada","Calgary"])
 
     def test_should_get_by_short_code_include_voided_ignore_short_code_case(self):
-        with patch("mangrove.datastore.entity.entity_by_short_code") as entity_by_short_code:
-            entity_by_short_code.return_value = Mock(spec=Entity)
+        with patch("mangrove.datastore.entity._entity_by_short_code") as _entity_by_short_code:
+            _entity_by_short_code.return_value = Mock(spec=Entity)
             get_by_short_code_include_voided(self.manager, "SHORT_CODE_IN_UPPER_CASE", ["reporter"])
 
-            entity_by_short_code.assert_called_once_with(self.manager, "short_code_in_upper_case", ["reporter"])
+            _entity_by_short_code.assert_called_once_with(self.manager, "short_code_in_upper_case", ["reporter"])
 
     def test_should_get_by_short_code_ignore_short_code_case(self):
         with patch("mangrove.datastore.entity.by_short_code") as by_short_code:

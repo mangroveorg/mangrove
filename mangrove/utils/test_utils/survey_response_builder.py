@@ -19,7 +19,7 @@ class TestSurveyResponseBuilder(object):
 
     def build(self):
         survey_response_id = self.manager._save_document(
-            SurveyResponseDocument(source=self.source, channel=self.channel,
+            SurveyResponseDocument(origin=self.source, channel=self.channel,
                 destination=self.destination, values=self.values, status=self.status, error_message=self.error_message,
                 form_code=self.form_code))
         return SurveyResponse.get(self.manager, survey_response_id)
@@ -29,20 +29,20 @@ class TestSurveyResponseBuilder(object):
 
     def build_two_successful_survey_responses(self):
         doc_id1 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", source=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
                 values={'Q1': 'ans1', 'Q2': 'ans2'}, status=True, error_message=""))
         doc_id2 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", source=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
                 values={'Q1': 'ans12', 'Q2': 'ans22'}, status=True, error_message=""))
 
         return [Submission.get(self.manager, id) for id in [doc_id1, doc_id2]]
 
     def build_two_error_survey_responses(self):
         doc_id3 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", source=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
                 values={'Q3': 'ans12', 'Q4': 'ans22'}, status=False, error_message=""))
         doc_id4 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", source=1234, destination=12345, form_code="def",
+            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code="def",
                 values={'defQ1': 'defans12', 'defQ2': 'defans22'}, status=False, error_message=""))
 
         return [Submission.get(self.manager, id) for id in [doc_id3, doc_id4]]

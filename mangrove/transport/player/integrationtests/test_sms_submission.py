@@ -227,19 +227,19 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertEqual({'q5': 'The answer -184 must be between -180 and 180'}, response.errors)
 
-    def test_should_add_survey_response(self):
+    def test_should_log_submission_for_entity_registration(self):
         transport_info = TransportInfo(transport="sms", source="1234", destination="5678")
         response = self.send_sms("reg .N buddy .S DOG3 .T dog .G 1 1")
-        survey_response = Submission.get(self.manager, response.submission_id)
-        self.assertIsInstance(survey_response, Submission)
-        self.assertEquals(transport_info.transport, survey_response.channel)
-        self.assertEquals(transport_info.source, survey_response.source)
-        self.assertEquals(transport_info.destination, survey_response.destination)
-        self.assertEquals(True, survey_response. status)
-        self.assertEquals("reg", survey_response.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'dog3', 't': 'dog', 'g': '1 1'}, survey_response.values)
-        self.assertEquals(transport_info.destination, survey_response.destination)
-        self.assertEquals(response.datarecord_id, survey_response.data_record.id)
+        submission_log = Submission.get(self.manager, response.submission_id)
+        self.assertIsInstance(submission_log, Submission)
+        self.assertEquals(transport_info.transport, submission_log.channel)
+        self.assertEquals(transport_info.source, submission_log.source)
+        self.assertEquals(transport_info.destination, submission_log.destination)
+        self.assertEquals(True, submission_log. status)
+        self.assertEquals("reg", submission_log.form_code)
+        self.assertEquals({'n': 'buddy', 's': 'dog3', 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals(transport_info.destination, submission_log.destination)
+        self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = "reg .N buddy .S DOG3 .T dog .G 80 80 .D its a dog! .M 123456"

@@ -19,7 +19,7 @@ class SurveyResponse(DataObject):
     def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
-            doc = SurveyResponseDocument(channel=transport_info.transport, source=transport_info.source,
+            doc = SurveyResponseDocument(channel=transport_info.transport, origin=transport_info.source,
                 destination=transport_info.destination,
                 form_code=form_code,
                 form_model_revision=form_model_revision,
@@ -41,8 +41,20 @@ class SurveyResponse(DataObject):
         return self._doc.destination
 
     @property
-    def source(self):
-        return self._doc.source
+    def origin(self):
+        return self._doc.origin
+
+    @origin.setter
+    def origin(self, origin):
+        self._doc.origin = origin
+
+    @property
+    def modified_by(self):
+        return self._doc.modified_by
+
+    @modified_by.setter
+    def modified_by(self, modified_by):
+        self._doc.modified_by = modified_by
 
     @property
     def test(self):
@@ -59,6 +71,10 @@ class SurveyResponse(DataObject):
     @property
     def channel(self):
         return self._doc.channel
+
+    @channel.setter
+    def channel(self, channel):
+        self._doc.channel = channel
 
     @property
     def form_code(self):
@@ -205,7 +221,7 @@ class SurveyResponse(DataObject):
 
     def copy(self):
         survey_copy = SurveyResponse(None)
-        survey_copy._doc = SurveyResponseDocument(self._doc.source, self._doc.channel, self._doc.destination,
+        survey_copy._doc = SurveyResponseDocument(self._doc.origin, self._doc.channel, self._doc.destination,
             deepcopy(self.values), self.id, self.status, self.errors, self.form_code, self.form_model_revision,
             self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
         return survey_copy

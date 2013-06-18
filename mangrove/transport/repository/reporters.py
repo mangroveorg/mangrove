@@ -36,7 +36,7 @@ def find_reporters_by_from_number(dbm, from_number):
 
 def get_reporters_who_submitted_data_for_frequency_period(dbm, form_code, from_time=None, to_time=None):
     survey_responses = get_survey_responses_for_activity_period(dbm, form_code, from_time, to_time)
-    source_mobile_numbers = set([submission.source for submission in survey_responses])
+    source_mobile_numbers = set([submission.origin for submission in survey_responses])
     all_reporters = get_entities_by_type(dbm, 'reporter')
     reporters = [reporter for reporter in all_reporters if reporter.value(MOBILE_NUMBER_FIELD) in source_mobile_numbers]
     return reporters

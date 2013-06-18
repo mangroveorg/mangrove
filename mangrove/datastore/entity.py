@@ -57,7 +57,7 @@ def by_short_code(dbm, short_code, entity_type):
     return Entity.new_from_doc(dbm, doc)
 
 
-def entity_by_short_code(dbm, short_code, entity_type):
+def _entity_by_short_code(dbm, short_code, entity_type):
     rows = dbm.view.entity_by_short_code(key=[entity_type, short_code], include_docs=True)
     if is_empty(rows):
         raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
@@ -74,7 +74,7 @@ def get_by_short_code_include_voided(dbm, short_code, entity_type):
     """
     assert is_string(short_code)
     assert is_sequence(entity_type)
-    return entity_by_short_code(dbm, short_code.lower(), entity_type)
+    return _entity_by_short_code(dbm, short_code.lower(), entity_type)
 
 
 def get_entities_in(dbm, geo_path, type_path=None):

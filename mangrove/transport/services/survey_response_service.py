@@ -1,5 +1,6 @@
 from copy import copy
 import traceback
+from mangrove.datastore.entity import by_short_code
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_feed_document_by_id
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
@@ -8,6 +9,7 @@ from mangrove.errors.MangroveException import InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.response import Response
+from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.repository.survey_responses import SurveyResponse
 
 
@@ -24,8 +26,9 @@ class SurveyResponseService(object):
 
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id=None,
                     additional_feed_dictionary=None):
+        reporter = by_short_code(self.dbm, reporter_id, REPORTER_ENTITY_TYPE)
         submission = self._create_submission_log(transport_info, form_code, copy(values))
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values))
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)

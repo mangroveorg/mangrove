@@ -116,7 +116,7 @@ class TestWEBSurveyResponse(MangroveTestCase):
 
     def test_error_messages_are_being_logged_in_survey_responses(self):
         text = {'form_code': 'clinic', 'EID': self.entity.short_code, 'ARV': '150'}
-        self.add_survey_response(text)
+        self.add_survey_response(text,reporter_id="rep1")
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
         survey_responses = get_survey_responses(self.manager, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)

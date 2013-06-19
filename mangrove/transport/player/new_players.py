@@ -85,9 +85,8 @@ class XFormPlayerV2(object):
     def _parse(self, message):
         return XFormParser(self.dbm).parse(message)
 
-    def add_survey_response(self, request, logger=None):
+    def add_survey_response(self, request, reporter_id, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.save_survey(form_code, values, [], request.transport, request.message)
-
+        return service.save_survey(form_code, values, [], request.transport, request.message, reporter_id=reporter_id)

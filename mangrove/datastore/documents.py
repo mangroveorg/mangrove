@@ -250,6 +250,7 @@ class SurveyResponseDocument(DocumentBase):
 
     submitted_on = TZAwareDateTimeField()
     origin = TextField()
+    owner_uid = TextField()
     destination = TextField()
     modified_by = TextField()
     channel = TextField()
@@ -265,7 +266,7 @@ class SurveyResponseDocument(DocumentBase):
 
     def __init__(self, origin=None, channel=None, destination=None, values=None, id=None, status=None,
                  error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
-                 event_time=None,modified_by=None):
+                 event_time=None,modified_by=None, owner_uid=None):
         DocumentBase.__init__(self, id, 'SurveyResponse')
         self.origin = origin
         self.submitted_on = utcnow()
@@ -281,6 +282,7 @@ class SurveyResponseDocument(DocumentBase):
         self.test = test
         self.event_time = event_time if event_time is not None else self.created
         self.data_record_history = []
+        self.owner_uid = owner_uid
 
 
 class EnrichedSurveyResponseDocument(DocumentBase):

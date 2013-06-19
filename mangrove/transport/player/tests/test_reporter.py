@@ -11,7 +11,8 @@ from mangrove.transport.contract.survey_response import SurveyResponse
 from mangrove.transport.contract.transport_info import TransportInfo
 
 class TestReporter(MangroveTestCase):
-    def register(self, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
+    @classmethod
+    def register(cls, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
     #    manager = get_db_manager()
         e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
             short_code=short_code)

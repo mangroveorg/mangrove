@@ -110,10 +110,3 @@ class Submission(DataObject):
             return sequence_to_str(errors)
         return None
 
-    def create_survey_response(self, dbm):
-        response = SurveyResponse(dbm, TransportInfo(self.channel, self.source,
-            self.destination), form_code=self.form_code, form_model_revision=self.form_model_revision,
-            values=copy(self.values))
-        response.create_migrated_response(self.status, self.errors, self.is_void(), self._doc.submitted_on,
-        self.test, self.event_time, self._doc.data_record_id)
-        return response

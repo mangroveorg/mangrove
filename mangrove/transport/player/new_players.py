@@ -7,30 +7,32 @@ from mangrove.transport.repository import reporters
 
 
 class WebPlayerV2(object):
-    def __init__(self, dbm, feeds_dbm=None):
+    def __init__(self, dbm, feeds_dbm=None, admin_id=None):
         self.dbm = dbm
         self.feeds_dbm = feeds_dbm
+        self.admin_id = admin_id
 
     def add_survey_response(self, request, reporter_id, additional_feed_dictionary=None, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, self.admin_id)
         return service.save_survey(form_code, values, [], request.transport, request.message,
-            reporter_id, additional_feed_dictionary)
+                                   reporter_id, additional_feed_dictionary)
 
     def _parse(self, message):
         return WebParser().parse(message)
 
-    def edit_survey_response(self, request, survey_response,reporter_id,additional_feed_dictionary=None, logger=None):
+    def edit_survey_response(self, request, survey_response, reporter_id, additional_feed_dictionary=None, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        service = SurveyResponseService(self.dbm, logger,feeds_dbm=self.feeds_dbm)
-        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,additional_feed_dictionary,reporter_id)
+        service = SurveyResponseService(self.dbm, logger, feeds_dbm=self.feeds_dbm, admin_id=self.admin_id)
+        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,
+                                   additional_feed_dictionary, reporter_id)
 
-    def delete_survey_response(self, survey_response,reporter_id,additional_details, logger=None):
+    def delete_survey_response(self, survey_response, reporter_id, additional_details, logger=None):
         assert survey_response is not None
-        service = SurveyResponseService(self.dbm, logger,self.feeds_dbm)
-        return service.delete_survey(survey_response,reporter_id,additional_details)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
+        return service.delete_survey(survey_response, reporter_id, additional_details)
 
 
 class SMSPlayerV2(object):
@@ -65,7 +67,8 @@ class SMSPlayerV2(object):
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-            reporter_id=reporter_entity.short_code, additional_feed_dictionary=additional_feed_dictionary)
+                                   reporter_id=reporter_entity.short_code,
+                                   additional_feed_dictionary=additional_feed_dictionary)
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
         form_model = get_form_model_by_code(self.dbm, form_code)

@@ -18,7 +18,8 @@ def convert_dict_keys_to_lowercase(dictionary):
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 
-    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None, owner_uid=None):
+    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None, owner_uid=None,
+                 admin_id=None):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
             doc = SurveyResponseDocument(channel=transport_info.transport, origin=transport_info.source,
@@ -26,7 +27,7 @@ class SurveyResponse(DataObject):
                 form_code=form_code,
                 form_model_revision=form_model_revision,
                 values=values, status=False,
-                error_message="", test=False, owner_uid=owner_uid)
+                error_message="", test=False, owner_uid=owner_uid, modified_by=admin_id)
 
             DataObject._set_document(self, doc)
 

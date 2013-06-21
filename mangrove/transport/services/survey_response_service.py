@@ -14,10 +14,11 @@ from mangrove.transport.repository.survey_responses import SurveyResponse
 
 
 class SurveyResponseService(object):
-    def __init__(self, dbm, logger=None, feeds_dbm=None):
+    def __init__(self, dbm, logger=None, feeds_dbm=None, admin_id=None):
         self.dbm = dbm
         self.logger = logger
         self.feeds_dbm = feeds_dbm
+        self.admin_id = admin_id
 
     def _create_submission_log(self, transport_info, form_code, values):
         submission = Submission(self.dbm, transport_info, form_code, values=copy(values))
@@ -28,7 +29,8 @@ class SurveyResponseService(object):
                     additional_feed_dictionary=None):
         reporter = by_short_code(self.dbm, reporter_id, REPORTER_ENTITY_TYPE)
         submission = self._create_submission_log(transport_info, form_code, copy(values))
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id)
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id,
+                                         admin_id=self.admin_id or reporter_id)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
@@ -49,7 +51,7 @@ class SurveyResponseService(object):
                 form_submission.save(self.dbm)
 
             submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
-                form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
+                              form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
             submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             errors = exception.message
@@ -61,7 +63,7 @@ class SurveyResponseService(object):
             try:
                 if self.feeds_dbm:
                     builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
-                        additional_feed_dictionary)
+                                                            additional_feed_dictionary)
                     event_document = builder.feed_document()
                     self.feeds_dbm._save_document(event_document)
             except Exception as e:
@@ -69,12 +71,13 @@ class SurveyResponseService(object):
                 feed_create_errors += e.message + '\n'
                 feed_create_errors += traceback.format_exc()
         return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
-            form_submission.errors, form_submission.data_record_id, form_submission.short_code,
-            form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
-            form_submission.form_model.form_code, feed_create_errors)
+                        form_submission.errors, form_submission.data_record_id, form_submission.short_code,
+                        form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
+                        form_submission.form_model.form_code, feed_create_errors)
 
 
-    def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,additional_feed_dictionary=None,reporter_id=None):
+    def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
+                    additional_feed_dictionary=None, reporter_id=None):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
@@ -87,12 +90,12 @@ class SurveyResponseService(object):
             if form.is_valid:
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
-                form.short_code, form.data_record_id, form_model.is_in_test_mode())
+                              form.short_code, form.data_record_id, form_model.is_in_test_mode())
             try:
                 feed_create_errors = None
                 if self.feeds_dbm:
                     builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
-                        additional_feed_dictionary)
+                                                            additional_feed_dictionary)
                     event_document = builder.update_event_document(self.feeds_dbm)
                     self.feeds_dbm._save_document(event_document)
             except Exception as e:
@@ -106,20 +109,22 @@ class SurveyResponseService(object):
         finally:
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
-            form.errors, form.data_record_id, form.short_code,
-            form._cleaned_data, form.is_registration, form.entity_type,
-            form.form_model.form_code,feed_create_errors)
+                        form.errors, form.data_record_id, form.short_code,
+                        form._cleaned_data, form.is_registration, form.entity_type,
+                        form.form_model.form_code, feed_create_errors)
 
-    def delete_survey(self, survey_response,reporter_id,additional_details):
+    def delete_survey(self, survey_response, reporter_id, additional_details):
         feed_delete_errors = None
         try:
             survey_response.void()
             form_model = get_form_model_by_code(self.dbm, survey_response.form_code)
             if self.feeds_dbm:
-                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response,form_model,reporter_id,additional_details).delete_feed_document(self.feeds_dbm)
+                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                                                                   additional_details).delete_feed_document(
+                    self.feeds_dbm)
         except MangroveException as e:
-            return Response(errors=e.message,feed_error_message=feed_delete_errors)
-        return Response(success=True,feed_error_message=feed_delete_errors)
+            return Response(errors=e.message, feed_error_message=feed_delete_errors)
+        return Response(success=True, feed_error_message=feed_delete_errors)
 
     def log_request(self, status, source, message):
         if self.logger is not None:

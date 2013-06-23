@@ -249,7 +249,6 @@ class SurveyResponseDocument(DocumentBase):
     """
 
     submitted_on = TZAwareDateTimeField()
-    origin = TextField()
     owner_uid = TextField()
     destination = TextField()
     modified_by = TextField()
@@ -264,11 +263,10 @@ class SurveyResponseDocument(DocumentBase):
     event_time = TZAwareDateTimeField()
     data_record_history = ListField(TextField())
 
-    def __init__(self, origin=None, channel=None, destination=None, values=None, id=None, status=None,
+    def __init__(self, channel=None, destination=None, values=None, id=None, status=None,
                  error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
                  event_time=None,modified_by=None, owner_uid=None):
         DocumentBase.__init__(self, id, 'SurveyResponse')
-        self.origin = origin
         self.submitted_on = utcnow()
         self.channel = channel
         self.destination = destination

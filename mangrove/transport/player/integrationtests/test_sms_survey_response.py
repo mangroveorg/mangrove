@@ -91,16 +91,16 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
 
     def _prepare_survey_responses(self):
         doc_id1 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", destination=12345, form_code=FORM_CODE,
                 values={'Q1': 'ans1', 'Q2': 'ans2'}, status=True, error_message=""))
         doc_id2 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", destination=12345, form_code=FORM_CODE,
                 values={'Q1': 'ans12', 'Q2': 'ans22'}, status=True, error_message=""))
         doc_id3 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code=FORM_CODE,
+            SurveyResponseDocument(channel="transport", destination=12345, form_code=FORM_CODE,
                 values={'Q3': 'ans12', 'Q4': 'ans22'}, status=False, error_message=""))
         doc_id4 = self.manager._save_document(
-            SurveyResponseDocument(channel="transport", origin=1234, destination=12345, form_code="def",
+            SurveyResponseDocument(channel="transport", destination=12345, form_code="def",
                 values={'defQ1': 'defans12', 'defQ2': 'defans22'}, status=False, error_message=""))
         return [doc_id1, doc_id2, doc_id3, doc_id4]
 
@@ -140,15 +140,15 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", survey_responses[0].errors)
 
     def test_get_survey_responses_for_form_for_an_activity_period(self):
-        self.manager._save_document(SurveyResponseDocument(channel="transport", origin=1234,
+        self.manager._save_document(SurveyResponseDocument(channel="transport",
             destination=12345, form_code="abc",
             values={'Q1': 'ans1', 'Q2': 'ans2'},
             status=False, error_message="", data_record_id='2345678', event_time=datetime.datetime(2011, 9, 1)))
-        self.manager._save_document(SurveyResponseDocument(channel="transport", origin=1234,
+        self.manager._save_document(SurveyResponseDocument(channel="transport",
             destination=12345, form_code="abc",
             values={'Q1': 'ans12', 'Q2': 'ans22'},
             status=False, error_message="", data_record_id='1234567', event_time=datetime.datetime(2011, 3, 3)))
-        self.manager._save_document(SurveyResponseDocument(channel="transport", origin=1234,
+        self.manager._save_document(SurveyResponseDocument(channel="transport",
             destination=12345, form_code="abc",
             values={'Q1': 'ans12', 'Q2': 'defans22'},
             status=False, error_message="", data_record_id='345678', event_time=datetime.datetime(2011, 3, 10)))

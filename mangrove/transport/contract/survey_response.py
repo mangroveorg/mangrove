@@ -22,7 +22,7 @@ class SurveyResponse(DataObject):
                  admin_id=None):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
-            doc = SurveyResponseDocument(channel=transport_info.transport, origin=transport_info.source,
+            doc = SurveyResponseDocument(channel=transport_info.transport,
                 destination=transport_info.destination,
                 form_code=form_code,
                 form_model_revision=form_model_revision,
@@ -42,14 +42,6 @@ class SurveyResponse(DataObject):
     @property
     def destination(self):
         return self._doc.destination
-
-    @property
-    def origin(self):
-        return self._doc.origin
-
-    @origin.setter
-    def origin(self, origin):
-        self._doc.origin = origin
 
     @property
     def owner_uid(self):
@@ -232,7 +224,7 @@ class SurveyResponse(DataObject):
 
     def copy(self):
         survey_copy = SurveyResponse(None)
-        survey_copy._doc = SurveyResponseDocument(self._doc.origin, self._doc.channel, self._doc.destination,
+        survey_copy._doc = SurveyResponseDocument(self._doc.channel, self._doc.destination,
             deepcopy(self.values), self.id, self.status, self.errors, self.form_code, self.form_model_revision,
             self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
         return survey_copy

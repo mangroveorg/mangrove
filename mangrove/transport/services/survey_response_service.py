@@ -88,6 +88,9 @@ class SurveyResponseService(object):
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, values)
         try:
             if form.is_valid:
+                reporter = by_short_code(self.dbm, reporter_id, REPORTER_ENTITY_TYPE)
+                survey_response.owner_uid = reporter.id
+                survey_response.modified_by = self.admin_id or reporter_id
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
                               form.short_code, form.data_record_id, form_model.is_in_test_mode())

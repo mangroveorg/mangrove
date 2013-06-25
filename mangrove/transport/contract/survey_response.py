@@ -27,7 +27,7 @@ class SurveyResponse(DataObject):
                 form_code=form_code,
                 form_model_revision=form_model_revision,
                 values=values, status=False,
-                error_message="", test=False, owner_uid=owner_uid, modified_by=admin_id)
+                error_message="", test=False, owner_uid=owner_uid, user_id=admin_id)
 
             DataObject._set_document(self, doc)
 
@@ -58,6 +58,14 @@ class SurveyResponse(DataObject):
     @modified_by.setter
     def modified_by(self, modified_by):
         self._doc.modified_by = modified_by
+
+    @property
+    def created_by(self):
+        return self._doc.created_by
+
+    @created_by.setter
+    def created_by(self, created_by):
+        self._doc.created_by = created_by
 
     @property
     def test(self):

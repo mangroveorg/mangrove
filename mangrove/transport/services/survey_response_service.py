@@ -77,7 +77,7 @@ class SurveyResponseService(object):
 
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
-                    additional_feed_dictionary=None, reporter_id=None):
+                    additional_feed_dictionary=None, owner_id=None):
         submission = self._create_submission_log(transport_info, form_code, copy(values))
         form_model = get_form_model_by_code(self.dbm, form_code)
         submission.update_form_model_revision(form_model.revision)
@@ -88,16 +88,17 @@ class SurveyResponseService(object):
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, values)
         try:
             if form.is_valid:
-                reporter = by_short_code(self.dbm, reporter_id, REPORTER_ENTITY_TYPE)
-                survey_response.owner_uid = reporter.id
-                survey_response.modified_by = self.admin_id or reporter_id
+                if owner_id:
+                    reporter = by_short_code(self.dbm, owner_id, REPORTER_ENTITY_TYPE)
+                    survey_response.owner_uid = reporter.id
+                survey_response.modified_by = self.admin_id or owner_id
                 survey_response = form.save()
             submission.update(form.saved, form.errors, form.entity_question_code,
                               form.short_code, form.data_record_id, form_model.is_in_test_mode())
             try:
                 feed_create_errors = None
                 if self.feeds_dbm:
-                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, owner_id or self.admin_id,
                                                             additional_feed_dictionary)
                     event_document = builder.update_event_document(self.feeds_dbm)
                     self.feeds_dbm._save_document(event_document)

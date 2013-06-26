@@ -48,10 +48,11 @@ class TestTimeGroupedAggregation(unittest.TestCase):
                                            aggregate_on=EntityAggregration(),
                                            aggregates=[Min("patients"), Sum("icu")
                                                        ],
-                                           period=Week(6, 2010))
+                                           period=Week(7, 2010))
 
-        self.assertEqual(len(values), 1)
-        self.assertEqual(values["6"], {'icu': 600, 'patients': 5})
+        self.assertEqual(len(values), 2)
+        self.assertEqual(values["6"], {'icu': 300, 'patients': 20})
+        self.assertEqual(values["7"], {'icu': 630, 'patients': 7})
 
     def test_weekly_time_aggregation_with_latest(self):
         self.test_data.add_weekly_data_for_entity1()

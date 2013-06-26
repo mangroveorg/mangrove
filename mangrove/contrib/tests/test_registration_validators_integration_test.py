@@ -3,12 +3,9 @@ import datetime
 import unittest
 from pytz import UTC
 from mangrove.datastore.entity import void_entity
-from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.datadict import DataDictType
-from mangrove.contrib.registration import create_default_reg_form_model, GLOBAL_REGISTRATION_FORM_CODE
-from mangrove.transport.repository.reporters import find_reporters_by_from_number
-from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model, safe_define_type, ut_reporter_id, delete_reporter_by_phone
-from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
+from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
+from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model, safe_define_type, ut_reporter_id, safe_delete_reporter_by_phone
 from mangrove.datastore.entity import create_entity
 from mangrove.form_model.form_model import REPORTER
 
@@ -31,7 +28,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
     def test_should_allow_the_same_mobile_number_while_editing_a_reporter_details(self):
         reporter_id = ut_reporter_id()
         mobile_number = "99992"
-        delete_reporter_by_phone(self.manager, mobile_number)
+        safe_delete_reporter_by_phone(self.manager, mobile_number)
         reporter1 = create_entity(self.manager, [REPORTER], reporter_id)
         reporter1.add_data(data=[("mobile_number", ("%s" % mobile_number), self.geo_code_type)],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),

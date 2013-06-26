@@ -4,7 +4,7 @@ from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE, create_default_
 from mangrove.contrib.registration import create_default_reg_form_model, GLOBAL_REGISTRATION_FORM_CODE
 from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityTypeAlreadyDefined
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityTypeAlreadyDefined, NumberNotRegisteredException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.repository.reporters import find_reporters_by_from_number
 
@@ -40,7 +40,10 @@ def id(prefix):
 def ut_reporter_id():
     return id("utrep")
 
-def delete_reporter_by_phone(manager, mobile_number):
-    users = find_reporters_by_from_number(manager, mobile_number)
-    for user in users:
-        user.delete()
+def safe_delete_reporter_by_phone(manager, mobile_number):
+    try :
+        users = find_reporters_by_from_number(manager, mobile_number)
+        for user in users:
+            user.delete()
+    except NumberNotRegisteredException:
+        pass

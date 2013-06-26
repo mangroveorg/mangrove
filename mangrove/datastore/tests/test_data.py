@@ -2,10 +2,12 @@
 import datetime
 from pytz import UTC
 from mangrove.datastore.datadict import DataDictType
-from mangrove.datastore.entity import Entity, create_entity
+from mangrove.datastore.entity import Entity, create_entity, get_by_short_code
 from mangrove.datastore.entity_type import define_type
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, get_form_model_by_code
+from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, delete_and_create_entity_instance
 
 
 class TestData(object):
@@ -21,18 +23,18 @@ class TestData(object):
         self._create_form_model("CL2")
         self._create_form_model("CL1")
         self.dd_types = self.create_datadict_types()
-        self.entity1, id1 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "1")
+        self.entity1, id1 = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "1")
 
         self._add_data_for_form_1_entity_1(self.entity1)
 
         self._add_data_for_form_2_entity_1(self.entity1)
 
-        self.entity2, id2 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'], "2")
+        self.entity2, id2 = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'Karnataka', 'Bangalore'], "2")
 
         self._add_data_for_form_1_entity_2(self.entity2)
         self._add_data_form_2_entity_2(self.entity2)
 
-        self.entity3, id3 = self.create_entity_instance(self.ENTITY_TYPE, ['India', 'MH', 'Mumbai'], "3")
+        self.entity3, id3 = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Mumbai'], "3")
         self.entity3.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
                                     ("director", "Dr. C", self.dd_types['director']),
                                     ("patients", 12, self.dd_types['patients'])],
@@ -40,21 +42,24 @@ class TestData(object):
             submission=dict(submission_id='5', form_code='CL1'))
 
 
-    def create_entity_instance(self, ENTITY_TYPE, location, short_code):
-        e = Entity(self.manager, entity_type=ENTITY_TYPE, location=location, short_code=short_code)
-        id1 = e.save()
-        return e, id1
+
 
     def create_clinic_type(self, entity_type):
         self.entity_type = entity_type
-        define_type(self.manager, entity_type)
+        safe_define_type(self.manager, entity_type)
 
     def create_water_point_entity(self):
         water_point_type = ["waterpoint"]
-        define_type(self.manager, water_point_type)
-        create_entity(self.manager, entity_type=water_point_type, short_code="4")
+        safe_define_type(self.manager, water_point_type)
+        create_entity(self.manager, entity_type=water_point_type, short_code=uniq("4"))
 
     def _create_form_model(self, form_code):
+        try:
+            form =get_form_model_by_code(self.manager, form_code)
+            if form:
+                form.delete()
+        except FormModelDoesNotExistsException:
+            pass
         self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
             primitive_type='string')
         self.default_ddtype.save()

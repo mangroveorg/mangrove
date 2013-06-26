@@ -1,5 +1,6 @@
 from unittest import TestCase
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import unittest
 from mock import Mock, patch
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.datastore.database import DatabaseManager
@@ -59,3 +60,6 @@ class TestEntityShouldExistValidator(TestCase):
             'cls': ValidatorTypes.ENTITY_SHOULD_EXIST
         }
         self.assertEqual(expected_json, self.validator.to_json())
+
+if __name__ == '__main__':
+    unittest.main()

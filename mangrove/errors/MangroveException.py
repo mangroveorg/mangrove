@@ -13,9 +13,9 @@ class MangroveException(Exception):
 
 
 class DataObjectAlreadyExists(MangroveException):
-    def __init__(self, dataobject_name, param, value):
+    def __init__(self, dataobject_name, param, value, existing_name=''):
         error_message = u"%s with %s = %s already exists." % (dataobject_name, param, value)
-        MangroveException.__init__(self, error_message, (param, value, dataobject_name))
+        MangroveException.__init__(self, error_message, (param, value, dataobject_name, existing_name))
 
 
 class DataObjectNotFound(MangroveException):

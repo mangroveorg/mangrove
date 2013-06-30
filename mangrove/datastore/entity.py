@@ -29,8 +29,10 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     assert type(entity_type) is list and not is_empty(entity_type)
     if not entity_type_already_defined(dbm, entity_type):
         raise EntityTypeDoesNotExistsException(entity_type)
-    if _check_if_entity_exists(dbm, entity_type, short_code):
-        raise DataObjectAlreadyExists("Entity", "Unique Identification Number (ID)", short_code)
+    existing = _check_if_entity_exists(dbm, entity_type, short_code, return_entity=True)
+    if existing:
+        entity_name = existing.data.get('name',{'value':''}).get('value')
+        raise DataObjectAlreadyExists(entity_type[0], "Unique Identification Number (ID)", short_code, existing_name=entity_name)
     e = Entity(dbm, entity_type=entity_type, location=location,
         aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
     e.save()
@@ -52,7 +54,7 @@ def get_by_short_code(dbm, short_code, entity_type):
 def by_short_code(dbm, short_code, entity_type):
     rows = dbm.view.by_short_codes(key=[entity_type, short_code], reduce=False, include_docs=True)
     if is_empty(rows):
-        raise DataObjectNotFound("Entity", "Unique Identification Number (ID)", short_code)
+        raise DataObjectNotFound(entity_type[0], "Unique Identification Number (ID)", short_code)
     doc = EntityDocument.wrap(rows[0]['doc'])
     return Entity.new_from_doc(dbm, doc)
 
@@ -505,10 +507,10 @@ class DataRecord(DataObject):
         return self._doc.void
 
 
-def _check_if_entity_exists(dbm, entity_type, short_code):
+def _check_if_entity_exists(dbm, entity_type, short_code, return_entity=False):
     try:
-        get_by_short_code_include_voided(dbm, short_code, entity_type)
-        return True
+        entity = get_by_short_code_include_voided(dbm, short_code, entity_type)
+        return entity if return_entity else True
     except DataObjectNotFound:
         return False
 

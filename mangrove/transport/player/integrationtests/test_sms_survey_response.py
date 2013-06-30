@@ -133,7 +133,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
 
 
     def test_error_messages_are_being_logged_in_survey_responses(self):
-        text = "clinic .EID %s .ARV 150 " % self.entity.id
+        text = "clinic .EID %s .ARV 150 " % self.entity.short_code
         self.send_sms(text)
         survey_responses = get_survey_responses(self.manager, "clinic", 0, self._tomorrow())
         self.assertEquals(1, len(survey_responses))

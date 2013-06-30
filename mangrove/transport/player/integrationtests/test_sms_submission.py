@@ -167,13 +167,13 @@ class TestShouldSaveSMSSubmission(MangroveTestCase):
         self.assertEquals(data["Name"], "tester")
 
     def test_should_give_error_for_wrong_integer_value(self):
-        text = "clinic .EID %s .ARV 150 " % self.entity.id
+        text = "clinic .EID %s .ARV 150 " % self.entity.short_code
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
 
     def test_should_give_error_for_wrong_text_value(self):
-        text = "clinic .EID CID001 .NAME ABC"
+        text = "clinic .EID %s .NAME ABC" % self.entity.short_code
 
         response = self.send_sms(text)
         self.assertFalse(response.success)

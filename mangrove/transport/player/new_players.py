@@ -29,10 +29,10 @@ class WebPlayerV2(object):
         return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,
                                    additional_feed_dictionary, owner_id)
 
-    def delete_survey_response(self, survey_response, reporter_id, additional_details, logger=None):
+    def delete_survey_response(self, survey_response, additional_details, logger=None):
         assert survey_response is not None
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.delete_survey(survey_response, reporter_id, additional_details)
+        return service.delete_survey(survey_response, additional_details)
 
 
 class SMSPlayerV2(object):

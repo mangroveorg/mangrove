@@ -62,7 +62,7 @@ class SurveyResponseService(object):
             self.log_request(form_submission.saved, transport_info.source, message)
             try:
                 if self.feeds_dbm:
-                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model,
                                                             additional_feed_dictionary)
                     event_document = builder.feed_document()
                     self.feeds_dbm._save_document(event_document)
@@ -98,7 +98,7 @@ class SurveyResponseService(object):
             try:
                 feed_create_errors = None
                 if self.feeds_dbm:
-                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, owner_id or self.admin_id,
+                    builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model,
                                                             additional_feed_dictionary)
                     event_document = builder.update_event_document(self.feeds_dbm)
                     self.feeds_dbm._save_document(event_document)
@@ -117,13 +117,13 @@ class SurveyResponseService(object):
                         form._cleaned_data, form.is_registration, form.entity_type,
                         form.form_model.form_code, feed_create_errors)
 
-    def delete_survey(self, survey_response, reporter_id, additional_details):
+    def delete_survey(self, survey_response, additional_details):
         feed_delete_errors = None
         try:
             survey_response.void()
             form_model = get_form_model_by_code(self.dbm, survey_response.form_code)
             if self.feeds_dbm:
-                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model, reporter_id,
+                feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model,
                                                                    additional_details).delete_feed_document(
                     self.feeds_dbm)
         except MangroveException as e:

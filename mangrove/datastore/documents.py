@@ -266,12 +266,12 @@ class SurveyResponseDocument(DocumentBase):
 
     def __init__(self, channel=None, destination=None, values=None, id=None, status=None,
                  error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
-                 event_time=None, user_id=None, owner_uid=None):
+                 event_time=None, modified_by_id=None, owner_uid=None):
         DocumentBase.__init__(self, id, 'SurveyResponse')
         self.submitted_on = utcnow()
         self.channel = channel
         self.destination = destination
-        self.created_by = self.modified_by = user_id
+        self.created_by = self.modified_by = modified_by_id
         self.form_code = form_code
         self.form_model_revision = form_model_revision
         self.values = values

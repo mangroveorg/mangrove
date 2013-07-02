@@ -10,8 +10,6 @@ from mangrove.datastore.entity import create_entity
 from mangrove.form_model.form_model import REPORTER
 
 
-
-
 class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegrationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -1,15 +1,14 @@
 from string import lower
 import traceback
 from mangrove.datastore.documents import EnrichedSurveyResponseDocument
-from mangrove.datastore.entity import by_short_code
+from mangrove.datastore.entity import by_short_code, Entity, get_by_short_code_include_voided
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.field import DateField, SelectField
 
 
 class EnrichedSurveyResponseBuilder(object):
-    def __init__(self, dbm, survey_response, form_model, reporter_id, additional_details, logger=None):
+    def __init__(self, dbm, survey_response, form_model, additional_details, logger=None):
         self.dbm = dbm
-        self.reporter_id = reporter_id
         self.additional_details = additional_details
         self.survey_response = survey_response
         self.form_model = form_model
@@ -47,7 +46,7 @@ class EnrichedSurveyResponseBuilder(object):
         self._update_feed_with_latest_info(enriched_survey_response)
         return enriched_survey_response
 
-    def delete_feed_document(self,feeds_dbm):
+    def delete_feed_document(self, feeds_dbm):
         error = None
         try:
             enriched_survey_response = get_feed_document_by_id(feeds_dbm, self.survey_response.uuid)
@@ -62,41 +61,25 @@ class EnrichedSurveyResponseBuilder(object):
             return error
 
     def _update_feed_with_latest_info(self, enriched_survey_response):
-        new_document = self.feed_document()
-        if self.form_model.entity_type[0] != 'reporter':
-            data_sender_id = enriched_survey_response.data_sender.get('id')
-            data_sender_question_code = enriched_survey_response.data_sender.get('question_code')
-            new_document.data_sender = self._get_data_sender_info_dict(data_sender_id, data_sender_question_code)
-        enriched_survey_response.update(new_document)
+        enriched_survey_response.update(self.feed_document())
 
-    def _data_sender(self):
-        data_sender_id = self.reporter_id
-        question_code = ''
+    def _reporter_question_code(self):
         for field in self.form_model.fields:
             if field.code == self.form_model.entity_question.code and self.form_model.entity_type[0] == 'reporter':
-                data_sender_id = self.values_lower_case_dict.get(field.code)
-                question_code = field.code.lower()
-                break
-        return self._get_data_sender_info_dict(data_sender_id, question_code)
+                return field.code.lower()
+        return ''
 
-    def _get_data_sender_info_dict(self, data_sender_id, question_code):
-        try:
-            data_sender = by_short_code(self.dbm, data_sender_id, ['reporter'])
-            return {'id': data_sender_id,
-                    'last_name': data_sender.data['name']['value'],
-                    'mobile_number': data_sender.data['mobile_number']['value'],
-                    'question_code': question_code,
-                    'deleted': False
-            }
-        except DataObjectNotFound:
-            return {
-                'id': data_sender_id,
-                'last_name': '',
-                'mobile_number': '',
+    def _data_sender(self):
+        data_sender = Entity.get(self.dbm, self.survey_response.owner_uid)
+        return self._get_data_sender_info_dict(data_sender, self._reporter_question_code())
+
+    def _get_data_sender_info_dict(self, data_sender, question_code):
+        return {'id': data_sender.short_code,
+                'last_name': data_sender.data['name']['value'],
+                'mobile_number': data_sender.data['mobile_number']['value'],
                 'question_code': question_code,
-                'deleted': True
-
-            }
+                'deleted': data_sender.is_void()
+        }
 
     def _update_entity_answer_in_dictionary(self, answer_dictionary, value):
         answer_dictionary.update({'is_entity_question': 'true'})

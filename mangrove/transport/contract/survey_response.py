@@ -27,7 +27,7 @@ class SurveyResponse(DataObject):
                 form_code=form_code,
                 form_model_revision=form_model_revision,
                 values=values, status=False,
-                error_message="", test=False, owner_uid=owner_uid, user_id=admin_id)
+                error_message="", test=False, owner_uid=owner_uid, modified_by_id=admin_id)
 
             DataObject._set_document(self, doc)
 

@@ -2,7 +2,7 @@ import uuid
 from mangrove.bootstrap import initializer
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE, create_default_delete_form_model
 from mangrove.contrib.registration import create_default_reg_form_model, GLOBAL_REGISTRATION_FORM_CODE
-from mangrove.datastore.database import get_db_manager
+from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.entity import get_by_short_code, Entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, EntityTypeAlreadyDefined, NumberNotRegisteredException, DataObjectNotFound
@@ -12,6 +12,8 @@ from mangrove.transport.repository.reporters import find_reporters_by_from_numbe
 
 def create_dbmanager_for_ut(cls):
         cls.db_name = 'mangrove-test-unit'
+        cls.manager = get_db_manager('http://localhost:5984/', cls.db_name)
+        _delete_db_and_remove_db_manager(cls.manager)
         cls.manager = get_db_manager('http://localhost:5984/', cls.db_name)
         initializer._create_views(cls.manager)
 

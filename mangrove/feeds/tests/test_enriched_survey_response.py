@@ -284,3 +284,17 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertEquals(datasender_dict.get('question_code'), '')
             self.assertFalse(datasender_dict.get('deleted'))
             get_entity.assert_called_once_with(self.dbm, 'data_sender_uid')
+
+    def test_feed_datasender_is_none_when_migrating_survey_response_with_document_for_owner_id_not_found(self):
+        survey_response = Mock(spec=SurveyResponse)
+        type(survey_response).owner_uid = PropertyMock(return_value='data_sender_uid')
+        type(survey_response).values = PropertyMock(return_value={})
+        builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, {})
+        with patch("mangrove.feeds.enriched_survey_response.Entity.get") as get_entity:
+            get_entity.side_effect = DataObjectNotFound(Entity.__name__, 'id', None)
+            data_sender = builder._data_sender()
+            self.assertIsNone(data_sender['id'])
+            self.assertIsNone(data_sender['last_name'])
+            self.assertIsNone(data_sender['mobile_number'])
+            self.assertIsNone(data_sender['deleted'])
+            self.assertIsNone(data_sender['question_code'])

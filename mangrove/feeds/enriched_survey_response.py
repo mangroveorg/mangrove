@@ -70,8 +70,18 @@ class EnrichedSurveyResponseBuilder(object):
         return ''
 
     def _data_sender(self):
-        data_sender = Entity.get(self.dbm, self.survey_response.owner_uid)
-        return self._get_data_sender_info_dict(data_sender, self._reporter_question_code())
+        try:
+            data_sender = Entity.get(self.dbm, self.survey_response.owner_uid)
+            return self._get_data_sender_info_dict(data_sender, self._reporter_question_code())
+        except:
+            #This will only happen during migration when introducing the feeds feature
+            return {'id': None,
+                    'last_name': None,
+                    'mobile_number': None,
+                    'question_code': None,
+                    'deleted': None
+            }
+
 
     def _get_data_sender_info_dict(self, data_sender, question_code):
         return {'id': data_sender.short_code,

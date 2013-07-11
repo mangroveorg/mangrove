@@ -22,6 +22,7 @@ from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.transport.contract.submission import Submission
 from mangrove.transport.repository.survey_responses import SurveyResponse
 
+
 def assert_submission_log_is(form_code):
     def _assert(self, other):
         return other.form_code == form_code
@@ -45,7 +46,8 @@ class TestSurveyResponseService(TestCase):
         SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch.object(self.dbm, '_save_document') as save_document:
-                with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
+                with patch(
+                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
                     get_reporter.return_value = Mock(spec=Entity)
                     get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
                     transport_info = TransportInfo('web', 'src', 'dest')
@@ -53,8 +55,8 @@ class TestSurveyResponseService(TestCase):
 
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                        'nonexistant_form_code', values, [], transport_info,
-                        request.message)
+                                      'nonexistant_form_code', values, [], transport_info,
+                                      request.message)
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
@@ -64,7 +66,8 @@ class TestSurveyResponseService(TestCase):
 
         form_model = Mock(spec=FormModel)
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
+            with patch(
+                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
                 get_reporter.return_value = Mock(spec=Entity)
                 patched_form_model.return_value = form_model
                 form_model.is_inactive.return_value = True
@@ -73,8 +76,9 @@ class TestSurveyResponseService(TestCase):
                 values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
                 transport_info = TransportInfo('web', 'src', 'dest')
                 request = Request(values, transport_info)
-                self.assertRaises(InactiveFormModelException, self.survey_response_service.save_survey, 'some_form_code',
-                    values, [], transport_info, request.message)
+                self.assertRaises(InactiveFormModelException, self.survey_response_service.save_survey,
+                                  'some_form_code',
+                                  values, [], transport_info, request.message)
                 calls = [call(self.dbm, 'some_form_code')]
                 patched_form_model.assert_has_calls(calls)
 
@@ -83,7 +87,8 @@ class TestSurveyResponseService(TestCase):
         SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch.object(self.dbm, '_save_document') as save_document:
-                with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
+                with patch(
+                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
                     get_reporter.return_value = Mock(spec=Entity)
                     get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
                     transport_info = TransportInfo('web', 'src', 'dest')
@@ -91,27 +96,29 @@ class TestSurveyResponseService(TestCase):
 
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                        'nonexistant_form_code', values, [], transport_info,
-                        request.message)
+                                      'nonexistant_form_code', values, [], transport_info,
+                                      request.message)
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
     def test_edit_survey_response_should_create_submission_when_form_is_inactive(self):
-            form_model = Mock(spec=FormModel)
-            with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-                with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
-                    get_reporter.return_value = Mock(spec=Entity)
-                    patched_form_model.return_value = form_model
-                    form_model.is_inactive.return_value = True
-                    self.dbm._save_document.return_value = SubmissionLogDocument()
+        form_model = Mock(spec=FormModel)
+        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
+            with patch(
+                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
+                get_reporter.return_value = Mock(spec=Entity)
+                patched_form_model.return_value = form_model
+                form_model.is_inactive.return_value = True
+                self.dbm._save_document.return_value = SubmissionLogDocument()
 
-                    values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
-                    transport_info = TransportInfo('web', 'src', 'dest')
-                    request = Request(values, transport_info)
-                    self.assertRaises(InactiveFormModelException, self.survey_response_service.edit_survey, 'some_form_code',
-                        values, [], transport_info, request.message, None)
-                    calls = [call(self.dbm, 'some_form_code')]
-                    patched_form_model.assert_has_calls(calls)
+                values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
+                transport_info = TransportInfo('web', 'src', 'dest')
+                request = Request(values, transport_info)
+                self.assertRaises(InactiveFormModelException, self.survey_response_service.edit_survey,
+                                  'some_form_code',
+                                  values, [], transport_info, request.message, None)
+                calls = [call(self.dbm, 'some_form_code')]
+                patched_form_model.assert_has_calls(calls)
 
     def test_save_survey_response_should_create_submission_when_form_code_is_invalid(self):
         SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
@@ -119,7 +126,8 @@ class TestSurveyResponseService(TestCase):
 
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch.object(self.dbm, '_save_document') as save_document:
-                with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
+                with patch(
+                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
                     get_reporter.return_value = Mock(spec=Entity)
                     get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
                     transport_info = TransportInfo('web', 'src', 'dest')
@@ -127,30 +135,31 @@ class TestSurveyResponseService(TestCase):
 
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                        'nonexistant_form_code', values, [], transport_info,
-                        request.message)
+                                      'nonexistant_form_code', values, [], transport_info,
+                                      request.message)
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
     def form_model(self):
         string_type = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
+                                   primitive_type='string')
         integer_type = DataDictType(self.dbm, name='Default String Integer Type', slug='integer_default',
-            primitive_type='integer')
+                                    primitive_type='integer')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=string_type)
+                              entity_question_flag=True, ddtype=string_type)
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
-            constraints=[NumericRangeConstraint(min=10, max=100)],
-            ddtype=integer_type)
+                                 constraints=[NumericRangeConstraint(min=10, max=100)],
+                                 ddtype=integer_type)
         return FormModel(self.dbm, entity_type=["clinic"], name="aids", label="Aids form_model",
-            form_code="aids", type=['survey'], fields=[question1, question2])
+                         form_code="aids", type=['survey'], fields=[question1, question2])
 
     #TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
     def test_edit_survey_response_when_fields_constraints_are_not_satisfied(self):
         survey_response = Mock(spec=SurveyResponse)
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch('mangrove.datastore.entity.by_short_code') as get_entity:
-                with patch('mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
+                with patch(
+                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
                     get_reporter.return_value = Mock(spec=Entity)
                     get_entity.return_value = Mock(spec=Entity)
                     get_form_model.return_value = self.form_model()
@@ -158,12 +167,13 @@ class TestSurveyResponseService(TestCase):
                     values = {'form_code': 'aids', 'q1': 'a1', 'q2': '200'}
 
                     request = Request(values, transport_info)
-                    response = self.survey_response_service.edit_survey('aids', values, [], transport_info, request.message,
-                        survey_response)
+                    response = self.survey_response_service.edit_survey('aids', values, [], transport_info,
+                                                                        request.message,
+                                                                        survey_response)
                     self.assertFalse(response.success)
                     self.assertEquals('aids', response.form_code)
                     self.assertEquals(OrderedDict([('q2', u'Answer 200 for question q2 is greater than allowed.')]),
-                        response.errors)
+                                      response.errors)
                     self.assertEquals(['clinic'], response.entity_type)
                     self.assertEquals(OrderedDict([('q1', 'a1')]), response.processed_data)
                     self.assertIsNotNone(response.submission_id)
@@ -182,10 +192,10 @@ class TestSurveyResponseService(TestCase):
         additional_dictionary = {'project': {'name': 'someproject', 'status': 'active', 'id': 'someid'}}
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch(
-                'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
+                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
                 with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
                     with patch(
-                        'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                            'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
                         get_reporter.return_value = Mock(spec=Entity)
                         builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
                         by_short_code.return_value = Mock(spec=Entity)
@@ -198,7 +208,7 @@ class TestSurveyResponseService(TestCase):
                         type(mock_form_model.entity_question).code = code
                         mock_form_model.entity_type = 'sometype'
                         survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                            additional_dictionary)
+                                                            additional_dictionary)
                         self.assertEquals(1, feed_manager._save_document.call_count)
 
 
@@ -215,12 +225,12 @@ class TestSurveyResponseService(TestCase):
 
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch(
-                'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
+                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
                 with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
                     with patch(
-                        'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
+                            'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
                         with patch(
-                            'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                                'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
                             get_reporter.return_value = Mock(spec=Entity)
                             builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
                             instance_mock = data_form_submission.return_value
@@ -236,7 +246,7 @@ class TestSurveyResponseService(TestCase):
 
                             try:
                                 survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                    additional_dictionary)
+                                                                    additional_dictionary)
                                 self.fail('the subject not found exception should be propagated')
                             except MangroveException:
                                 feed_manager._save_document.assert_called_once()
@@ -255,12 +265,12 @@ class TestSurveyResponseService(TestCase):
 
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
             with patch(
-                'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
+                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model_by_code:
                 with patch('mangrove.datastore.entity.by_short_code') as by_short_code:
                     with patch(
-                        'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
+                            'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
                         with patch(
-                            'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
+                                'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
                             get_reporter.return_value = Mock(spec=Entity)
                             builder.feed_document.side_effect = Exception('Some error')
                             builder.return_value = builder
@@ -275,8 +285,8 @@ class TestSurveyResponseService(TestCase):
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
                             response = survey_response_service.save_survey('CL1', values, [], transport_info,
-                                request.message,
-                                additional_dictionary)
+                                                                           request.message,
+                                                                           additional_dictionary)
                             self.assertFalse(response.errors)
                             self.assertTrue(response.feed_error_message)
 
@@ -293,7 +303,8 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,reporter_id='rep2')
+        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                                                       reporter_id='rep2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
@@ -303,7 +314,41 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual('CL1', response.form_code)
         self.assertEqual('1', response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
-            response.processed_data)
+                             response.processed_data)
+
+        submission = Submission.get(self.manager, response.survey_response_id)
+        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
+        self.assertEqual(test_data.form_model.revision, submission.form_model_revision)
+        self.assertEqual(test_data.entity1.short_code, submission.get_entity_short_code('ID'))
+        self.assertEqual(True, submission.status)
+        self.assertIsNotNone(submission.data_record)
+
+        survey_response = SurveyResponse.get(self.manager, response.survey_response_id)
+        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
+        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
+        self.assertEqual(test_data.form_model.revision, survey_response.form_model_revision)
+        self.assertEqual(True, survey_response.status)
+        self.assertIsNotNone(survey_response.data_record)
+
+    def test_survey_response_is_saved_with_reporter_id_in_upper_case(self):
+        test_data = TestData(self.manager)
+        survey_response_service = SurveyResponseService(self.manager)
+
+        values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+        transport_info = TransportInfo('web', 'src', 'dest')
+        request = Request(values, transport_info)
+        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                                                       reporter_id='REP2')
+
+        self.assertTrue(response.success)
+        self.assertEqual(0, response.errors.__len__())
+        self.assertIsNotNone(response.datarecord_id)
+        self.assertIsNotNone(response.survey_response_id)
+        self.assertEqual(test_data.entity_type, response.entity_type)
+        self.assertEqual('CL1', response.form_code)
+        self.assertEqual('1', response.short_code)
+        self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
+                             response.processed_data)
 
         submission = Submission.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
@@ -326,7 +371,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
         self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info,
-            request.message)
+                          request.message)
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)
@@ -336,14 +381,15 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
 
-        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message, reporter_id="rep2")
+        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                                                             reporter_id="rep2")
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
-            saved_response.processed_data)
+                             saved_response.processed_data)
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
         survey_response_to_edit = SurveyResponse.get(self.manager, saved_response.survey_response_id)
         edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
-            survey_response_to_edit)
+                                                              survey_response_to_edit)
 
         self.assertTrue(edited_response.success)
         self.assertEqual(0, edited_response.errors.__len__())
@@ -353,7 +399,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual('CL1', edited_response.form_code)
         self.assertEqual('1', edited_response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
-            edited_response.processed_data)
+                             edited_response.processed_data)
 
         submission = Submission.get(self.manager, edited_response.submission_id)
         self.assertNotEquals(saved_response.submission_id, edited_response.submission_id)
@@ -375,9 +421,9 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 def register_datasender(dbm):
     define_type(dbm, ["reporter"])
     phone_number_type = DataDictType(dbm, name='Telephone Number', slug='telephone_number',
-        primitive_type='string')
+                                     primitive_type='string')
     first_name_type = DataDictType(dbm, name='First Name', slug='first_name',
-        primitive_type='string')
+                                   primitive_type='string')
     TestReporter.register(dbm,
                           entity_type=REPORTER_ENTITY_TYPE,
                           data=[(MOBILE_NUMBER_FIELD, "1234567890", phone_number_type),

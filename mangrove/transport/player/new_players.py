@@ -67,7 +67,7 @@ class SMSPlayerV2(object):
         values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-                                   reporter_id=reporter_entity.short_code,
+                                   reporter_entity.short_code,
                                    additional_feed_dictionary=additional_feed_dictionary)
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
@@ -92,4 +92,4 @@ class XFormPlayerV2(object):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.save_survey(form_code, values, [], request.transport, request.message, reporter_id=reporter_id)
+        return service.save_survey(form_code, values, [], request.transport, request.message, reporter_id)

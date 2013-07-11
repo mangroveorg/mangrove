@@ -56,7 +56,7 @@ class TestSurveyResponseService(TestCase):
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
                                       'nonexistant_form_code', values, [], transport_info,
-                                      request.message)
+                                      request.message, '')
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
@@ -77,8 +77,7 @@ class TestSurveyResponseService(TestCase):
                 transport_info = TransportInfo('web', 'src', 'dest')
                 request = Request(values, transport_info)
                 self.assertRaises(InactiveFormModelException, self.survey_response_service.save_survey,
-                                  'some_form_code',
-                                  values, [], transport_info, request.message)
+                                  'some_form_code', values, [], transport_info, request.message,'')
                 calls = [call(self.dbm, 'some_form_code')]
                 patched_form_model.assert_has_calls(calls)
 
@@ -97,7 +96,7 @@ class TestSurveyResponseService(TestCase):
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
                                       'nonexistant_form_code', values, [], transport_info,
-                                      request.message)
+                                      request.message, '')
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
@@ -136,7 +135,7 @@ class TestSurveyResponseService(TestCase):
                     request = Request(values, transport_info)
                     self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
                                       'nonexistant_form_code', values, [], transport_info,
-                                      request.message)
+                                      request.message, '')
                     get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
                     save_document.assert_has_calls([call(SubmissionLogDocument())])
 
@@ -207,7 +206,7 @@ class TestSurveyResponseService(TestCase):
                         code = PropertyMock(return_value='ID')
                         type(mock_form_model.entity_question).code = code
                         mock_form_model.entity_type = 'sometype'
-                        survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                        survey_response_service.save_survey('CL1', values, [], transport_info, request.message,'',
                                                             additional_dictionary)
                         self.assertEquals(1, feed_manager._save_document.call_count)
 
@@ -246,6 +245,7 @@ class TestSurveyResponseService(TestCase):
 
                             try:
                                 survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
+                                                                    '',
                                                                     additional_dictionary)
                                 self.fail('the subject not found exception should be propagated')
                             except MangroveException:
@@ -285,7 +285,7 @@ class TestSurveyResponseService(TestCase):
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
                             response = survey_response_service.save_survey('CL1', values, [], transport_info,
-                                                                           request.message,
+                                                                           request.message, '',
                                                                            additional_dictionary)
                             self.assertFalse(response.errors)
                             self.assertTrue(response.feed_error_message)
@@ -304,7 +304,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
         response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                       reporter_id='rep2')
+                                                       'rep2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
@@ -338,7 +338,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
         response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                       reporter_id='REP2')
+                                                       'REP2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
@@ -371,7 +371,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
         self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info,
-                          request.message)
+                          request.message,'')
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)
@@ -382,7 +382,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         request = Request(values, transport_info)
 
         saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                             reporter_id="rep2")
+                                                             "rep2")
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
                              saved_response.processed_data)
 

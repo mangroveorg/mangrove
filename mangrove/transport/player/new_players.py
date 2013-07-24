@@ -41,7 +41,8 @@ class SMSPlayerV2(object):
         self.dbm = dbm
         self.feeds_dbm = feeds_dbm
 
-    def _post_parse_processor(self, form_code, values, extra_elements=[]):
+    def _post_parse_processor(self, form_code, values, extra_elements=None):
+        extra_elements = [] if extra_elements is None else extra_elements
         for post_sms_parser_processors in self.post_sms_parser_processor:
             if len(inspect.getargspec(post_sms_parser_processors.process)[0]) == 4:
                 response = post_sms_parser_processors.process(form_code, values, extra_elements)

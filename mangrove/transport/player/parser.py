@@ -2,11 +2,13 @@
 from collections import OrderedDict
 import csv
 from datetime import datetime
-from babel.dates import format_date
 import re
+
+from babel.dates import format_date
 import xlrd
 import xmldict
-from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException,\
+
+from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.form_model.field import SelectField, GeoCodeField, DateField, IntegerField
 from mangrove.form_model.form_model import get_form_model_by_code
@@ -25,10 +27,9 @@ class SMSParserFactory(object):
 
 
 class SMSParser(object):
-    
     def __init__(self, dbm):
         self.dbm = dbm
-        
+
     def _to_unicode(self, message):
         if type(message) is not unicode:
             message = unicode(message, encoding='utf-8')
@@ -154,7 +155,6 @@ class OrderSMSParser(SMSParser):
         tokens = message.split()
         form_code = self.pop_form_code(tokens)
         return form_code, tokens
-
 
 
 class WebParser(object):
@@ -348,6 +348,7 @@ class XFormParser(object):
     def __get_formatted_date(self, date_format, date):
         return format_date(date, DateField.FORMAT_DATE_DICTIONARY.get(date_format))
 
+
 class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
@@ -367,7 +368,7 @@ class XlsDatasenderParser(XlsParser):
 
             row = self._clean(row)
             values = dict(zip(header, row))
-            values.update({"t":"reporter"})
+            values.update({"t": "reporter"})
             parsedData.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()

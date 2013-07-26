@@ -1,4 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+import logging
 
 from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
 import datetime
@@ -47,7 +48,6 @@ class TZAwareDateTimeField(DateTimeField):
             value = datetime.datetime.combine(value, datetime.time(0))
         return py_datetime_to_js_datestring(value)
 
-
 class DocumentBase(Document):
     created = TZAwareDateTimeField()
     modified = TZAwareDateTimeField()
@@ -62,6 +62,19 @@ class DocumentBase(Document):
         self.document_type = document_type
         self.void = False
 
+    def post_update(self, dbm):
+        if hasattr(self.__class__ , 'registered_functions'):
+            for callback in self.__class__.registered_functions:
+                try:
+                    callback(self, dbm)
+                except Exception as e:
+                    logging.error(e.message)
+
+    @classmethod
+    def register_post_update(cls, func):
+        if not hasattr(cls, 'registered_functions'):
+            cls.registered_functions = []
+        cls.registered_functions.append(func)
 
 class EntityDocument(DocumentBase):
     """
@@ -302,7 +315,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     def __init__(self, survey_response_id=None, survey_response_modified_time=None, channel=None, form_code=None,
                  form_model_revision=None, values=None,
                  status=None, error_message=None, data_sender=None, additional_detail=None, void=False):
-        DocumentBase.__init__(self, id=survey_response_id,document_type='EnrichedSurveyResponse')
+        DocumentBase.__init__(self, id=survey_response_id, document_type='EnrichedSurveyResponse')
         self.survey_response_modified_time = survey_response_modified_time
         self.channel = channel
         self.form_code = form_code
@@ -314,7 +327,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
         self.additional_detail = additional_detail
         self.void = void
 
-    def update(self,new_document):
+    def update(self, new_document):
         self.survey_response_modified_time = new_document.survey_response_modified_time
         self.form_code = new_document.form_code
         self.form_model_revision = new_document.form_model_revision
@@ -327,6 +340,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
 
     def delete(self):
         self.void = True
+
 
 class AggregationTreeDocument(DocumentBase):
     root = DictField()

@@ -215,6 +215,7 @@ class DatabaseManager(object):
             raise FailedToSaveDataObject(str(result))
 
         # second item is doc ID
+        document.post_update(self)
         return result[1]
 
     def _save_documents(self, documents, modified=None):

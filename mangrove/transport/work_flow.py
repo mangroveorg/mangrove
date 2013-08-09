@@ -1,8 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+from mangrove.datastore.entity import get_by_short_code_include_voided
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, GEO_CODE_FIELD_NAME
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.queries import get_entity_count_for_type
-from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException
+from mangrove.errors.MangroveException import GeoCodeFormatException, MangroveException, DataObjectNotFound
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.location import Location
 from mangrove.utils.types import is_empty, is_not_empty
@@ -97,4 +98,12 @@ def _set_short_code(dbm, form_model, values):
 def _generate_short_code(dbm, entity_type):
     current_count = get_entity_count_for_type(dbm, entity_type.lower())
     entity_type_prefix = entity_type[:3] + "%s"
-    return  entity_type_prefix % (current_count + 1)
+    offset = 1
+    while True:
+        short_code = entity_type_prefix % (current_count + offset)
+        try:
+            entity = get_by_short_code_include_voided(dbm, short_code, [entity_type])
+            if entity:
+                offset += 1
+        except DataObjectNotFound as ignore:
+            return short_code

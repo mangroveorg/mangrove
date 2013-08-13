@@ -4,7 +4,7 @@ coverage==3.4
 simplejson
 mock
 iso8601
-pytz
+pytz==2013b
 xlwt
 jinja2
 xmldict

@@ -119,6 +119,11 @@ def get_all_entities(dbm, entity_type=None):
     else:
         return _get_all_entities(dbm)
 
+def get_short_codes_by_entity_type(dbm,entity_type):
+    startkey = [entity_type]
+    endkey = [entity_type, {}]
+    rows = dbm.view.by_short_codes(reduce=False, include_docs=False, startkey=startkey, endkey=endkey)
+    return [row.key[1] for row in rows]
 
 def get_entities_by_value(dbm, label, value, as_of=None):
     """

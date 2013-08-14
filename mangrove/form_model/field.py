@@ -49,7 +49,7 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-        constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
+                      constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
     return field
 
 
@@ -59,7 +59,7 @@ def _get_telephone_number_field(code, ddtype, dictionary, label, name, instructi
         constraints = constraints_factory(constraints_json)
 
     field = TelephoneNumberField(name=name, code=code, label=label, constraints=constraints, ddtype=ddtype,
-        instruction=instruction, required=required)
+                                 instruction=instruction, required=required)
 
     return field
 
@@ -70,7 +70,7 @@ def _get_integer_field(code, ddtype, dictionary, label, name, instruction, requi
         constraints = constraints_factory(constraint_list)
 
     integer_field = IntegerField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,
-        constraints=constraints, required=required)
+                                 constraints=constraints, required=required)
 
     return integer_field
 
@@ -79,7 +79,7 @@ def _get_date_field(code, ddtype, dictionary, label, name, instruction, required
     date_format = dictionary.get("date_format")
 
     date_field = DateField(name=name, code=code, label=label, date_format=date_format, ddtype=ddtype,
-        instruction=instruction, required=required, event_time_field_flag=is_event_time_field)
+                           instruction=instruction, required=required, event_time_field_flag=is_event_time_field)
 
     return date_field
 
@@ -89,7 +89,7 @@ def _get_select_field(code, ddtype, dictionary, label, name, type, instruction, 
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
-        ddtype=ddtype, instruction=instruction, required=required)
+                        ddtype=ddtype, instruction=instruction, required=required)
 
     return field
 
@@ -102,7 +102,7 @@ def _get_list_field(name, code, label, ddtype, instruction, required):
 
 def _get_geo_code_field(code, ddtype, instruction, label, name, required):
     field = GeoCodeField(name=name, code=code, label=label, ddtype=ddtype, instruction=instruction,
-        required=required)
+                         required=required)
 
     return field
 
@@ -218,14 +218,14 @@ class Field(object):
     def is_required(self):
         return self._dict['required']
 
-    def set_required(self,required):
+    def set_required(self, required):
         self._dict["required"] = required
 
     def validate(self, value):
         if self.is_required() and is_empty(value):
             raise RequiredFieldNotPresentException(self.code)
 
-    def _to_str(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("--")
         return unicode(self.value)
@@ -243,7 +243,7 @@ class IntegerField(Field):
                  constraints=None, required=True):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -299,7 +299,7 @@ class DateField(Field):
     def __init__(self, name, code, label, date_format, ddtype, instruction=None,
                  required=True, event_time_field_flag=False):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, required=required)
         self._dict[self.DATE_FORMAT] = date_format
         if event_time_field_flag:
             self._dict['event_time_field_flag'] = event_time_field_flag
@@ -319,7 +319,7 @@ class DateField(Field):
     def is_event_time_field(self):
         return self._dict.get('event_time_field_flag', False)
 
-    def _to_str(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("--")
         date_format = self.FORMAT_DATE_DICTIONARY.get(self.date_format)
@@ -338,7 +338,7 @@ class DateField(Field):
             return datetime.strptime(date_string.strip(), DateField.DATE_DICTIONARY.get(self.date_format))
         except ValueError:
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), date_string,
-                self._dict.get(self.DATE_FORMAT))
+                                self._dict.get(self.DATE_FORMAT))
 
 #All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
 #That will require atleast a couple of days of work
@@ -367,7 +367,7 @@ class TextField(Field):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, constraints=constraints, required=required)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
@@ -414,7 +414,8 @@ class TelephoneNumberField(TextField):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, ddtype=ddtype,
-            instruction=instruction, constraints=constraints, defaultValue=defaultValue, required=required)
+                           instruction=instruction, constraints=constraints, defaultValue=defaultValue,
+                           required=required)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
     def _clean(self, value):
@@ -429,7 +430,7 @@ class HierarchyField(Field):
     def __init__(self, name, code, label, ddtype, instruction=None,
                  required=True):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, required=required)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -437,7 +438,7 @@ class HierarchyField(Field):
             return value
         return [value]
 
-    def _to_str(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("--")
         return sequence_to_str(self.value) if isinstance(self.value, list) else unicode(self.value)
@@ -455,7 +456,7 @@ class SelectField(Field):
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, required=required)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -489,7 +490,7 @@ class SelectField(Field):
     def get_constraint_text(self):
         return [option["text"] for option in self.options]
 
-    def _to_str(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("--")
         return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
@@ -512,7 +513,7 @@ class SelectField(Field):
 
 
     def get_option_value_list(self, question_value):
-        options = self.get_option_list( question_value)
+        options = self.get_option_list(question_value)
         result = []
         for option in options:
             option_value = self.get_value_by_option(option)
@@ -542,7 +543,7 @@ class GeoCodeField(Field):
 
     def __init__(self, name, code, label, ddtype, instruction=None, required=True):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
-            label=label, ddtype=ddtype, instruction=instruction, required=required)
+                       label=label, ddtype=ddtype, instruction=instruction, required=required)
 
     def validate(self, lat_long_string):
         Field.validate(self, lat_long_string)
@@ -555,11 +556,12 @@ class GeoCodeField(Field):
     def get_constraint_text(self):
         return "xx.xxxx yy.yyyy"
 
-    def _to_str(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("--")
         return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value,
-            tuple) else unicode(self.value)
+                                                                                                         tuple) else unicode(
+            self.value)
 
     def formatted_field_values_for_excel(self, value):
         value_list = value.split(',')

@@ -1,18 +1,18 @@
 # vim= ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
+from datetime import datetime
+
 from mock import Mock, patch
+
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.datadict import DataDictType
-
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException, RequiredFieldNotPresentException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field, field_attributes
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException,\
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, \
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ExcelDate
-
 from mangrove.form_model import field
-from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint, constraints_factory
-from datetime import datetime
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
 
 
 class TestField(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestField(unittest.TestCase):
     def test_should_create_text_field_type_for_default_english_language(self):
         expected_json = {
             "defaultValue": "some default value",
-            "label" : "What is your name",
+            "label": "What is your name",
             "name": "field1_Name",
             "instruction": "Answer is word or phrase",
             "code": "Q1",
@@ -40,17 +40,17 @@ class TestField(unittest.TestCase):
             "ddtype": self.DDTYPE_JSON,
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-            defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)],
-            ddtype=self.ddtype, instruction="Answer is word or phrase")
+                          defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)],
+                          ddtype=self.ddtype, instruction="Answer is word or phrase")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
         field.set_value("abc")
-        self.assertEqual("abc", field._to_str())
+        self.assertEqual("abc", field.convert_to_unicode())
 
     def test_should_create_list_field_type_for_default_english_language(self):
         expected_json = {
-            "label" : "What is your location",
+            "label": "What is your location",
             "name": "loc",
             "instruction": "Answer is list",
             "code": "Q1",
@@ -59,12 +59,12 @@ class TestField(unittest.TestCase):
             "ddtype": self.DDTYPE_JSON,
         }
         field = HierarchyField(name="loc", code="Q1", label="What is your location",
-            ddtype=self.ddtype, instruction="Answer is list")
+                               ddtype=self.ddtype, instruction="Answer is list")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
         field.set_value(["abc", "def"])
-        self.assertEqual("abc,def", field._to_str())
+        self.assertEqual("abc,def", field.convert_to_unicode())
 
 
     def test_should_create_integer_field_type_for_default_english_language(self):
@@ -78,17 +78,17 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-            ddtype=self.ddtype, instruction="test_instruction")
+                             ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
         field.set_value(123)
-        self.assertEqual("123", field._to_str())
+        self.assertEqual("123", field.convert_to_unicode())
 
     def test_should_set_new_name_for_field(self):
         new_name = "newName"
         instruction = "test_instruction"
         expected_json = {
-            "label" : "What is your age",
+            "label": "What is your age",
             "name": new_name,
             "code": "Q2",
             "ddtype": self.DDTYPE_JSON,
@@ -97,7 +97,7 @@ class TestField(unittest.TestCase):
             "instruction": instruction
         }
         field = Field(type="integer", name="oldName", code="Q2", label="What is your age", ddtype=self.ddtype,
-            instruction=instruction)
+                      instruction=instruction)
         field.set_name(new_name)
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -105,7 +105,7 @@ class TestField(unittest.TestCase):
     def test_should_set_new_instruction_for_field(self):
         new_instruction = "new_instruction"
         expected_json = {
-            "label" : "What is your age",
+            "label": "What is your age",
             "name": "name",
             "code": "Q2",
             "ddtype": self.DDTYPE_JSON,
@@ -114,7 +114,7 @@ class TestField(unittest.TestCase):
             "instruction": new_instruction
         }
         field = Field(type="integer", name="name", code="Q2", label="What is your age", ddtype=self.ddtype,
-            instruction="instruction")
+                      instruction="instruction")
         field.set_instruction(new_instruction)
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -131,14 +131,14 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype,
-            instruction="test_instruction")
+                             constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype,
+                             instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
     def test_should_create_select_one_field_type_for_default_english_language(self):
         expected_json = {
-            "label" : "What is your favorite color",
+            "label": "What is your favorite color",
             "name": "color",
             "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
                         {"text": 'green', "val": 3}],
@@ -149,16 +149,16 @@ class TestField(unittest.TestCase):
             "instruction": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-            options=[("RED", 1), ("YELLOW", 2), ('green', 3)], ddtype=self.ddtype)
+                            options=[("RED", 1), ("YELLOW", 2), ('green', 3)], ddtype=self.ddtype)
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
         field.set_value(field.validate('b'))
-        self.assertEqual("YELLOW", field._to_str())
+        self.assertEqual("YELLOW", field.convert_to_unicode())
 
     def test_should_create_multi_select_field_type_for_default_english_language(self):
         expected_json = {
-            "label" : "What is your favorite color",
+            "label": "What is your favorite color",
             "name": "color",
             "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
                         {"text": 'green'}],
@@ -169,17 +169,17 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
-            ddtype=self.ddtype, instruction="test_instruction")
+                            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
+                            ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
         field.set_value(field.validate('ab'))
-        self.assertEqual("RED,YELLOW", field._to_str())
+        self.assertEqual("RED,YELLOW", field.convert_to_unicode())
 
     def test_should_remove_spaces_if_present_in_answer_for_multi_select(self):
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
-            ddtype=self.ddtype, instruction="test_instruction")
+                            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
+                            ddtype=self.ddtype, instruction="test_instruction")
         self.assertEqual(['RED', 'YELLOW'], field.validate('a b'))
 
     def test_should_add_entity_field(self):
@@ -195,7 +195,7 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-            entity_question_flag=True, ddtype=self.ddtype, instruction="test_instruction")
+                          entity_question_flag=True, ddtype=self.ddtype, instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -227,7 +227,7 @@ class TestField(unittest.TestCase):
         self.ddtype_module.create_from_json.return_value = self.ddtype
         field_json = {
             "defaultValue": "",
-            "label" : "What is your name",
+            "label": "What is your name",
             "name": "field1_Name",
             "code": "Q1",
             "type": "text",
@@ -304,7 +304,7 @@ class TestField(unittest.TestCase):
                         {"text": "option 1", "value": "c2"}],
             "required": False,
             "entity_field_flag": False,
-            "label" : "select type field"}
+            "label": "select type field"}
         created_field = field.create_question_from(field_json, self.dbm)
         self.assertIsInstance(created_field, SelectField)
         self.assertEqual(created_field.single_select_flag, False)
@@ -375,7 +375,7 @@ class TestField(unittest.TestCase):
                         {"text": "world", "value": "c2"}],
             "required": False,
             "entity_field_flag": False,
-            "label" : "select1 type question"}
+            "label": "select1 type question"}
 
         expected_option_list = [{"text": "hello", "value": "c1"},
                                 {"text": "world", "value": "c2"}]
@@ -388,7 +388,7 @@ class TestField(unittest.TestCase):
 
     def test_should_return_error_for_integer_range_validation(self):
         field = IntegerField(name="Age", code="Q2", label="What is your age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
+                             constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype)
         valid_value = field.validate("120")
         self.assertEqual(valid_value, 120)
         valid_value = field.validate("25.5")
@@ -397,16 +397,16 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_wrong_type_for_integer(self):
         with self.assertRaises(AnswerWrongType) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                constraints=[NumericRangeConstraint(min=15, max=120)],
-                ddtype=self.ddtype)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)],
+                                 ddtype=self.ddtype)
             field.validate("asas")
         self.assertEqual(e.exception.message, "Answer asas for question Q2 is of the wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                constraints=[NumericRangeConstraint(min=15, max=120)],
-                ddtype=self.ddtype)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)],
+                                 ddtype=self.ddtype)
             valid_value = field.validate(150)
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer 150 for question Q2 is greater than allowed.")
@@ -414,17 +414,17 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
             field = IntegerField(name="Age", code="Q2", label="What is your age",
-                constraints=[NumericRangeConstraint(min=15, max=120)],
-                ddtype=self.ddtype)
+                                 constraints=[NumericRangeConstraint(min=15, max=120)],
+                                 ddtype=self.ddtype)
             valid_value = field.validate(11)
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer 11 for question Q2 is smaller than allowed.")
 
     def test_successful_text_length_validation(self):
         field = TextField(name="Name", code="Q2", label="What is your Name",
-            constraints=[TextLengthConstraint(min=4, max=15)], ddtype=self.ddtype)
+                          constraints=[TextLengthConstraint(min=4, max=15)], ddtype=self.ddtype)
         field1 = TextField(name="Name", code="Q2", label="What is your Name",
-            ddtype=self.ddtype)
+                           ddtype=self.ddtype)
         valid_value = field.validate("valid")
         self.assertEqual(valid_value, "valid")
         valid_value = field1.validate("valid")
@@ -433,7 +433,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_max_value(self):
         with self.assertRaises(AnswerTooLongException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                constraints=[TextLengthConstraint(min=1, max=4)], ddtype=self.ddtype)
+                              constraints=[TextLengthConstraint(min=1, max=4)], ddtype=self.ddtype)
             valid_value = field.validate("long_answer")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
@@ -441,7 +441,7 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
             field = TextField(name="Age", code="Q2", label="What is your age",
-                constraints=[TextLengthConstraint(min=15, max=120)], ddtype=self.ddtype)
+                              constraints=[TextLengthConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate("short")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
@@ -519,33 +519,33 @@ class TestField(unittest.TestCase):
     def test_should_return_error_for_incorrect_date_format_error_for_wrong_format(self):
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",
-                date_format="mm.yyyy", ddtype=self.ddtype)
+                              date_format="mm.yyyy", ddtype=self.ddtype)
             valid_value = field.validate("13.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-            "Answer 13.2010 for question Q2 is invalid. Expected date in mm.yyyy format")
+                         "Answer 13.2010 for question Q2 is invalid. Expected date in mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",
-                date_format="dd.mm.yyyy", ddtype=self.ddtype)
+                              date_format="dd.mm.yyyy", ddtype=self.ddtype)
             valid_value = field.validate("33.12.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-            "Answer 33.12.2010 for question Q2 is invalid. Expected date in dd.mm.yyyy format")
+                         "Answer 33.12.2010 for question Q2 is invalid. Expected date in dd.mm.yyyy format")
 
         with self.assertRaises(IncorrectDate) as e:
             field = DateField(name="Age", code="Q2", label="What is your birth date",
-                date_format="mm.dd.yyyy", ddtype=self.ddtype)
+                              date_format="mm.dd.yyyy", ddtype=self.ddtype)
             valid_value = field.validate("13.01.2010")
             self.assertFalse(valid_value)
         self.assertEqual(e.exception.message,
-            "Answer 13.01.2010 for question Q2 is invalid. Expected date in mm.dd.yyyy format")
+                         "Answer 13.01.2010 for question Q2 is invalid. Expected date in mm.dd.yyyy format")
 
     def test_should_validate_single_answer(self):
         with self.assertRaises(AnswerHasTooManyValuesException) as e:
             clinic_field = SelectField(name="clinic type", code="Q1", label="What type of clinic is it?",
-                options=["village", "urban"], single_select_flag=True,
-                ddtype=self.ddtype)
+                                       options=["village", "urban"], single_select_flag=True,
+                                       ddtype=self.ddtype)
             clinic_field.validate("vu")
         self.assertEqual(e.exception.message, "Answer vu for question Q1 contains more than one value.")
 
@@ -553,30 +553,30 @@ class TestField(unittest.TestCase):
     def test_should_create_field_with_datadict_type(self):
         nameType = Mock(spec=DataDictType)
         field1 = TextField(name="Name", code="Q1", label="What is your Name",
-            constraints=[TextLengthConstraint(min=4, max=15)], ddtype=nameType)
+                           constraints=[TextLengthConstraint(min=4, max=15)], ddtype=nameType)
         self.assertEqual(nameType, field1.ddtype)
 
         ageType = Mock(spec=DataDictType)
         field2 = IntegerField(name="Age", code="Q2", label="What is your age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=ageType)
+                              constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=ageType)
         self.assertEqual(ageType, field2.ddtype)
 
         selectType = Mock(spec=DataDictType)
         field3 = SelectField(name="clinic type", code="Q1", label="What type of clinic is it?",
-            options=["village", "urban"], ddtype=selectType)
+                             options=["village", "urban"], ddtype=selectType)
 
         self.assertEqual(selectType, field3.ddtype)
 
         dateType = Mock(spec=DataDictType)
         field4 = DateField(name="Age", code="Q2", label="What is your birth date",
-            date_format="%m.%d.%Y", ddtype=dateType)
+                           date_format="%m.%d.%Y", ddtype=dateType)
         self.assertEqual(dateType, field4.ddtype)
 
 
     def test_should_throw_exception_if_field_created_with_none_datadict_type(self):
         with self.assertRaises(AssertionError):
             TextField(name="Name", code="Q1", label="What is your Name",
-                constraints=dict(length=TextLengthConstraint(min=4, max=15)), ddtype=None)
+                      constraints=dict(length=TextLengthConstraint(min=4, max=15)), ddtype=None)
 
     def test_should_convert_ddtype_to_json(self):
         expected_json = {
@@ -591,7 +591,7 @@ class TestField(unittest.TestCase):
             "instruction": None
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
-            entity_question_flag=True, ddtype=self.ddtype)
+                          entity_question_flag=True, ddtype=self.ddtype)
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
         self.assertEqual(self.ddtype, field.ddtype)
@@ -609,9 +609,9 @@ class TestField(unittest.TestCase):
 
         }
         field = SelectField(name="type", code="T", label="What type?",
-            options=[{"text": "Lake"}, {"text": "Dam"}],
-            ddtype=self.ddtype, instruction="test",
-            single_select_flag=True)
+                            options=[{"text": "Lake"}, {"text": "Dam"}],
+                            ddtype=self.ddtype, instruction="test",
+                            single_select_flag=True)
         actual_json = field._to_json_view()
         self.assertEqual(actual_json, expected_json)
 
@@ -626,11 +626,11 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
-            instruction="test_instruction", )
+                             instruction="test_instruction", )
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
         field.set_value(field.validate("23,23"))
-        self.assertEqual("23.0, 23.0", field._to_str())
+        self.assertEqual("23.0, 23.0", field.convert_to_unicode())
 
     def test_should_validate_location(self):
         expect_lat_long = (89.1, 100.1)
@@ -700,7 +700,7 @@ class TestField(unittest.TestCase):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
         expected_json = {
             "label": "question",
             "name": "test",
@@ -744,7 +744,7 @@ class TestField(unittest.TestCase):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
         self.assertEqual('1234321122', field._clean('123-4321122'))
         self.assertEqual('123dsasa4321122', field._clean('123dsasa4321122'))
@@ -753,7 +753,7 @@ class TestField(unittest.TestCase):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
         self.assertEqual(u'266123321435', field._clean(u'2.66123321435e+11'))
 
@@ -761,7 +761,7 @@ class TestField(unittest.TestCase):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
 
         self.assertEqual(u'266123321435', field.validate(u'2.66123321435e+11'))
         self.assertEqual(u'266123321435', field.validate(u'266-123321435'))
@@ -769,14 +769,14 @@ class TestField(unittest.TestCase):
 
     def test_telephone_number_should_not_trim_the_leading_zeroes(self):
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[], instruction='')
+                                     constraints=[], instruction='')
         self.assertEqual(u'020', field.validate(u'020'))
 
     def test_should_raise_regex_mismatch_exception_if_invalid_phone_number(self):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         field = TelephoneNumberField(name="test", code='MC', label='question', ddtype=self.ddtype,
-            constraints=[mobile_number_length, mobile_number_pattern], instruction='')
+                                     constraints=[mobile_number_length, mobile_number_pattern], instruction='')
         with self.assertRaises(RegexMismatchException):
             field.validate(u'020321dsa')
 
@@ -800,10 +800,10 @@ class TestField(unittest.TestCase):
 
     def test_should_create_date_field_with_event_time_flag(self):
         field = DateField('event_time', 'et', 'event_time', 'mm.dd.yyyy', Mock(spec=DataDictType),
-            event_time_field_flag=True)
+                          event_time_field_flag=True)
         self.assertTrue(field.is_event_time_field)
         field.set_value(datetime.strptime('25-12-2012', '%d-%m-%Y'))
-        self.assertEqual("12.25.2012", field._to_str())
+        self.assertEqual("12.25.2012", field.convert_to_unicode())
 
     def test_should_create_date_field_with_event_time_flag_from_json(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype
@@ -862,14 +862,14 @@ class TestField(unittest.TestCase):
 
     def test_should_split_gps_field_based_on_comma(self):
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
-            instruction="test_instruction", )
-        expected = (12.32,14.32)
+                             instruction="test_instruction", )
+        expected = (12.32, 14.32)
         seperated_values = field.formatted_field_values_for_excel('12.32,14.32')
-        self.assertEqual(expected,seperated_values)
+        self.assertEqual(expected, seperated_values)
 
     def test_should_split_gps_irrespective_of_space_after_comma(self):
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?", ddtype=self.ddtype,
-            instruction="test_instruction", )
+                             instruction="test_instruction", )
 
         expected = (12.32, 14.32)
         seperated_values = field.formatted_field_values_for_excel('12.32,   14.32')

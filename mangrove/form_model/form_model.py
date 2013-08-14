@@ -4,7 +4,7 @@ from datetime import *
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException,\
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, MangroveException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
@@ -185,7 +185,7 @@ class FormModel(DataObject):
         self._doc.active_languages = value
 
     def get_short_code(self, values):
-        return  self._case_insensitive_lookup(values, self.entity_question.code)
+        return self._case_insensitive_lookup(values, self.entity_question.code)
 
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
@@ -360,7 +360,7 @@ class FormModel(DataObject):
         try:
             form = get_form_model_by_code(self._dbm, self.form_code)
             is_form_code_same_as_existing_form_code = True if form.id == self.id else False
-            return  is_form_code_same_as_existing_form_code
+            return is_form_code_same_as_existing_form_code
         except FormModelDoesNotExistsException:
             return True
 
@@ -376,7 +376,7 @@ class FormModel(DataObject):
     def _remove_unknown_fields(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if self._get_field_by_code(k) is not None])
 
-#TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
+    #TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
     def validate_submission(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
@@ -405,6 +405,6 @@ class FormModel(DataObject):
         self.bind(values)
         dict = OrderedDict()
         for field in self.fields:
-            dict[field.code] = field._to_str()
+            dict[field.code] = field.convert_to_unicode()
 
         return dict

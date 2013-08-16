@@ -58,6 +58,12 @@ def list_form_models_by_code(dbm, codes):
 
     return map(_row_to_form_model, rows)
 
+def header_fields(manager, subject_type):
+    header_dict = OrderedDict()
+    form_model = get_form_model_by_entity_type(manager, [subject_type])
+    for field in form_model.fields:
+        header_dict.update({field.name: field.label})
+    return header_dict
 
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)

@@ -12,3 +12,4 @@ lxml
 babel
 networkx
 gdata
+xlrd

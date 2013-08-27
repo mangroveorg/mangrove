@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import unittest
 from couchdb.mapping import Document
-from django.utils.unittest.case import SkipTest
 from mock import Mock, patch
 from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
@@ -35,9 +34,8 @@ class TestFormSubmissionFactory(unittest.TestCase):
         self.assertEqual(type(form_submission), EntityRegistrationFormSubmission)
 
 
-    @SkipTest
 #    TODO : 1897
-    def test_should_update_existing_data_records(self):
+    def _ignored__should_update_existing_data_records(self):
         mocked_form_model = Mock(spec=FormModel)
         mocked_form_model.is_registration_form.return_value = False
         mocked_form_model.entity_type = "clinic"

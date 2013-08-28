@@ -227,7 +227,7 @@ class Field(object):
 
     def convert_to_unicode(self):
         if self.value is None:
-            return unicode("--")
+            return unicode("")
         return unicode(self.value)
 
     def xform_constraints(self):
@@ -321,7 +321,7 @@ class DateField(Field):
 
     def convert_to_unicode(self):
         if self.value is None:
-            return unicode("--")
+            return unicode("")
         date_format = self.FORMAT_DATE_DICTIONARY.get(self.date_format)
         return format_date(self.value, date_format) if isinstance(self.value, datetime) else unicode(self.value)
 
@@ -440,7 +440,7 @@ class HierarchyField(Field):
 
     def convert_to_unicode(self):
         if self.value is None:
-            return unicode("--")
+            return unicode("")
         return sequence_to_str(self.value) if isinstance(self.value, list) else unicode(self.value)
 
 
@@ -492,7 +492,7 @@ class SelectField(Field):
 
     def convert_to_unicode(self):
         if self.value is None:
-            return unicode("--")
+            return unicode("")
         return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
 
     def _get_value_by_option(self, option):
@@ -558,7 +558,7 @@ class GeoCodeField(Field):
 
     def convert_to_unicode(self):
         if self.value is None:
-            return unicode("--")
+            return unicode("")
         return ", ".join(str(b) for b in list(self.value)) if isinstance(self.value, list) or isinstance(self.value,
                                                                                                          tuple) else unicode(
             self.value)

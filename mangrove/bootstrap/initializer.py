@@ -11,15 +11,17 @@ from mangrove.form_model.form_model import get_form_model_by_code, REGISTRATION_
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 
 
-def run(manager):
-    sync_views(manager)
+def initial_data_setup(manager):
     _create_entity_types(manager, [REPORTER_ENTITY_TYPE])
-
     _delete_reg_form_if_exists(manager)
     create_default_reg_form_model(manager)
-
     _delete_entity_delete_form_if_exists(manager)
     create_default_delete_form_model(manager)
+
+
+def run(manager):
+    sync_views(manager)
+    initial_data_setup(manager)
 
 
 def _delete_reg_form_if_exists(manager):

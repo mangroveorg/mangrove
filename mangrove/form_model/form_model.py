@@ -75,6 +75,10 @@ def get_form_model_by_entity_type(dbm, entity_type):
     return None
 
 
+def get_form_code_by_entity_type(dbm, entity_type):
+    form_model = get_form_model_by_entity_type(dbm, entity_type)
+    return form_model.form_code if form_model else None
+
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
 

@@ -8,4 +8,5 @@ setup(name='mangrove',
       author_email='mangroveorg@googlegroups.com',
       url='https://github.com/mangroveorg/mangrove/',
       packages=find_packages(),
+      package_data={'mangrove.transport.xforms.templates': ['./s*.xml']},
       requires=["nose (==1.0.0)", "CouchDB (==0.8)", "coverage (==3.4)", "simplejson", "mock", "iso8601", "pytz", "xlwt"])

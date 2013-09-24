@@ -97,7 +97,7 @@ def _set_short_code(dbm, form_model, values):
 
 def _generate_short_code(dbm, entity_type):
     current_count = get_entity_count_for_type(dbm, entity_type.lower())
-    entity_type_prefix = entity_type[:3] + "%s"
+    entity_type_prefix = entity_type.lower().replace(" ", "")[:3] + "%s"
     offset = 1
     while True:
         short_code = entity_type_prefix % (current_count + offset)

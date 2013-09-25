@@ -71,4 +71,3 @@ Setting Up the development environment
     $ python manage.py runserver
 
 
-

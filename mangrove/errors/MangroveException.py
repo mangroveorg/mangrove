@@ -266,6 +266,9 @@ class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
         MangroveException.__init__(self, "Invalid Mobile Number. Only Numbers and Dash(-) allowed.")
 
+class ShortCodeRegexMismatchException(MangroveException):
+    def __init__(self, pattern):
+        MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid")
 
 class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):

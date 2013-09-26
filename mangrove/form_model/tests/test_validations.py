@@ -1,8 +1,8 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
-from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
-from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, RegexConstraint, ConstraintTypes, ConstraintAttributes, constraints_factory
+from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ShortCodeRegexMismatchException
+from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, ChoiceConstraint, GeoCodeConstraint, RegexConstraint, ConstraintTypes, ConstraintAttributes, constraints_factory, ShortCodeRegexConstraint
 from mangrove.utils.types import is_empty
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtValueTooLongError, VdtValueTooShortError, VdtTypeError
 
@@ -233,6 +233,19 @@ class TestRegexValidations(unittest.TestCase):
         constraint = RegexConstraint(reg=pattern)
         self.assertEqual(("regex", pattern), constraint._to_json())
 
+    def test_should_validate_values_within_short_code_regex(self):
+        constraint = ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")
+        self.assertEquals('shortCode', constraint.validate('shortCode1'))
+
+    def test_should_validate_values_within_short_code_regex(self):
+        constraint = ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")
+        with self.assertRaises(ShortCodeRegexMismatchException):
+            constraint.validate('shortCode#')
+
+    def test_should_return_valid_short_code_regex_json(self):
+        pattern = "^[A-Za-z0-9]+$"
+        constraint = ShortCodeRegexConstraint(reg=pattern)
+        self.assertEqual(("short_code", pattern), constraint._to_json())
 
 class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_a_constraint_dictionary(self):

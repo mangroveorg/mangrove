@@ -1,10 +1,11 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import re
-from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException
+from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ShortCodeRegexMismatchException
 from mangrove.utils.types import is_empty
 from mangrove.utils.helpers import find_index_represented
 
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
+
 
 class ConstraintTypes(object):
     REGEX = 'regex'
@@ -12,6 +13,7 @@ class ConstraintTypes(object):
     RANGE = 'range'
     LENGTH = 'length'
     GEO = 'geo'
+    SHORT_CODE = 'short_code'
 
 
 class ConstraintAttributes(object):
@@ -22,6 +24,7 @@ class ConstraintAttributes(object):
     MIN_LAT = -90
     MAX_LAT = 90
     PATTERN = '_pattern'
+
 
 class NumericRangeConstraint(object):
     def __init__(self, min=None, max=None, dict=None):
@@ -47,6 +50,7 @@ class NumericRangeConstraint(object):
         max_constraint = ". &lt;= {0}".format(self.max) if self.max else None
         return " and ".join(filter(None, [min_constraint, max_constraint]))
 
+
 class TextLengthConstraint(NumericRangeConstraint):
     def _to_json(self):
         dict = {}
@@ -64,6 +68,7 @@ class TextLengthConstraint(NumericRangeConstraint):
         max_constraint = "string-length(.) &lt;= {0}".format(self.max) if self.max else None
         return " and ".join(filter(None, [min_constraint, max_constraint]))
 
+
 class ChoiceConstraint(object):
     def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
         self.single_select_constraint = single_select_constraint
@@ -78,12 +83,12 @@ class ChoiceConstraint(object):
         choices = []
         responses = re.findall(r'[1-9]?[a-z]', answer_string)
 
-        if self.single_select_constraint and  len(responses) > 1:
+        if self.single_select_constraint and len(responses) > 1:
             raise AnswerHasTooManyValuesException(code=self.code, answer=answer)
 
         invalid_responses = re.split(r'[1-9]?[a-z]', answer_string)
         invalid_responses = filter(None, invalid_responses)
-        
+
         if len(invalid_responses) > 0:
             raise AnswerNotInListException(code=self.code, answer=invalid_responses[0])
 
@@ -102,8 +107,8 @@ class GeoCodeConstraint(object):
     def validate(self, latitude, longitude):
         latitude = latitude.strip(u'\u200e')
         longitude = longitude.strip(u'\u200e')
-        latitude=latitude.encode('ascii')
-        longitude=longitude.encode('ascii')
+        latitude = latitude.encode('ascii')
+        longitude = longitude.encode('ascii')
         try:
             lat = is_float(latitude, min=ConstraintAttributes.MIN_LAT, max=ConstraintAttributes.MAX_LAT)
         except VdtTypeError:
@@ -136,6 +141,23 @@ class RegexConstraint(object):
         return ('regex', self._pattern)
 
 
+class ShortCodeRegexConstraint(object):
+    def __init__(self, reg=None, dict=None):
+        self._pattern = dict if dict is not None else reg
+
+    def validate(self, text):
+        if re.match(self._pattern, text):
+            return text
+        raise ShortCodeRegexMismatchException(self._pattern)
+
+    @property
+    def pattern(self):
+        return self._pattern
+
+    def _to_json(self):
+        return ('short_code', self._pattern)
+
+
 def constraints_factory(constraints_json):
     constraints = []
     for constraint_type, constraint_json in constraints_json:
@@ -144,11 +166,14 @@ def constraints_factory(constraints_json):
             constraints.append(constraint_class(dict=constraint_json))
     return constraints
 
+
 constraint_for = {
     ConstraintTypes.LENGTH: TextLengthConstraint,
     ConstraintTypes.RANGE: NumericRangeConstraint,
     ConstraintTypes.SELECT: ChoiceConstraint,
     ConstraintTypes.GEO: GeoCodeConstraint,
     ConstraintTypes.REGEX: RegexConstraint,
+    ConstraintTypes.SHORT_CODE: ShortCodeRegexConstraint,
 
-    }
+
+}

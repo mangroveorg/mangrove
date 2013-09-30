@@ -1,10 +1,9 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 import unittest
-from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModelDoesNotExistsException
-from mangrove.form_model.form_model import REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE, get_form_model_by_code
-from mangrove.contrib.registration import create_default_reg_form_model, GLOBAL_REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
+from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model
-from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
+
 
 class TestRegistrationFormModel(unittest.TestCase):
     @classmethod
@@ -14,7 +13,7 @@ class TestRegistrationFormModel(unittest.TestCase):
 
 
     def test_should_create_registration_form_model(self):
-        self.assertEqual(6, len(self.form.fields))
+        self.assertEqual(7, len(self.form.fields))
         self.assertEqual(REGISTRATION_FORM_CODE, self.form.form_code)
         self.assertEqual('string', self.form.fields[3].ddtype.primitive_type)
 

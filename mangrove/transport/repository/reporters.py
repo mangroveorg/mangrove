@@ -1,5 +1,5 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-from mangrove.datastore.entity import  get_all_entities
+from mangrove.datastore.entity import  get_all_entities, Entity
 from mangrove.datastore.queries import get_entities_by_type
 
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MultipleReportersForANumberException
@@ -22,16 +22,19 @@ def find_reporter_entity(dbm, from_number):
 
 
 def find_reporters_by_from_number(dbm, from_number):
-    reporters = get_all_entities(dbm, entity_type=REPORTER_ENTITY_TYPE)
+    rows = dbm.view.datasender_by_mobile(start_key=[from_number], end_key=[from_number,{},{}], include_docs=True)
+    return [Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
 
-    def is_mobilenumber_same(reporter): return reporter.value(MOBILE_NUMBER_FIELD) == from_number
-
-
-    from_reporter_list = filter(is_mobilenumber_same, reporters)
-
-    if not len(from_reporter_list):
-        raise NumberNotRegisteredException(from_number)
-    return from_reporter_list
+    # reporters = get_all_entities(dbm, entity_type=REPORTER_ENTITY_TYPE)
+    #
+    # def is_mobilenumber_same(reporter): return reporter.value(MOBILE_NUMBER_FIELD) == from_number
+    #
+    #
+    # from_reporter_list = filter(is_mobilenumber_same, reporters)
+    #
+    # if not len(from_reporter_list):
+    #     raise NumberNotRegisteredException(from_number)
+    # return from_reporter_list
 
 
 def get_reporters_who_submitted_data_for_frequency_period(dbm, form_code, from_time=None, to_time=None):

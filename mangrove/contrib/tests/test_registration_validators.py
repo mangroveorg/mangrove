@@ -52,11 +52,14 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
         self.field2 = TextField('m', 'm', 'm', Mock(spec=DataDictType))
         self.fields = [self.field1, self.field2]
         self.dbm = Mock(spec=DatabaseManager)
-        self.patcher = patch('mangrove.transport.repository.reporters.get_all_entities')
-        self.get_all_entities_mock = self.patcher.start()
+        self.dbm.view = Mock()
+        self.dbm.view.datasender_by_mobile = Mock(return_value=[{'doc':{
+            "data":{"mobile_number":{"value":"123"}},
+            "short_code":"abc"
+        }}])
 
-    def tearDown(self):
-        self.patcher.stop()
+
+
 
     def test_should_return_error_dict_if_mobile_number_field_missing(self):
         values = dict(t='reporter')
@@ -67,12 +70,10 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
     def test_should_return_error_dict_if_mobile_number_allready_exist(self):
         entity_mock = Mock()
         entity_mock.value.return_value='123'
-        self.get_all_entities_mock.return_value = [entity_mock]
         values = dict(t='reporter', m='123')
         error_dict = self.validator.validate(values, self.fields, self.dbm)
         self.assertEqual(1, len(error_dict))
         self.assertTrue('m' in error_dict.keys())
-        self.get_all_entities_mock.assert_called_once_with(self.dbm, entity_type=[REPORTER])
 
     def test_should_create_mobile_number_mandatory_for_reporter_validator_from_json(self):
         validator_json = {
@@ -90,30 +91,24 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
     def test_should_return_error_if_mobile_number_comes_in_epsilon_format_from_excel_file(self):
         entity_mock = Mock()
         entity_mock.value.return_value='266123321435'
-        self.get_all_entities_mock.return_value = [entity_mock]
         values = dict(t='reporter', m='2.66123321435e+11')
         error_dict = self.validator.validate(values, self.fields, self.dbm)
         self.assertEqual(1, len(error_dict))
         self.assertTrue('m' in error_dict.keys())
-        self.get_all_entities_mock.assert_called_once_with(self.dbm, entity_type=[REPORTER])
 
     def test_should_return_error_if_mobile_number_has_hyphens_from_excel_file(self):
         entity_mock = Mock()
         entity_mock.value.return_value='266123321435'
-        self.get_all_entities_mock.return_value = [entity_mock]
         values = dict(t='reporter', m='266-123321435')
         error_dict = self.validator.validate(values, self.fields, self.dbm)
         self.assertEqual(1, len(error_dict))
         self.assertTrue('m' in error_dict.keys())
-        self.get_all_entities_mock.assert_called_once_with(self.dbm, entity_type=[REPORTER])
 
     def test_should_return_error_if_mobile_number_comes_as_floating_point_number_from_excel_file(self):
         entity_mock = Mock()
         entity_mock.value.return_value='266123321435'
-        self.get_all_entities_mock.return_value = [entity_mock]
         values = dict(t='reporter', m='266123321435.0')
         error_dict = self.validator.validate(values, self.fields, self.dbm)
         self.assertEqual(1, len(error_dict))
         self.assertTrue('m' in error_dict.keys())
-        self.get_all_entities_mock.assert_called_once_with(self.dbm, entity_type=[REPORTER])
 

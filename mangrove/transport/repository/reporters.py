@@ -23,6 +23,7 @@ def find_reporter_entity(dbm, from_number):
 
 def find_reporters_by_from_number(dbm, from_number):
     rows = dbm.view.datasender_by_mobile(start_key=[from_number], end_key=[from_number,{},{}], include_docs=True)
+    if (len(rows) == 0): raise NumberNotRegisteredException(from_number)
     return [Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
 
     # reporters = get_all_entities(dbm, entity_type=REPORTER_ENTITY_TYPE)

@@ -58,10 +58,10 @@ class SMSParser(object):
         form_model = get_form_model_by_code(self.dbm, form_code)
         question_codes = []
         form_fields = form_model.fields
-        if form_model.entity_type[0] == 'reporter':
-            form_fields.remove(form_fields[0])
         for aField in form_fields:
             question_codes.append(aField.code.lower())
+        if form_model.entity_type[0] == 'reporter' :
+            question_codes.remove('eid')
         return question_codes, form_model
 
 

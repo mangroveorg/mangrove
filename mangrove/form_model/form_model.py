@@ -8,6 +8,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
+from mangrove.utils.memoized import memoized
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
@@ -36,7 +37,7 @@ EMAIL_FIELD_CODE = "email"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 
-
+@memoized
 def get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
@@ -203,8 +204,17 @@ class FormModel(DataObject):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
         return entity_type.lower() if is_not_empty(entity_type) else None
 
+    def delete(self):
+        get_form_model_by_code.clear()
+        super(FormModel, self).delete()
+
+    def void(self):
+        get_form_model_by_code.clear()
+        super(FormModel, self).void()
+
     def save(self):
         # convert fields and validators to json fields before save
+        get_form_model_by_code.clear()
         if not self._is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 

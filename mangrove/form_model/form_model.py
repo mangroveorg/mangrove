@@ -37,6 +37,9 @@ GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 
 @memoized
 def get_form_model_by_code(dbm, code):
+    return _get_form_model_by_code(dbm, code)
+
+def _get_form_model_by_code(dbm, code):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(code)
     rows = dbm.load_all_rows_in_view('questionnaire', key=code)
@@ -378,7 +381,7 @@ class FormModel(DataObject):
 
     def _is_form_code_unique(self):
         try:
-            form = get_form_model_by_code(self._dbm, self.form_code)
+            form = _get_form_model_by_code(self._dbm, self.form_code)
             is_form_code_same_as_existing_form_code = True if form.id == self.id else False
             return is_form_code_same_as_existing_form_code
         except FormModelDoesNotExistsException:

@@ -3,7 +3,7 @@ from mangrove.contrib.registration_validators import MobileNumberValidationsForR
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
-from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, DESCRIPTION_FIELD_CODE, GEO_CODE_FIELD_NAME, FormModel, GEO_CODE, DESCRIPTION_FIELD, REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, GEO_CODE_FIELD_NAME, FormModel, GEO_CODE, REGISTRATION_FORM_CODE, EMAIL_FIELD
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
 
 GLOBAL_REGISTRATION_FORM_CODE = "reg"
@@ -50,8 +50,11 @@ def construct_global_registration_form(manager):
                                      defaultValue="some default value",  ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
             _create_constraints_for_mobile_number()), required=False)
+    question7 = TextField(name=EMAIL_FIELD, code=EMAIL_FIELD, label="What is the subject's email",
+                          defaultValue="", ddtype=name_type,
+                          instruction="Enter email id", constraints=[TextLengthConstraint(max=50)], required=False)
     form_model = FormModel(manager, name=GLOBAL_REGISTRATION_FORM_CODE, form_code=REGISTRATION_FORM_CODE, fields=[
-        question1, question2, question3, question4, question5, question6], is_registration_model=True, entity_type=["registration"],
+        question1, question2, question3, question4, question5, question6, question7], is_registration_model=True, entity_type=["registration"],
         validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),
                     AtLeastOneLocationFieldMustBeAnsweredValidator()])
     return form_model

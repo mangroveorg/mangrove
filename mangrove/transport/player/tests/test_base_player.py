@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from unittest.case import TestCase
 from mock import Mock,patch
 from mangrove.form_model.field import HierarchyField

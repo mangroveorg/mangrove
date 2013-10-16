@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.datastore.entity import get_by_short_code_include_voided
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, GEO_CODE_FIELD_NAME
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE

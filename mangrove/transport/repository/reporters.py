@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.datastore.entity import  get_all_entities, Entity
 from mangrove.datastore.queries import get_entities_by_type
 

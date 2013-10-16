@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.datastore.entity import get_by_short_code
 from mangrove.form_model.field import HierarchyField, TextField

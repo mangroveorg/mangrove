@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 import unittest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import Entity

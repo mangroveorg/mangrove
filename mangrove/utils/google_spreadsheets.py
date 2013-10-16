@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 # Note: I tried installing gdata using pip, but it didn't work for me
 # out of the box. I ended up using apt-get install python-gdata and
 # everything worked smoothly.

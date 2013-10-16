@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 
 """ Module to deal with entity types.
 for example Clinic, Hospital, Waterpoints, School etc are entity types

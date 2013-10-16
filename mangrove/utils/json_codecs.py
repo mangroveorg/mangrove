@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 
 from dates import js_datestring_to_py_datetime, py_datetime_to_js_datestring
 from types import is_sequence

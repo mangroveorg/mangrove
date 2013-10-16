@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from copy import copy
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.datastore.database import DataObject

@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from _collections import defaultdict
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty

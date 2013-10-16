@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 import unittest
 from mangrove.datastore.datadict import create_datadict_type, get_datadict_type_by_slug, get_datadict_type
 from mangrove.errors.MangroveException import  DataObjectNotFound

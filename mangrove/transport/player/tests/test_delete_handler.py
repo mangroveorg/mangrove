@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from collections import OrderedDict
 from unittest import TestCase
 from mock import Mock, patch

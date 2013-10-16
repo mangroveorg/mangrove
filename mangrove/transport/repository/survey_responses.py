@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.transport.contract.survey_response import SurveyResponse
 

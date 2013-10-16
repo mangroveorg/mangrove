@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from collections import OrderedDict
 from datetime import *
 from mangrove.form_model.validator_factory import validator_factory

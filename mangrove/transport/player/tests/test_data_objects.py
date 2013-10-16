@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 import unittest
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.contract.request import Request

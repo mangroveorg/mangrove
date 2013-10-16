@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from collections import OrderedDict
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.utils.types import is_empty

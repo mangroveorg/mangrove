@@ -1,4 +1,4 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
+
 from mangrove.contrib.delete_validators import EntityShouldExistValidator
 from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.validator_types import ValidatorTypes

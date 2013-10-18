@@ -67,7 +67,9 @@ def list_form_models_by_code(dbm, codes):
 def header_fields(form_model, key_attribute="name", ref_header_dict=None):
     header_dict = ref_header_dict or OrderedDict()
     for field in form_model.fields:
-        header_dict.update({field.__getattribute__(key_attribute): field.label})
+        key = field.__getattribute__(key_attribute) if type(key_attribute) == str else key_attribute(field)
+        if not header_dict.get(key):
+            header_dict.update({key: field.label})
     return header_dict
 
 def get_form_model_by_entity_type(dbm, entity_type):

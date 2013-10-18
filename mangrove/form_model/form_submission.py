@@ -3,7 +3,8 @@ from collections import OrderedDict
 from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FIELD_NAME, GEO_CODE, ENTITY_TYPE_FIELD_CODE, REGISTRATION_FORM_CODE
 from mangrove.form_model.location import Location
 from mangrove.datastore import entity
-from mangrove.utils.types import  is_empty, is_not_empty
+from mangrove.utils.types import is_empty, is_not_empty
+
 
 class FormSubmission(object):
     def __init__(self, form_model, form_answers, errors=None, location_tree=None):
@@ -45,7 +46,11 @@ class FormSubmission(object):
         return self.save_new(dbm)
 
     def update(self, dbm):
-        return self._save_data(self.get_entity(dbm))
+        location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
+            self.cleaned_data)
+        entity = self.get_entity(dbm)
+        entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
+        return self._save_data(entity)
 
     def _contains_geo_code(self, item):
         item_ = item[0]
@@ -61,7 +66,7 @@ class FormSubmission(object):
     def _save_data(self, entity):
         submission_information = dict(form_code=self.form_code)
         self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),
-            submission=submission_information)
+                                              submission=submission_information)
         return self.data_record_id
 
     def _to_three_tuple(self):
@@ -84,9 +89,9 @@ class FormSubmission(object):
             self.cleaned_data)
 
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
-            location=location_hierarchy,
-            short_code=self.short_code,
-            geometry=processed_geometry)
+                                    location=location_hierarchy,
+                                    short_code=self.short_code,
+                                    geometry=processed_geometry)
 
     def get_entity(self, dbm):
         return entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)

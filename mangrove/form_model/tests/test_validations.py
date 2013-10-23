@@ -1,4 +1,4 @@
-
+# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import unittest
 from mangrove.errors.MangroveException import AnswerHasTooManyValuesException, AnswerHasNoValuesException, AnswerNotInListException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ShortCodeRegexMismatchException

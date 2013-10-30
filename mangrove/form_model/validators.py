@@ -9,6 +9,19 @@ def case_insensitive_lookup(values, code):
             return values[fieldcode]
     return None
 
+
+class MobileNumberValidationsForReporterRegistrationValidator(object):
+
+     def validate(self,values,fields, dbm=None): #no-op - get rid off once all usage is deleted
+        errors = OrderedDict()
+        return errors
+
+class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
+
+     def validate(self,values,fields, dbm=None): #no-op - get rid off once all usage is deleted
+        errors = OrderedDict()
+        return errors
+
 class MandatoryValidator(object):
 
     def get_mandatory_fields(self, fields):

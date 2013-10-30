@@ -319,7 +319,7 @@ class FormModelTest(MangroveTestCase):
             validators=[MandatoryValidator()])
         form.save()
         form = get_form_model_by_code(self.manager, 'foo')
-        self.assertEqual(2, len(form.validators))
+        self.assertEqual(1, len(form.validators))
         self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
 
     def test_should_batch_get_form_models(self):

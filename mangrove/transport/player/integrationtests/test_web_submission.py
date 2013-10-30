@@ -198,27 +198,11 @@ class TestWEBSubmission(MangroveTestCase):
         with self.assertRaises(DataObjectAlreadyExists):
             self.send_request_to_web_player(text)
 
-    def test_should_throw_error_if_reporter_with_same_phone_number_exists(self):
-        text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80', 'm':'12345'}
-        response = self.send_request_to_web_player(text)
-        self.assertTrue(response.success)
-
-        text = {'form_code':'reg', 'n':'buddy2', 't': 'reporter', 'g':'80 80', 'm':'12345'}
-        response = self.send_request_to_web_player(text)
-        self.assertFalse(response.success)
-        self.assertTrue('m' in response.errors)
-
     def test_should_throw_error_if_mobile_phone_is_too_long(self):
         text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80', 'm':'1234534673498723909872373267'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertTrue("Answer 1234534673498723925129953280 for question m is longer than allowed.", response.errors.get('m'))
-
-    def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):
-        text = {'form_code':'reg', 'n':'buddy', 't': 'reporter', 'g':'80 80'}
-        response = self.send_request_to_web_player(text)
-        self.assertFalse(response.success)
-        self.assertTrue(MOBILE_NUMBER_FIELD_CODE in response.errors)
 
     def test_should_throw_error_if_entityType_doesnt_exist(self):
         with self.assertRaises(EntityTypeDoesNotExistsException):

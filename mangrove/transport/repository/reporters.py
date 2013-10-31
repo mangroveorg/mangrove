@@ -26,6 +26,17 @@ def find_reporters_by_from_number(dbm, from_number):
     if (len(rows) == 0): raise NumberNotRegisteredException(from_number)
     return [Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
 
+    # reporters = get_all_entities(dbm, entity_type=REPORTER_ENTITY_TYPE)
+    #
+    # def is_mobilenumber_same(reporter): return reporter.value(MOBILE_NUMBER_FIELD) == from_number
+    #
+    #
+    # from_reporter_list = filter(is_mobilenumber_same, reporters)
+    #
+    # if not len(from_reporter_list):
+    #     raise NumberNotRegisteredException(from_number)
+    # return from_reporter_list
+
 
 def get_reporters_who_submitted_data_for_frequency_period(dbm, form_code, from_time=None, to_time=None):
     survey_responses = get_survey_responses_for_activity_period(dbm, form_code, from_time, to_time)
@@ -33,8 +44,3 @@ def get_reporters_who_submitted_data_for_frequency_period(dbm, form_code, from_t
     all_reporters = get_entities_by_type(dbm, 'reporter')
     reporters = [reporter for reporter in all_reporters if reporter.id in source_owner_uids]
     return reporters
-
-def is_datasender_with_mobile_number_present(dbm, mobile_number):
-        rows = dbm.view.datasender_by_mobile(start_key=[mobile_number], end_key=[mobile_number, {}, {}],
-                                                  include_docs=False)
-        return True if len(rows) > 0 else False

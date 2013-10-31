@@ -1,6 +1,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from datetime import *
 from mangrove.form_model.form_model import get_form_model_by_entity_type, list_form_models_by_code
+from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
 
@@ -316,21 +317,22 @@ class FormModelTest(MangroveTestCase):
     def test_should_save_form_model_with_validators(self):
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'foo', fields=fields, entity_type=['Clinic'],
-            validators=[MandatoryValidator()])
+            validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
         form = get_form_model_by_code(self.manager, 'foo')
         self.assertEqual(2, len(form.validators))
         self.assertTrue(isinstance(form.validators[0], MandatoryValidator))
+        self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
 
     def test_should_batch_get_form_models(self):
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code1', fields=fields, entity_type=['Clinic'],
-            validators=[MandatoryValidator()])
+            validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
 
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code2', fields=fields, entity_type=['Clinic'],
-            validators=[MandatoryValidator()])
+            validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
 
         forms = list_form_models_by_code(self.manager, ['form_code1', 'form_code2'])

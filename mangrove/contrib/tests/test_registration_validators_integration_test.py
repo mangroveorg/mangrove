@@ -2,12 +2,9 @@
 import datetime
 import unittest
 from pytz import UTC
-from mangrove.contrib.registration_validators import EmailFieldValidatorForReporter
 from mangrove.datastore.entity import void_entity
 from mangrove.datastore.datadict import DataDictType
 from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
-from mangrove.errors.error_codes import EMAIL_FIELD_MANDATORY
-from mangrove.form_model.field import Field
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model, safe_define_type, ut_reporter_id, safe_delete_reporter_by_phone
 from mangrove.datastore.entity import create_entity
 from mangrove.form_model.form_model import REPORTER

@@ -132,7 +132,6 @@ class field_attributes(object):
     NAME = "name"
     LIST_FIELD = "list"
 
-email_regex = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
 
 class Field(object):
     def __init__(self, type="", name="", code="", label='', ddtype=None, instruction='',

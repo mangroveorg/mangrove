@@ -1,6 +1,0 @@
-EMAIL_NOT_UNIQUE = 'email_not_unique'
-INVALID_EMAIL = 'invalid_email'
-EMPTY_MOBILE_NUMBER = 'empty_mobile_number'
-DUPLICATE_MOBILE_NUMBER = 'duplicate_mobile_number'
-MANDATORY_FIELD_REQUIRED = 'field_required'
-ATLEAST_SINGLE_LOCATION_ENTRY_SHOULD_BE_PRESENT = 'atleast_single_location_entry_should_be_present'

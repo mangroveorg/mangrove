@@ -1,7 +1,6 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 from collections import OrderedDict
 from datetime import *
-from mangrove.errors.errors import Error
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes

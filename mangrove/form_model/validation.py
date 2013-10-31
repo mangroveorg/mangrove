@@ -124,7 +124,7 @@ class GeoCodeConstraint(object):
         return lat, long
 
 
-class RegexConstraint(object):
+class RegexConstraint():
     def __init__(self, reg=None, dict=None):
         self._pattern = dict if dict is not None else reg
 
@@ -174,6 +174,4 @@ constraint_for = {
     ConstraintTypes.GEO: GeoCodeConstraint,
     ConstraintTypes.REGEX: RegexConstraint,
     ConstraintTypes.SHORT_CODE: ShortCodeRegexConstraint,
-
-
 }

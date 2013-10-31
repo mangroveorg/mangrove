@@ -56,6 +56,7 @@ class EntityQuestionAlreadyExistsException(MangroveException):
 class QuestionAlreadyExistsException(MangroveException):
     pass
 
+
 class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 
@@ -68,14 +69,14 @@ class NoQuestionsSubmittedException(MangroveException):
 class NumberNotRegisteredException(MangroveException):
     def __init__(self, from_number):
         MangroveException.__init__(self, (u"Sorry, this number %s is not registered with us.") % (from_number,),
-            (from_number,))
+                                   (from_number,))
 
 
 class MultipleReportersForANumberException(MangroveException):
     def __init__(self, from_number):
         MangroveException.__init__(self,
                                    (u"Sorry, the telephone number %s has already been registered") % (from_number,),
-            (from_number,))
+                                   (from_number,))
 
 
 class MultipleSubmissionsForSameCodeException(MangroveException):
@@ -89,7 +90,7 @@ class EntityTypeDoesNotExistsException(MangroveException):
         entity_type_short_name = entity_type[-1]
         MangroveException.__init__(self,
                                    (u"Entity type %s doesnt exist.") % (entity_type_full_name,),
-            (entity_type_short_name,))
+                                   (entity_type_short_name,))
 
 
 class InvalidAnswerSubmissionException(MangroveException):
@@ -156,7 +157,7 @@ class AnswerWrongType(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is of the wrong type.") % (answer, code,)
-                                                  , code, (answer,))
+            , code, (answer,))
 
 
 class IncorrectDate(InvalidAnswerSubmissionException):
@@ -190,12 +191,14 @@ class ShortCodeTooLongException(MangroveException):
 
 class LatitudeNotFloat(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, (u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(lat,))
+        MangroveException.__init__(self, (
+        u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(lat,))
 
 
 class LongitudeNotFloat(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, (u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(long,))
+        MangroveException.__init__(self, (
+        u'Answer must be in the following format: xx.xxxx yy.yyyy Example: -18.1324 27.6547'), data=(long,))
 
 
 class LongitudeNotInRange(MangroveException):
@@ -214,7 +217,7 @@ class GeoCodeFormatException(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self,
                                    u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315"
-                                   , (data,))
+            , (data,))
 
 
 class FailedToSaveDataObject(MangroveException):
@@ -225,10 +228,12 @@ class FailedToSaveDataObject(MangroveException):
 class SMSParserInvalidFormatException(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data, (data,))
-        
+
+
 class SMSParserWrongNumberOfAnswersException(MangroveException):
     def __init__(self, form_code):
         MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (form_code, ))
+
 
 class CSVParserInvalidHeaderFormatException(MangroveException):
     def __init__(self):
@@ -266,29 +271,36 @@ class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
         MangroveException.__init__(self, "Invalid Mobile Number. Only Numbers and Dash(-) allowed.")
 
+
 class ShortCodeRegexMismatchException(MangroveException):
     def __init__(self, pattern):
         MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid")
+
 
 class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):
         MangroveException.__init__(self, "Unknown constraint type: %s" % (name,))
 
+
 class RequiredFieldNotPresentException(MangroveException):
     def __init__(self, code):
         MangroveException.__init__(self, "Mandatory Field with code: %s is not present" % (code,))
+
 
 class LocationFieldNotPresentException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, "Please fill out atleast one location field")
 
+
 class AccountExpiredException(MangroveException):
-    def __init__(self, message = "Trial account has been expired!"):
+    def __init__(self, message="Trial account has been expired!"):
         MangroveException.__init__(self, message)
+
 
 class DeleteRequestParserInvalidFormatException(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self, u"Could not parse, invalid format: %s" % data, (data,))
+
 
 class DeleteRequestParserWrongNumberOfAnswersException(MangroveException):
     def __init__(self, message):

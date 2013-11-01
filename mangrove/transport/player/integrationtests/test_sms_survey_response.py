@@ -137,7 +137,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         self.send_sms(text)
         survey_responses = get_survey_responses(self.manager, "clinic", 0, self._tomorrow())
         self.assertEquals(1, len(survey_responses))
-        self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", survey_responses[0].errors)
+        self.assertEquals(u"Answer 150 for question Arv stock is greater than allowed.", survey_responses[0].errors)
 
     def test_get_survey_responses_for_form_for_an_activity_period(self):
         self.manager._save_document(SurveyResponseDocument(channel="transport",

@@ -117,18 +117,18 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer 150 for question ARV is greater than allowed.',response.errors.get('q3'))
+        self.assertEqual(u'Answer 150 for question Arv stock is greater than allowed.',response.errors.get('q3'))
 
     def test_should_give_error_for_wrong_text_value(self):
         text = {'form_code': 'clinic', 'EID': 'CID001', 'NAME': 'ABC'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('q2'))
+        self.assertEqual(u'Answer ABC for question Name is shorter than allowed.',response.errors.get('q2'))
 
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
-        text = {'form_code':'reg', 't': 'dog', 'n': 'Clinic in Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
+        text = {'form_code':'reg', 't': 'dog', 'n': 'Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
@@ -239,7 +239,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals(["dog"], actual_type) 
 
     def test_should_accept_unicode_submissions_and_able_to_invalidate_wrong_GPS(self):
-        text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'080'}
+        text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'08045'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEquals(u'The answer 480 must be between -90 and 90', response.errors.get('q5'))
@@ -265,7 +265,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertTrue(submission_log.test)
 
     def test_should_register_entity_with_geo_code(self):
-        text = {'form_code':'reg', 'n':'Dog in Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
+        text = {'form_code':'reg', 'n':'Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)

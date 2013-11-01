@@ -28,7 +28,6 @@ class TestRegistrationFormModel(unittest.TestCase):
     def test_form_submission_should_be_invalid_if_no_location_field_provided_while_registering_an_entity(self):
         answers = {"s": "1", "t": "Reporter", "m": "1212121212"}
         cleaned_data, errors = self.form.validate_submission(answers)
-        self.assertTrue('l' in errors)
         self.assertTrue('g' in errors)
 
 if __name__ == '__main__':

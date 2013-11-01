@@ -50,14 +50,14 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q2": "200"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'q3': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
+        self.assertEqual({'q3': "Answer 200 for question Father's age is greater than allowed."}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
         
     def test_should_return_error_if_exceeding_value_of_the_word_field_limit(self):
         answers = {"id": "1", "Q1": "TextThatLongerThanAllowed"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'q2': 'Answer TextThatLongerThanAllowed for question Q1 is longer than allowed.'}, errors)
+        self.assertEqual({'q2': 'Answer TextThatLongerThanAllowed for question question1_Name is longer than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
         
     def test_should_return_error_if_answering_with_invalid_geo_format(self):
@@ -91,8 +91,8 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q1": "Asif", "q2": "200", "q3": "a"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
-        self.assertEqual({'q2': 'Answer Asif for question Q1 is shorter than allowed.',
-                          'q3': 'Answer 200 for question Q2 is greater than allowed.'}, errors)
+        self.assertEqual({'q2': 'Answer Asif for question question1_Name is shorter than allowed.',
+                          'q3': "Answer 200 for question Father's age is greater than allowed."}, errors)
         self.assertEqual(OrderedDict([('Q3', ['RED']), ('ID', '1')]), cleaned_answers)
 
     def test_should_strip_whitespaces(self):
@@ -167,9 +167,9 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q1": "ab", "q2": "200"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
-        self.assertEqual(['Answer 200 for question Q2 is greater than allowed.'], self.form_model._get_field_by_code(
+        self.assertEqual(["Answer 200 for question Father's age is greater than allowed."], self.form_model._get_field_by_code(
             "q2").errors)
-        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'], self.form_model._get_field_by_code(
+        self.assertEqual(['Answer ab for question question1_Name is shorter than allowed.'], self.form_model._get_field_by_code(
             "q1").errors)
 
     def test_should_not_set_error_if_validation_success(self):

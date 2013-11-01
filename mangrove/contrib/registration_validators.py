@@ -4,17 +4,17 @@ from mangrove.data_cleaner import TelephoneNumber
 from mangrove.errors.MangroveException import NumberNotRegisteredException
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.utils.types import is_empty
-from mangrove.validate import is_float
+
 
 class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
     def validate(self, values, fields=None, dbm=None):
         from mangrove.form_model.form_model import GEO_CODE, LOCATION_TYPE_FIELD_CODE
 
         if is_empty(case_insensitive_lookup(values, GEO_CODE)) and is_empty(
-            case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
+                case_insensitive_lookup(values, LOCATION_TYPE_FIELD_CODE)):
             errors = OrderedDict()
             errors[GEO_CODE] = 'Please fill out at least one location field correctly.'
-            errors[LOCATION_TYPE_FIELD_CODE] = 'Please fill out at least one location field correctly.'
+            #errors[LOCATION_TYPE_FIELD_CODE] = 'Please fill out at least one location field correctly.'
             return errors
         return OrderedDict()
 
@@ -26,8 +26,8 @@ class AtLeastOneLocationFieldMustBeAnsweredValidator(object):
             return True
         return False
 
-class MobileNumberValidationsForReporterRegistrationValidator(object):
 
+class MobileNumberValidationsForReporterRegistrationValidator(object):
     def validate(self, values, fields, dbm):
         from mangrove.form_model.form_model import REPORTER, MOBILE_NUMBER_FIELD_CODE, ENTITY_TYPE_FIELD_CODE, SHORT_CODE
 
@@ -37,9 +37,10 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
         if case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE) == REPORTER:
             phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
-               errors[field_code] = u'Mobile number is missing'
+                errors[field_code] = u'Mobile number is missing.'
             elif not self._is_phone_number_unique(dbm, phone_number, case_insensitive_lookup(values, SHORT_CODE)):
-                errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered' % (phone_number,)
+                errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered.' % (
+                phone_number,)
 
         return errors
 
@@ -53,6 +54,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
 
     def _is_phone_number_unique(self, dbm, phone_number, reporter_id):
         from mangrove.transport.repository.reporters import find_reporters_by_from_number
+
         try:
             registered_reporters = find_reporters_by_from_number(dbm, self._clean(phone_number))
         except NumberNotRegisteredException:

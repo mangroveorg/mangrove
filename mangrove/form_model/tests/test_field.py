@@ -400,7 +400,7 @@ class TestField(unittest.TestCase):
                                  constraints=[NumericRangeConstraint(min=15, max=120)],
                                  ddtype=self.ddtype)
             field.validate("asas")
-        self.assertEqual(e.exception.message, "Answer asas for question Q2 is of the wrong type.")
+        self.assertEqual(e.exception.message, "Answer asas for question Age is of the wrong type.")
 
     def test_should_return_error_for_integer_range_validation_for_max_value(self):
         with self.assertRaises(AnswerTooBigException) as e:
@@ -409,7 +409,7 @@ class TestField(unittest.TestCase):
                                  ddtype=self.ddtype)
             valid_value = field.validate(150)
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer 150 for question Q2 is greater than allowed.")
+        self.assertEqual(e.exception.message, "Answer 150 for question Age is greater than allowed.")
 
     def test_should_return_error_for_integer_range_validation_for_min_value(self):
         with self.assertRaises(AnswerTooSmallException) as e:
@@ -418,7 +418,7 @@ class TestField(unittest.TestCase):
                                  ddtype=self.ddtype)
             valid_value = field.validate(11)
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer 11 for question Q2 is smaller than allowed.")
+        self.assertEqual(e.exception.message, "Answer 11 for question Age is smaller than allowed.")
 
     def test_successful_text_length_validation(self):
         field = TextField(name="Name", code="Q2", label="What is your Name",
@@ -436,7 +436,7 @@ class TestField(unittest.TestCase):
                               constraints=[TextLengthConstraint(min=1, max=4)], ddtype=self.ddtype)
             valid_value = field.validate("long_answer")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer long_answer for question Q2 is longer than allowed.")
+        self.assertEqual(e.exception.message, "Answer long_answer for question Age is longer than allowed.")
 
     def test_should_return_error_for_text_length_validation_for_min_value(self):
         with self.assertRaises(AnswerTooShortException) as e:
@@ -444,7 +444,7 @@ class TestField(unittest.TestCase):
                               constraints=[TextLengthConstraint(min=15, max=120)], ddtype=self.ddtype)
             valid_value = field.validate("short")
             self.assertFalse(valid_value)
-        self.assertEqual(e.exception.message, "Answer short for question Q2 is shorter than allowed.")
+        self.assertEqual(e.exception.message, "Answer short for question Age is shorter than allowed.")
 
     def test_should_create_date_field(self):
         self.ddtype_module.create_from_json.return_value = self.ddtype

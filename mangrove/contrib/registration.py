@@ -4,7 +4,7 @@ from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
 from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, GEO_CODE_FIELD_NAME, FormModel, GEO_CODE, REGISTRATION_FORM_CODE, EMAIL_FIELD
-from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint
+from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint, ShortCodeRegexConstraint
 
 GLOBAL_REGISTRATION_FORM_CODE = "reg"
 
@@ -16,7 +16,7 @@ def create_default_reg_form_model(manager):
 
 def _create_constraints_for_mobile_number():
     #constraints on questionnaire
-    mobile_number_length = TextLengthConstraint(max=15)
+    mobile_number_length = TextLengthConstraint(max=15, min=5)
     mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
     mobile_constraints = [mobile_number_length, mobile_number_pattern]
     return mobile_constraints
@@ -35,11 +35,11 @@ def construct_global_registration_form(manager):
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
                           defaultValue="some default value",  ddtype=name_type,
-                          instruction="Enter a subject name")
+                          instruction="Enter a subject name", constraints=[TextLengthConstraint(max=20)], required=True)
     question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",
-                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12)], required=False)
+                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12), ShortCodeRegexConstraint(reg='^[a-zA-Z0-9]+$')], required=False)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?",
                                 ddtype=location_type, instruction="Enter a region, district, or commune", required=False)

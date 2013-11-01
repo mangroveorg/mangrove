@@ -255,11 +255,11 @@ class IntegerField(Field):
             except Exception:
                 return float(value)
         except VdtValueTooBigError:
-            raise AnswerTooBigException(self._dict[field_attributes.FIELD_CODE], value)
+            raise AnswerTooBigException(self._dict[field_attributes.NAME], value)
         except VdtValueTooSmallError:
-            raise AnswerTooSmallException(self._dict[field_attributes.FIELD_CODE], value)
+            raise AnswerTooSmallException(self._dict[field_attributes.NAME], value)
         except VdtTypeError:
-            raise AnswerWrongType(self._dict[field_attributes.FIELD_CODE], value)
+            raise AnswerWrongType(self._dict[field_attributes.NAME], value)
 
     def get_constraint_text(self):
         max, min = self._get_max_min()
@@ -379,10 +379,10 @@ class TextField(Field):
             for constraint in self.constraints:
                 constraint.validate(value)
             return value
-        except VdtValueTooLongError:
-            raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value)
-        except VdtValueTooShortError:
-            raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE], value)
+        except VdtValueTooLongError as valueTooLongError:
+            raise AnswerTooLongException(self._dict[field_attributes.NAME], value, valueTooLongError.args[1])
+        except VdtValueTooShortError as valueTooShortError:
+            raise AnswerTooShortException(self._dict[field_attributes.NAME], value, valueTooShortError.args[1])
 
     @property
     def is_entity_field(self):

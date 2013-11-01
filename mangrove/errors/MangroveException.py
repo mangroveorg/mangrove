@@ -117,14 +117,14 @@ class AnswerTooSmallException(InvalidAnswerSubmissionException):
 
 
 class AnswerTooLongException(InvalidAnswerSubmissionException):
-    def __init__(self, code, answer):
+    def __init__(self, code, answer, max_length):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is longer than allowed.") % (
                                                       answer, code,), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
-    def __init__(self, code, answer):
+    def __init__(self, code, answer, min_length):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is shorter than allowed.") % (
                                                       answer, code,), code, (answer,))

@@ -119,15 +119,15 @@ class AnswerTooSmallException(InvalidAnswerSubmissionException):
 class AnswerTooLongException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, max_length):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  (u"Answer %s for question %s is longer than allowed.") % (
-                                                      answer, code,), code, (answer,))
+                                                  (u"Answer %s for question %s is longer than allowed. Maximum allowed length is %s.") % (
+                                                      answer, code, max_length), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer, min_length):
         InvalidAnswerSubmissionException.__init__(self,
-                                                  (u"Answer %s for question %s is shorter than allowed.") % (
-                                                      answer, code,), code, (answer,))
+                                                  (u"Answer %s for question %s is shorter than allowed. Minimum allowed length is %s.") % (
+                                                      answer, code, min_length), code, (answer,))
 
 
 class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):

@@ -37,7 +37,7 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
         if case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE) == REPORTER:
             phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
             if is_empty(phone_number):
-                errors[field_code] = u'Mobile number is missing.'
+                errors[field_code] = u'Mobile number is required.'
             elif not self._is_phone_number_unique(dbm, phone_number, case_insensitive_lookup(values, SHORT_CODE)):
                 errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered.' % (
                 phone_number,)

@@ -49,7 +49,7 @@ def construct_global_registration_form(manager):
                                      label="What is the mobile number associated with the subject?",
                                      defaultValue="some default value",  ddtype=mobile_number_type,
                                      instruction="Enter the subject's number", constraints=(
-            _create_constraints_for_mobile_number()), required=False)
+            _create_constraints_for_mobile_number()), required=True)
     question7 = TextField(name=EMAIL_FIELD, code=EMAIL_FIELD, label="What is the subject's email",
                           defaultValue="", ddtype=name_type,
                           instruction="Enter email id", constraints=[TextLengthConstraint(max=50)], required=False)

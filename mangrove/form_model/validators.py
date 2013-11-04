@@ -20,7 +20,7 @@ class MandatoryValidator(object):
         mandatory_fields = self.get_mandatory_fields(fields)
         for field in mandatory_fields:
             if is_empty(case_insensitive_lookup(values, field.code)):
-                errors[field.code] = "Answer for question " + str(field.name) + " is required"
+                errors[field.code] = "Answer for question %s is required." % str(field.name)
         return errors
 
     def to_json(self):

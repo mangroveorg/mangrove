@@ -2,7 +2,7 @@
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator, AtLeastOneLocationFieldMustBeAnsweredValidator
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.datastore.datadict import get_or_create_data_dict
-from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField
+from mangrove.form_model.field import HierarchyField, TextField, TelephoneNumberField, GeoCodeField, ShortCodeField
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, NAME_FIELD, NAME_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE, GEO_CODE_FIELD_NAME, FormModel, GEO_CODE, REGISTRATION_FORM_CODE, EMAIL_FIELD
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint, ShortCodeRegexConstraint
 
@@ -36,7 +36,7 @@ def construct_global_registration_form(manager):
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
                           defaultValue="some default value",  ddtype=name_type,
                           instruction="Enter a subject name", constraints=[TextLengthConstraint(max=20)], required=True)
-    question3 = TextField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
+    question3 = ShortCodeField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",
                           entity_question_flag=True, constraints=[TextLengthConstraint(max=12), ShortCodeRegexConstraint(reg='^[a-zA-Z0-9]+$')], required=False)

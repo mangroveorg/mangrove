@@ -57,15 +57,6 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
             "short_code":"abc"
         }}])
 
-
-
-
-    def test_should_return_error_dict_if_mobile_number_field_missing(self):
-        values = dict(t='reporter')
-        error_dict = self.validator.validate(values, self.fields, self.dbm)
-        self.assertEqual(1, len(error_dict))
-        self.assertTrue('m' in error_dict.keys())
-
     def test_should_return_error_dict_if_mobile_number_allready_exist(self):
         entity_mock = Mock()
         entity_mock.value.return_value='123'

@@ -124,7 +124,7 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer ABC for question Name is shorter than allowed.',response.errors.get('q2'))
+        self.assertEqual(u'Answer ABC for question Name is shorter than allowed. Minimum allowed length is 4.',response.errors.get('q2'))
 
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
@@ -177,7 +177,7 @@ class TestWEBSubmission(MangroveTestCase):
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="web", source="tester150411@gmail.com", destination="")
-        text = {'form_code':'reg', 'n':'buddy', 's':'bud', 't': 'dog', 'g':'1 1'}
+        text = {'form_code':'reg', 'n':'buddy', 's':'bud', 't': 'dog', 'g':'1 1', 'm': '12345'}
         response = self.send_request_to_web_player(text)
         submission_log = Submission.get(self.manager, response.submission_id)
         self.assertIsInstance(submission_log, Submission)
@@ -186,7 +186,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertTrue(submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1', 'm': '12345'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 

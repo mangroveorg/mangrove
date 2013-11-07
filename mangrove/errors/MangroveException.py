@@ -268,7 +268,7 @@ class RegexMismatchException(MangroveException):
 
 class ShortCodeRegexMismatchException(MangroveException):
     def __init__(self, pattern):
-        MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid")
+        MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid.")
 
 class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):

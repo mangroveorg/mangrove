@@ -171,7 +171,7 @@ class TestSurveyResponseService(TestCase):
                                                                         survey_response)
                     self.assertFalse(response.success)
                     self.assertEquals('aids', response.form_code)
-                    self.assertEquals(OrderedDict([('q2', u'Answer 200 for question question1_Name is greater than allowed.')]),
+                    self.assertEquals(OrderedDict([('q2', u'Answer 200 for question q2 is greater than allowed.')]),
                                       response.errors)
                     self.assertEquals(['clinic'], response.entity_type)
                     self.assertEquals(OrderedDict([('q1', 'a1')]), response.processed_data)

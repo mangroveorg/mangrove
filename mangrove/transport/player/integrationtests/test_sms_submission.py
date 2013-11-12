@@ -227,14 +227,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'The answer 380 must be between -90 and 90'}, response.errors)
+        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg .N buddy2 .T dog .G 80 %s .D its another dog! .M 78541" % (INVALID_LONGITUDE,)
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'The answer -184 must be between -180 and 180'}, response.errors)
+        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
 
     def test_should_log_submission_for_entity_registration(self):
         reporter_short_code = "dog" + str(int(random.random()*100000))

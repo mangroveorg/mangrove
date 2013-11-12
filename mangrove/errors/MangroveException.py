@@ -200,8 +200,7 @@ class LongitudeNotFloat(MangroveException):
 
 class LongitudeNotInRange(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, (u'The answer %s must be between -180 and 180') %
-                                         (long,), data=(long,))
+        MangroveException.__init__(self, (u'Invalid GPS value.'), data=(long,))
 
 
 class LatitudeNotInRange(MangroveException):

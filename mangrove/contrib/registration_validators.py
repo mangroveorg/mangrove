@@ -32,12 +32,11 @@ class MobileNumberValidationsForReporterRegistrationValidator(object):
         from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD_CODE, SHORT_CODE
 
         errors = OrderedDict()
-        field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
+        #field_code = [field.code for field in fields if field.code == MOBILE_NUMBER_FIELD_CODE][0]
 
         phone_number = case_insensitive_lookup(values, MOBILE_NUMBER_FIELD_CODE)
         if not is_empty(phone_number) and not self._is_phone_number_unique(dbm, phone_number, case_insensitive_lookup(values, SHORT_CODE)):
-            errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered.' % (
-            phone_number,)
+            errors[MOBILE_NUMBER_FIELD_CODE] = u'Sorry, the telephone number %s has already been registered.' % (phone_number,)
 
         return errors
 

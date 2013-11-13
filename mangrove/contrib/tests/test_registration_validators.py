@@ -26,8 +26,7 @@ class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
     def test_should_return_error_dict_if_mobile_number_field_missing(self):
         values = dict(a='test2', b='reporter')
         error_dict = self.validator.validate(values, self.fields)
-        self.assertEqual(2, len(error_dict))
-        self.assertTrue(LOCATION_TYPE_FIELD_CODE in error_dict)
+        self.assertEqual(1, len(error_dict))
         self.assertTrue(GEO_CODE in error_dict)
 
     def test_should_create_mobile_number_mandatory_for_reporter_validator_from_json(self):
@@ -57,15 +56,6 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
             "data":{"mobile_number":{"value":"123"}},
             "short_code":"abc"
         }}])
-
-
-
-
-    def test_should_return_error_dict_if_mobile_number_field_missing(self):
-        values = dict(t='reporter')
-        error_dict = self.validator.validate(values, self.fields, self.dbm)
-        self.assertEqual(1, len(error_dict))
-        self.assertTrue('m' in error_dict.keys())
 
     def test_should_return_error_dict_if_mobile_number_allready_exist(self):
         entity_mock = Mock()

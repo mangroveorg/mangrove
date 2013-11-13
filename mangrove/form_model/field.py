@@ -41,6 +41,8 @@ def create_question_from(dictionary, dbm):
         return _get_list_field(name, code, label, ddtype, instruction, required)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
         return _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required)
+    elif type == field_attributes.SHORT_CODE_FIELD:
+        return _get_short_code_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required)
     return None
 
 
@@ -51,6 +53,15 @@ def _get_text_field(code, ddtype, dictionary, is_entity_question, label, name, i
     field = TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                       constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
     return field
+
+def _get_short_code_field(code, ddtype, dictionary, is_entity_question, label, name, instruction, required):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+    field = ShortCodeField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+                      constraints=constraints, ddtype=ddtype, instruction=instruction, required=required)
+    return field
+
 
 
 def _get_telephone_number_field(code, ddtype, dictionary, label, name, instruction, required):
@@ -122,6 +133,7 @@ class field_attributes(object):
     INSTRUCTION = "instruction"
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
+    SHORT_CODE_FIELD = "short_code"
     TELEPHONE_NUMBER_FIELD = "telephone_number"
     SELECT_FIELD = 'select1'
     LOCATION_FIELD = "geocode"
@@ -379,10 +391,10 @@ class TextField(Field):
             for constraint in self.constraints:
                 constraint.validate(value)
             return value
-        except VdtValueTooLongError:
-            raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value)
-        except VdtValueTooShortError:
-            raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE], value)
+        except VdtValueTooLongError as valueTooLongError:
+            raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value, valueTooLongError.args[1])
+        except VdtValueTooShortError as valueTooShortError:
+            raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE], value, valueTooShortError.args[1])
 
     @property
     def is_entity_field(self):
@@ -424,6 +436,26 @@ class TelephoneNumberField(TextField):
     def validate(self, value):
         value = self._clean(value)
         return super(TelephoneNumberField, self).validate(value)
+
+
+class ShortCodeField(TextField):
+    def __init__(self, name, code, label, ddtype, constraints=None, defaultValue=None, instruction=None,
+                 required=True, entity_question_flag=None):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        TextField.__init__(self, name=name, code=code, label=label, ddtype=ddtype,
+                           instruction=instruction, constraints=constraints, defaultValue=defaultValue,
+                           required=required, entity_question_flag = entity_question_flag)
+        self._dict['type'] = field_attributes.SHORT_CODE_FIELD
+
+
+    def _clean(self, value):
+        return value.lower() if value else None
+
+    def validate(self, value):
+        value = self._clean(value)
+        return super(ShortCodeField, self).validate(value)
+
 
 
 class HierarchyField(Field):

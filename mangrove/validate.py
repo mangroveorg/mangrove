@@ -415,27 +415,27 @@ class VdtValueTooBigError(VdtValueError):
 class VdtValueTooShortError(VdtValueError):
     """The value supplied was of the correct type, but was too short."""
 
-    def __init__(self, value):
+    def __init__(self, value, min_length):
         """
-        >>> raise VdtValueTooShortError('jed')
+        >>> raise VdtValueTooShortError('jed', 3)
         Traceback (most recent call last):
-        VdtValueTooShortError: the value "jed" is too short.
+        VdtValueTooShortError: the value "jed" of length 3 is too short.
         """
         ValidateError.__init__(
             self,
-            'the value "%s" is too short.' % (value,))
+            'the value "%s" is too short.' % (value,), min_length)
 
 
 class VdtValueTooLongError(VdtValueError):
     """The value supplied was of the correct type, but was too long."""
 
-    def __init__(self, value):
+    def __init__(self, value, max_length):
         """
-        >>> raise VdtValueTooLongError('jedie')
+        >>> raise VdtValueTooLongError('jedie', 3)
         Traceback (most recent call last):
-        VdtValueTooLongError: the value "jedie" is too long.
+        VdtValueTooLongError: the value "jedie" of length 3 is too long.
         """
-        ValidateError.__init__(self, 'the value "%s" is too long.' % (value,))
+        ValidateError.__init__(self, 'the value "%s" is too long.' % (value,), max_length)
 
 
 class Validator(object):
@@ -1069,9 +1069,9 @@ def is_string(value, min=None, max=None):
     except TypeError:
         raise VdtTypeError(value)
     if min_len is not None and num_members < min_len:
-        raise VdtValueTooShortError(value)
+        raise VdtValueTooShortError(value, min_len)
     if max_len is not None and num_members > max_len:
-        raise VdtValueTooLongError(value)
+        raise VdtValueTooLongError(value, max_len)
     return value
 
 

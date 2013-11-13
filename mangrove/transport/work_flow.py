@@ -35,6 +35,7 @@ class RegistrationWorkFlow(object):
         if is_empty(self.form_model.get_short_code(values)):
             _set_short_code(self.dbm, self.form_model, values)
 
+
     def process(self, values):
         self._generate_short_code_if_empty(values)
         return Location(self.location_tree, self.form_model).process_submission(values)

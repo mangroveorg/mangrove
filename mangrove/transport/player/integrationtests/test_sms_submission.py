@@ -187,9 +187,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
 
     def test_should_register_new_entity(self):
-        message1 = """reg .t  dog .n  Clinic in Diégo–Suarez .l  Diégo–Suarez .g  -12.35  49.3  .d This is a Clinic in
-        Diégo–Suarez . m
-        87654325
+        message1 = """reg .t  dog .n  Diégo–Suarez .l  Diégo–Suarez .g  -12.35  49.3  .d This is a Clinic in
+        Diégo–Suarez .m 87654325
         """
         response = self.send_sms(message1)
         self.assertTrue(response.success)
@@ -229,19 +228,19 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'The answer 380 must be between -90 and 90'}, response.errors)
+        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg .N buddy2 .T dog .G 80 %s .D its another dog! .M 78541" % (INVALID_LONGITUDE,)
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'The answer -184 must be between -180 and 180'}, response.errors)
+        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
 
     def test_should_log_submission_for_entity_registration(self):
         reporter_short_code = "dog" + str(int(random.random()*100000))
         transport_info = TransportInfo(transport="sms", source=self.phone_number, destination="5678")
-        response = self.send_sms("reg .N buddy .S %s .T dog .G 1 1" %reporter_short_code)
+        response = self.send_sms("reg .N buddy .S %s .T dog .G 1 1 .M 12345" %reporter_short_code)
         submission_log = Submission.get(self.dbm, response.submission_id)
         self.assertIsInstance(submission_log, Submission)
         self.assertEquals(transport_info.transport, submission_log.channel)
@@ -249,7 +248,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(True, submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': reporter_short_code, 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': reporter_short_code, 't': 'dog', 'g': '1 1' , 'm': '12345'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 
@@ -309,16 +308,16 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         self.assertEquals(["dog"], actual_type)
 
     def test_should_accept_unicode_submissions(self):
-        text = "reg .s Āgra .n Agra .m 080 .t clinic .g 45 56"
+        text = "reg .s agra .n Agra .m 080456 .t clinic .g 45 56"
         with self.assertRaises(EntityTypeDoesNotExistsException):
             self.send_sms(text)
 
     def test_should_accept_unicode_submissions_and_invalidate_wrong_GPS(self):
-        text = "reg .s Āgra .n Agra .m 080 .t clinic .g 45O 56"
+        text = "reg .s Agra .n Agra .m 080 .t clinic .g 45O 56"
         self.assertEqual(False, self.send_sms(text).success)
 
     def test_should_reject_registration_sms_if_type_not_provided(self):
-        text = "reg .s Āgra .n Agra .m 080 .g 45 56"
+        text = "reg .s Agra .n Agra .m 080 .g 45 56"
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertTrue('t' in response.errors)
@@ -346,8 +345,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_register_entity_with_geo_code(self):
         message1 = """reg .t dog .n Dog in Diégo–Suarez .g -12.35  49.3  .d This is a Dog in
-        Diégo–Suarez . m
-        87654325
+        Diégo–Suarez .m 87654325
         """
         response = self.send_sms(message1)
         self.assertTrue(response.success)
@@ -359,8 +357,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_register_entity_with_geocode_if_only_location_provided(self):
         message1 = """reg .t dog .n Dog in AMPIZARANTANY .l AMPIZARANTANY .d This is a Dog in
-        AMPIZARANTANY . m
-        87654325
+        AMPIZARANTANY . m 87654325
         """
         response = self.send_sms(message1)
         self.assertTrue(response.success)
@@ -371,8 +368,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
         message1 = """reg .t dog .n Dog in AMPIZARANTANY .l ARANTANY .g 10 10 .d This is a Dog in
-        AMPIZARANTANY . m
-        87654325
+        AMPIZARANTANY .m 87654325
         """
         response = self.send_sms(message1)
         self.assertTrue(response.success)

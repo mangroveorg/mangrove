@@ -113,21 +113,21 @@ class AnswerTooSmallException(InvalidAnswerSubmissionException):
     def __init__(self, code, answer):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is smaller than allowed.") % (
-                                                      answer, code,), code, (answer,))
+                                                      answer, code), code, (answer,))
 
 
 class AnswerTooLongException(InvalidAnswerSubmissionException):
-    def __init__(self, code, answer):
+    def __init__(self, code, answer, max_length):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is longer than allowed.") % (
-                                                      answer, code,), code, (answer,))
+                                                      answer, code), code, (answer,))
 
 
 class AnswerTooShortException(InvalidAnswerSubmissionException):
-    def __init__(self, code, answer):
+    def __init__(self, code, answer, min_length):
         InvalidAnswerSubmissionException.__init__(self,
                                                   (u"Answer %s for question %s is shorter than allowed.") % (
-                                                      answer, code,), code, (answer,))
+                                                      answer, code), code, (answer,))
 
 
 class AnswerHasTooManyValuesException(InvalidAnswerSubmissionException):
@@ -200,14 +200,12 @@ class LongitudeNotFloat(MangroveException):
 
 class LongitudeNotInRange(MangroveException):
     def __init__(self, long):
-        MangroveException.__init__(self, (u'The answer %s must be between -180 and 180') %
-                                         (long,), data=(long,))
+        MangroveException.__init__(self, (u'Invalid GPS value.'), data=(long,))
 
 
 class LatitudeNotInRange(MangroveException):
     def __init__(self, lat):
-        MangroveException.__init__(self, (u'The answer %s must be between -90 and 90') %
-                                         (lat,), (lat,))
+        MangroveException.__init__(self, (u'Invalid GPS value.'), (lat,))
 
 
 class GeoCodeFormatException(MangroveException):
@@ -264,11 +262,11 @@ class MobileNumberMissing(MangroveException):
 
 class RegexMismatchException(MangroveException):
     def __init__(self, pattern):
-        MangroveException.__init__(self, "Invalid Mobile Number. Only Numbers and Dash(-) allowed.")
+        MangroveException.__init__(self, "Invalid Mobile Number.")
 
 class ShortCodeRegexMismatchException(MangroveException):
     def __init__(self, pattern):
-        MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid")
+        MangroveException.__init__(self, "Invalid Short Code. Only letters and numbers are valid.")
 
 class ConstraintTypeUnknownException(MangroveException):
     def __init__(self, name):

@@ -129,7 +129,7 @@ class TestWEBSubmission(MangroveTestCase):
 
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
-        text = {'form_code':'reg', 't': 'dog', 'n': 'Clinic in Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
+        text = {'form_code':'reg', 't': 'dog', 'n': 'Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
@@ -169,16 +169,16 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LATITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': u'The answer 380 must be between -90 and 90'}, response.errors)
+        self.assertEqual({'q5': u'Invalid GPS value.'}, response.errors)
 
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LONGITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': u'The answer -184 must be between -180 and 180'}, response.errors)
+        self.assertEqual({'q5': u'Invalid GPS value.'}, response.errors)
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="web", source="tester150411@gmail.com", destination="")
-        text = {'form_code':'reg', 'n':'buddy', 's':'bud', 't': 'dog', 'g':'1 1'}
+        text = {'form_code':'reg', 'n':'buddy', 's':'bud', 't': 'dog', 'g':'1 1', 'm': '12345'}
         response = self.send_request_to_web_player(text)
         submission_log = Submission.get(self.manager, response.submission_id)
         self.assertIsInstance(submission_log, Submission)
@@ -187,7 +187,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertTrue(submission_log. status)
         self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1'}, submission_log.values)
+        self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1', 'm': '12345'}, submission_log.values)
         self.assertEquals(transport_info.destination, submission_log.destination)
         self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 
@@ -240,10 +240,10 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertEquals(["dog"], actual_type) 
 
     def test_should_accept_unicode_submissions_and_able_to_invalidate_wrong_GPS(self):
-        text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'080'}
+        text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'08045'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEquals(u'The answer 480 must be between -90 and 90', response.errors.get('q5'))
+        self.assertEquals(u'Invalid GPS value.', response.errors.get('q5'))
         self.assertIsNone(response.errors.get('q6'))
 
     def test_should_raise_exception_for_inactive_form_model(self):
@@ -266,7 +266,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertTrue(submission_log.test)
 
     def test_should_register_entity_with_geo_code(self):
-        text = {'form_code':'reg', 'n':'Dog in Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
+        text = {'form_code':'reg', 'n':'Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)

@@ -66,7 +66,7 @@ class DocumentBase(Document):
         if hasattr(self.__class__ , 'registered_functions'):
             for callback in self.__class__.registered_functions:
                 try:
-                    callback(self, dbm)
+                    callback(self, dbm, refresh=True)
                 except Exception as e:
                     logging.error(e.message)
 

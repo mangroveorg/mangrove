@@ -288,6 +288,10 @@ class FormModel(DataObject):
     def revision(self):
         return self._doc.rev
 
+    @property
+    def form_fields(self):
+        return self._doc["json_fields"]
+
     @revision.setter
     def revision(self, rev):
         self._doc.rev = rev

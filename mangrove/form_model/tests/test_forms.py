@@ -37,7 +37,7 @@ class TestEditSurveyResponseForm(TestCase):
 
             expected_data = [('entity_question', 'a1', ddtype), ('question1_Name', 'a2', ddtype)]
             survey_response.update.assert_called_once_with(form_model, expected_data, entity)
-            entity.update_latest_data.assert_called_once_with(data=expected_data)
+            #entity.update_latest_data.assert_called_once_with(data=expected_data)
             survey_response.set_status.assert_called_once_with('')
 
     def test_edit_survey_response_form_with_invalid_data(self):

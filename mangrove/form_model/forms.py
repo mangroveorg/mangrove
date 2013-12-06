@@ -42,7 +42,7 @@ class EditSurveyResponseForm(object):
         try:
             self.survey_response.set_status(self.errors)
             self.survey_response.update(self.form_model, self.data(), self.entity)
-            self.entity.update_latest_data(data=self.data())
+            #self.entity.update_latest_data(data=self.data())
         except MangroveException as exception:
             self.survey_response.set_status(self.errors)
             self.errors = exception.message

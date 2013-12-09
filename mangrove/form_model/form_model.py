@@ -293,6 +293,12 @@ class FormModel(DataObject):
         return self._doc["json_fields"]
 
 
+    def field_names(self):
+        return [field['name'] for field in self._doc["json_fields"]]
+
+    def field_codes(self):
+        return [field['code'] for field in self._doc["json_fields"]]
+
     @revision.setter
     def revision(self, rev):
         self._doc.rev = rev

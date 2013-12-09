@@ -69,6 +69,7 @@ class DocumentBase(Document):
                     callback(self, dbm)
                 except Exception as e:
                     logging.error(e.message)
+                    #raise
 
     @classmethod
     def register_post_update(cls, func):

@@ -6,11 +6,12 @@ from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.datadict import DataDictType, get_datadict_types
 from mangrove.datastore.entity_type import entity_type_already_defined
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
+from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
 from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
 from database import DatabaseManager, DataObject
+
 
 def void_entity(dbm, entity_type, short_code):
     if is_string(entity_type):
@@ -31,10 +32,11 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
         raise EntityTypeDoesNotExistsException(entity_type)
     existing = _check_if_entity_exists(dbm, entity_type, short_code, return_entity=True)
     if existing:
-        entity_name = existing.data.get('name',{'value':''}).get('value')
-        raise DataObjectAlreadyExists(entity_type[0], "Unique Identification Number (ID)", short_code, existing_name=entity_name)
+        entity_name = existing.data.get('name', {'value': ''}).get('value')
+        raise DataObjectAlreadyExists(entity_type[0], "Unique Identification Number (ID)", short_code,
+                                      existing_name=entity_name)
     e = Entity(dbm, entity_type=entity_type, location=location,
-        aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
+               aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
     e.save()
     return e
 
@@ -119,11 +121,13 @@ def get_all_entities(dbm, entity_type=None):
     else:
         return _get_all_entities(dbm)
 
-def get_short_codes_by_entity_type(dbm,entity_type):
+
+def get_short_codes_by_entity_type(dbm, entity_type):
     startkey = [entity_type]
     endkey = [entity_type, {}]
     rows = dbm.view.by_short_codes(reduce=False, include_docs=False, startkey=startkey, endkey=endkey)
     return [row.key[1] for row in rows]
+
 
 def get_entities_by_value(dbm, label, value, as_of=None):
     """
@@ -425,8 +429,8 @@ class Entity(DataObject):
         entity_id = self._doc.id
         time_since_epoch_of_date = convert_date_time_to_epoch(date)
         rows = self._dbm.load_all_rows_in_view(aggregate_fn, group_level=3, descending=False,
-            startkey=[self.type_path, entity_id, field],
-            endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
+                                               startkey=[self.type_path, entity_id, field],
+                                               endkey=[self.type_path, entity_id, field, time_since_epoch_of_date])
 
         # The above will return rows in the format described:
         # Row key=['clinic', 'e4540e0ae93042f4b583b54b6fa7d77a'],
@@ -537,14 +541,14 @@ def _make_short_code(entity_type, num):
     # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].upper()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix, num)
+    return SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def _make_short_code(entity_type, num):
     # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].lower()[:3]
-    return   SHORT_CODE_FORMAT % (entity_prefix, num)
+    return SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
 def _get_all_entities(dbm):
@@ -556,6 +560,11 @@ def _get_all_entities_of_type(dbm, entity_type):
     startkey = [entity_type]
     endkey = [entity_type, {}]
     rows = dbm.view.by_short_codes(reduce=False, include_docs=True, startkey=startkey, endkey=endkey)
+    return [_from_row_to_entity(dbm, row) for row in rows]
+
+
+def get_all_entities_include_voided(dbm):
+    rows = dbm.view.entity_by_short_code(reduce=False, include_docs=True)
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 

@@ -118,14 +118,14 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer 150 for question ARV is greater than allowed.',response.errors.get('q3'))
+        self.assertEqual(u'Answer 150 for question ARV is greater than allowed.',response.errors.get('ARV'))
 
     def test_should_give_error_for_wrong_text_value(self):
         text = {'form_code': 'clinic', 'EID': 'CID001', 'NAME': 'ABC'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEqual(len(response.errors), 1)
-        self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('q2'))
+        self.assertEqual(u'Answer ABC for question NAME is shorter than allowed.',response.errors.get('NAME'))
 
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
@@ -164,17 +164,17 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_GEOCODE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315'}, response.errors)
+        self.assertEqual({'g': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315'}, response.errors)
         
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LATITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': u'Invalid GPS value.'}, response.errors)
+        self.assertEqual({'g': u'Invalid GPS value.'}, response.errors)
 
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LONGITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': u'Invalid GPS value.'}, response.errors)
+        self.assertEqual({'g': u'Invalid GPS value.'}, response.errors)
 
     def test_should_log_submission(self):
         transport_info = TransportInfo(transport="web", source="tester150411@gmail.com", destination="")
@@ -243,7 +243,7 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'08045'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEquals(u'Invalid GPS value.', response.errors.get('q5'))
+        self.assertEquals(u'Invalid GPS value.', response.errors.get('g'))
         self.assertIsNone(response.errors.get('q6'))
 
     def test_should_raise_exception_for_inactive_form_model(self):

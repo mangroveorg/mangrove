@@ -228,14 +228,14 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
+        self.assertEqual({'g': 'Invalid GPS value.'}, response.errors)
 
         INVALID_LONGITUDE = -184
         text = "reg .N buddy2 .T dog .G 80 %s .D its another dog! .M 78541" % (INVALID_LONGITUDE,)
 
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertEqual({'q5': 'Invalid GPS value.'}, response.errors)
+        self.assertEqual({'g': 'Invalid GPS value.'}, response.errors)
 
     def test_should_log_submission_for_entity_registration(self):
         reporter_short_code = "dog" + str(int(random.random()*100000))
@@ -268,13 +268,13 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "reg .N buddy .T reporter .G 80 80 .M 1234@5678"
         response = self.send_sms(text)
         self.assertFalse(response.success)
-        self.assertTrue(response.errors.get('q6') is not None)
+        self.assertTrue(response.errors.get('m') is not None)
 
     def test_should_throw_error_if_mobile_phone_is_too_long(self):
         text = "reg .N buddy .T reporter .G 80 80 .M 1234567889898989898989812312"
         response = self.send_sms(text)
         assert(response.success is False)
-        self.assertTrue(response.errors.get('q6') is not None)
+        self.assertTrue(response.errors.get('m') is not None)
 
     def test_should_throw_error_if_reporter_registration_submission_has_no_mobile_number(self):
         text = "reg .N buddy2 .T reporter .L 80 80"

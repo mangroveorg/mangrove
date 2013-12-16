@@ -429,7 +429,7 @@ class FormModel(DataObject):
             if is_valid:
                 cleaned_values[field.code] = result
             else:
-                errors["q%s" % str(index + 1)] = result
+                errors[field.code] = result
         return cleaned_values, errors
 
     def _case_insensitive_lookup(self, values, code):

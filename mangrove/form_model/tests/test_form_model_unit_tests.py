@@ -27,7 +27,7 @@ class TestFormModel(unittest.TestCase):
         q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
         self.event_time_field_code = "Q6"
         q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field", date_format = "%m.%d.%Y",ddtype=self.ddtype_mock, required=False,event_time_field_flag=True)
-        q7 = GeoCodeField(name="My Location", code="Q7", label="Geo Location Field", ddtype=self.ddtype_mock, required=False)
+        q7 = GeoCodeField(name="My Location", code="loc", label="Geo Location Field", ddtype=self.ddtype_mock, required=False)
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[q1, q2, q3, q4, q5, q6, q7])
 
@@ -61,10 +61,10 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
         
     def test_should_return_error_if_answering_with_invalid_geo_format(self):
-        answers = {"id": "1", "Q7": "127.178057 -78.007789"}
+        answers = {"id": "1", "loc": "127.178057 -78.007789"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 1)
-        self.assertEqual({'Q7': 'Invalid GPS value.'}, errors)
+        self.assertEqual({'loc': 'Invalid GPS value.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
 
 

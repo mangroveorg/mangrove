@@ -244,7 +244,7 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
         self.assertEquals(u'Invalid GPS value.', response.errors.get('g'))
-        self.assertIsNone(response.errors.get('q6'))
+        self.assertIsNone(response.errors.get('m'))
 
     def test_should_raise_exception_for_inactive_form_model(self):
         self.form_model.deactivate()

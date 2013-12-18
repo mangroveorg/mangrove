@@ -32,7 +32,7 @@ def list_all_forms(form_tuples, xform_base_url):
 def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)
     _escape_special_characters(questionnaire)
-    if questionnaire.entity_defaults_to_reporter():
+    if questionnaire.is_entity_type_reporter():
         template = env.get_template('reporter_entity_form.xml')
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
             reporter_id=reporter_id,

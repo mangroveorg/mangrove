@@ -32,7 +32,7 @@ class TestXform(unittest.TestCase):
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'
         questionnaire_mock.id = 'id'
-        questionnaire_mock.entity_defaults_to_reporter.return_value = True
+        questionnaire_mock.is_entity_type_reporter.return_value = True
         questionnaire_mock.activeLanguages = ["en"]
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
             form_model_mock.get.return_value = questionnaire_mock
@@ -51,7 +51,7 @@ class TestXform(unittest.TestCase):
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'
         questionnaire_mock.id = 'id'
-        questionnaire_mock.entity_defaults_to_reporter.return_value = False
+        questionnaire_mock.is_entity_type_reporter.return_value = False
         questionnaire_mock.activeLanguages = ["en"]
         questionnaire_mock.entity_question = self.text_field(code='entity_question_code')
         entity1 = Entity(dbm, short_code="shortCode1", entity_type="someType")
@@ -74,7 +74,7 @@ class TestXform(unittest.TestCase):
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'
         questionnaire_mock.id = 'id'
-        questionnaire_mock.entity_defaults_to_reporter.return_value = True
+        questionnaire_mock.is_entity_type_reporter.return_value = True
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
             form_model_mock.get.return_value = questionnaire_mock
             one_of_unicode_unknown_ = xform_for(dbm, "someFormId", 'rep1')

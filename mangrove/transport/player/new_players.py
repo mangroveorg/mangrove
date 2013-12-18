@@ -73,7 +73,7 @@ class SMSPlayerV2(object):
 
     def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
         form_model = get_form_model_by_code(self.dbm, form_code)
-        if form_model.entity_defaults_to_reporter() and is_empty(form_model.get_short_code(values)):
+        if form_model.is_entity_type_reporter() and is_empty(form_model.get_short_code(values)):
             values[form_model.entity_question.code] = reporter_entity_short_code
         return values
 

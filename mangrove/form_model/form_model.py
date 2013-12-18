@@ -309,7 +309,7 @@ class FormModel(DataObject):
     def is_entity_registration_form(self):
         return self._doc['is_registration_model']
 
-    def entity_defaults_to_reporter(self):
+    def is_entity_type_reporter(self):
         return self.entity_type == [REPORTER]
 
     def is_inactive(self):

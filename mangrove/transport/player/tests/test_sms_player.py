@@ -99,7 +99,7 @@ class TestSMSPlayer(TestCase):
 #            with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
 #                mock_form_model = Mock(spec=FormModel)
 #                mock_get_form_model_by_code.return_value = mock_form_model
-#                mock_form_model.entity_defaults_to_reporter.return_value = False
+#                mock_form_model.is_entity_type_reporter.return_value = False
 #                get_form_submission_mock.return_value = self.form_submission_mock
 #                sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
 
@@ -166,7 +166,7 @@ class TestSMSPlayer(TestCase):
             with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
                 mock_form_model = Mock(spec=FormModel)
                 mock_get_form_model_by_code.return_value = mock_form_model
-                mock_form_model.entity_defaults_to_reporter.return_value = False
+                mock_form_model.is_entity_type_reporter.return_value = False
                 save_survey.return_value = Mock(spec=Response)
                 self.sms_player.add_survey_response(request)
                 save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
@@ -181,7 +181,7 @@ class TestSMSPlayer(TestCase):
                 is_empty_mock.return_value = True
                 form_model_mock = Mock(spec=FormModel)
                 form_model__by_code_mock.return_value = form_model_mock
-                form_model_mock.entity_defaults_to_reporter.return_value = True
+                form_model_mock.is_entity_type_reporter.return_value = True
                 p = PropertyMock(return_value='eid')
                 entity_question = Mock(spec=TextField)
                 type(form_model_mock).entity_question = PropertyMock(return_value=entity_question)

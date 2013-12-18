@@ -29,7 +29,7 @@ class TestSubmissionHandler(TestCase):
 
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_registration_form.return_value = False
-        self.form_model_mock.entity_defaults_to_reporter.return_value = False
+        self.form_model_mock.is_entity_type_reporter.return_value = False
         self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.is_in_test_mode.return_value = False
         self.ENTITY_TYPE = ["entity_type"]

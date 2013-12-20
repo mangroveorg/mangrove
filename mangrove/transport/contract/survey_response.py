@@ -1,4 +1,4 @@
-from copy import  deepcopy
+from copy import deepcopy
 from datetime import datetime
 
 from mangrove.datastore.datadict import DataDictType
@@ -15,6 +15,7 @@ def convert_dict_keys_to_lowercase(dictionary):
         dictionary[key.lower()] = dictionary.pop(key)
     return dictionary
 
+
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 
@@ -23,11 +24,11 @@ class SurveyResponse(DataObject):
         DataObject.__init__(self, dbm)
         if transport_info is not None:
             doc = SurveyResponseDocument(channel=transport_info.transport,
-                destination=transport_info.destination,
-                form_code=form_code,
-                form_model_revision=form_model_revision,
-                values=values, status=False,
-                error_message="", test=False, owner_uid=owner_uid, modified_by_id=admin_id)
+                                         destination=transport_info.destination,
+                                         form_code=form_code,
+                                         form_model_revision=form_model_revision,
+                                         values=values, status=False,
+                                         error_message="", test=False, owner_uid=owner_uid, modified_by_id=admin_id)
 
             DataObject._set_document(self, doc)
 
@@ -99,6 +100,10 @@ class SurveyResponse(DataObject):
     def form_model_revision(self, form_model_revision):
         self._doc.form_model_revision = form_model_revision
 
+    @form_code.setter
+    def form_code(self, form_code):
+        self._doc.form_code = form_code
+
     @property
     def values(self):
         return self._doc.values
@@ -127,8 +132,8 @@ class SurveyResponse(DataObject):
     def set_answers(self, entity_short_code, values):
         if values:
             self._doc.values = values
-            for key in self.values :
-                if key.lower() ==  self.entity_question_code.lower():
+            for key in self.values:
+                if key.lower() == self.entity_question_code.lower():
                     self.values[key] = entity_short_code
                     return
             self.values[self.entity_question_code] = entity_short_code
@@ -156,7 +161,7 @@ class SurveyResponse(DataObject):
         assert self.errors == ''
         submission_information = dict(form_code=self.form_code)
         data_record_id = self.add_data(entity, data=data, event_time=bound_form_model._get_event_time_value(),
-            submission=submission_information)
+                                       submission=submission_information)
         self._void_existing_data_record()
         self._doc.data_record_id = data_record_id
         self.save()
@@ -233,8 +238,10 @@ class SurveyResponse(DataObject):
     def copy(self):
         survey_copy = SurveyResponse(None)
         survey_copy._doc = SurveyResponseDocument(self._doc.channel, self._doc.destination,
-            deepcopy(self.values), self.id, self.status, self.errors, self.form_code, self.form_model_revision,
-            self.data_record.id if self.data_record else None, self.test, deepcopy(self.event_time))
+                                                  deepcopy(self.values), self.id, self.status, self.errors,
+                                                  self.form_code, self.form_model_revision,
+                                                  self.data_record.id if self.data_record else None, self.test,
+                                                  deepcopy(self.event_time))
         return survey_copy
 
     def create_migrated_response(self, status, error_message, void, submitted_on, test, event_time, data_record_id):

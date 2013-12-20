@@ -178,6 +178,10 @@ class FormModel(DataObject):
         return self._form_fields
 
     @property
+    def choice_fields(self):
+        return [field for field in self._form_fields if field.type in ("select", "select1")]
+
+    @property
     def entity_type(self):
         return self._doc.entity_type
 

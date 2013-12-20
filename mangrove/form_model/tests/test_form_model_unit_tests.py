@@ -219,6 +219,10 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(1, form_model_mock.new_from_doc.call_count)
         form_model_document_mock.wrap.assert_called_once_with(document)
 
+    def test_should_return_choice_fields(self):
+        self.assertEquals(self.form_model.choice_fields[0].code, "Q3")
+        self.assertEquals(len(self.form_model.choice_fields), 1)
+
 class DatabaseManagerStub(DatabaseManager):
 
     def __init__(self):

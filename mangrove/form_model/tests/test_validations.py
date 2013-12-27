@@ -247,6 +247,10 @@ class TestRegexValidations(unittest.TestCase):
         constraint = ShortCodeRegexConstraint(reg=pattern)
         self.assertEqual(("short_code", pattern), constraint._to_json())
 
+    def test_should_return_lower_case_value_if_short_code_is_upper_case(self):
+        constraint = ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")
+        self.assertEquals('shortcode', constraint.validate('SHORTCODE'))
+
 class TestCreationOfConstraints(unittest.TestCase):
     def test_should_create_a_constraint_dictionary(self):
         constraint_info = [

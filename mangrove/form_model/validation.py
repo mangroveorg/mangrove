@@ -147,7 +147,7 @@ class ShortCodeRegexConstraint(object):
 
     def validate(self, text):
         if re.match(self._pattern, text):
-            return text
+            return text.lower()
         raise ShortCodeRegexMismatchException(self._pattern)
 
     @property

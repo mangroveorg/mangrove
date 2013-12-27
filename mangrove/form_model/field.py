@@ -389,7 +389,7 @@ class TextField(Field):
         try:
             value = value.strip()
             for constraint in self.constraints:
-                constraint.validate(value)
+                value = constraint.validate(value)
             return value
         except VdtValueTooLongError as valueTooLongError:
             raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value, valueTooLongError.args[1])

@@ -261,7 +261,7 @@ class FormModel(DataObject):
 
     def get_field_code_label_dict(self):
         field_code_label_dict = {}
-        for form_field in self.form_fields:
+        for form_field in self._form_fields:
             quoted_label = '&#39;' + form_field.label + '&#39;'
             field_code_label_dict.update({form_field.code:quoted_label})
         return field_code_label_dict

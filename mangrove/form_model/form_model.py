@@ -1,6 +1,7 @@
 
 from collections import OrderedDict
 from datetime import *
+from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
@@ -8,7 +9,6 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
-from mangrove.utils.memoized import memoized
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
 
@@ -37,20 +37,25 @@ EMAIL_FIELD_CODE = "email"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 
-@memoized
 def get_form_model_by_code(dbm, code):
-    return _get_form_model_by_code(dbm, code)
+    cache_manger = get_cache_manager()
+    key_as_str = get_form_model_cache_key(code, dbm)
+    row_value = cache_manger.get(key_as_str)
+    if row_value is None:
+        row_value = _load_questionnaire(code, dbm)
+        cache_manger.set(key_as_str, row_value)
 
-def _get_form_model_by_code(dbm, code):
-    assert isinstance(dbm, DatabaseManager)
-    assert is_string(code)
-    rows = dbm.load_all_rows_in_view('questionnaire', key=code)
-    if not len(rows):
-        raise FormModelDoesNotExistsException(code)
+    doc = FormModelDocument.wrap(row_value)
 
-    doc = FormModelDocument.wrap(rows[0]['value'])
     return FormModel.new_from_doc(dbm, doc)
 
+def _load_questionnaire(form_code, dbm):
+    assert isinstance(dbm, DatabaseManager)
+    assert is_string(form_code)
+    rows = dbm.load_all_rows_in_view('questionnaire', key=form_code)
+    if not len(rows):
+        raise FormModelDoesNotExistsException(form_code)
+    return rows[0]['value']
 
 def list_form_models_by_code(dbm, codes):
     assert isinstance(dbm, DatabaseManager)
@@ -63,6 +68,11 @@ def list_form_models_by_code(dbm, codes):
         return FormModel.new_from_doc(dbm, doc)
 
     return map(_row_to_form_model, rows)
+
+def get_form_model_cache_key(form_code, dbm):
+        assert isinstance(dbm, DatabaseManager)
+        assert form_code is not None
+        return str("%s_%s" % (dbm.database.name, form_code))
 
 def header_fields(form_model, key_attribute="name", ref_header_dict=None):
     header_dict = ref_header_dict or OrderedDict()
@@ -213,16 +223,21 @@ class FormModel(DataObject):
         return entity_type.lower() if is_not_empty(entity_type) else None
 
     def delete(self):
-        get_form_model_by_code.clear()
+        self._delete_form_model_from_cache()
+
         super(FormModel, self).delete()
 
+    def _delete_form_model_from_cache(self):
+        cache_manger = get_cache_manager()
+        cache_key = get_form_model_cache_key(self.form_code, self._dbm)
+        cache_manger.delete(cache_key)
+
     def void(self):
-        get_form_model_by_code.clear()
+        self._delete_form_model_from_cache()
         super(FormModel, self).void()
 
     def save(self):
         # convert fields and validators to json fields before save
-        get_form_model_by_code.clear()
         if not self._is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 
@@ -232,6 +247,7 @@ class FormModel(DataObject):
         for key, value in self._snapshots.items():
             json_snapshots[key] = [each._to_json() for each in value]
         self._doc.snapshots = json_snapshots
+        self._delete_form_model_from_cache()
         return DataObject.save(self)
 
 
@@ -406,7 +422,7 @@ class FormModel(DataObject):
 
     def _is_form_code_unique(self):
         try:
-            form = _get_form_model_by_code(self._dbm, self.form_code)
+            form = get_form_model_by_code(self._dbm, self.form_code)
             is_form_code_same_as_existing_form_code = True if form.id == self.id else False
             return is_form_code_same_as_existing_form_code
         except FormModelDoesNotExistsException:

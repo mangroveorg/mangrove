@@ -13,3 +13,4 @@ babel
 networkx
 gdata
 xlrd
+pylibmc

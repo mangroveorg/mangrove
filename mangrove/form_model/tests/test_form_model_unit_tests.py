@@ -223,6 +223,20 @@ class TestFormModel(unittest.TestCase):
         self.assertEquals(self.form_model.choice_fields[0].code, "Q3")
         self.assertEquals(len(self.form_model.choice_fields), 1)
 
+    def test_should_return_dictionary_of_question_code_and_label(self):
+        dict = self.form_model.get_field_code_label_dict()
+        codes = dict.keys()
+        values = dict.values()
+        self.assertEquals(7,dict.__len__())
+        self.assertIn(["ID","Q1","Q2","Q3","Q4","Q6","loc"],codes)
+        self.assertIn(["What is associated entity",
+                        "What is your name",
+                        "What is your Father's Age",
+                        "What is your favourite color",
+                        "Description",
+                        "Event time field",
+                        "Geo Location Field"],values)
+
 class DatabaseManagerStub(DatabaseManager):
 
     def __init__(self):

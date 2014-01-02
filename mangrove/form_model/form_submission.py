@@ -40,7 +40,8 @@ class FormSubmission(object):
 
     def save_new(self, dbm):
         entity = self.create_entity(dbm)
-        return self._save_data(entity)
+        self.data_record_id = entity.id
+        return entity.id
 
     def save(self, dbm):
         return self.save_new(dbm)

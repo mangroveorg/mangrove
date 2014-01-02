@@ -149,15 +149,6 @@ class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
         super(EntityRegistrationFormSubmission, self).__init__(form_model, answers, errors, location_tree=location_tree)
 
-    # # get method is doing an update!!!!
-    # def get_entity(self, dbm):
-    #     location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
-    #         self.cleaned_data)
-    #     existing_entity = entity.get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
-    #     existing_entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
-    #     existing_entity.save()
-    #     return existing_entity
-
     # soft deletes data records
     def void_existing_data_records(self, dbm, form_code):
         data_records = dbm.view.data_record_by_form_code(key=[form_code, self.short_code])
@@ -171,7 +162,7 @@ class FormSubmissionFactory(object):
     def get_form_submission(self, form_model, answers, errors=None, location_tree=None):
         if not form_model.is_entity_registration_form():
             return DataFormSubmission(form_model, answers, errors)
-        elif form_model.is_global_registration_form():
+        elif form_model.is_global_registration_form(): #Registering/Editing datasender
             return GlobalRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)
-        else:
+        else: #Registering/Editing subjects
             return EntityRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)

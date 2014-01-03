@@ -1,6 +1,6 @@
 from setuptools import find_packages
 from distutils.core import setup
-
+REQUIREMENTS = [i.strip() for i in open("requirements.pip").readlines()]
 setup(name='mangrove',
       version='1.0',
       description='The Mangrove package',
@@ -9,4 +9,4 @@ setup(name='mangrove',
       url='https://github.com/mangroveorg/mangrove/',
       packages=find_packages(),
       package_data={'mangrove.transport.xforms.templates': ['./*.xml'], "mangrove.bootstrap.views":["*.js"]},
-      requires=["nose (==1.0.0)", "CouchDB (==0.9)", "coverage (==3.4)", "simplejson", "mock", "iso8601 (==0.1.4)", "pytz", "xlwt", "pylibmc"])
+      install_requires=REQUIREMENTS)

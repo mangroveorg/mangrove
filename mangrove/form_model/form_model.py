@@ -82,6 +82,16 @@ def header_fields(form_model, key_attribute="name", ref_header_dict=None):
             header_dict.update({key: field.label})
     return header_dict
 
+def get_field_by_attribute_value(form_model, key_attribute,attribute_label):
+    #ex: field1.name='first_name' field1.code='q1'
+    #    field2.name='location' field2.code='q3'
+    #    and both field1 and field2 are form_model fields,
+    #    get_field_by_attribute_value(form_model,'name','location') will give back field2
+    for field in form_model.fields:
+        if field.__getattribute__(key_attribute) == attribute_label:
+            return field
+    return None
+
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_sequence(entity_type)

@@ -140,7 +140,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
         self.assertEquals(data["Arv stock"], 50)
-        self.assertEquals(data["Name"], "CLINIC-MADA")
+        self.assertEquals(data["Name"], "Ruby")
 
     def test_should_save_submitted_sms_for_activity_report(self):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",

@@ -121,8 +121,9 @@ class DataFormSubmission(FormSubmission):
     def save(self, dbm):
         entity = self.create_entity(dbm)
         submission_information = dict(form_code=self.form_code)
+        doc = entity._doc
         data_record_doc = DataRecordDocument(
-            entity_doc=entity._doc,
+            entity_doc=doc,
             event_time=self._get_event_time_value(),
             data=self._values,
             submission=submission_information

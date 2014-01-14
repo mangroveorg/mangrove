@@ -173,7 +173,7 @@ class WebParser(object):
     def _to_str(self, value):
         if isinstance(value, (int, float, long)):
             return str(value)
-        return "".join(value) if value is not None else None
+        return "".join(value).strip() if value is not None else None
 
 
 class CsvParser(object):

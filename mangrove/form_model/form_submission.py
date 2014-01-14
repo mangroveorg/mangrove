@@ -127,7 +127,8 @@ class DataFormSubmission(FormSubmission):
             data=self._values,
             submission=submission_information
         )
-        return dbm._save_document(data_record_doc)
+        self.data_record_id = dbm._save_document(data_record_doc)
+        return self.data_record_id
 
 
 class GlobalRegistrationFormSubmission(FormSubmission):

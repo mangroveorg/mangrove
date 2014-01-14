@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+from mangrove.datastore.documents import DataRecordDocument
 from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FIELD_NAME, GEO_CODE, ENTITY_TYPE_FIELD_CODE, REGISTRATION_FORM_CODE
 from mangrove.form_model.location import Location
 from mangrove.datastore import entity
@@ -117,6 +118,16 @@ class DataFormSubmission(FormSubmission):
 
     def create_entity(self, dbm):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
+
+    def save(self, dbm):
+       submission_information = dict(form_code=self.form_code)
+       data_record_doc = DataRecordDocument(
+            entity_doc=self._doc,
+            event_time=self._get_event_time_value(),
+            data=self._values,
+            submission=submission_information
+        )
+       return self._dbm._save_document(data_record_doc)
 
 
 class GlobalRegistrationFormSubmission(FormSubmission):

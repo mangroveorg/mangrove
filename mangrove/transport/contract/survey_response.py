@@ -8,6 +8,9 @@ from mangrove.datastore.entity import DataRecord
 from mangrove.utils.types import is_string, sequence_to_str, is_sequence, is_empty
 from mangrove.utils.dates import utcnow
 
+WEB = u"web"
+SMS = u"sms"
+SMART_PHONE=u"smartPhone"
 
 #todo: put it in utils and use it while returning SurveyResponse values itself
 def convert_dict_keys_to_lowercase(dictionary):

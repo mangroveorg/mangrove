@@ -36,6 +36,7 @@ EMAIL_FIELD = "email"
 EMAIL_FIELD_CODE = "email"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
+FORM_MODEL_EXPIRY_TIME_IN_SEC = 2*60*60
 
 def get_form_model_by_code(dbm, code):
     cache_manger = get_cache_manager()
@@ -43,7 +44,7 @@ def get_form_model_by_code(dbm, code):
     row_value = cache_manger.get(key_as_str)
     if row_value is None:
         row_value = _load_questionnaire(code, dbm)
-        cache_manger.set(key_as_str, row_value)
+        cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
 
     doc = FormModelDocument.wrap(row_value)
 

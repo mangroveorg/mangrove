@@ -10,8 +10,8 @@ from mangrove.utils.dates import utcnow
 
 WEB = u"web"
 SMS = u"sms"
-SMART_PHONE=u"smartPhone"
-
+SMART_PHONE = u"smartPhone"
+TEST_USER = u"test"
 #todo: put it in utils and use it while returning SurveyResponse values itself
 def convert_dict_keys_to_lowercase(dictionary):
     for key in dictionary.keys():

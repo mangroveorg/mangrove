@@ -149,11 +149,11 @@ class SurveyResponse(DataObject):
             self._doc.status = False
             self._doc.error_message = self._to_string(errors)
 
-    def _void_existing_data_record(self):
+    def _void_existing_data_record(self, void=True):
         data_record_id = self._doc.data_record_id
         if data_record_id is not None:
             data_record = DataRecord.get(self._dbm, data_record_id)
-            data_record.void()
+            data_record.void(void)
             self._doc.data_record_history.append(data_record_id)
 
     def create(self, data_record_id):
@@ -169,9 +169,9 @@ class SurveyResponse(DataObject):
         self._doc.data_record_id = data_record_id
         self.save()
 
-    def void(self):
-        self._void_existing_data_record()
-        super(SurveyResponse, self).void()
+    def void(self, void=True):
+        self._void_existing_data_record(void)
+        super(SurveyResponse, self).void(void)
 
     def add_data(self, entity, data=(), event_time=None, submission=None, multiple_records=False):
         """

@@ -22,8 +22,6 @@ SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.datastore.datadict import DataDictType, get_datadict_type_by_slug
 from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, ut_reporter_id
-from mangrove.transport.contract.submission import Submission
-from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.contract.request import Request
@@ -236,21 +234,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertEqual({'g': 'Invalid GPS value.'}, response.errors)
-
-    def test_should_log_submission_for_entity_registration(self):
-        reporter_short_code = "dog" + str(int(random.random()*100000))
-        transport_info = TransportInfo(transport="sms", source=self.phone_number, destination="5678")
-        response = self.send_sms("reg .N buddy .S %s .T dog .G 1 1 .M 12345" %reporter_short_code)
-        submission_log = Submission.get(self.dbm, response.submission_id)
-        self.assertIsInstance(submission_log, Submission)
-        self.assertEquals(transport_info.transport, submission_log.channel)
-        self.assertEquals(transport_info.source, submission_log.source)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(True, submission_log. status)
-        self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': reporter_short_code, 't': 'dog', 'g': '1 1' , 'm': '12345'}, submission_log.values)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(response.datarecord_id, submission_log.data_record.id)
 
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = "reg .N buddy2 .S %s .T dog .L 80 80 .D its a dog! .M 123456" %self.reporter_id

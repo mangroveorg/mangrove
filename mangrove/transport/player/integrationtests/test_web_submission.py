@@ -15,7 +15,6 @@ from mangrove.form_model.validation import NumericRangeConstraint, TextLengthCon
 from mangrove.transport.player.player import WebPlayer
 from mangrove.datastore.datadict import DataDictType
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.contract.request import Request
 
@@ -176,21 +175,6 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertEqual({'g': u'Invalid GPS value.'}, response.errors)
 
-    def test_should_log_submission(self):
-        transport_info = TransportInfo(transport="web", source="tester150411@gmail.com", destination="")
-        text = {'form_code':'reg', 'n':'buddy', 's':'bud', 't': 'dog', 'g':'1 1', 'm': '12345'}
-        response = self.send_request_to_web_player(text)
-        submission_log = Submission.get(self.manager, response.submission_id)
-        self.assertIsInstance(submission_log, Submission)
-        self.assertEquals(transport_info.transport, submission_log.channel)
-        self.assertEquals(transport_info.source, submission_log.source)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertTrue(submission_log. status)
-        self.assertEquals("reg", submission_log.form_code)
-        self.assertEquals({'n': 'buddy', 's': 'bud', 't': 'dog', 'g': '1 1', 'm': '12345'}, submission_log.values)
-        self.assertEquals(transport_info.destination, submission_log.destination)
-        self.assertEquals(response.datarecord_id, submission_log.data_record.id)
-
     def test_should_throw_error_if_entity_with_same_short_code_exists(self):
         text = {'form_code':'reg', 'n':'buddy', 's':'dog3', 't': 'dog', 'g':'80 80', 'd':'its a dog!', 'm':'12345'}
         self.send_request_to_web_player(text)
@@ -252,18 +236,6 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'clinic', 'eid':self.entity.short_code,'name':'Clinic-Mada','arv':'50', 'col':['a']}
         with self.assertRaises(InactiveFormModelException):
             self.send_request_to_web_player(text)
-
-    def test_should_set_submission_log_as_Test_for_form_model_in_test_mode(self):
-        self.form_model.set_test_mode()
-        self.form_model.save()
-        text = {'form_code':'clinic', 'eid':self.entity.short_code, 'name':'Clinic-Mada','arv':'50', 'col':['a']}
-        response = self.send_request_to_web_player(text)
-
-        self.assertTrue(response.success)
-        self.assertIsNotNone(response.datarecord_id)
-        self.assertIsNotNone(response.submission_id)
-        submission_log = Submission.get(self.manager, response.submission_id)
-        self.assertTrue(submission_log.test)
 
     def test_should_register_entity_with_geo_code(self):
         text = {'form_code':'reg', 'n':'Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}

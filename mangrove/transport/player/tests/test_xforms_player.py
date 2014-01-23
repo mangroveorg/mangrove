@@ -31,7 +31,6 @@ class TestXformPlayerIT(MangroveTestCase):
         response = self.player.add_survey_response(self.request, "rep2")
         self.assertEqual(response.success, True)
         self.assertIsNotNone(response.survey_response_id)
-        self.assertIsNotNone(response.submission_id)
 
     def tearDown(self):
         MangroveTestCase.tearDown(self)

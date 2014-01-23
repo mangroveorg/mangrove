@@ -109,14 +109,14 @@ def dummy_get_location_hierarchy(foo):
 class TestResponse(unittest.TestCase):
 
     def test_should_initialize_response(self):
-        response = create_response_from_form_submission(reporters=None, submission_id=None, form_submission=None)
+        response = create_response_from_form_submission(reporters=None, form_submission=None)
         self.assertFalse(response.success)
         self.assertTrue(is_empty(response.errors))
         self.assertTrue(is_empty(response.reporters))
 
     def test_should_initialize_response_with_reporters(self):
         reporters=[1]
-        response = create_response_from_form_submission(reporters=reporters, submission_id=None, form_submission=None)
+        response = create_response_from_form_submission(reporters=reporters, form_submission=None)
         self.assertEquals(reporters,response.reporters)
 
     def test_should_initialize_response_from_form_submission(self):
@@ -138,7 +138,7 @@ class TestResponse(unittest.TestCase):
         form_submission_mock.form_model = form_model_mock
 
 
-        response = create_response_from_form_submission(reporters=None, submission_id=None, form_submission=form_submission_mock)
+        response = create_response_from_form_submission(reporters=None, form_submission=form_submission_mock)
         self.assertTrue(response.success)
         self.assertTrue(is_empty(response.errors))
         self.assertTrue(is_empty(response.reporters))

@@ -19,7 +19,6 @@ from mangrove.transport.player.tests.test_reporter import TestReporter
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from mangrove.transport.contract.submission import Submission
 from mangrove.transport.repository.survey_responses import SurveyResponse
 
 
@@ -30,114 +29,10 @@ def assert_submission_log_is(form_code):
     return _assert
 
 
-def assert_survey_response_doc_is(form_code):
-    def _assert(self, other):
-        return other.form_code == form_code
-
-    return _assert
-
-
 class TestSurveyResponseService(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
         self.survey_response_service = SurveyResponseService(self.dbm)
-
-    def test_save_survey_response_should_create_submission_when_form_is_invalid(self):
-        SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
-        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch.object(self.dbm, '_save_document') as save_document:
-                with patch(
-                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
-                    get_reporter.return_value = Mock(spec=Entity)
-                    get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
-                    transport_info = TransportInfo('web', 'src', 'dest')
-                    values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
-
-                    request = Request(values, transport_info)
-                    self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                                      'nonexistant_form_code', values, [], transport_info,
-                                      request.message, '')
-                    get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
-                    save_document.assert_has_calls([call(SubmissionLogDocument())])
-
-    def test_save_survey_response_should_create_submission_when_form_is_inactive(self):
-        SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
-        SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
-
-        form_model = Mock(spec=FormModel)
-        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch(
-                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
-                get_reporter.return_value = Mock(spec=Entity)
-                patched_form_model.return_value = form_model
-                form_model.is_inactive.return_value = True
-                self.dbm._save_document.return_value = SubmissionLogDocument()
-
-                values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
-                transport_info = TransportInfo('web', 'src', 'dest')
-                request = Request(values, transport_info)
-                self.assertRaises(InactiveFormModelException, self.survey_response_service.save_survey,
-                                  'some_form_code', values, [], transport_info, request.message,'')
-                calls = [call(self.dbm, 'some_form_code')]
-                patched_form_model.assert_has_calls(calls)
-
-    def test_save_survey_response_should_create_submission_when_form_code_is_invalid(self):
-        SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
-        SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
-        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch.object(self.dbm, '_save_document') as save_document:
-                with patch(
-                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
-                    get_reporter.return_value = Mock(spec=Entity)
-                    get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
-                    transport_info = TransportInfo('web', 'src', 'dest')
-                    values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
-
-                    request = Request(values, transport_info)
-                    self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                                      'nonexistant_form_code', values, [], transport_info,
-                                      request.message, '')
-                    get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
-                    save_document.assert_has_calls([call(SubmissionLogDocument())])
-
-    def test_edit_survey_response_should_create_submission_when_form_is_inactive(self):
-        form_model = Mock(spec=FormModel)
-        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch(
-                    'mangrove.transport.services.survey_response_service.get_form_model_by_code') as patched_form_model:
-                get_reporter.return_value = Mock(spec=Entity)
-                patched_form_model.return_value = form_model
-                form_model.is_inactive.return_value = True
-                self.dbm._save_document.return_value = SubmissionLogDocument()
-
-                values = {'form_code': 'some_form_code', 'q1': 'a1', 'q2': 'a2'}
-                transport_info = TransportInfo('web', 'src', 'dest')
-                request = Request(values, transport_info)
-                self.assertRaises(InactiveFormModelException, self.survey_response_service.edit_survey,
-                                  'some_form_code',
-                                  values, [], transport_info, request.message, None)
-                calls = [call(self.dbm, 'some_form_code')]
-                patched_form_model.assert_has_calls(calls)
-
-    def test_save_survey_response_should_create_submission_when_form_code_is_invalid(self):
-        SubmissionLogDocument.__eq__ = assert_submission_log_is('nonexistant_form_code')
-        SurveyResponseDocument.__eq__ = assert_survey_response_doc_is('nonexistant_form_code')
-
-        with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
-            with patch.object(self.dbm, '_save_document') as save_document:
-                with patch(
-                        'mangrove.transport.services.survey_response_service.get_form_model_by_code') as get_form_model:
-                    get_reporter.return_value = Mock(spec=Entity)
-                    get_form_model.side_effect = FormModelDoesNotExistsException('nonexistant_form_code')
-                    transport_info = TransportInfo('web', 'src', 'dest')
-                    values = {'form_code': 'nonexistant_form_code', 'q1': 'a1', 'q2': 'a2'}
-
-                    request = Request(values, transport_info)
-                    self.assertRaises(FormModelDoesNotExistsException, self.survey_response_service.save_survey,
-                                      'nonexistant_form_code', values, [], transport_info,
-                                      request.message, '')
-                    get_form_model.assert_has_calls([call(self.dbm, 'nonexistant_form_code')])
-                    save_document.assert_has_calls([call(SubmissionLogDocument())])
 
     def form_model(self):
         string_type = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
@@ -175,7 +70,7 @@ class TestSurveyResponseService(TestCase):
                                       response.errors)
                     self.assertEquals(['clinic'], response.entity_type)
                     self.assertEquals(OrderedDict([('q1', 'a1')]), response.processed_data)
-                    self.assertIsNotNone(response.submission_id)
+                    self.assertIsNotNone(response.survey_response_id)
 
                     assert not survey_response.update.called
 
@@ -319,13 +214,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
                              response.processed_data)
 
-        submission = Submission.get(self.manager, response.survey_response_id)
-        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
-        self.assertEqual(test_data.form_model.revision, submission.form_model_revision)
-        self.assertEqual(test_data.entity1.short_code, submission.get_entity_short_code('ID'))
-        self.assertEqual(True, submission.status)
-        self.assertIsNotNone(submission.data_record)
-
         survey_response = SurveyResponse.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
@@ -352,13 +240,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual('1', response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
                              response.processed_data)
-
-        submission = Submission.get(self.manager, response.survey_response_id)
-        self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, submission.values)
-        self.assertEqual(test_data.form_model.revision, submission.form_model_revision)
-        self.assertEqual(test_data.entity1.short_code, submission.get_entity_short_code('ID'))
-        self.assertEqual(True, submission.status)
-        self.assertIsNotNone(submission.data_record)
 
         survey_response = SurveyResponse.get(self.manager, response.survey_response_id)
         self.assertDictEqual({'Q1': 'name', 'Q3': 'a', 'Q2': '80', 'ID': '1'}, survey_response.values)
@@ -403,11 +284,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertEqual('1', edited_response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
                              edited_response.processed_data)
-
-        submission = Submission.get(self.manager, edited_response.submission_id)
-        self.assertNotEquals(saved_response.submission_id, edited_response.submission_id)
-        self.assertIsNotNone(submission.form_model_revision)
-        self.assertDictEqual({'Q1': 'new_name', 'Q3': 'b', 'Q2': '430', 'ID': '1'}, submission.values)
 
         self.assertNotEquals(saved_response.datarecord_id, edited_response.datarecord_id)
 

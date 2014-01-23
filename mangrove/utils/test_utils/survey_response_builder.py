@@ -1,6 +1,5 @@
 from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.form_model.form_model import FORM_CODE
-from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.survey_response import SurveyResponse
 
 #TODO: Make all Tests use the build method
@@ -35,7 +34,7 @@ class TestSurveyResponseBuilder(object):
             SurveyResponseDocument(channel="transport", destination=12345, form_code=FORM_CODE,
                                    values={'Q1': 'ans12', 'Q2': 'ans22'}, status=True, error_message=""))
 
-        return [Submission.get(self.manager, id) for id in [doc_id1, doc_id2]]
+        return [SurveyResponse.get(self.manager, id) for id in [doc_id1, doc_id2]]
 
     def build_two_error_survey_responses(self):
         doc_id3 = self.manager._save_document(
@@ -45,5 +44,5 @@ class TestSurveyResponseBuilder(object):
             SurveyResponseDocument(channel="transport", destination=12345, form_code="def",
                                    values={'defQ1': 'defans12', 'defQ2': 'defans22'}, status=False, error_message=""))
 
-        return [Submission.get(self.manager, id) for id in [doc_id3, doc_id4]]
+        return [SurveyResponse.get(self.manager, id) for id in [doc_id3, doc_id4]]
 

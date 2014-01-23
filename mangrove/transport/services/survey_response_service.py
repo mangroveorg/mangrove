@@ -1,13 +1,12 @@
 from copy import copy
 import traceback
 from mangrove.datastore.entity import by_short_code
-from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_feed_document_by_id
+from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException
 from mangrove.errors.MangroveException import InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.transport.contract.submission import Submission
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.repository.survey_responses import SurveyResponse
@@ -20,20 +19,13 @@ class SurveyResponseService(object):
         self.feeds_dbm = feeds_dbm
         self.admin_id = admin_id
 
-    def _create_submission_log(self, transport_info, form_code, values):
-        submission = Submission(self.dbm, transport_info, form_code, values=copy(values))
-        submission.save()
-        return submission
-
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
                     additional_feed_dictionary=None):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
-        submission = self._create_submission_log(transport_info, form_code, copy(values))
         survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id,
                                          admin_id=self.admin_id or reporter_id)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
-        submission.update_form_model_revision(form_model.revision)
         survey_response.set_form(form_model)
 
         if form_model.is_inactive():
@@ -50,10 +42,7 @@ class SurveyResponseService(object):
             if form_submission.is_valid:
                 form_submission.save(self.dbm)
 
-            submission.update(form_submission.saved, form_submission.errors, form_model.entity_question.code,
-                              form_submission.short_code, form_submission.data_record_id, form_model.is_in_test_mode())
         except MangroveException as exception:
-            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             errors = exception.message
             raise
         finally:
@@ -71,16 +60,14 @@ class SurveyResponseService(object):
                 feed_create_errors += e.message + '\n'
                 feed_create_errors += traceback.format_exc()
         subject = form_submission.get_entity(self.dbm)
-        return Response(reporter_names, submission.uuid, survey_response.uuid, form_submission.saved,
+        return Response(reporter_names,  survey_response.uuid, form_submission.saved,
                         form_submission.errors, form_submission.data_record_id, form_submission.short_code,
                         form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
                         form_submission.form_model.form_code, feed_create_errors, subject=subject)
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
                     additional_feed_dictionary=None, owner_id=None):
-        submission = self._create_submission_log(transport_info, form_code, copy(values))
         form_model = get_form_model_by_code(self.dbm, form_code)
-        submission.update_form_model_revision(form_model.revision)
 
         if form_model.is_inactive():
             raise InactiveFormModelException(form_model.form_code)
@@ -93,8 +80,6 @@ class SurveyResponseService(object):
                     survey_response.owner_uid = reporter.id
                 survey_response.modified_by = self.admin_id or owner_id
                 survey_response = form.save()
-            submission.update(form.saved, form.errors, form.entity_question_code,
-                              form.short_code, form.data_record_id, form_model.is_in_test_mode())
             try:
                 feed_create_errors = None
                 if self.feeds_dbm:
@@ -108,11 +93,10 @@ class SurveyResponseService(object):
                 feed_create_errors += traceback.format_exc()
 
         except MangroveException as exception:
-            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
         finally:
             self.log_request(form.saved, transport_info.source, message)
-        return Response(reporter_names, submission.uuid, survey_response.uuid, form.saved,
+        return Response(reporter_names,  survey_response.uuid, form.saved,
                         form.errors, form.data_record_id, form.short_code,
                         form._cleaned_data, form.is_registration, form.entity_type,
                         form.form_model.form_code, feed_create_errors)

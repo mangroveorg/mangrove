@@ -1,18 +1,17 @@
 
 # coding=utf-8
 
-from copy import copy
+import inspect
+
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException, FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
-from mangrove.transport.contract.submission import Submission
 from mangrove.transport.work_flow import ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
 from mangrove.transport.player.handler import handler_factory
-import inspect
 
 
 class Player(object):
@@ -20,33 +19,17 @@ class Player(object):
         self.dbm = dbm
         self.location_tree = location_tree
 
-    def _create_submission(self, transport_info, form_code, values):
-        try:
-            form_model = get_form_model_by_code(self.dbm, form_code)
-            form_model_revision = form_model.revision
-        except FormModelDoesNotExistsException:
-            form_model_revision = None
-
-        submission = Submission(self.dbm, transport_info, form_code, form_model_revision, values)
-        submission.save()
-        return submission
-
-
-    def submit(self, form_model, values, submission, reporter_names, is_update=False):
+    def submit(self, form_model, values, reporter_names, is_update=False):
         try:
             if form_model.is_inactive():
                 raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)
-            response = handler.handle(form_model, cleaned_data, errors, submission.uuid, reporter_names,
+            response = handler.handle(form_model, cleaned_data, errors,  reporter_names,
                 self.location_tree)
-            submission.update(response.success, response.errors, form_model.entity_question.code, response.short_code,
-                response.datarecord_id,
-                form_model.is_in_test_mode())
             return response
         except MangroveException as exception:
-            submission.update(status=False, errors=exception.message, is_test_mode=form_model.is_in_test_mode())
             raise
 
 
@@ -108,10 +91,9 @@ class SMSPlayer(Player):
             return post_sms_processor_response
 
         reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
-        submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(values, form_code, reporter_entity)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
-        response = self.submit(form_model, values, submission, reporter_entity_names)
+        response = self.submit(form_model, values, reporter_entity_names)
         if logger is not None:
             log_entry += "Status: True" if response.success else "Status: False"
             logger.info(log_entry)
@@ -134,9 +116,8 @@ class WebPlayer(Player):
     def accept(self, request, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        submission = self._create_submission(request.transport, form_code, copy(values))
         form_model, values = self._process(form_code, values)
-        response = self.submit(form_model, values, submission, [], is_update=request.is_update)
+        response = self.submit(form_model, values, [], is_update=request.is_update)
 
         if logger is not None:
             log_entry = "message: " + str(request.message) + "|source: " + request.transport.source + "|"

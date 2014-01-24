@@ -111,9 +111,9 @@ class DataObject(object):
         if self.id is not None:
             self._dbm.delete(self)
 
-    def void(self):
+    def void(self, void=True):
         if self._doc is not None:
-            self._doc.void = True
+            self._doc.void = void
             self.save()
 
     def is_void(self):

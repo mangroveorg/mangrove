@@ -243,9 +243,9 @@ class FormModel(DataObject):
         cache_key = get_form_model_cache_key(self.form_code, self._dbm)
         cache_manger.delete(cache_key)
 
-    def void(self):
+    def void(self, void=True):
         self._delete_form_model_from_cache()
-        super(FormModel, self).void()
+        super(FormModel, self).void(void=void)
 
     def save(self):
         # convert fields and validators to json fields before save

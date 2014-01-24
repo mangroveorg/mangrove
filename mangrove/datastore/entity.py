@@ -366,24 +366,24 @@ class Entity(DataObject):
     #         result[row[u'event_time']][row['slug']] = row['value']
     #     return result
 
-    # def data_types(self, tags=None):
-    #     """
-    #     Returns a list of each type of data that is stored on this entity
-    #     """
-    #     assert tags is None or isinstance(tags, list) or is_string(tags)
-    #     if tags is None or is_empty(tags):
-    #         rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
-    #         result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
-    #     else:
-    #         if is_string(tags):
-    #             tags = [tags]
-    #         keys = []
-    #         for tag in tags:
-    #             rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
-    #             keys.append([row[u'value'] for row in rows])
-    #         ids_with_all_tags = list(set.intersection(*map(set, keys)))
-    #         result = get_datadict_types(self._dbm, ids_with_all_tags)
-    #     return result
+    def data_types(self, tags=None):
+        """
+        Returns a list of each type of data that is stored on this entity
+        """
+        assert tags is None or isinstance(tags, list) or is_string(tags)
+        if tags is None or is_empty(tags):
+            rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
+            result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
+        else:
+            if is_string(tags):
+                tags = [tags]
+            keys = []
+            for tag in tags:
+                rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
+                keys.append([row[u'value'] for row in rows])
+            ids_with_all_tags = list(set.intersection(*map(set, keys)))
+            result = get_datadict_types(self._dbm, ids_with_all_tags)
+        return result
 
     # def state(self):
     #     """

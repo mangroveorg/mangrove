@@ -105,10 +105,10 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         return [doc_id1, doc_id2, doc_id3, doc_id4]
 
 
-    def test_should_get_count_of_all_success_survey_responses(self):
-        self._prepare_survey_responses()
-        count = survey_response_count(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
-        self.assertEqual(2, count)
+    # def test_should_get_count_of_all_success_survey_responses(self):
+    #     self._prepare_survey_responses()
+    #     count = survey_response_count(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
+    #     self.assertEqual(2, count)
 
     def test_count_of_survey_responses_should_be_zero_when_form_code_not_existed(self):
         self._prepare_survey_responses()
@@ -124,12 +124,12 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, survey_responses[2].values)
 
 
-    def test_get_all_success_survey_responses_for_form(self):
-        self._prepare_survey_responses()
-        survey_responses = get_survey_responses(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
-        self.assertEquals(2, len(survey_responses))
-        self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, survey_responses[0].values)
-        self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, survey_responses[1].values)
+    # def test_get_all_success_survey_responses_for_form(self):
+    #     self._prepare_survey_responses()
+    #     survey_responses = get_survey_responses(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
+    #     self.assertEquals(2, len(survey_responses))
+    #     self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, survey_responses[0].values)
+    #     self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, survey_responses[1].values)
 
 
     def test_error_messages_are_being_logged_in_survey_responses(self):

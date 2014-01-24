@@ -342,15 +342,15 @@ class Entity(DataObject):
         """
         self._dbm.invalidate(uid)
 
-    # def invalidate(self):
-    #     """
-    #     Mark the entity as invalid.
-    #     This will also mark all associated data records as invalid.
-    #     """
-    #     self._doc.void = True
-    #     self.save()
-    #     for id in self._get_data_ids():
-    #         self.invalidate_data(id)
+    def invalidate(self):
+        """
+        Mark the entity as invalid.
+        This will also mark all associated data records as invalid.
+        """
+        self._doc.void = True
+        self.save()
+        for id in self._get_data_ids():
+            self.invalidate_data(id)
 
 
     # def get_all_data(self):
@@ -447,20 +447,20 @@ class Entity(DataObject):
         view_names = {u"latest": u"by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
 
-    # def _get_data_ids(self):
-    #     """
-    #     Returns a list of all data documents ids for this entity.
-    #     This should only be used internally to perform update actions on data records as necessary.
-    #     """
-    #     rows = self._get_rows()
-    #     return [row.id for row in rows]
-    #
-    # def _get_rows(self):
-    #     """
-    #     Return a list of all the data records associated with this
-    #     entity.
-    #     """
-    #     return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
+    def _get_data_ids(self):
+        """
+        Returns a list of all data documents ids for this entity.
+        This should only be used internally to perform update actions on data records as necessary.
+        """
+        rows = self._get_rows()
+        return [row.id for row in rows]
+
+    def _get_rows(self):
+        """
+        Return a list of all the data records associated with this
+        entity.
+        """
+        return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
 
     def _create_new_entity_doc(self, aggregation_paths, centroid, entity_type, geometry, gr_id, id, location,
                                short_code):

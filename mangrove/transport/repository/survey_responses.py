@@ -3,9 +3,9 @@ from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.transport.contract.survey_response import SurveyResponse
 
 ENTITY_QUESTION_DISPLAY_CODE = "q1"
-SUCCESS_SURVEY_RESPONSE_VIEW_NAME = "success_survey_response"
+# SUCCESS_SURVEY_RESPONSE_VIEW_NAME = "success_survey_response"
 UNDELETED_SURVEY_RESPONSE_VIEW_NAME = "undeleted_survey_response"
-DELETED_SURVEY_RESPONSE_VIEW_NAME = "deleted_survey_response"
+# DELETED_SURVEY_RESPONSE_VIEW_NAME = "deleted_survey_response"
 
 def survey_response_count(dbm, form_code, from_time, to_time, view_name="surveyresponse"):
     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
@@ -41,10 +41,10 @@ def survey_responses_by_form_code(dbm, form_code):
     return get_survey_responses(dbm, form_code, None, None)
 
 
-def count_valid_web_survey_responses(dbm, form_code, from_time, to_time):
-    startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
-    rows = dbm.load_all_rows_in_view('web_surveyresponse', descending=True, startkey=startkey, endkey=endkey)
-    return 0 if len(rows) == 0 else rows[0]['value']['count']
+# def count_valid_web_survey_responses(dbm, form_code, from_time, to_time):
+#     startkey, endkey = _get_start_and_end_key(form_code, from_time, to_time)
+#     rows = dbm.load_all_rows_in_view('web_surveyresponse', descending=True, startkey=startkey, endkey=endkey)
+#     return 0 if len(rows) == 0 else rows[0]['value']['count']
 
 
 def get_survey_responses_for_activity_period(dbm, form_code, from_time, to_time):

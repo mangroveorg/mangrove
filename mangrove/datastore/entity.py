@@ -81,35 +81,35 @@ def get_by_short_code_include_voided(dbm, short_code, entity_type):
     return _entity_by_short_code(dbm, short_code.lower(), entity_type)
 
 
-def get_entities_in(dbm, geo_path, type_path=None):
-    """
-    Retrieve an entity within the given fully-qualified geographic placename.
-    """
-    assert isinstance(dbm, DatabaseManager)
-    assert is_string(geo_path) or isinstance(geo_path, list)
-    assert is_string(type_path) or isinstance(type_path, list) or type_path is None
-
-    if is_string(geo_path):
-        geo_path = [geo_path]
-    if is_string(type_path):
-        type_path = [type_path]
-
-    entities = []
-
-    # if type is unspecified, then return all entities
-    if type_path is not None:
-        # TODO: is the type field necessarily a heirarchy?
-        # if not, then this needs to perform a query for each type and then take the intersection
-        # of the result sets
-        rows = dbm.load_all_rows_in_view(u'by_type_geo', key=(type_path + geo_path))
-        entities = dbm.get_many([row.id for row in rows], Entity)
-
-    # otherwise, filter by type
-    if type_path is None:
-        rows = dbm.load_all_rows_in_view(u'by_geo', key=geo_path)
-        entities = dbm.get_many([row.id for row in rows], Entity)
-
-    return entities
+# def get_entities_in(dbm, geo_path, type_path=None):
+#     """
+#     Retrieve an entity within the given fully-qualified geographic placename.
+#     """
+#     assert isinstance(dbm, DatabaseManager)
+#     assert is_string(geo_path) or isinstance(geo_path, list)
+#     assert is_string(type_path) or isinstance(type_path, list) or type_path is None
+#
+#     if is_string(geo_path):
+#         geo_path = [geo_path]
+#     if is_string(type_path):
+#         type_path = [type_path]
+#
+#     entities = []
+#
+#     # if type is unspecified, then return all entities
+#     if type_path is not None:
+#         # TODO: is the type field necessarily a heirarchy?
+#         # if not, then this needs to perform a query for each type and then take the intersection
+#         # of the result sets
+#         rows = dbm.load_all_rows_in_view(u'by_type_geo', key=(type_path + geo_path))
+#         entities = dbm.get_many([row.id for row in rows], Entity)
+#
+#     # otherwise, filter by type
+#     if type_path is None:
+#         rows = dbm.load_all_rows_in_view(u'by_geo', key=geo_path)
+#         entities = dbm.get_many([row.id for row in rows], Entity)
+#
+#     return entities
 
 
 def get_all_entities(dbm, entity_type=None):
@@ -342,55 +342,55 @@ class Entity(DataObject):
         """
         self._dbm.invalidate(uid)
 
-    def invalidate(self):
-        """
-        Mark the entity as invalid.
-        This will also mark all associated data records as invalid.
-        """
-        self._doc.void = True
-        self.save()
-        for id in self._get_data_ids():
-            self.invalidate_data(id)
+    # def invalidate(self):
+    #     """
+    #     Mark the entity as invalid.
+    #     This will also mark all associated data records as invalid.
+    #     """
+    #     self._doc.void = True
+    #     self.save()
+    #     for id in self._get_data_ids():
+    #         self.invalidate_data(id)
 
 
-    def get_all_data(self):
-        """
-        Return a dict where the first level of keys is the event time,
-        the second level is the data dict type slug, and the third
-        contains the value.
-        """
-        rows = self._dbm.load_all_rows_in_view(u'id_time_slug_value', key=self.id)
-        result = defaultdict(dict)
-        for row in rows:
-            row = row[u'value']
-            result[row[u'event_time']][row['slug']] = row['value']
-        return result
+    # def get_all_data(self):
+    #     """
+    #     Return a dict where the first level of keys is the event time,
+    #     the second level is the data dict type slug, and the third
+    #     contains the value.
+    #     """
+    #     rows = self._dbm.load_all_rows_in_view(u'id_time_slug_value', key=self.id)
+    #     result = defaultdict(dict)
+    #     for row in rows:
+    #         row = row[u'value']
+    #         result[row[u'event_time']][row['slug']] = row['value']
+    #     return result
 
-    def data_types(self, tags=None):
-        """
-        Returns a list of each type of data that is stored on this entity
-        """
-        assert tags is None or isinstance(tags, list) or is_string(tags)
-        if tags is None or is_empty(tags):
-            rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
-            result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
-        else:
-            if is_string(tags):
-                tags = [tags]
-            keys = []
-            for tag in tags:
-                rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
-                keys.append([row[u'value'] for row in rows])
-            ids_with_all_tags = list(set.intersection(*map(set, keys)))
-            result = get_datadict_types(self._dbm, ids_with_all_tags)
-        return result
+    # def data_types(self, tags=None):
+    #     """
+    #     Returns a list of each type of data that is stored on this entity
+    #     """
+    #     assert tags is None or isinstance(tags, list) or is_string(tags)
+    #     if tags is None or is_empty(tags):
+    #         rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
+    #         result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
+    #     else:
+    #         if is_string(tags):
+    #             tags = [tags]
+    #         keys = []
+    #         for tag in tags:
+    #             rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
+    #             keys.append([row[u'value'] for row in rows])
+    #         ids_with_all_tags = list(set.intersection(*map(set, keys)))
+    #         result = get_datadict_types(self._dbm, ids_with_all_tags)
+    #     return result
 
-    def state(self):
-        """
-        Returns a dictionary containing the current state of the entity.
-        Contains the latest value of each type of data stored on the entity.
-        """
-        return dict([(dd_type.slug, self.value(dd_type.slug)) for dd_type in self.data_types()])
+    # def state(self):
+    #     """
+    #     Returns a dictionary containing the current state of the entity.
+    #     Contains the latest value of each type of data stored on the entity.
+    #     """
+    #     return dict([(dd_type.slug, self.value(dd_type.slug)) for dd_type in self.data_types()])
 
 
     def value(self, label):
@@ -447,20 +447,20 @@ class Entity(DataObject):
         view_names = {u"latest": u"by_values_latest_by_time"}
         return view_names[aggregate_fn] if aggregate_fn in view_names else aggregate_fn
 
-    def _get_data_ids(self):
-        """
-        Returns a list of all data documents ids for this entity.
-        This should only be used internally to perform update actions on data records as necessary.
-        """
-        rows = self._get_rows()
-        return [row.id for row in rows]
-
-    def _get_rows(self):
-        """
-        Return a list of all the data records associated with this
-        entity.
-        """
-        return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
+    # def _get_data_ids(self):
+    #     """
+    #     Returns a list of all data documents ids for this entity.
+    #     This should only be used internally to perform update actions on data records as necessary.
+    #     """
+    #     rows = self._get_rows()
+    #     return [row.id for row in rows]
+    #
+    # def _get_rows(self):
+    #     """
+    #     Return a list of all the data records associated with this
+    #     entity.
+    #     """
+    #     return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
 
     def _create_new_entity_doc(self, aggregation_paths, centroid, entity_type, geometry, gr_id, id, location,
                                short_code):

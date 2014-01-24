@@ -1,6 +1,7 @@
 
 from datetime import *
-from mangrove.form_model.form_model import get_form_model_by_entity_type, list_form_models_by_code
+# from mangrove.form_model.form_model import get_form_model_by_entity_type
+from mangrove.form_model.form_model import list_form_models_by_code
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
@@ -300,19 +301,19 @@ class FormModelTest(MangroveTestCase):
         form_model2.form_code = "2"
         form_model2.save()
 
-    def test_should_return_none_if_no_registraion_form_found_for_entity_type(self):
-        self.assertIsNone(get_form_model_by_entity_type(self.manager, ['test']))
+    # def test_should_return_none_if_no_registraion_form_found_for_entity_type(self):
+    #     self.assertIsNone(get_form_model_by_entity_type(self.manager, ['test']))
 
-    def test_should_return_the_registration_form_model_for_the_entity_type(self):
-        field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
-        expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
-            entity_type=self.entity_type, is_registration_model=True)
-        expected_form_model.save()
-
-        reg_form_model = get_form_model_by_entity_type(self.manager, self.entity_type)
-        self.assertEqual(expected_form_model.id, reg_form_model.id)
-        self.assertEqual(expected_form_model.name, reg_form_model.name)
+    # def test_should_return_the_registration_form_model_for_the_entity_type(self):
+    #     field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
+    #         entity_question_flag=True, ddtype=self.default_ddtype)
+    #     expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
+    #         entity_type=self.entity_type, is_registration_model=True)
+    #     expected_form_model.save()
+    #
+    #     reg_form_model = get_form_model_by_entity_type(self.manager, self.entity_type)
+    #     self.assertEqual(expected_form_model.id, reg_form_model.id)
+    #     self.assertEqual(expected_form_model.name, reg_form_model.name)
 
     def test_should_save_form_model_with_validators(self):
         fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
@@ -334,6 +335,7 @@ class FormModelTest(MangroveTestCase):
         form = FormModel(self.manager, 'test_form', 'label', 'form_code2', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
+
 
         forms = list_form_models_by_code(self.manager, ['form_code1', 'form_code2'])
 

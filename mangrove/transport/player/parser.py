@@ -301,8 +301,8 @@ class XlsOrderedParser(XlsParser):
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
 
-            if self._is_empty(row):
-                continue
+            # if self._is_empty(row):
+            #     continue
 
             row = self._clean(row)
             values = dict(zip(header, row))
@@ -363,8 +363,8 @@ class XlsDatasenderParser(XlsParser):
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
 
-            if self._is_empty(row):
-                continue
+            # if self._is_empty(row):
+            #     continue
 
             row = self._clean(row)
             values = dict(zip(header, row))

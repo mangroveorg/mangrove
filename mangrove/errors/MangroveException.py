@@ -17,6 +17,11 @@ class DataObjectAlreadyExists(MangroveException):
         error_message = u"%s with %s = %s already exists." % (dataobject_name, param, value)
         MangroveException.__init__(self, error_message, (param, value, dataobject_name, existing_name))
 
+class EmptyRowException(MangroveException):
+    def __init__(self):
+        error_message = u"The row is empty"
+        MangroveException.__init__(self, message=error_message)
+
 
 class DataObjectNotFound(MangroveException):
     def __init__(self, dataobject_name, param, value):

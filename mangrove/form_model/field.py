@@ -525,7 +525,7 @@ class SelectField(Field):
     def convert_to_unicode(self):
         if self.value is None:
             return unicode("")
-        return unicode(",".join(self.value)) if isinstance(self.value, list) else unicode(self.value)
+        return unicode(",".join([unicode(i) for i in self.value])) if isinstance(self.value, list) else unicode(self.value)
 
     def _get_value_by_option(self, option):
         for opt in self.options:

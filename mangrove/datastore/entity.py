@@ -563,9 +563,13 @@ def _get_all_entities_of_type(dbm, entity_type):
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 
-def get_all_entities_include_voided(dbm):
-    rows = dbm.view.entity_by_short_code(reduce=False, include_docs=True)
-    return [_from_row_to_entity(dbm, row) for row in rows]
+def get_all_entities_include_voided(dbm, entity_type):
+    startkey = [entity_type]
+    endkey = [entity_type, {}]
+    rows = dbm.database.iterview('entity_by_short_code/entity_by_short_code', 1000, reduce=False, include_docs=True,
+                                 startkey=startkey, endkey=endkey)
+    for row in rows:
+        yield _from_row_to_entity(dbm, row)
 
 
 def _from_row_to_entity(dbm, row):

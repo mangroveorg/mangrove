@@ -35,7 +35,7 @@ def construct_global_registration_form(manager):
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
                           defaultValue="some default value",  ddtype=name_type,
-                          instruction="Enter a subject name", constraints=[TextLengthConstraint(max=20)], required=True)
+                          instruction="Enter a subject name", constraints=[TextLengthConstraint(max=80)], required=True)
     question3 = ShortCodeField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value", ddtype=name_type,
                           instruction="Enter a id, or allow us to generate it",

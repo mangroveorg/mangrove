@@ -88,6 +88,7 @@ class SMSPlayer(Player):
             if logger is not None:
                 log_entry += "Status: False"
                 logger.info(log_entry)
+            post_sms_processor_response.is_registration = True
             return post_sms_processor_response
 
         reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)

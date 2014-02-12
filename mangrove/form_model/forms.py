@@ -58,7 +58,7 @@ class EditSurveyResponseForm(object):
         return None
 
     def data(self):
-        return [(self.form_model._get_field_by_code(code).name, value, self.form_model._get_field_by_code(code).ddtype)
+        return [(self.form_model._get_field_by_code(code).name, value)
                 for (code, value) in
                 (self._cleaned_data.items())]
 

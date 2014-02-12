@@ -1,4 +1,3 @@
-from mangrove.datastore.datadict import create_datadict_type
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.tests.test_data import TestData
@@ -56,9 +55,8 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         self.assertTrue(deleted_feed_document.void)
 
     def create_reporter(self):
-        ddtype = create_datadict_type(self.manager, 'string', "string", "string", "string")
         r = Entity(self.manager, entity_type=["reporter"], short_code='ashwin')
-        r.add_data((('mobile_number','2998288332', ddtype),('name','ashwin', ddtype)))
+        r.add_data((('mobile_number','2998288332'),('name','ashwin')))
         r.save()
         return r
 

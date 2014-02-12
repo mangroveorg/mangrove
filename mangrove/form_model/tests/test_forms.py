@@ -1,7 +1,6 @@
 from unittest import TestCase
 from mangrove.transport.contract.transport_info import TransportInfo
 from mock import Mock, patch
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.documents import EntityDocument
 from mangrove.form_model.field import TextField
 from mangrove.datastore.entity import Entity
@@ -15,12 +14,10 @@ class TestEditSurveyResponseForm(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
 
     def test_valid_edit_survey_response_form(self):
-        ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
-            defaultValue="some default value", ddtype=ddtype)
+            defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
 
         survey_response = Mock(spec=SurveyResponse)
@@ -35,18 +32,16 @@ class TestEditSurveyResponseForm(TestCase):
             form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
             form.save()
 
-            expected_data = [('entity_question', 'a1', ddtype), ('question1_Name', 'a2', ddtype)]
+            expected_data = [('entity_question', 'a1'), ('question1_Name', 'a2')]
             survey_response.update.assert_called_once_with(form_model, expected_data, entity)
             #entity.update_latest_data.assert_called_once_with(data=expected_data)
             survey_response.set_status.assert_called_once_with('')
 
     def test_edit_survey_response_form_with_invalid_data(self):
-        ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
-            defaultValue="some default value", ddtype=ddtype)
+            defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
 
         survey_response = Mock(spec=SurveyResponse)
@@ -64,12 +59,10 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertEquals(form.errors, 'error')
 
     def test_edit_survey_response_form_for_previously_errored_survey_response(self):
-        ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
-            defaultValue="some default value", ddtype=ddtype)
+            defaultValue="some default value")
         form_model = FormModel(self.dbm, entity_type=['patient'], name="aids", label="Aids form_model",
             form_code="clinic", type='survey', fields=[question1, question2])
 
@@ -85,12 +78,10 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertTrue(form.is_valid)
 
     def test_edit_survey_response_form_with_missing_data(self):
-        ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
-            defaultValue="some default value", ddtype=ddtype)
+            defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
 
         survey_response = Mock(spec=SurveyResponse)
@@ -107,12 +98,10 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertEquals(form.errors, 'error')
 
     def test_save_of_edit_survey_response_form_with_invalid_data(self):
-        ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-            primitive_type='string')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True, ddtype=ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
-            defaultValue="some default value", ddtype=ddtype)
+            defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
 
         survey_response = Mock(spec=SurveyResponse)

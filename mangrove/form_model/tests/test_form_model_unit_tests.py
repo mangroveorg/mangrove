@@ -4,7 +4,6 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField
 # from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.form_model.form_model import FormModel
@@ -14,21 +13,20 @@ from mangrove.form_model.validation import NumericRangeConstraint, TextLengthCon
 class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
-        self.ddtype_mock = Mock(spec=DataDictType)
 
         q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                        entity_question_flag=True, ddtype=self.ddtype_mock)
+                        entity_question_flag=True)
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                        defaultValue="some default value",  constraints=[TextLengthConstraint(5, 10)],
-                       ddtype=self.ddtype_mock, required=False)
+                       required=False)
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                          constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.ddtype_mock, required=False)
+                          constraints=[NumericRangeConstraint(min=15, max=120)], required=False)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                         options=[("RED", 1), ("YELLOW", 2)], ddtype=self.ddtype_mock, required=False)
-        q5 = TextField(name="Desc", code="Q4", label="Description", ddtype=self.ddtype_mock, required=False)
+                         options=[("RED", 1), ("YELLOW", 2)], required=False)
+        q5 = TextField(name="Desc", code="Q4", label="Description", required=False)
         self.event_time_field_code = "Q6"
-        q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field", date_format = "%m.%d.%Y",ddtype=self.ddtype_mock, required=False,event_time_field_flag=True)
-        q7 = GeoCodeField(name="My Location", code="loc", label="Geo Location Field", ddtype=self.ddtype_mock, required=False)
+        q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field", date_format = "%m.%d.%Y", required=False,event_time_field_flag=True)
+        q7 = GeoCodeField(name="My Location", code="loc", label="Geo Location Field", required=False)
         self.form_model = FormModel(self.dbm, entity_type=["XYZ"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[q1, q2, q3, q4, q5, q6, q7])
 
@@ -126,8 +124,7 @@ class TestFormModel(unittest.TestCase):
     def test_should_assert_activity_report(self):
         question1 = TextField(name="question1_Name", code="Q1", label="What is your name",
                               defaultValue="some default value",
-                              constraints=[TextLengthConstraint(5, 10)],
-                              ddtype=self.ddtype_mock)
+                              constraints=[TextLengthConstraint(5, 10)])
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[question1])
         self.assertTrue(activity_report.is_entity_type_reporter())

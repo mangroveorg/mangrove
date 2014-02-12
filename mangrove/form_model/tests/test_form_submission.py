@@ -4,7 +4,6 @@ from mangrove.datastore.documents import EntityDocument
 from mock import Mock, patch, MagicMock
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity
 from mangrove.form_model.field import TextField, DateField
 from mangrove.form_model.form_model import FormModel
@@ -16,13 +15,13 @@ ENTITY_TYPE = ["Clinic"]
 class TestFormSubmission(unittest.TestCase):
     def _create_data_submission_form(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              entity_question_flag=True, ddtype=self.ddtype_mock)
+                              entity_question_flag=True)
         question2 = TextField(name="Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", ddtype=self.ddtype_mock)
+                              defaultValue="some default value")
         event_time_field_code = "ET"
         self.event_time_question = DateField(name="Event time", code=event_time_field_code,
                                              label="Event time field",
-                                             date_format="dd.mm.yyyy", ddtype=self.ddtype_mock, required=False,
+                                             date_format="dd.mm.yyyy", required=False,
                                              event_time_field_flag=True)
         return FormModel(self.dbm, entity_type=ENTITY_TYPE, name="aids", label="Aids form_model",
                          form_code="AIDS", type='survey',
@@ -30,7 +29,6 @@ class TestFormSubmission(unittest.TestCase):
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
-        self.ddtype_mock = Mock(spec=DataDictType)
         view_mock = Mock()
         view_mock.data_record_by_form_code.return_value = []
         view_mock.by_short_codes.return_value = None
@@ -71,10 +69,10 @@ class TestFormSubmission(unittest.TestCase):
         self.assertEqual(1, data_record_id)
 
     def _assert_data_submission_entity_mock(self, entity_mock, event_time=None):
-        submission_values = [('Name', 'My Name', self.ddtype_mock)]
+        submission_values = [('Name', 'My Name')]
         if event_time is not None:
-            submission_values.append(("Event time", event_time, self.ddtype_mock))
-        submission_values.append(('entity_question', '1', self.ddtype_mock))
+            submission_values.append(("Event time", event_time))
+        submission_values.append(('entity_question', '1'))
 
         submission_information = {'form_code': u'AIDS'}
         entity_mock.add_data.assert_called_once_with(data=submission_values,

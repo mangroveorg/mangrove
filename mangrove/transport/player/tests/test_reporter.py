@@ -3,7 +3,6 @@ from datetime import  datetime
 from mangrove.datastore.entity import create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.repository.reporters import find_reporter
 # from mangrove.transport.repository.reporters import find_reporter, get_reporters_who_submitted_data_for_frequency_period
@@ -23,30 +22,26 @@ class TestReporter(MangroveTestCase):
     def setUp(self):
         MangroveTestCase.setUp(self)
         define_type(self.manager, ["reporter"])
-        self.phone_number_type = DataDictType(self.manager, name='Telephone Number', slug='telephone_number',
-            primitive_type='string')
-        self.first_name_type = DataDictType(self.manager, name='First Name', slug='first_name',
-            primitive_type='string')
         #Register Reporter
         self.first_reporter = self.register(self.manager, entity_type=["reporter"],
-            data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                  (NAME_FIELD, "A", self.first_name_type)],
+            data=[(MOBILE_NUMBER_FIELD, "1234567890"),
+                  (NAME_FIELD, "A")],
             location=[],
             source="sms", short_code="REP1")
         self.register(self.manager, entity_type=["reporter"],
-            data=[(MOBILE_NUMBER_FIELD, "8888567890", self.phone_number_type),
-                  (NAME_FIELD, "B", self.first_name_type)],
+            data=[(MOBILE_NUMBER_FIELD, "8888567890"),
+                  (NAME_FIELD, "B")],
             location=[],
             source="sms", short_code="rep5")
         self.register(self.manager, entity_type=["reporter"],
-            data=[(MOBILE_NUMBER_FIELD, "1234567890", self.phone_number_type),
-                  (NAME_FIELD, "B", self.first_name_type)],
+            data=[(MOBILE_NUMBER_FIELD, "1234567890"),
+                  (NAME_FIELD, "B")],
             location=[],
             source="sms", short_code="REP2")
 
         self.register(self.manager, entity_type=["reporter"],
-            data=[(MOBILE_NUMBER_FIELD, "1234567891", self.phone_number_type),
-                  (NAME_FIELD, "C", self.first_name_type)],
+            data=[(MOBILE_NUMBER_FIELD, "1234567891"),
+                  (NAME_FIELD, "C")],
             location=[],
             source="sms", short_code="REP3")
 

@@ -1,7 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
 
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import SurveyResponseDocument, DataRecordDocument
 from mangrove.datastore.entity import DataRecord
@@ -178,7 +177,6 @@ class SurveyResponse(DataObject):
         Add a new datarecord to this Entity and return a UUID for the datarecord.
         Arguments:
             data: a sequence of ordered tuples, (label, value, type)
-                where type is a DataDictType
             event_time: the time at which the event occured rather than
                 when it was reported
             submission_id: an id to a 'submission' document in the
@@ -193,16 +191,16 @@ class SurveyResponse(DataObject):
         # init?
         if event_time is None:
             event_time = utcnow()
-        for (label, value, dd_type) in data:
-            if not isinstance(dd_type, DataDictType) or is_empty(label):
-                raise ValueError(u'Data must be of the form (label, value, DataDictType).')
+        for (label, value) in data:
+            if is_empty(label):
+                raise ValueError(u'Empty label')
         if multiple_records:
             data_list = []
-            for (label, value, dd_type) in data:
+            for (label, value) in data:
                 data_record = DataRecordDocument(
                     entity_doc=entity._doc,
                     event_time=event_time,
-                    data=[(label, value, dd_type)],
+                    data=[(label, value)],
                     submission=submission
                 )
                 data_list.append(data_record)

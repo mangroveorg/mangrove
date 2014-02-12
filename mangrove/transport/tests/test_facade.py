@@ -26,7 +26,7 @@ class TestActivityWorkFlow(unittest.TestCase):
         activity_report = ActivityReportWorkFlow(form_model=self.form_model_mock, reporter_entity= self.reporter_entity_mock)
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.is_entity_type_reporter = Mock(return_value=True)
-        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar", ddtype=Mock())
+        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar")
         self.reporter_entity_mock.short_code = 2
         self.assertEquals({'l':'None', 'foo':2}, activity_report.process({'l':'None'}))
 
@@ -34,21 +34,21 @@ class TestActivityWorkFlow(unittest.TestCase):
         activity_report = ActivityReportWorkFlow(form_model=self.form_model_mock, reporter_entity= self.reporter_entity_mock)
         self.form_model_mock.get_short_code = Mock(return_value='1')
         self.form_model_mock.is_entity_type_reporter = Mock(return_value=True)
-        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar", ddtype=Mock())
+        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar")
         self.assertEquals({'l':'None'}, activity_report.process({'l':'None'}))
 
     def test_should_not_generate_code_if_form_model_has_code_and_entity_type_is_not_reporter(self):
         activity_report = ActivityReportWorkFlow(form_model=self.form_model_mock, reporter_entity= self.reporter_entity_mock)
         self.form_model_mock.get_short_code = Mock(return_value='1')
         self.form_model_mock.is_entity_type_reporter = Mock(return_value=False)
-        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar", ddtype=Mock())
+        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar")
         self.assertEquals({'l':'None'}, activity_report.process({'l':'None'}))
 
     def test_should_not_generate_code_if_entity_type_is_reporter_and_form_model_dont_have_code(self):
         activity_report = ActivityReportWorkFlow(form_model=self.form_model_mock, reporter_entity= self.reporter_entity_mock)
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.is_entity_type_reporter = Mock(return_value=False)
-        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar", ddtype=Mock())
+        self.form_model_mock.entity_question = TextField(name="entity question", code="foo", label="bar")
         self.assertEquals({'l':'None'}, activity_report.process({'l':'None'}))
 
 class TestRegistrationWorkFlow(unittest.TestCase):
@@ -69,7 +69,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree())
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.entity_type=['clinic']
-        self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar", ddtype=Mock())
+        self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar")
         values = registration_work_flow.process({'t': 'clinic', 'l':'pune'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['pune', 'mh', 'india']}, values)
 

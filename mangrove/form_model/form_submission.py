@@ -70,7 +70,7 @@ class FormSubmission(object):
         return self.data_record_id
 
     def _to_three_tuple(self):
-        return [(self.form_model._get_field_by_code(code).name, value, self.form_model._get_field_by_code(code).ddtype)
+        return [(self.form_model._get_field_by_code(code).name, value)
                 for (code, value) in
                 (self.cleaned_data.items())]
 

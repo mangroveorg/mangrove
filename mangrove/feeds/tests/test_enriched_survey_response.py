@@ -4,7 +4,6 @@ from mock import Mock, PropertyMock, patch
 from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.field import SelectField, DateField, TextField, IntegerField
 from mangrove.form_model.form_model import FormModel
@@ -16,7 +15,6 @@ class TestSurveyResponseEventBuilder(TestCase):
     def setUp(self):
         self.survey_response = Mock(spec=SurveyResponse)
         self.form_model = Mock(spec=FormModel)
-        self.ddtype = Mock(spec=DataDictType)
         self.dbm = Mock(spec=DatabaseManager)
 
     def test_raise_exception_when_value_for_selected_option_not_found(self):
@@ -24,7 +22,7 @@ class TestSurveyResponseEventBuilder(TestCase):
             options = [{'text': 'orange', 'val': 'a'}]
 
             self.form_model.fields = [
-                SelectField('name', 'q1', 'label', options, self.ddtype, single_select_flag=False)]
+                SelectField('name', 'q1', 'label', options, single_select_flag=False)]
             type(self.survey_response).values = PropertyMock(return_value={'q1': 'ba'})
             self.survey_response.id = 'someid'
 
@@ -42,7 +40,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).values = value_mock
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
-        dictionary = builder._create_answer_dictionary(DateField('name', 'q3', 'date lab', 'dd.mm.yyyy', self.ddtype))
+        dictionary = builder._create_answer_dictionary(DateField('name', 'q3', 'date lab', 'dd.mm.yyyy'))
         self.assertEquals('dd.mm.yyyy', dictionary.get('format'))
         self.assertEquals('21.03.2011', dictionary.get('answer'))
         self.assertEquals('date lab', dictionary.get('label'))
@@ -54,7 +52,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'multi select',
                                    [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-                                    {'text': 'apple', 'val': 'c'}], self.ddtype,
+                                    {'text': 'apple', 'val': 'c'}],
                                    single_select_flag=False)
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
@@ -69,7 +67,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         type(self.survey_response).values = value_mock
         select_field = SelectField('name', 'q4', 'select',
                                    [{'text': 'orange', 'val': 'a'}, {'text': 'mango', 'val': 'b'},
-                                    {'text': 'apple', 'val': 'c'}], self.ddtype)
+                                    {'text': 'apple', 'val': 'c'}])
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
         dictionary = builder._create_answer_dictionary(select_field)
@@ -81,7 +79,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_question_code_case_mismatch_gives_right_value(self):
         value_mock = PropertyMock(return_value={'Q4': '23'})
         type(self.survey_response).values = value_mock
-        number_field = IntegerField('name', 'q4', 'age', self.ddtype)
+        number_field = IntegerField('name', 'q4', 'age')
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
         dictionary = builder._create_answer_dictionary(number_field)
@@ -93,7 +91,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_subject_answer_has_name_of_subject(self):
         value_mock = PropertyMock(return_value={'Q1': 'cli001'})
         type(self.survey_response).values = value_mock
-        subject_field = TextField('name', 'q1', 'Reporting for Subject', self.ddtype, entity_question_flag=True)
+        subject_field = TextField('name', 'q1', 'Reporting for Subject', entity_question_flag=True)
         type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
         type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, {})
@@ -114,7 +112,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_subject_answer_id_as_value_rather_than_name_when_subject_is_not_existing(self):
         survey_response = Mock(spec=SurveyResponse)
         type(survey_response).values = PropertyMock(return_value={'q1': 'cli001'})
-        subject_field = TextField('name', 'q1', 'Reporting for Subject', self.ddtype, entity_question_flag=True)
+        subject_field = TextField('name', 'q1', 'Reporting for Subject', entity_question_flag=True)
         type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
         type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, {})
@@ -133,7 +131,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_data_sender_answer_not_included(self):
         value_mock = PropertyMock(return_value={'Q1': 'rep023'})
         type(self.survey_response).values = value_mock
-        data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', self.ddtype, entity_question_flag=True)
+        data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', entity_question_flag=True)
         type(self.form_model).fields = [data_sender_field]
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
         type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
@@ -164,7 +162,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.survey_response.is_void.return_value = False
         type(self.survey_response).values = PropertyMock(return_value={'q1': 'something'})
         type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
-        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        field = TextField('name', 'q1', 'A Question')
         type(self.form_model).fields = PropertyMock(return_value=[field])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, {})
 
@@ -182,7 +180,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.survey_response.is_void.return_value = False
         type(self.survey_response).values = PropertyMock(return_value={})
         type(self.survey_response).modified = PropertyMock(return_value=datetime.now())
-        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        field = TextField('name', 'q1', 'A Question')
         type(self.form_model).fields = PropertyMock(return_value=[field])
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, {})
 
@@ -220,7 +218,7 @@ class TestSurveyResponseEventBuilder(TestCase):
                                    [{'text': 'orange', 'val': '1a'},
                                     {'text': 'watermelon', 'val': '1b'},
                                     {'text': 'strawberry', 'val': '1c'},
-                                    {'text': 'apple', 'val': 'c'}], self.ddtype,
+                                    {'text': 'apple', 'val': 'c'}],
                                    single_select_flag=False)
 
         builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
@@ -230,7 +228,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.assertEquals('select', dictionary.get('type'))
 
     def test_update_enriched_survey_response_with_new_survey_response_values(self):
-        field = TextField('name', 'q1', 'A Question', self.ddtype)
+        field = TextField('name', 'q1', 'A Question')
         type(self.form_model).fields = PropertyMock(return_value=[field])
 
         type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])

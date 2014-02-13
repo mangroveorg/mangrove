@@ -11,7 +11,7 @@ from mangrove.form_model.field import  TextField, IntegerField, SelectField, Dat
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
-from mangrove.utils.form_model_builder import FormModelBuilder, create_default_ddtype
+from mangrove.utils.form_model_builder import FormModelBuilder
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 
@@ -68,7 +68,7 @@ class FormModelTest(MangroveTestCase):
             self.form_model.create_snapshot()
             self.form_model.delete_field(code="Q3")
             field = SelectField(name="New Name%s" % i, code="Q3", label="What is your favourite color",
-                options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+                options=[("RED", 1), ("YELLOW", 2)])
             self.form_model.add_field(field)
             self.form_model.save()
         updated_form = FormModel.get(self.manager, self.form_model_id)
@@ -77,7 +77,7 @@ class FormModelTest(MangroveTestCase):
     def test_should_get_latest_field_if_no_revision_provided_and_no_snapshots(self):
         self.form_model.delete_field(code="Q3")
         field = SelectField(name="New Name", code="Q3", label="What is your favourite color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+            options=[("RED", 1), ("YELLOW", 2)])
         self.form_model.add_field(field)
         self.form_model.save()
         updated_form = FormModel.get(self.manager, self.form_model_id)
@@ -88,14 +88,14 @@ class FormModelTest(MangroveTestCase):
         self.form_model.create_snapshot()
         self.form_model.delete_field(code="Q3")
         field = SelectField(name="New Name", code="Q3", label="What is your favourite color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+            options=[("RED", 1), ("YELLOW", 2)])
         self.form_model.add_field(field)
         self.form_model.save()
         updated_form = FormModel.get(self.manager, self.form_model_id)
         self.assertEqual("Color", updated_form.get_field_by_code_and_rev("Q3", rev).name)
 
     def test_should_get_fields_excludes_reporting_period_field(self):
-        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy", ddtype=self.default_ddtype,
+        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy",
             event_time_field_flag=True)
         self.form_model.add_field(dateField)
         self.form_model.save()
@@ -105,7 +105,7 @@ class FormModelTest(MangroveTestCase):
         self.assertEqual(4, len(form_model.non_rp_fields_by()))
 
     def test_should_get_fields_excludes_reporting_period_field_if_revision_provided(self):
-        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy", ddtype=self.default_ddtype,
+        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy",
             event_time_field_flag=True)
         rev = self.form_model.revision
         self.form_model.add_field(dateField)
@@ -133,7 +133,7 @@ class FormModelTest(MangroveTestCase):
 
     def test_should_add_new_field(self):
         form_model = FormModel.get(self.manager, self.form_model_id)
-        question = TextField(name="added_question", code="Q4", label="How are you", ddtype=self.default_ddtype)
+        question = TextField(name="added_question", code="Q4", label="How are you")
         form_model.add_field(question)
         form_model.save()
 
@@ -159,23 +159,21 @@ class FormModelTest(MangroveTestCase):
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):
             form_model = FormModel.get(self.manager, self.form_model_id)
-            question = TextField(name="added_question", code="Q5", label="How are you", entity_question_flag=True,
-                ddtype=self.default_ddtype)
+            question = TextField(name="added_question", code="Q5", label="How are you", entity_question_flag=True )
             form_model.add_field(question)
             form_model.save()
 
     def test_should_raise_exception_if_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):
             form_model = FormModel.get(self.manager, self.form_model_id)
-            question = TextField(name="added_question", code="q1", label="How are you", ddtype=self.default_ddtype)
+            question = TextField(name="added_question", code="q1", label="How are you")
             form_model.add_field(question)
             form_model.save()
 
     def test_should_raise_exception_if_label_is_not_unique(self):
         with self.assertRaises(QuestionAlreadyExistsException):
             form_model = FormModel.get(self.manager, self.form_model_id)
-            question = TextField(name="added_question", code="q5", label="What is your name",
-                ddtype=self.default_ddtype)
+            question = TextField(name="added_question", code="q5", label="What is your name")
             form_model.add_field(question)
             form_model.save()
 
@@ -183,14 +181,6 @@ class FormModelTest(MangroveTestCase):
         form_model = FormModel.get(self.manager, self.form_model_id)
         form_model.form_code = "xyz"
         self.assertEquals(form_model.form_code, "xyz")
-
-    def test_should_persist_ddtype(self):
-        form_model = FormModel.get(self.manager, self.form_model_id)
-
-        for field in form_model.fields:
-            self.assertEqual(field.ddtype.slug, self.default_ddtype.slug)
-            self.assertEqual(field.ddtype.id, self.default_ddtype.id)
-            self.assertEqual(field.ddtype.name, self.default_ddtype.name)
 
     def test_should_set_entity_type(self):
         form_model = FormModel.get(self.manager, self.form_model_id)
@@ -206,7 +196,6 @@ class FormModelTest(MangroveTestCase):
                 "label": "Entity being reported on",
                 "entity_question_flag": True,
                 "type": "text",
-                "ddtype": self.default_ddtype.to_json(),
                 "code": "eid",
                 "constraints": [("length", {"min": 1, "max": 10})],
                 "required": True
@@ -218,7 +207,6 @@ class FormModelTest(MangroveTestCase):
                 })],
                 "label": "",
                 "type": "integer",
-                "ddtype": self.default_ddtype.to_json(),
                 "name": "What is your age?",
                 "code": "AGE",
                 "required": False
@@ -234,7 +222,6 @@ class FormModelTest(MangroveTestCase):
                 ],
                 "label": "",
                 "type": "select",
-                "ddtype": self.default_ddtype.to_json(),
                 "name": "Where do you live?",
                 "code": "PLC",
                 "required": False
@@ -250,12 +237,12 @@ class FormModelTest(MangroveTestCase):
         document.type = "survey"
         entityQ = TextField(name="What are you reporting on?", code="eid",
             label="Entity being reported on", entity_question_flag=True,
-            constraints=[TextLengthConstraint(min=1, max=10)], ddtype=self.default_ddtype)
+            constraints=[TextLengthConstraint(min=1, max=10)])
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
-            constraints=[NumericRangeConstraint(min=0, max=10)], ddtype=self.default_ddtype, required=False)
+            constraints=[NumericRangeConstraint(min=0, max=10)], required=False)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
             options=[{"text": "Pune"}, {"text": "Bangalore"}],
-            single_select_flag=False, ddtype=self.default_ddtype, required=False)
+            single_select_flag=False, required=False)
         questions = [entityQ, ageQ, placeQ]
         questionnaire = FormModel.new_from_doc(self.manager, document)
         self.maxDiff = None
@@ -276,7 +263,7 @@ class FormModelTest(MangroveTestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True)
         form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
@@ -284,7 +271,7 @@ class FormModelTest(MangroveTestCase):
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True)
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -294,7 +281,7 @@ class FormModelTest(MangroveTestCase):
 
     def test_should_not_raise_exception_if_form_code_is_updated(self):
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True)
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -306,7 +293,7 @@ class FormModelTest(MangroveTestCase):
 
     # def test_should_return_the_registration_form_model_for_the_entity_type(self):
     #     field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-    #         entity_question_flag=True, ddtype=self.default_ddtype)
+    #         entity_question_flag=True)
     #     expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
     #         entity_type=self.entity_type, is_registration_model=True)
     #     expected_form_model.save()
@@ -316,7 +303,7 @@ class FormModelTest(MangroveTestCase):
     #     self.assertEqual(expected_form_model.name, reg_form_model.name)
 
     def test_should_save_form_model_with_validators(self):
-        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
+        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'foo', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
@@ -326,12 +313,12 @@ class FormModelTest(MangroveTestCase):
         self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
 
     def test_should_batch_get_form_models(self):
-        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
+        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code1', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
 
-        fields = [TextField('name', 'eid', 'label', self.default_ddtype, entity_question_flag=True)]
+        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code2', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
@@ -353,16 +340,14 @@ class FormModelTest(MangroveTestCase):
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]
-        self.default_ddtype = create_default_ddtype(self.manager)
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True, ddtype=self.default_ddtype)
+            entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-            defaultValue="some default value", constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")],
-            ddtype=self.default_ddtype)
+            defaultValue="some default value", constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")] )
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.default_ddtype)
+            constraints=[NumericRangeConstraint(min=15, max=120)])
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.default_ddtype)
+            options=[("RED", 1), ("YELLOW", 2)])
         self.form_model = FormModelBuilder(self.manager, self.entity_type, "1", 'survey').label("Aids form_model").name(
             "aids").add_fields(question1,
             question2, question3, question4).build()
@@ -370,8 +355,8 @@ class FormModelTest(MangroveTestCase):
 
     def test_event_time_value_should_return_datetime(self):
         entity_type = ["HealthFacility", "Clinic"]
-        default_ddtype = create_default_ddtype(self.manager)
-        date_question = DateField("entity_question", "ID", "What is the reporting date", 'dd.mm.yyyy', default_ddtype,
+
+        date_question = DateField("entity_question", "ID", "What is the reporting date", 'dd.mm.yyyy',
             event_time_field_flag=True)
         form_model = FormModelBuilder(self.manager, entity_type, "2", 'survey').label("Aids form_model").name(
             "aids").add_fields(date_question).build()

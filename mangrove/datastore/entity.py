@@ -4,7 +4,6 @@ import copy
 from datetime import datetime
 from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
-from mangrove.datastore.datadict import DataDictType, get_datadict_types
 from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
 from mangrove.utils.types import is_empty
@@ -131,14 +130,10 @@ def get_short_codes_by_entity_type(dbm, entity_type):
 
 def get_entities_by_value(dbm, label, value, as_of=None):
     """
-    Returns all entities with the given value for a label(DataDict)
+    Returns all entities with the given value for a label
     """
     assert isinstance(dbm, DatabaseManager)
-    assert isinstance(label, DataDictType) or is_string(label)
     assert as_of is None or isinstance(as_of, datetime)
-    if isinstance(label, DataDictType):
-        label = label.slug
-
     rows = dbm.load_all_rows_in_view(u'by_label_value', key=[label, value])
     entities = dbm.get_many([row[u'value'] for row in rows], Entity)
 
@@ -150,10 +145,7 @@ def entities_exists_with_value(dbm, entity_type, label, value):
     Returns true if entity with the given value for the label exists
     """
     assert isinstance(dbm, DatabaseManager)
-    assert isinstance(label, DataDictType) or is_string(label)
-    if isinstance(label, DataDictType):
-        label = label.slug
-
+    assert is_string(label)
     rows = dbm.load_all_rows_in_view(u'entity_by_label_value', key=[entity_type, label, value])
     return is_not_empty(rows)
 
@@ -287,7 +279,6 @@ class Entity(DataObject):
         Add a new datarecord to this Entity and return a UUID for the datarecord.
         Arguments:
             data: a sequence of ordered tuples, (label, value, type)
-                where type is a DataDictType
             event_time: the time at which the event occured rather than
                 when it was reported
             submission_id: an id to a 'submission' document in the
@@ -302,17 +293,17 @@ class Entity(DataObject):
         # init?
         if event_time is None:
             event_time = utcnow()
-        for (label, value, dd_type) in data:
-            if not isinstance(dd_type, DataDictType) or is_empty(label):
-                raise ValueError(u'Data must be of the form (label, value, DataDictType).')
+        for (label, value) in data:
+            if is_empty(label):
+                raise ValueError(u'Data must be of the form (label, value).')
         self.update_latest_data(data=data)
         if multiple_records:
             data_list = []
-            for (label, value, dd_type) in data:
+            for (label, value) in data:
                 data_record = DataRecordDocument(
                     entity_doc=self._doc,
                     event_time=event_time,
-                    data=[(label, value, dd_type)],
+                    data=[(label, value)],
                     submission=submission
                 )
                 data_list.append(data_record)
@@ -327,8 +318,8 @@ class Entity(DataObject):
             return self._dbm._save_document(data_record_doc)
 
     def update_latest_data(self, data):
-        for (label, value, dd_type) in data:
-            self.data[label] = {'value': value, 'type': dd_type._doc.unwrap()}
+        for (label, value) in data:
+            self.data[label] = {'value': value}
         self.save()
 
     def invalidate_data(self, uid):
@@ -366,40 +357,12 @@ class Entity(DataObject):
     #         result[row[u'event_time']][row['slug']] = row['value']
     #     return result
 
-    def data_types(self, tags=None):
-        """
-        Returns a list of each type of data that is stored on this entity
-        """
-        assert tags is None or isinstance(tags, list) or is_string(tags)
-        if tags is None or is_empty(tags):
-            rows = self._dbm.load_all_rows_in_view(u'entity_datatypes', key=self.id)
-            result = get_datadict_types(self._dbm, [row[u'value'] for row in rows])
-        else:
-            if is_string(tags):
-                tags = [tags]
-            keys = []
-            for tag in tags:
-                rows = self._dbm.load_all_rows_in_view(u'entity_datatypes_by_tag', key=[self.id, tag])
-                keys.append([row[u'value'] for row in rows])
-            ids_with_all_tags = list(set.intersection(*map(set, keys)))
-            result = get_datadict_types(self._dbm, ids_with_all_tags)
-        return result
-
-    # def state(self):
-    #     """
-    #     Returns a dictionary containing the current state of the entity.
-    #     Contains the latest value of each type of data stored on the entity.
-    #     """
-    #     return dict([(dd_type.slug, self.value(dd_type.slug)) for dd_type in self.data_types()])
-
 
     def value(self, label):
         """
             Returns the latest value for the given label.
         """
-        assert isinstance(label, DataDictType) or is_string(label)
-        if isinstance(label, DataDictType):
-            label = label.slug
+        assert is_string(label)
         field = self.data.get(label)
         return field.get('value') if field is not None else None
 

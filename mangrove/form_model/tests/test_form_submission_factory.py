@@ -4,7 +4,6 @@ from couchdb.mapping import Document
 from mock import Mock, patch
 from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.documents import  DataRecordDocument, EntityDocument, DocumentBase
 from mangrove.datastore.entity import DataRecord
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
@@ -41,7 +40,7 @@ class TestFormSubmissionFactory(unittest.TestCase):
         mocked_form_model.entity_type = "clinic"
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
 
-        form_submission._values.insert(0,(u'What are symptoms?', ['High Fever'],Mock(DataDictType)))
+        form_submission._values.insert(0,(u'What are symptoms?', ['High Fever']))
 
         mock_dbm = Mock(DatabaseManager)
         data_record = DataRecord(mock_dbm)

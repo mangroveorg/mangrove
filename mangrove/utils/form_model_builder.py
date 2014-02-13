@@ -1,4 +1,3 @@
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity_type import entity_type_already_defined, define_type
 from mangrove.form_model.form_model import FormModel
 
@@ -40,8 +39,3 @@ class FormModelBuilder(object):
             form_code=self._form_code, type=self._type, fields=self._fields, is_registration_model=self._is_reg)
         form_model_id = self.form_model.save()
         return FormModel.get(self._manager, form_model_id)
-
-def create_default_ddtype(manager):
-    default_ddtype = DataDictType(manager, name='default dd type', slug='slug_name',primitive_type='text')
-    default_ddtype.save()
-    return default_ddtype

@@ -20,7 +20,6 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
 SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
-from mangrove.datastore.datadict import DataDictType, get_datadict_type_by_slug
 from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, ut_reporter_id
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -59,27 +58,16 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.dbm = create_db('mangrove-test')
         initializer.initial_data_setup(cls.dbm)
 
-        cls.name_type = get_datadict_type_by_slug(cls.dbm, "name")
         safe_define_type(cls.dbm, ["dog"])
         cls.entity_type = ["healthfacility", "clinic"]
         safe_define_type(cls.dbm, cls.entity_type)
-        cls.telephone_number_type = DataDictType(cls.dbm, name='telephone_number', slug='telephone_number',
-            primitive_type='string')
-        cls.entity_id_type = DataDictType(cls.dbm, name='Entity Id Type', slug='entity_id',
-            primitive_type='string')
-        cls.stock_type = DataDictType(cls.dbm, name='Stock Type', slug='stock', primitive_type='integer')
-        cls.color_type = DataDictType(cls.dbm, name='Color Type', slug='color', primitive_type='string')
-
-        cls.telephone_number_type.save()
-        cls.stock_type.save()
-        cls.color_type.save()
 
         cls.entity_short_code = uniq("cli")
         cls.entity = create_entity(cls.dbm, entity_type=cls.entity_type,
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.entity_short_code,
         )
 
-        cls.data_record_id = cls.entity.add_data(data=[("Name", "Ruby", cls.name_type)],
+        cls.data_record_id = cls.entity.add_data(data=[("Name", "Ruby")],
             submission=dict(submission_id="1"))
 
         cls.reporter_id = "rep" + str(int(random.random()*10000))
@@ -88,19 +76,18 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         )
 
         cls.phone_number = str(int(random.random() * 10000000))
-        cls.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, cls.phone_number, cls.telephone_number_type),
-            (NAME_FIELD, "Test_reporter", cls.name_type)], submission=dict(submission_id="2"))
+        cls.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, cls.phone_number),
+            (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True, ddtype=cls.entity_id_type)
+             entity_question_flag=True)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
-            constraints=[TextLengthConstraint(4, 15)],
-            ddtype=cls.name_type, required=False)
+            constraints=[TextLengthConstraint(4, 15)], required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=cls.stock_type, required=False)
+            constraints=[NumericRangeConstraint(min=15, max=120)], required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=cls.color_type, required=False)
+            options=[("RED", 1), ("YELLOW", 2)], required=False)
 
         try:
             cls.form_model = get_form_model_by_code(cls.dbm, "clinic")
@@ -130,9 +117,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
-        self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
-        self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
-        self.assertEqual(self.color_type.slug, data_record.data["Color"]["type"]["slug"])
         self.assertEqual("clinic", data_record.submission['form_code'])
         self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
 
@@ -142,16 +126,18 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_save_submitted_sms_for_activity_report(self):
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True, ddtype=self.entity_id_type)
+             entity_question_flag=True )
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
-            constraints=[TextLengthConstraint(4, 15)],
-            ddtype=self.name_type)
+            constraints=[TextLengthConstraint(4, 15)] )
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type)
+            constraints=[NumericRangeConstraint(min=15, max=120)] )
         activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
             form_code="acp", type='survey', fields=[question1, question2, question3])
-        activity_report.save()
+        try:
+            activity_report.save()
+        except DataObjectAlreadyExists:
+            activity_report = get_form_model_by_code(self.dbm, "acp")
 
         text = "acp .name tester .ARV 50 "
 
@@ -162,8 +148,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
         data_record_id = response.datarecord_id
         data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
-        self.assertEqual(self.name_type.slug, data_record.data["Name"]["type"]["slug"])
-        self.assertEqual(self.stock_type.slug, data_record.data["Arv stock"]["type"]["slug"])
         self.assertEqual("acp", data_record.submission['form_code'])
         data = self.reporter.values({"Name": "latest", "Arv stock": "latest"})
         self.assertEquals(data["Arv stock"], 50)

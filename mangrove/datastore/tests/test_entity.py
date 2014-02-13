@@ -3,7 +3,6 @@ from datetime import datetime
 import unittest
 from mock import Mock, patch
 from pytz import UTC
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, get_all_entities, DataRecord, void_entity, get_by_short_code_include_voided
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound, FailedToSaveDataObject
@@ -45,22 +44,13 @@ class TestEntity(unittest.TestCase):
         void_entity(self.manager, entity_type, short_code)
         with self.assertRaises(DataObjectNotFound):
             get_by_short_code(self.manager, short_code, entity_type)
-
-    def _create_ddtypes(self):
-        bed_ddtype = DataDictType(self.manager, name='beds', slug='beds', primitive_type='number')
-        med_ddtype = DataDictType(self.manager, name='meds', slug='meds', primitive_type='number')
-        patient_ddtype = DataDictType(self.manager, name='patients', slug='patients', primitive_type='number')
-        bed_ddtype.save()
-        med_ddtype.save()
-        patient_ddtype.save()
-        return bed_ddtype, med_ddtype
-
-    def _add_data(self, bed_ddtype, e, med_ddtype):
-        data = [('beds', 10, bed_ddtype), ('meds', 20, med_ddtype)]
+            
+    def _add_data(self,e):
+        data = [('beds', 10), ('meds', 20)]
         data_record_id1 = e.add_data(data=data)
-        data = [('patients', 10, bed_ddtype), ('meds', 10, med_ddtype)]
+        data = [('patients', 10), ('meds', 10)]
         data_record_id2 = e.add_data(data=data)
-        data = [('beds', 20, bed_ddtype), ('patients', 20, med_ddtype)]
+        data = [('beds', 20), ('patients', 20)]
         data_record_id3 = e.add_data(data=data)
         return data_record_id1, data_record_id2, data_record_id3
 
@@ -77,8 +67,7 @@ class TestEntity(unittest.TestCase):
         uuid = e.save()
         self.assertTrue(uuid)
 
-        bed_ddtype, med_ddtype = self._create_ddtypes()
-        data_record_id1, data_record_id2, data_record_id3 = self._add_data(bed_ddtype, e, med_ddtype)
+        data_record_id1, data_record_id2, data_record_id3 = self._add_data(e)
 
         void_entity(self.manager, entity_type, short_code)
         with self.assertRaises(DataObjectNotFound):
@@ -296,10 +285,10 @@ class TestEntity(unittest.TestCase):
         self.assertEqual(e.type_path, existing.type_path)
 
     def test_latest_value_are_stored_in_entity(self):
-        data_record = [('meds', 30, self.test_data.dd_types['meds']),
-                       ('doc', "asif", self.test_data.dd_types['doctors']),
-                       ('facility', 'clinic', self.test_data.dd_types['facility']),
-                       ('opened_on', datetime(2011, 01, 02, tzinfo=UTC), self.test_data.dd_types['facility'])]
+        data_record = [('meds', 30),
+                       ('doc', "asif"),
+                       ('facility', 'clinic'),
+                       ('opened_on', datetime(2011, 01, 02, tzinfo=UTC))]
         entity = self.reload_entity(self.test_data.entity1)
         data_record_id = entity.add_data(data=data_record,
                                          event_time=datetime(2011, 01, 02, tzinfo=UTC),
@@ -314,7 +303,7 @@ class TestEntity(unittest.TestCase):
 
     def test_invalidate_data(self):
         entity = self.reload_entity(self.test_data.entity1)
-        data_record_id = entity.add_data([('arv', 20, self.test_data.dd_types['meds'])])
+        data_record_id = entity.add_data([('arv', 20)])
         valid_doc = DataRecord.get(self.manager, data_record_id)
         self.assertFalse(valid_doc.voided)
         self.test_data.entity1.invalidate_data(data_record_id)
@@ -325,13 +314,9 @@ class TestEntity(unittest.TestCase):
         e = Entity(self.manager, entity_type='store', location=['nyc'])
         e.save()
         self.assertFalse(e._doc.void)
-        apple_type = DataDictType(self.manager, name='Apples', slug='apples', primitive_type='number')
-        orange_type = DataDictType(self.manager, name='Oranges', slug='oranges', primitive_type='number')
-        apple_type.save()
-        orange_type.save()
         data = [
-            [('apples', 20, apple_type), ('oranges', 30, orange_type)],
-            [('apples', 10, apple_type), ('oranges', 20, orange_type)]
+            [('apples', 20), ('oranges', 30)],
+            [('apples', 10), ('oranges', 20)]
         ]
         data_ids = []
         for d in data:
@@ -343,65 +328,17 @@ class TestEntity(unittest.TestCase):
         for id in data_ids:
             self.assertTrue(self.manager._load_document(id).void)
 
-    def test_should_return_data_types(self):
-        med_type = DataDictType(self.manager,
-                                name='Medicines',
-                                slug='meds',
-                                primitive_type='number',
-                                description='Number of medications',
-                                tags=['med'])
-        med_type.save()
-        doctor_type = DataDictType(self.manager,
-                                   name='Doctor',
-                                   slug='doc',
-                                   primitive_type='string',
-                                   description='Name of doctor',
-                                   tags=['doctor', 'med'])
-        doctor_type.save()
-        facility_type = DataDictType(self.manager,
-                                     name='Facility',
-                                     slug='facility',
-                                     primitive_type='string',
-                                     description='Name of facility')
-        facility_type.save()
-        e = Entity(self.manager, entity_type='foo')
-        e.save()
-        data_record = [('meds', 20, med_type),
-                       ('doc', "aroj", doctor_type),
-                       ('facility', 'clinic', facility_type)]
-        e.add_data(data_record)
-        # med (tag in list)
-        types = [typ.slug for typ in e.data_types(['med'])]
-        self.assertTrue(med_type.slug in types)
-        self.assertTrue(doctor_type.slug in types)
-        self.assertTrue(facility_type.slug not in types)
-        # doctor (tag as string)
-        types = [typ.slug for typ in e.data_types('doctor')]
-        self.assertTrue(doctor_type.slug in types)
-        self.assertTrue(med_type.slug not in types)
-        self.assertTrue(facility_type.slug not in types)
-        # med and doctor (more than one tag)
-        types = [typ.slug for typ in e.data_types(['med', 'doctor'])]
-        self.assertTrue(doctor_type.slug in types)
-        self.assertTrue(med_type.slug not in types)
-        self.assertTrue(facility_type.slug not in types)
-        # no tags
-        types = [typ.slug for typ in e.data_types()]
-        self.assertTrue(med_type.slug in types)
-        self.assertTrue(doctor_type.slug in types)
-        self.assertTrue(facility_type.slug in types)
-
     def test_latest_values_for_entity(self):
         test_data = self.test_data
         entity = self.reload_entity(test_data.entity1)
         entity.add_data(
-            data=[("beds", 10, test_data.dd_types['beds']), ("meds", 20, test_data.dd_types['meds']),
-                  ("doctors", 2, test_data.dd_types['doctors'])])
+            data=[("beds", 10), ("meds", 20),
+                  ("doctors", 2)])
         entity.add_data(
-            data=[("beds", 15, test_data.dd_types['beds']), ("doctors", 2, test_data.dd_types['doctors'])])
+            data=[("beds", 15), ("doctors", 2)])
         entity.add_data(
-            data=[("beds", 20, test_data.dd_types['beds']), ("meds", 05, test_data.dd_types['meds']),
-                  ("doctors", 2, test_data.dd_types['doctors'])])
+            data=[("beds", 20), ("meds", 05),
+                  ("doctors", 2)])
 
         data_fetched = entity.latest_values()
         self.assertEqual(data_fetched["beds"], 20)

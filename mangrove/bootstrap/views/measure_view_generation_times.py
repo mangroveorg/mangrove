@@ -5,7 +5,6 @@ from mangrove.bootstrap.initializer import _find_views
 from pytz import UTC
 import random
 from mangrove.datastore.entity import Entity
-from mangrove.datastore.datadict import DataDictType
 from collections import defaultdict
 
 
@@ -59,26 +58,6 @@ class ViewGenerationTimer(object):
             e.save()
             self.entities.append(e)
 
-    def _setup_datadict_types(self):
-        # name=slug, primitive_type
-        data_dict_types = [
-            ['beds', 'number'],
-            ['meds', 'number'],
-            ['patients', 'number'],
-            ['doctors', 'number'],
-        ]
-        self.dd_types = {}
-        for data_dict_type in data_dict_types:
-            name_slug = data_dict_type[0]
-            kwargs = {
-                'dbm': self.manager,
-                'name': name_slug,
-                'slug': name_slug,
-                'primitive_type': data_dict_type[1],
-                }
-            self.dd_types[name_slug] = DataDictType(**kwargs)
-            self.dd_types[name_slug].save()
-
     def _add_data_to_entities(self, number_of_data_records_per_entity):
         months = [1]
         number_of_years = number_of_data_records_per_entity / (
@@ -91,15 +70,15 @@ class ViewGenerationTimer(object):
                 event_time = datetime.datetime(year, month, 1, tzinfo=UTC)
                 event_times.append(event_time)
 
-        for e in self.entities:
-            for dd_type in self.dd_types.values():
-                for event_time in event_times:
-                    slug = dd_type.slug
-                    value = random.random()
-                    e.add_data(
-                        data=[(slug, value, self.dd_types[slug])],
-                        event_time=event_time
-                    )
+        #for e in self.entities:
+        #    for dd_type in self.dd_types.values():
+        #        for event_time in event_times:
+        #            slug = dd_type.slug
+        #            value = random.random()
+        #            e.add_data(
+        #                data=[(slug, value, self.dd_types[slug])],
+        #                event_time=event_time
+        #            )
 
     def print_csv_of_view_generation_times(self):
         iterations = [20, 40, 60, 80, 100]

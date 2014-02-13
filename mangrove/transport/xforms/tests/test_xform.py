@@ -26,7 +26,7 @@ class TestXform(unittest.TestCase):
     def test_should_return_specific_form_for_project_on_reporter(self):
         dbm = Mock()
         questionnaire_mock = Mock()
-        field1 = Field(ddtype=Mock(), type='text', name='name', code='code', instruction='instruction', constraints=[
+        field1 = Field(type='text', name='name', code='code', instruction='instruction', constraints=[
             (self.mock_constraint())])
         questionnaire_mock.name = 'name'
         questionnaire_mock.fields = [field1]
@@ -40,7 +40,7 @@ class TestXform(unittest.TestCase):
                 unicode(expected_xform_for_project_on_reporter), 0))
 
     def text_field(self, code):
-        return Field(ddtype=Mock(), type='text', name='name', code=code, instruction='instruction', constraints=[
+        return Field(type='text', name='name', code=code, instruction='instruction', constraints=[
             (self.mock_constraint())])
 
     def test_should_return_specific_form_for_project_on_subject(self):
@@ -69,7 +69,7 @@ class TestXform(unittest.TestCase):
         dbm = Mock()
         questionnaire_mock = Mock()
         field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&',
-            options=[{'text':'option1&'}], ddtype=Mock())
+            options=[{'text':'option1&'}])
         questionnaire_mock.name = '<mock_name'
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'

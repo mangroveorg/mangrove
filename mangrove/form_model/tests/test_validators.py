@@ -3,17 +3,16 @@ import unittest
 from mock import Mock
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.validator_factory import validator_factory
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField
 from mangrove.form_model.validators import MandatoryValidator
 
 class TestMandatoryValidator(unittest.TestCase):
     def setUp(self):
         self.validator = MandatoryValidator()
-        self.field1 = TextField('a', 'a', 'a', Mock(spec=DataDictType))
-        self.field2 = TextField('b', 'b', 'b', Mock(spec=DataDictType), required=False)
-        self.field3 = TextField('c', 'c', 'c', Mock(spec=DataDictType))
-        self.field4 = TextField('d', 'd', 'd', Mock(spec=DataDictType))
+        self.field1 = TextField('a', 'a', 'a')
+        self.field2 = TextField('b', 'b', 'b', required=False)
+        self.field3 = TextField('c', 'c', 'c')
+        self.field4 = TextField('d', 'd', 'd')
         self.fields = [self.field1, self.field2, self.field3, self.field4]
 
     def tearDown(self):

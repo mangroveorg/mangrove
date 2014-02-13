@@ -138,8 +138,8 @@ class DataRecordDocument(DocumentBase):
         DocumentBase.__init__(self, id, 'DataRecord')
         data_record = {}
         if data is not None:
-            for (label, value, dd_type) in data:
-                data_record[label] = {'value': value, 'type': dd_type._doc.unwrap()}
+            for (label, value) in data:
+                data_record[label] = {'value': value}
         self.data = data_record
         self.event_time = event_time
 
@@ -148,44 +148,6 @@ class DataRecordDocument(DocumentBase):
         if submission:
             self.submission = submission
 
-
-class DataDictDocument(DocumentBase):
-    """""The CouchDB data dictionary document."""""
-
-    primitive_type = TextField()
-    constraints = DictField()
-    slug = TextField()
-    name = TextField()
-    description = TextField()
-    tags = ListField(TextField())
-
-    def __init__(self, id=None, primitive_type=None, constraints=None, slug=None, name=None,
-                 description=None, tags=None, **kwargs):
-        """""Create a new CouchDB document that represents a DataDictType"""""
-        DocumentBase.__init__(self, id, 'DataDict')
-
-        assert primitive_type is None or is_string(primitive_type)
-        assert constraints is None or isinstance(constraints, dict)
-        assert slug is None or is_string(slug)
-        assert name is None or is_string(name)
-        assert description is None or is_string(description)
-        assert tags is None or isinstance(tags, list)  # do we want to check that they are strings?
-        # how to assert any kwargs?
-
-        self.primitive_type = primitive_type
-        if constraints is None:
-            self.constraints = {}
-        else:
-            self.constraints = constraints
-        if tags is None:
-            self.tags = []
-        else:
-            self.tags = tags
-        self.slug = slug
-        self.name = name
-        self.description = description
-        for arg, value in kwargs.items():
-            self[arg] = value
 
 
 class FormModelDocument(DocumentBase):

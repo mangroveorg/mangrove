@@ -11,7 +11,6 @@ from mangrove.datastore.entity_type import define_type
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
-from mangrove.datastore.datadict import DataDictType
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.contract.request import Request
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
@@ -39,43 +38,30 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         define_type(self.manager, ["dog"])
         self.entity_type = ["healthfacility", "clinic"]
         define_type(self.manager, self.entity_type)
-        self.name_type = DataDictType(self.manager, name='Name', slug='name', primitive_type='string')
-        self.telephone_number_type = DataDictType(self.manager, name='telephone_number', slug='telephone_number',
-            primitive_type='string')
-        self.entity_id_type = DataDictType(self.manager, name='Entity Id Type', slug='entity_id',
-            primitive_type='string')
-        self.stock_type = DataDictType(self.manager, name='Stock Type', slug='stock', primitive_type='integer')
-        self.color_type = DataDictType(self.manager, name='Color Type', slug='color', primitive_type='string')
-
-        self.name_type.save()
-        self.telephone_number_type.save()
-        self.stock_type.save()
-        self.color_type.save()
 
         self.entity = create_entity(self.manager, entity_type=self.entity_type,
             location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
         )
 
-        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby", self.name_type)],
+        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby")],
             submission=dict(submission_id="1"))
 
         self.reporter = create_entity(self.manager, entity_type=["reporter"],
             location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
         )
 
-        self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234', self.telephone_number_type),
-            (NAME_FIELD, "Test_reporter", self.name_type)], submission=dict(submission_id="2"))
+        self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234'),
+            (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True, ddtype=self.entity_id_type)
+             entity_question_flag=True )
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
-            constraints=[TextLengthConstraint(4, 15)],
-            ddtype=self.name_type, required=False)
+            constraints=[TextLengthConstraint(4, 15)] , required=False)
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-            constraints=[NumericRangeConstraint(min=15, max=120)], ddtype=self.stock_type, required=False)
+            constraints=[NumericRangeConstraint(min=15, max=120)] , required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
-            options=[("RED", 1), ("YELLOW", 2)], ddtype=self.color_type, required=False)
+            options=[("RED", 1), ("YELLOW", 2)] , required=False)
 
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="clinic", type='survey', fields=[question1, question2, question3])

@@ -4,7 +4,6 @@ from mock import Mock, patch, call, PropertyMock, MagicMock
 from mangrove.datastore.entity_type import define_type
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.validation import NumericRangeConstraint
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField, IntegerField
 from mangrove.datastore.documents import SurveyResponseDocument, EntityDocument
 from mangrove.datastore.database import DatabaseManager
@@ -35,15 +34,10 @@ class TestSurveyResponseService(TestCase):
         self.survey_response_service = SurveyResponseService(self.dbm)
 
     def form_model(self):
-        string_type = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-                                   primitive_type='string')
-        integer_type = DataDictType(self.dbm, name='Default String Integer Type', slug='integer_default',
-                                    primitive_type='integer')
         question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-                              entity_question_flag=True, ddtype=string_type)
+                              entity_question_flag=True)
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
-                                 constraints=[NumericRangeConstraint(min=10, max=100)],
-                                 ddtype=integer_type)
+                                 constraints=[NumericRangeConstraint(min=10, max=100)])
         return FormModel(self.dbm, entity_type=["clinic"], name="aids", label="Aids form_model",
                          form_code="aids", type=['survey'], fields=[question1, question2])
 
@@ -299,14 +293,10 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
 def register_datasender(dbm):
     define_type(dbm, ["reporter"])
-    phone_number_type = DataDictType(dbm, name='Telephone Number', slug='telephone_number',
-                                     primitive_type='string')
-    first_name_type = DataDictType(dbm, name='First Name', slug='first_name',
-                                   primitive_type='string')
     TestReporter.register(dbm,
                           entity_type=REPORTER_ENTITY_TYPE,
-                          data=[(MOBILE_NUMBER_FIELD, "1234567890", phone_number_type),
-                                (NAME_FIELD, "B", first_name_type)],
+                          data=[(MOBILE_NUMBER_FIELD, "1234567890"),
+                                (NAME_FIELD, "B")],
                           location=None,
                           source="sms",
                           short_code="rep2")

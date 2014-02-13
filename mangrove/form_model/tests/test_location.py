@@ -53,9 +53,8 @@ class TestLocation(unittest.TestCase):
     def form(self):
         manager=Mock(spec=DatabaseManager)
         question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
-            label=LOCATION_TYPE_FIELD_NAME,ddtype=(Mock()))
-        question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
-        ddtype=Mock())
+            label=LOCATION_TYPE_FIELD_NAME)
+        question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?")
         form_model = FormModel(manager, name="asd", form_code="asd", fields=[
             question4,question5])
         return form_model

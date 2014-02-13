@@ -15,11 +15,11 @@ class TestXFormParser(TestCase):
         with patch("mangrove.transport.player.parser.xmldict") as mock_xml_dict:
             mock_xml_dict.xml_to_dict.return_value = submission_values
             with patch("mangrove.transport.player.parser.get_form_model_by_code") as mock_get_form_model:
-                ddtype_mock = Mock()
-                mock_form_model = ddtype_mock
-                mock_form_model.fields = [SelectField('', 'q1', '', {'': ''}, ddtype_mock, single_select_flag=False),
+
+                mock_form_model = Mock()
+                mock_form_model.fields = [SelectField('', 'q1', '', {'': ''}, single_select_flag=False),
                                           GeoCodeField('', 'q2', '', {'': ''}),
-                                          DateField('', 'q3', '', 'mm.yyyy', ddtype_mock),
-                                          IntegerField('', 'q4', '', ddtype_mock)]
+                                          DateField('', 'q3', '', 'mm.yyyy'),
+                                          IntegerField('', 'q4', '')]
                 mock_get_form_model.return_value = mock_form_model
                 self.assertEquals(self.parser.parse(submission_values), (form_code, expected_values))

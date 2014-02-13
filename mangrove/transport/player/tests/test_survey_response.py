@@ -2,7 +2,6 @@ import datetime
 from unittest import TestCase
 from mock import Mock, PropertyMock
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.datadict import DataDictType
 from mangrove.form_model.field import TextField
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.contract.survey_response import SurveyResponse, SurveyResponseDifference, convert_dict_keys_to_lowercase

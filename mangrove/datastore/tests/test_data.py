@@ -1,7 +1,6 @@
 
 import datetime
 from pytz import UTC
-from mangrove.datastore.datadict import DataDictType
 from mangrove.datastore.entity import Entity, create_entity, get_by_short_code
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
@@ -23,7 +22,6 @@ class TestData(object):
         self._create_form_model("CL2")
         self._create_form_model("CL1")
 
-        self.dd_types = self.create_datadict_types()
         self.entity1, id1 = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'],
                                                               "1")
 
@@ -39,9 +37,9 @@ class TestData(object):
 
         self.entity3, id3 = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Mumbai'],
                                                               "3")
-        self.entity3.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
-                                    ("director", "Dr. C", self.dd_types['director']),
-                                    ("patients", 12, self.dd_types['patients'])],
+        self.entity3.add_data(data=[("beds", 200), ("meds", 50),
+                                    ("director", "Dr. C"),
+                                    ("patients", 12)],
                               event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                               submission=dict(submission_id='5', form_code='CL1'))
 
@@ -62,93 +60,72 @@ class TestData(object):
                 form.delete()
         except FormModelDoesNotExistsException:
             pass
-        self.default_ddtype = DataDictType(self.manager, name='Default String Datadict Type', slug='string_default',
-                                           primitive_type='string')
-        self.default_ddtype.save()
         question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              entity_question_flag=True, ddtype=self.default_ddtype)
+                              entity_question_flag=True)
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
-                              defaultValue="some default value", ddtype=self.default_ddtype)
-        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
-                                 ddtype=self.default_ddtype)
+                              defaultValue="some default value")
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age")
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 'a'), ("YELLOW", 'b')], ddtype=self.default_ddtype)
+                                options=[("RED", 'a'), ("YELLOW", 'b')])
 
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code=form_code, type='survey', fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
 
-    def create_datadict_types(self):
-        dd_types = {
-            'name': DataDictType(self.manager, name='name', slug='name', primitive_type='string'),
-            'beds': DataDictType(self.manager, name='beds', slug='beds', primitive_type='number'),
-            'icu': DataDictType(self.manager, name='icu', slug='icu', primitive_type='number'),
-            'meds': DataDictType(self.manager, name='meds', slug='meds', primitive_type='number'),
-            'patients': DataDictType(self.manager, name='patients', slug='patients', primitive_type='number'),
-            'doctors': DataDictType(self.manager, name='doctors', slug='doctors', primitive_type='number'),
-            'director': DataDictType(self.manager, name='director', slug='director', primitive_type='string'),
-            'facility': DataDictType(self.manager, name='Facility', slug='facility', primitive_type='string',
-                                     description='Name of facility')
-
-        }
-        for label, dd_type in dd_types.items():
-            dd_type.save()
-        return dd_types
-
     def _add_data_for_form_1_entity_1(self, e):
-        e.add_data(data=[("name", 'clinic1', self.dd_types['name']), ("beds", 300, self.dd_types['beds']),
-                         ("meds", 20, self.dd_types['meds']),
-                         ("director", "Dr. A", self.dd_types['director']),
-                         ("patients", 10, self.dd_types['patients']), ],
+        e.add_data(data=[("name", 'clinic1'), ("beds", 300),
+                         ("meds", 20),
+                         ("director", "Dr. A"),
+                         ("patients", 10), ],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='1', form_code='CL1'))
-        e.add_data(data=[("name", 'clinic1', self.dd_types['name']), ("beds", 500, self.dd_types['beds']),
-                         ("meds", 50, self.dd_types['meds']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("name", 'clinic1'), ("beds", 500),
+                         ("meds", 50),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL1'))
-        e.add_data(data=[("name", 'clinic1', self.dd_types['name']), ("beds", 300, self.dd_types['beds']),
-                         ("doctors", 20, self.dd_types['doctors']),
-                         ("director", "Dr. A1", self.dd_types['director']),
-                         ("patients", 10, self.dd_types['patients'])],
+        e.add_data(data=[("name", 'clinic1'), ("beds", 300),
+                         ("doctors", 20),
+                         ("director", "Dr. A1"),
+                         ("patients", 10)],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='1', form_code='CL1'))
-        e.add_data(data=[("name", 'clinic1', self.dd_types['name']), ("beds", 200, self.dd_types['beds']),
-                         ("meds", 10, self.dd_types['meds']),
-                         ("patients", 20, self.dd_types['patients']),
-                         ("director", "Dr. A2", self.dd_types['director'])],
+        e.add_data(data=[("name", 'clinic1'), ("beds", 200),
+                         ("meds", 10),
+                         ("patients", 20),
+                         ("director", "Dr. A2")],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL1'))
 
     def _add_data_for_form_2_entity_1(self, e):
-        e.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 20, self.dd_types['meds']),
-                         ("patients", 45, self.dd_types['patients'])],
+        e.add_data(data=[("beds", 200), ("meds", 20),
+                         ("patients", 45)],
                    event_time=datetime.datetime(2011, 04, 01, tzinfo=UTC),
                    submission=dict(submission_id='2', form_code='CL2'))
 
     def _add_data_for_month_aggregate_latest(self, form_code):
         self._create_form_model(form_code)
         e, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "6")
-        e.add_data(data=[("icu", 600, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                         ("director", "Dr. A", self.dd_types['director']),
-                         ("patients", 5, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 600), ("meds", 250),
+                         ("director", "Dr. A"),
+                         ("patients", 5)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code=form_code))
-        e.add_data(data=[("icu", 300, self.dd_types['icu']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 300), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 02, 9, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code=form_code))
-        e.add_data(data=[("icu", 300, self.dd_types['icu']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 300), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 03, 1, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code=form_code))
         e2, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "7")
-        e2.add_data(data=[("icu", 630, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                          ("director", "Dr. C", self.dd_types['director']),
-                          ("patients", 7, self.dd_types['patients'])],
+        e2.add_data(data=[("icu", 630), ("meds", 250),
+                          ("director", "Dr. C"),
+                          ("patients", 7)],
                     event_time=datetime.datetime(2010, 02, 12, tzinfo=UTC),
                     submission=dict(submission_id='3', form_code=form_code))
 
@@ -157,103 +134,103 @@ class TestData(object):
     def _add_data_for_month_aggregate(self, form_code):
         self._create_form_model(form_code)
         e, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "6")
-        e.add_data(data=[("icu", 600, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                         ("director", "Dr. A", self.dd_types['director']),
-                         ("patients", 5, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 600), ("meds", 250),
+                         ("director", "Dr. A"),
+                         ("patients", 5)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code=form_code))
-        e.add_data(data=[("icu", 300, self.dd_types['icu']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 300), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 02, 9, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code=form_code))
-        e.add_data(data=[("icu", 300, self.dd_types['icu']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 300), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 03, 1, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code=form_code))
         e2, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "7")
-        e2.add_data(data=[("icu", 630, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                          ("director", "Dr. C", self.dd_types['director']),
-                          ("patients", 7, self.dd_types['patients'])],
+        e2.add_data(data=[("icu", 630), ("meds", 250),
+                          ("director", "Dr. C"),
+                          ("patients", 7)],
                     event_time=datetime.datetime(2010, 02, 12, tzinfo=UTC),
                     submission=dict(submission_id='3', form_code=form_code))
 
     def _add_data_for_grand_total(self, form_code):
         self._create_form_model(form_code)
         e, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "6")
-        e.add_data(data=[("icu", 600, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                         ("director", "Dr. A", self.dd_types['director']),
-                         ("patients", 5, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 600), ("meds", 250),
+                         ("director", "Dr. A"),
+                         ("patients", 5)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code=form_code))
-        e.add_data(data=[("icu", 300, self.dd_types['icu']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 300), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 12, 01, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code=form_code))
-        e.add_data(data=[("icu", 200, self.dd_types['icu']), ("meds", 50, self.dd_types['meds']),
-                         ("director", "Dr. A", self.dd_types['director']),
-                         ("patients", 5, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 200), ("meds", 50),
+                         ("director", "Dr. A"),
+                         ("patients", 5)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code=form_code))
-        e.add_data(data=[("icu", 200, self.dd_types['icu']), ("meds", 50, self.dd_types['meds']),
-                         ("director", "Dr. C", self.dd_types['director']),
-                         ("patients", 12, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 200), ("meds", 50),
+                         ("director", "Dr. C"),
+                         ("patients", 12)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code=form_code))
 
-        e.add_data(data=[("icu", 200, self.dd_types['icu']), ("meds", 50, self.dd_types['meds']),
-                         ("director", "Dr. C", self.dd_types['director']),
-                         ("patients", 12, self.dd_types['patients'])],
+        e.add_data(data=[("icu", 200), ("meds", 50),
+                         ("director", "Dr. C"),
+                         ("patients", 12)],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='agg1'))
         e2, id = delete_and_create_entity_instance(self.manager, self.ENTITY_TYPE, ['India', 'MH', 'Pune'], "7")
-        e2.add_data(data=[("icu", 630, self.dd_types['icu']), ("meds", 250, self.dd_types['meds']),
-                          ("director", "Dr. C", self.dd_types['director']),
-                          ("patients", 7, self.dd_types['patients'])],
+        e2.add_data(data=[("icu", 630), ("meds", 250),
+                          ("director", "Dr. C"),
+                          ("patients", 7)],
                     event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                     submission=dict(submission_id='3', form_code=form_code))
 
 
     def _add_data_for_form_1_entity_2(self, e):
-        e.add_data(data=[("beds", 100, self.dd_types['beds']), ("meds", 250, self.dd_types['meds']),
-                         ("director", "Dr. B1", self.dd_types['director']),
-                         ("patients", 50, self.dd_types['patients'])],
+        e.add_data(data=[("beds", 100), ("meds", 250),
+                         ("director", "Dr. B1"),
+                         ("patients", 50)],
                    event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='CL1'))
-        e.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 400, self.dd_types['meds']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("beds", 200), ("meds", 400),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2010, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code='CL1'))
-        e.add_data(data=[("beds", 150, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
-                         ("director", "Dr. B1", self.dd_types['director']),
-                         ("patients", 50, self.dd_types['patients'])],
+        e.add_data(data=[("beds", 150), ("meds", 50),
+                         ("director", "Dr. B1"),
+                         ("patients", 50)],
                    event_time=datetime.datetime(2011, 02, 01, tzinfo=UTC),
                    submission=dict(submission_id='3', form_code='CL1'))
 
     def _add_data_form_2_entity_2(self, e):
-        e.add_data(data=[("beds", 270, self.dd_types['beds']), ("doctors", 40, self.dd_types['doctors']),
-                         ("director", "Dr. B2", self.dd_types['director']),
-                         ("patients", 20, self.dd_types['patients'])],
+        e.add_data(data=[("beds", 270), ("doctors", 40),
+                         ("director", "Dr. B2"),
+                         ("patients", 20)],
                    event_time=datetime.datetime(2011, 03, 01, tzinfo=UTC),
                    submission=dict(submission_id='4', form_code='CL2'))
 
     def add_weekly_data_for_entity1(self):
-        self.entity1.add_data(data=[("beds", 100, self.dd_types['beds']), ("meds", 250, self.dd_types['meds']),
-                                    ("director", "Dr. B1", self.dd_types['director']),
-                                    ("patients", 50, self.dd_types['patients'])],
+        self.entity1.add_data(data=[("beds", 100), ("meds", 250),
+                                    ("director", "Dr. B1"),
+                                    ("patients", 50)],
                               event_time=datetime.datetime(2009, 12, 23, tzinfo=UTC),
                               submission=dict(submission_id='3', form_code='CL1'))
-        self.entity1.add_data(data=[("beds", 200, self.dd_types['beds']), ("meds", 400, self.dd_types['meds']),
-                                    ("director", "Dr. B2", self.dd_types['director']),
-                                    ("patients", 20, self.dd_types['patients'])],
+        self.entity1.add_data(data=[("beds", 200), ("meds", 400),
+                                    ("director", "Dr. B2"),
+                                    ("patients", 20)],
                               event_time=datetime.datetime(2009, 12, 24, tzinfo=UTC),
                               submission=dict(submission_id='4', form_code='CL1'))
-        self.entity1.add_data(data=[("beds", 150, self.dd_types['beds']), ("meds", 50, self.dd_types['meds']),
-                                    ("director", "Dr. B1", self.dd_types['director']),
-                                    ("patients", 70, self.dd_types['patients'])],
+        self.entity1.add_data(data=[("beds", 150), ("meds", 50),
+                                    ("director", "Dr. B1"),
+                                    ("patients", 70)],
                               event_time=datetime.datetime(2009, 12, 27, tzinfo=UTC),
                               submission=dict(submission_id='3', form_code='CL1'))
 

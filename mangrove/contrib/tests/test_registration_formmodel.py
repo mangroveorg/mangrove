@@ -15,7 +15,6 @@ class TestRegistrationFormModel(unittest.TestCase):
     def test_should_create_registration_form_model(self):
         self.assertEqual(7, len(self.form.fields))
         self.assertEqual(REGISTRATION_FORM_CODE, self.form.form_code)
-        self.assertEqual('string', self.form.fields[3].ddtype.primitive_type)
 
     def test_registration_form_should_have_entity_type_field(self):
         self.assertIsNotNone(self.form._get_field_by_code("T"))

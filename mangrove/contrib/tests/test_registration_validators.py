@@ -7,19 +7,18 @@ from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE_FIELD_NAME, GEO_CODE, REPORTER
 from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberValidationsForReporterRegistrationValidator
-from mangrove.datastore.datadict import DataDictType
 
 class TestAtLeastOneLocationFieldMustBeAnsweredValidator(unittest.TestCase):
     def setUp(self):
         self.validator = AtLeastOneLocationFieldMustBeAnsweredValidator()
         self.field1 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
-            label="What is the subject's location?", ddtype=Mock(spec=DataDictType), instruction="Enter a region, district, or commune",
+            label="What is the subject's location?", instruction="Enter a region, district, or commune",
             required=False)
-        self.field2 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?",
-            ddtype=Mock(spec=DataDictType), instruction="Enter lat and long. Eg 20.6, 47.3",
+        self.field2 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?"
+            , instruction="Enter lat and long. Eg 20.6, 47.3",
             required=False)
-        self.field3 = TextField('a', 'a', 'a', Mock(spec=DataDictType))
-        self.field4 = TextField('b', 'b', 'b', Mock(spec=DataDictType))
+        self.field3 = TextField('a', 'a', 'a')
+        self.field4 = TextField('b', 'b', 'b')
 
         self.fields = [self.field1, self.field2, self.field3, self.field4]
 
@@ -47,8 +46,8 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
 
     def setUp(self):
         self.validator = MobileNumberValidationsForReporterRegistrationValidator()
-        self.field1 = TextField('t', 't', 't', Mock(spec=DataDictType), entity_question_flag=True)
-        self.field2 = TextField('m', 'm', 'm', Mock(spec=DataDictType))
+        self.field1 = TextField('t', 't', 't',  entity_question_flag=True)
+        self.field2 = TextField('m', 'm', 'm')
         self.fields = [self.field1, self.field2]
         self.dbm = Mock(spec=DatabaseManager)
         self.dbm.view = Mock()

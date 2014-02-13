@@ -33,17 +33,15 @@ Form Model:
 ---------------
 Create a Form::
 
-    default_ddtype = DataDictType(self.dbm, name='Default String Datadict Type', slug='string_default',
-                                           primitive_type='string')
-    default_ddtype.save()
+
     question1 = TextField(name="Q1", code="ID", label="What is the reporter ID?",
-                                  language="eng", entity_question_flag=True, ddtype=default_ddtype)
+                                  language="eng", entity_question_flag=True)
 
     question2 = TextField(name="Q2", code="DATE", label="What month and year are you reporting for?",
-                                      language="eng", entity_question_flag=False, ddtype=default_ddtype)
+                                      language="eng", entity_question_flag=False)
 
     question3 = TextField(name="Q3", code="NETS", label="How many mosquito nets did you distribute?",
-                                      language="eng", entity_question_flag=False, ddtype=default_ddtype)
+                                      language="eng", entity_question_flag=False)
 
     form_model = FormModel(dbm, entity_type=["Reporter"], name="Mosquito Net Distribution Survey",
                                     label="Mosquito Net Distribution Survey",

@@ -29,7 +29,7 @@ class Player(object):
             response = handler.handle(form_model, cleaned_data, errors,  reporter_names,
                 self.location_tree)
             return response
-        except MangroveException as exception:
+        except MangroveException:
             raise
 
 

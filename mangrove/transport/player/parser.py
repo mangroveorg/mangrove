@@ -305,7 +305,7 @@ class XlsOrderedParser(XlsParser):
             #     continue
 
             row = self._clean(row)
-            values = dict(zip(header, row))
+            values = OrderedDict(zip(header, row))
             parsedData.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()

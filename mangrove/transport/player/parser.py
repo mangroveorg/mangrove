@@ -300,10 +300,6 @@ class XlsOrderedParser(XlsParser):
         header = header[1:]
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
-
-            # if self._is_empty(row):
-            #     continue
-
             row = self._clean(row)
             values = OrderedDict(zip(header, row))
             parsedData.append((form_code, values))

@@ -358,14 +358,14 @@ class XlsDatasenderParser(XlsParser):
         parsedData = []
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
+
+        if row[0] != 'reg':
+            raise Exception("Invalid datasender excel imported")
+
         form_code = REGISTRATION_FORM_CODE
         header = header[1:]
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
-
-            # if self._is_empty(row):
-            #     continue
-
             row = self._clean(row)
             values = dict(zip(header, row))
             values.update({"t": "reporter"})

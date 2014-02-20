@@ -80,7 +80,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True)
+             entity_question_flag=True, constraints=[TextLengthConstraint(min=1, max=20)])
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
             constraints=[TextLengthConstraint(4, 15)], required=False)

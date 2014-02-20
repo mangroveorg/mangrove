@@ -74,7 +74,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.stock_type.save()
         cls.color_type.save()
 
-        cls.entity_short_code = uniq("cli")
+        cls.entity_short_code = "cli" + str(int(random.random()*10000))
         cls.entity = create_entity(cls.dbm, entity_type=cls.entity_type,
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.entity_short_code,
         )

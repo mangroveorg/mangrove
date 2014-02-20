@@ -7,6 +7,7 @@ from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
 from mangrove.form_model.form_model import NAME_FIELD
+from mangrove.transport.contract.response import Response
 from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
@@ -66,12 +67,16 @@ class SMSPlayer(Player):
             self.parser = SMSParserFactory().getSMSParser(message, self.dbm)
         return self.parser.parse(message)
 
+    def get_form_model(self, request):
+        form_code, values, extra_elements = self._parse(request.message)
+        form_model = get_form_model_by_code(self.dbm, form_code)
+        return form_model
+
     def accept(self, request, logger=None, additional_feed_dictionary=None):
         ''' This is a single point of entry for all SMS based workflows, we do not have  a separation on the view layer for different sms
         workflows, hence we will be branching to different methods here. Current implementation does the parse twice but that will go away
         once the entity registration is separated '''
-        form_code, values, extra_elements = self._parse(request.message)
-        form_model = get_form_model_by_code(self.dbm, form_code)
+        form_model = self.get_form_model(request)
         if form_model.is_entity_registration_form() or form_model.form_code == ENTITY_DELETION_FORM_CODE:
             return self.entity_api(request, logger)
         sms_player_v2 = SMSPlayerV2(self.dbm, post_sms_parser_processors=self.post_sms_parser_processor,

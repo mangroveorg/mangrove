@@ -374,5 +374,4 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_entity_id_with_more_than_20_chars_for_submission(self):
         response = self.send_sms("clinic 012345678901234567891", self.sms_ordered_message_player)
-        self.assertEqual("Answer 012345678901234567891 for question EID is longer than allowed.",
-                         response.errors['EID'])
+        self.assertRaises(DataObjectNotFound)

@@ -15,7 +15,7 @@ from mangrove.datastore.database import get_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
-InactiveFormModelException, DataObjectNotFound, FormModelDoesNotExistsException
+ DataObjectNotFound, FormModelDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
 SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code
@@ -288,27 +288,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         response = self.send_sms(text)
         self.assertFalse(response.success)
         self.assertTrue('t' in response.errors)
-
-    def test_should_raise_exception_for_inactive_form_model(self):
-        self.form_model.deactivate()
-        self.form_model.save()
-        text = "clinic .EID %s .name CLINIC-MADA .ARV 50 .COL a" % self.entity.short_code
-        with self.assertRaises(InactiveFormModelException):
-            self.send_sms(text)
-        self.form_model.activate()
-        self.form_model.save()
-
-    def test_should_set_submission_log_as_Test_for_form_model_in_test_mode(self):
-        self.form_model.set_test_mode()
-        self.form_model.save()
-        text = "clinic .EID %s .name CLINIC-MADA .ARV 50 .COL a" % self.entity.short_code
-        response = self.send_sms(text)
-
-        self.assertTrue(response.success)
-        self.assertIsNotNone(response.datarecord_id)
-        self.assertIsNotNone(response.survey_response_id)
-        submission_log = self.dbm._load_document(response.survey_response_id, SubmissionLogDocument)
-        self.assertTrue(submission_log.test)
 
     def test_should_register_entity_with_geo_code(self):
         message1 = """reg .t dog .n Dog in Diégo–Suarez .g -12.35  49.3  .d This is a Dog in

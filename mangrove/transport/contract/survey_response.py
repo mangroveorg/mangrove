@@ -30,7 +30,7 @@ class SurveyResponse(DataObject):
                                          form_code=form_code,
                                          form_model_revision=form_model_revision,
                                          values=values, status=False,
-                                         error_message="", test=False, owner_uid=owner_uid, modified_by_id=admin_id)
+                                         error_message="", owner_uid=owner_uid, modified_by_id=admin_id)
 
             DataObject._set_document(self, doc)
 
@@ -69,10 +69,6 @@ class SurveyResponse(DataObject):
     @created_by.setter
     def created_by(self, created_by):
         self._doc.created_by = created_by
-
-    @property
-    def test(self):
-        return self._doc.test
 
     @property
     def uuid(self):
@@ -129,7 +125,6 @@ class SurveyResponse(DataObject):
     def set_form(self, form_model):
         self._doc.form_model_revision = form_model.revision
         self.entity_question_code = form_model.entity_question.code
-        self._doc.test = form_model.is_in_test_mode()
 
     def set_answers(self, entity_short_code, values):
         if values:
@@ -241,19 +236,9 @@ class SurveyResponse(DataObject):
         survey_copy._doc = SurveyResponseDocument(self._doc.channel, self._doc.destination,
                                                   deepcopy(self.values), self.id, self.status, self.errors,
                                                   self.form_code, self.form_model_revision,
-                                                  self.data_record.id if self.data_record else None, self.test,
+                                                  self.data_record.id if self.data_record else None,
                                                   deepcopy(self.event_time))
         return survey_copy
-
-    def create_migrated_response(self, status, error_message, void, submitted_on, test, event_time, data_record_id):
-        '''This method is only used for migration and should not be used for any functional implementation'''
-        self._doc.status = status
-        self._doc.error_message = error_message
-        self._doc.void = void
-        self._doc.submitted_on = submitted_on
-        self._doc.test = test
-        self._doc.event_time = event_time
-        self.create(data_record_id)
 
 
 class SurveyResponseDifference(object):

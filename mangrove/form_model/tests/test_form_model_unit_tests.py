@@ -129,22 +129,6 @@ class TestFormModel(unittest.TestCase):
                                     form_code="1", type='survey', fields=[question1])
         self.assertTrue(activity_report.is_entity_type_reporter())
 
-    def test_form_model_is_active_when_created(self):
-        self.assertTrue(self.form_model.is_active())
-
-    def test_should_be_able_to_deactivate_the_form_model(self):
-        self.form_model.deactivate()
-        self.assertFalse(self.form_model.is_active())
-
-    def test_should_be_able_to_activate_the_form_model(self):
-        self.form_model.deactivate()
-        self.assertFalse(self.form_model.is_active())
-        self.form_model.activate()
-        self.assertTrue(self.form_model.is_active())
-
-    def test_should_be_able_to_put_the_form_model_in_test_mode(self):
-        self.form_model.set_test_mode()
-        self.assertTrue(self.form_model.is_in_test_mode())
 
     def _case_insensitive_lookup(self, values, code):
         for fieldcode in values:

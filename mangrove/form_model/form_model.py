@@ -115,7 +115,7 @@ class FormModel(DataObject):
         return super(FormModel, cls).new_from_doc(dbm, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False, state=attributes.ACTIVE_STATE, validators=None,
+                 language="en", is_registration_model=False,  validators=None,
                  enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
@@ -146,7 +146,6 @@ class FormModel(DataObject):
         doc.form_code = form_code
         doc.entity_type = entity_type
         doc.type = type
-        doc.state = state
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
@@ -350,23 +349,6 @@ class FormModel(DataObject):
     def is_entity_type_reporter(self):
         return self.entity_type == [REPORTER]
 
-    def is_inactive(self):
-        return True if self._doc.state.lower() == attributes.INACTIVE_STATE.lower() else False
-
-    def is_active(self):
-        return True if self._doc.state.lower() == attributes.ACTIVE_STATE.lower() else False
-
-    def is_in_test_mode(self):
-        return True if self._doc.state.lower() == attributes.TEST_STATE.lower() else False
-
-    def deactivate(self):
-        self._doc.state = attributes.INACTIVE_STATE
-
-    def activate(self):
-        self._doc.state = attributes.ACTIVE_STATE
-
-    def set_test_mode(self):
-        self._doc.state = attributes.TEST_STATE
 
     def bind(self, submission):
         self.submission = submission

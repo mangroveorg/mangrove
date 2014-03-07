@@ -5,7 +5,6 @@ from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilde
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException
-from mangrove.errors.MangroveException import InactiveFormModelException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
@@ -27,9 +26,6 @@ class SurveyResponseService(object):
 
         form_model = get_form_model_by_code(self.dbm, form_code)
         survey_response.set_form(form_model)
-
-        if form_model.is_inactive():
-            raise InactiveFormModelException(form_model.form_code)
 
         #TODO : validate_submission should use form_model's bound values
         form_model.bind(values)
@@ -68,9 +64,6 @@ class SurveyResponseService(object):
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
                     additional_feed_dictionary=None, owner_id=None):
         form_model = get_form_model_by_code(self.dbm, form_code)
-
-        if form_model.is_inactive():
-            raise InactiveFormModelException(form_model.form_code)
 
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, values)
         try:

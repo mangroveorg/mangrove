@@ -7,7 +7,7 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import  DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException, InactiveFormModelException
+from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
@@ -215,13 +215,6 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertEquals(u'Invalid GPS value.', response.errors.get('g'))
         self.assertIsNone(response.errors.get('m'))
-
-    def test_should_raise_exception_for_inactive_form_model(self):
-        self.form_model.deactivate()
-        self.form_model.save()
-        text = {'form_code':'clinic', 'eid':self.entity.short_code,'name':'Clinic-Mada','arv':'50', 'col':['a']}
-        with self.assertRaises(InactiveFormModelException):
-            self.send_request_to_web_player(text)
 
     def test_should_register_entity_with_geo_code(self):
         text = {'form_code':'reg', 'n':'Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}

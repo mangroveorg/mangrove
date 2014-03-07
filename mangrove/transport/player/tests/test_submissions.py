@@ -5,7 +5,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, NoQuestionsSubmittedException,\
-    DataObjectNotFound, InactiveFormModelException
+    DataObjectNotFound
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.form_submission import FormSubmission
 
@@ -30,8 +30,6 @@ class TestSubmissionHandler(TestCase):
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_registration_form.return_value = False
         self.form_model_mock.is_entity_type_reporter.return_value = False
-        self.form_model_mock.is_inactive.return_value = False
-        self.form_model_mock.is_in_test_mode.return_value = False
         self.ENTITY_TYPE = ["entity_type"]
         self.form_model_mock.entity_type = self.ENTITY_TYPE
         entity_question = Mock()
@@ -188,17 +186,9 @@ class TestSubmissionHandler(TestCase):
         self.assertEqual({'field': u'Āgra'}, response.errors)
 
 
-    @SkipTest
-    def test_should_raise_inactive_form_model_exception(self):
-        self.form_model_mock.is_inactive.return_value = True
-        with self.assertRaises(InactiveFormModelException):
-            self.submission_handler.accept(self.submission_request)
-
 
     @SkipTest
     def test_should_log_submissions_in_test_mode(self):
-        self.form_model_mock.is_in_test_mode.return_value = True
-        self.form_model_mock.is_inactive.return_value = False
         form_submission = self._valid_form_submission()
         self.form_model_mock.validate_submission.return_value = form_submission
 

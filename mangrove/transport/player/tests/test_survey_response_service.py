@@ -1,16 +1,15 @@
 from collections import OrderedDict
 from unittest import TestCase
-from mock import Mock, patch, call, PropertyMock, MagicMock
+from mock import Mock, patch, PropertyMock, MagicMock
 from mangrove.datastore.entity_type import define_type
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.validation import NumericRangeConstraint
 from mangrove.form_model.field import TextField, IntegerField
-from mangrove.datastore.documents import SurveyResponseDocument, EntityDocument
+from mangrove.datastore.documents import EntityDocument
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import SubmissionLogDocument
 from mangrove.datastore.entity import DataRecord, Entity, get_by_short_code_include_voided
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, InactiveFormModelException, MangroveException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import FormModel, MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.contract.request import Request
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -92,7 +91,6 @@ class TestSurveyResponseService(TestCase):
                             by_short_code.return_value = entity_mock
                             mock_form_model = Mock(spec=FormModel)
                             get_form_model_by_code.return_value = mock_form_model
-                            mock_form_model.is_inactive.return_value = False
                             mock_form_model.validate_submission.return_value = OrderedDict(values), OrderedDict('')
                             mock_form_model.entity_type = None
                             code = PropertyMock(return_value='ID')
@@ -131,7 +129,6 @@ class TestSurveyResponseService(TestCase):
 
                             by_short_code.return_value = Mock(spec=Entity)
                             mock_form_model = Mock(spec=FormModel)
-                            mock_form_model.is_inactive.return_value = False
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
 
@@ -173,7 +170,6 @@ class TestSurveyResponseService(TestCase):
 
                             by_short_code.return_value = Mock(spec=Entity)
                             mock_form_model = Mock(spec=FormModel)
-                            mock_form_model.is_inactive.return_value = False
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
                             response = survey_response_service.save_survey('CL1', values, [], transport_info,

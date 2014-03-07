@@ -22,9 +22,6 @@ class attributes(object):
     TYPE_PATH = '_type'
     DATA = 'data'
     ACTIVE_LANGUAGES = 'activeLanguages'
-    ACTIVE_STATE = 'Active'
-    INACTIVE_STATE = 'Inactive'
-    TEST_STATE = 'Test'
 
 
 class TZAwareDateTimeField(DateTimeField):
@@ -236,12 +233,11 @@ class SurveyResponseDocument(DocumentBase):
     form_code = TextField()
     form_model_revision = TextField()
     data_record_id = TextField()
-    test = BooleanField()
     event_time = TZAwareDateTimeField()
     data_record_history = ListField(TextField())
 
     def __init__(self, channel=None, destination=None, values=None, id=None, status=None,
-                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None, test=None,
+                 error_message=None, form_code=None, form_model_revision=None, data_record_id=None,
                  event_time=None, modified_by_id=None, owner_uid=None):
         DocumentBase.__init__(self, id, 'SurveyResponse')
         self.submitted_on = utcnow()
@@ -254,7 +250,6 @@ class SurveyResponseDocument(DocumentBase):
         self.status = status
         self.error_message = error_message
         self.data_record_id = data_record_id
-        self.test = test
         self.event_time = event_time if event_time is not None else self.created
         self.data_record_history = []
         self.owner_uid = owner_uid

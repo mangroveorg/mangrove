@@ -31,7 +31,6 @@ class TestWebPlayer(TestCase):
 
     def _mock_form_model(self):
         self.form_model_mock = Mock(spec=FormModel)
-        self.form_model_mock.is_inactive.return_value = False
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
         get_form_model_mock = self.get_form_model_mock_patcher.start()
         get_form_model_mock.return_value = self.form_model_mock

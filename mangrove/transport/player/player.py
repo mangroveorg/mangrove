@@ -5,7 +5,7 @@ import inspect
 
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
-from mangrove.errors.MangroveException import MangroveException, InactiveFormModelException
+from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository import reporters
@@ -22,8 +22,6 @@ class Player(object):
 
     def submit(self, form_model, values, reporter_names, is_update=False):
         try:
-            if form_model.is_inactive():
-                raise InactiveFormModelException(form_model.form_code)
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
             handler = handler_factory(self.dbm, form_model, is_update)

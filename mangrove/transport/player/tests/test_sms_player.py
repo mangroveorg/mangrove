@@ -58,7 +58,6 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
-        self.form_model_mock.is_inactive.return_value = False
         self.form_model_mock.get_field_by_name = self._location_field
         field = TextField('q1', 'id', 'q1', entity_question_flag=True)
         self.form_model_mock.fields = [field]

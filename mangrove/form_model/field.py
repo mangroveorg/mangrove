@@ -41,6 +41,8 @@ def create_question_from(dictionary, dbm):
         return _get_telephone_number_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.SHORT_CODE_FIELD:
         return _get_short_code_field(code, dictionary, is_entity_question, label, name, instruction, required)
+    elif type == field_attributes.UNIQUE_ID_FIELD:
+        return _get_unique_id_field(code, dictionary, is_entity_question, label, name, instruction, required)
     return None
 
 
@@ -59,6 +61,11 @@ def _get_short_code_field(code, dictionary, is_entity_question, label, name, ins
     field = ShortCodeField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
                       constraints=constraints, instruction=instruction, required=required)
     return field
+
+def _get_unique_id_field(code, dictionary, is_entity_question, label, name, instruction, required):
+    return UniqueIdField(unique_id_type='clinic', name=name, code=code,
+                         label=dictionary["label"],
+                         instruction=dictionary.get("instruction"))
 
 
 
@@ -141,6 +148,7 @@ class field_attributes(object):
     ENTITY_QUESTION_FLAG = 'entity_question_flag'
     NAME = "name"
     LIST_FIELD = "list"
+    UNIQUE_ID_FIELD = "unique_id"
 
 
 class Field(object):
@@ -411,6 +419,15 @@ class TextField(Field):
 
     def formatted_field_values_for_excel(self, value):
         return value
+
+class UniqueIdField(Field):
+     def __init__(self, unique_id_type,name, code, label, constraints=None, defaultValue=None, instruction=None,
+                 required=True):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label, instruction=instruction,
+                 constraints=constraints, required=required)
+        self.unique_id_type = unique_id_type
 
 
 class TelephoneNumberField(TextField):

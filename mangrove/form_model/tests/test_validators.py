@@ -1,10 +1,13 @@
-
 import unittest
-from mock import Mock
+from mock import Mock, patch, MagicMock
+from mangrove.datastore.database import DatabaseManager
+from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.validator_types import ValidatorTypes
 from mangrove.form_model.validator_factory import validator_factory
-from mangrove.form_model.field import TextField
-from mangrove.form_model.validators import MandatoryValidator
+from mangrove.form_model.field import TextField, UniqueIdField
+from mangrove.form_model.validators import MandatoryValidator, UniqueIdExistsValidator
+from mangrove.datastore.entity import Entity
+
 
 class TestMandatoryValidator(unittest.TestCase):
     def setUp(self):
@@ -40,5 +43,35 @@ class TestMandatoryValidator(unittest.TestCase):
             'cls': ValidatorTypes.MANDATORY
         }
         self.assertEqual(expected_json, self.validator.to_json())
+
+
+class TestUniqueIdExistsValidator(unittest.TestCase):
+    def setUp(self):
+        self.validator = UniqueIdExistsValidator()
+        self.field1 = TextField('a', 'a', 'a')
+        self.field2 = TextField('b', 'b', 'b')
+        self.field3 = UniqueIdField('unique_id_type1', 'name1', 'code1', 'label1')
+        self.field4 = UniqueIdField('unique_id_type2', 'name2', 'code2', 'label2')
+        self.fields = [self.field1, self.field2, self.field3,
+                       self.field4
+        ]
+
+
+    def test_should_not_return_error_if_unique_id_exists(self):
+        values = dict(a='text1', b='text2', code1='unique_id1', code2='unique_id2')
+        dbm = Mock(spec=DatabaseManager)
+        with patch('mangrove.form_model.validators.get_by_short_code') as get_by_short_code:
+            get_by_short_code.return_value = Mock(spec=Entity)
+            errors = self.validator.validate(values, self.fields, dbm)
+            self.assertEquals(0, len(errors))
+
+    def test_should_return_error_if_unique_id_does_not_exist(self):
+        values = dict(a='text1', b='text2', code1='invalid_id', code2='valid_code')
+        dbm = Mock(spec=DatabaseManager)
+        with patch('mangrove.form_model.validators.get_by_short_code') as get_by_short_code:
+            get_by_short_code.side_effect = [DataObjectNotFound('Entity','short_code','invalid_id'),Mock(spec=Entity)]
+            errors = self.validator.validate(values, self.fields, dbm)
+            self.assertEquals(1, len(errors))
+            self.assertEquals(errors['code1'],u'Entity with short_code = invalid_id not found.')
 
 

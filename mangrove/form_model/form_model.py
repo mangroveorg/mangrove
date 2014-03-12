@@ -465,3 +465,13 @@ class FormModel(DataObject):
             dict[field.code] = field.convert_to_unicode()
 
         return dict
+
+    def add_validator(self, validator_class):
+        if validator_class not in [validator.__class__ for validator in self.validators]:
+            self.validators.append(validator_class())
+
+    def remove_validator(self, validator_class):
+        for validator in self.validators:
+            if isinstance(validator, validator_class):
+                self.validators.remove(validator)
+                return

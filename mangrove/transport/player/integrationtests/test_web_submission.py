@@ -9,7 +9,7 @@ from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import WebPlayer
@@ -38,8 +38,7 @@ class TestWEBSubmission(MangroveTestCase):
             (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         #Web submission Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                               entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)], required=False)
@@ -52,8 +51,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.form_model.save()
 
         #Activity Report Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                               entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='reporter',name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)])

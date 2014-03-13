@@ -429,6 +429,9 @@ class UniqueIdField(Field):
                  constraints=constraints, required=required)
         self.unique_id_type = unique_id_type
 
+     def validate(self,value):
+        super(UniqueIdField, self).validate(value)
+        return value
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,

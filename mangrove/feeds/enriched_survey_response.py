@@ -3,7 +3,7 @@ import traceback
 from mangrove.datastore.documents import EnrichedSurveyResponseDocument
 from mangrove.datastore.entity import by_short_code, Entity, get_by_short_code_include_voided
 from mangrove.errors.MangroveException import DataObjectNotFound
-from mangrove.form_model.field import DateField, SelectField
+from mangrove.form_model.field import DateField, SelectField, UniqueIdField
 
 
 class EnrichedSurveyResponseBuilder(object):
@@ -114,8 +114,9 @@ class EnrichedSurveyResponseBuilder(object):
         if isinstance(field, SelectField):
             selected = self._select_field_values(answer_dictionary.get('answer'), field)
             answer_dictionary.update({'answer': selected})
-        if field.code == self.form_model.entity_question.code:
+        if isinstance(field, UniqueIdField):
             self._update_entity_answer_in_dictionary(answer_dictionary, value)
+        #if field.code == self.form_model.entity_question.code:
         return answer_dictionary
 
     def _select_field_values(self, choices, field):

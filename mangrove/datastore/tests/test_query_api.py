@@ -8,7 +8,7 @@ from mangrove.datastore.entity import Entity, get_entities_by_value, create_enti
 from mangrove.datastore import data
 from mangrove.datastore.entity_type import define_type
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
@@ -689,8 +689,8 @@ class TestQueryApi(MangroveTestCase):
 
 
     def _create_form_model(self, form_code):
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type=self.entity_type[0],name="entity_question1", code="ID1", label="What is associated clinic entity")
+        question5 = UniqueIdField(unique_id_type=self.entity_type[1],name="entity_question2", code="ID2", label="What is associated health facility entity")
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
             defaultValue="some default value")
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age")

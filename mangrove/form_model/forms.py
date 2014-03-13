@@ -17,7 +17,7 @@ class EditSurveyResponseForm(object):
         self.is_valid = (self.errors is None or len(self.errors) == 0)
 
         self.entity_type = form_model.entity_type
-        entity_short_code = self.get_answer_for(self.entity_question_code)
+        entity_short_code = self.get_answer_for(self.unique_id_question_code)
         self.short_code = entity_short_code.lower() if entity_short_code is not None else None
         self.entity = get_by_short_code(dbm=dbm, short_code=self.short_code, entity_type=self.entity_type)
 
@@ -26,8 +26,8 @@ class EditSurveyResponseForm(object):
         self.survey_response.set_answers(self.short_code, form_answers)
 
     @property
-    def entity_question_code(self):
-        return self.form_model.entity_question.code
+    def unique_id_question_code(self):
+        return self.form_model.unique_id_field.code
 
     @property
     def data_record_id(self):

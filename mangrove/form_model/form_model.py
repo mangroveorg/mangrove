@@ -7,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
-from mangrove.form_model.field import TextField
+from mangrove.form_model.field import TextField, UniqueIdField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -174,6 +174,13 @@ class FormModel(DataObject):
         return eq
 
     @property
+    def unique_id_field(self):
+        for f in self._form_fields:
+            if isinstance(f, UniqueIdField):
+                return f
+        return None
+
+    @property
     def event_time_question(self):
         event_time_questions = [event_time_question for event_time_question in self._form_fields if
                                 event_time_question.is_event_time_field]
@@ -226,7 +233,7 @@ class FormModel(DataObject):
         self._doc.active_languages = value
 
     def get_short_code(self, values):
-        return self._case_insensitive_lookup(values, self.entity_question.code)
+        return self._case_insensitive_lookup(values, self.unique_id_field.code)
 
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
@@ -475,3 +482,4 @@ class FormModel(DataObject):
             if isinstance(validator, validator_class):
                 self.validators.remove(validator)
                 return
+

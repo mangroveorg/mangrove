@@ -2,7 +2,7 @@ from unittest import TestCase
 from mangrove.transport.contract.transport_info import TransportInfo
 from mock import Mock, patch
 from mangrove.datastore.documents import EntityDocument
-from mangrove.form_model.field import TextField
+from mangrove.form_model.field import TextField, UniqueIdField
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
@@ -14,8 +14,7 @@ class TestEditSurveyResponseForm(TestCase):
         self.dbm = Mock(spec=DatabaseManager)
 
     def test_valid_edit_survey_response_form(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('some_entity_type',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
@@ -59,8 +58,7 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertEquals(form.errors, 'error')
 
     def test_edit_survey_response_form_for_previously_errored_survey_response(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('patient',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         form_model = FormModel(self.dbm, entity_type=['patient'], name="aids", label="Aids form_model",
@@ -78,8 +76,7 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertTrue(form.is_valid)
 
     def test_edit_survey_response_form_with_missing_data(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('entity_type',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}
@@ -98,8 +95,7 @@ class TestEditSurveyResponseForm(TestCase):
             self.assertEquals(form.errors, 'error')
 
     def test_save_of_edit_survey_response_form_with_invalid_data(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('entity_type',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}

@@ -14,7 +14,8 @@ class FormSubmission(object):
 
         self.form_model = form_model
         self._cleaned_data = form_answers
-        entity_short_code = self.get_answer_for(form_model.entity_question.code)
+        entity_short_code = form_model.entity_question.code if form_model.is_entity_registration_form() else form_model.unique_id_field.code
+        entity_short_code = self.get_answer_for(entity_short_code)
         self.short_code = entity_short_code.lower() if entity_short_code is not None else None
         self.entity_type = self.get_entity_type(form_model)
         self.is_valid = (errors is None or len(errors) == 0)

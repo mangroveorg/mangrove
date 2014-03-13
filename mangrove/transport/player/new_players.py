@@ -65,17 +65,10 @@ class SMSPlayerV2(object):
         reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
 
-        values = self._use_reporter_as_entity_if_summary_report(form_code, values, reporter_entity.short_code)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
                                    reporter_entity.short_code,
                                    additional_feed_dictionary=additional_feed_dictionary)
-
-    def _use_reporter_as_entity_if_summary_report(self, form_code, values, reporter_entity_short_code):
-        form_model = get_form_model_by_code(self.dbm, form_code)
-        if form_model.is_entity_type_reporter() and is_empty(form_model.get_short_code(values)):
-            values[form_model.entity_question.code] = reporter_entity_short_code
-        return values
 
     def _parse(self, message):
         return SMSParserFactory().getSMSParser(message, self.dbm).parse(message)

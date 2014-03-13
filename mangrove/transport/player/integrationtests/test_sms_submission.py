@@ -16,7 +16,7 @@ from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocume
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
  DataObjectNotFound, FormModelDoesNotExistsException
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, ShortCodeField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
 SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
@@ -55,7 +55,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.dbm = create_db('mangrove-test')
+        cls.dbm = create_db(uniq('mangrove-test'))
         initializer.initial_data_setup(cls.dbm)
 
         safe_define_type(cls.dbm, ["dog"])
@@ -79,8 +79,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, cls.phone_number),
             (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True, constraints=[TextLengthConstraint(min=1, max=20)])
+        question1 = ShortCodeField(name="entity_question", code="EID", label="What is associated entity",entity_question_flag=True, constraints=[TextLengthConstraint(min=1, max=20)])
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
             constraints=[TextLengthConstraint(4, 15)], required=False)
@@ -93,7 +92,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             cls.form_model = get_form_model_by_code(cls.dbm, "clinic")
         except FormModelDoesNotExistsException:
             cls.form_model = FormModel(cls.dbm, entity_type=cls.entity_type, name="aids", label="Aids form_model",
-                form_code="clinic", type='survey', fields=[question1, question2, question3])
+                form_code="clinic", type='survey', fields=[question1, question2, question3], is_registration_model=True)
             cls.form_model.add_field(question4)
             cls.form_model.save()
         cls.submission_handler = None
@@ -108,51 +107,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         return response
 
 
-    def test_should_save_submitted_sms(self):
-        text = "clinic .EID %s .name CLINIC-MADA .ARV 50 .COL a" % self.entity.short_code
-
-        response = self.send_sms(text)
-
-        self.assertTrue(response.success)
-
-        data_record_id = response.datarecord_id
-        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
-        self.assertEqual("clinic", data_record.submission['form_code'])
-        self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
-
-        data = self.entity.values({"Name": "latest", "Arv stock": "latest", "Color": "latest"})
-        self.assertEquals(data["Arv stock"], 50)
-        self.assertEquals(data["Name"], "Ruby")
-
-    def test_should_save_submitted_sms_for_activity_report(self):
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True )
-        question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-            defaultValue="some default value",
-            constraints=[TextLengthConstraint(4, 15)] )
-        question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-            constraints=[NumericRangeConstraint(min=15, max=120)] )
-        activity_report = FormModel(self.dbm, entity_type=["reporter"], name="report", label="reporting form_model",
-            form_code="acp", type='survey', fields=[question1, question2, question3])
-        try:
-            activity_report.save()
-        except DataObjectAlreadyExists:
-            activity_report = get_form_model_by_code(self.dbm, "acp")
-
-        text = "acp .name tester .ARV 50 "
-
-        response = self.send_sms(text)
-
-        self.assertTrue(response.success)
-        self.assertEqual(u"Test_reporter", response.reporters[0].get(NAME_FIELD))
-
-        data_record_id = response.datarecord_id
-        data_record = self.dbm._load_document(id=data_record_id, document_class=DataRecordDocument)
-        self.assertEqual("acp", data_record.submission['form_code'])
-        data = self.reporter.values({"Name": "latest", "Arv stock": "latest"})
-        self.assertEquals(data["Arv stock"], 50)
-        self.assertEquals(data["Name"], "tester")
-        activity_report.delete()
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = "clinic .EID %s .ARV 150 " % self.entity.short_code
@@ -253,18 +207,6 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         with self.assertRaises(EntityTypeDoesNotExistsException):
             text = "reg .N buddy1 .S DOG3 .T cat .L 80 80 .D its another dog! .M 1234567"
             self.send_sms(text)
-
-    def test_entity_instance_is_case_insensitive(self):
-        text = "clinic .EID %s .name CLINIC-MADA .ARV 50 .COL a" % upper(self.entity_short_code)
-
-        response = self.send_sms(text)
-
-        self.assertTrue(response.success)
-
-    def test_questionnaire_code_is_case_insensitive(self):
-        text = "CLINIC .EID %s .name CLINIC-MADA .ARV 50 .COL a" % self.entity_short_code
-        response = self.send_sms(text)
-        self.assertTrue(response.success)
 
     def test_entity_type_is_case_insensitive_in_registration(self):
         text = "reg .n buddy .T DOG .G 80 80 .M 123456"

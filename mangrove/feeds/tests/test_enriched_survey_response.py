@@ -5,7 +5,7 @@ from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import DataObjectNotFound
-from mangrove.form_model.field import SelectField, DateField, TextField, IntegerField
+from mangrove.form_model.field import SelectField, DateField, TextField, IntegerField, UniqueIdField
 from mangrove.form_model.form_model import FormModel
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.transport.contract.survey_response import SurveyResponse
@@ -91,9 +91,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_subject_answer_has_name_of_subject(self):
         value_mock = PropertyMock(return_value={'Q1': 'cli001'})
         type(self.survey_response).values = value_mock
-        subject_field = TextField('name', 'q1', 'Reporting for Subject', entity_question_flag=True)
-        type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
-        type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
+        subject_field = UniqueIdField('clinic','name', 'q1', 'Reporting for Subject')
         builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, {})
 
         with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
@@ -106,15 +104,13 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertEquals({'id': 'cli001', 'name': 'Kormanagala Clinic', 'deleted': False},
                               dictionary.get('answer'))
             self.assertEquals('Reporting for Subject', dictionary.get('label'))
-            self.assertEquals('text', dictionary.get('type'))
+            self.assertEquals('unique_id', dictionary.get('type'))
             self.assertEquals('true', dictionary.get('is_entity_question'))
 
     def test_subject_answer_id_as_value_rather_than_name_when_subject_is_not_existing(self):
         survey_response = Mock(spec=SurveyResponse)
         type(survey_response).values = PropertyMock(return_value={'q1': 'cli001'})
-        subject_field = TextField('name', 'q1', 'Reporting for Subject', entity_question_flag=True)
-        type(self.form_model).entity_question = PropertyMock(return_value=subject_field)
-        type(self.form_model).entity_type = PropertyMock(return_value='Clinic')
+        subject_field = UniqueIdField('clinic','name', 'q1', 'Reporting for Subject')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, {})
 
         with patch('mangrove.feeds.enriched_survey_response.by_short_code') as by_short_code:
@@ -124,7 +120,7 @@ class TestSurveyResponseEventBuilder(TestCase):
 
             self.assertEquals({'id': 'cli001', 'name': '', 'deleted': True}, dictionary.get('answer'))
             self.assertEquals('Reporting for Subject', dictionary.get('label'))
-            self.assertEquals('text', dictionary.get('type'))
+            self.assertEquals('unique_id', dictionary.get('type'))
             self.assertEquals('true', dictionary.get('is_entity_question'))
 
 

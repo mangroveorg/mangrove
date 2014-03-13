@@ -5,7 +5,7 @@ from mock import Mock, patch, MagicMock
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.form_model.field import TextField, DateField
+from mangrove.form_model.field import TextField, DateField, UniqueIdField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.form_submission import FormSubmissionFactory
 
@@ -14,8 +14,7 @@ ENTITY_TYPE = ["Clinic"]
 
 class TestFormSubmission(unittest.TestCase):
     def _create_data_submission_form(self):
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         question2 = TextField(name="Name", code="Q1", label="What is your name",
                               defaultValue="some default value")
         event_time_field_code = "ET"

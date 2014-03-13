@@ -8,7 +8,7 @@ from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import   SurveyResponseDocument
 from mangrove.datastore.entity import  create_entity
 from mangrove.datastore.entity_type import define_type
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -53,8 +53,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234'),
             (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-             entity_question_flag=True )
+        question1 = UniqueIdField('clinic',name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
             defaultValue="some default value",
             constraints=[TextLengthConstraint(4, 15)] , required=False)
@@ -91,11 +90,6 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         return [doc_id1, doc_id2, doc_id3, doc_id4]
 
 
-    # def test_should_get_count_of_all_success_survey_responses(self):
-    #     self._prepare_survey_responses()
-    #     count = survey_response_count(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
-    #     self.assertEqual(2, count)
-
     def test_count_of_survey_responses_should_be_zero_when_form_code_not_existed(self):
         self._prepare_survey_responses()
         count = survey_response_count(self.manager, "not_existed_form_code", 0, self._tomorrow())
@@ -110,17 +104,9 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, survey_responses[2].values)
 
 
-    # def test_get_all_success_survey_responses_for_form(self):
-    #     self._prepare_survey_responses()
-    #     survey_responses = get_survey_responses(self.manager, FORM_CODE, 0, self._tomorrow(), view_name="success_survey_response")
-    #     self.assertEquals(2, len(survey_responses))
-    #     self.assertEquals({'Q1': 'ans12', 'Q2': 'ans22'}, survey_responses[0].values)
-    #     self.assertEquals({'Q1': 'ans1', 'Q2': 'ans2'}, survey_responses[1].values)
-
-
     def test_error_messages_are_being_logged_in_survey_responses(self):
         text = "clinic .EID %s .ARV 150 " % self.entity.short_code
-        self.send_sms(text)
+        self.send_sms_v2(text)
         survey_responses = get_survey_responses(self.manager, "clinic", 0, self._tomorrow())
         self.assertEquals(1, len(survey_responses))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", survey_responses[0].errors)

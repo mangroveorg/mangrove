@@ -19,9 +19,6 @@ class ActivityReportWorkFlow(object):
         self.reporter_entity = reporter_entity
 
     def process(self, values):
-        if is_empty(self.form_model.get_short_code(values)):
-            if self.form_model.is_entity_type_reporter():
-                values[self.form_model.entity_question.code] = self.reporter_entity.short_code
         return values
 
 

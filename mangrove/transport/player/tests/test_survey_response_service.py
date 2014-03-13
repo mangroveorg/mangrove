@@ -4,7 +4,7 @@ from mock import Mock, patch, PropertyMock, MagicMock
 from mangrove.datastore.entity_type import define_type
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.validation import NumericRangeConstraint
-from mangrove.form_model.field import TextField, IntegerField
+from mangrove.form_model.field import TextField, IntegerField, UniqueIdField
 from mangrove.datastore.documents import EntityDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import DataRecord, Entity, get_by_short_code_include_voided
@@ -33,8 +33,8 @@ class TestSurveyResponseService(TestCase):
         self.survey_response_service = SurveyResponseService(self.dbm)
 
     def form_model(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-                              entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="q1", label="What is associated entity",
+                              )
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
                                  constraints=[NumericRangeConstraint(min=10, max=100)])
         return FormModel(self.dbm, entity_type=["clinic"], name="aids", label="Aids form_model",

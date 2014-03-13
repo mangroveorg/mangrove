@@ -10,7 +10,7 @@ from mangrove.datastore.documents import SurveyResponseDocument
 from mangrove.datastore.entity import create_entity
 from mangrove.datastore.entity_type import define_type
 
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -40,8 +40,7 @@ class TestWEBSurveyResponse(MangroveTestCase):
                                      (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         #Web submission Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)], required=False)
@@ -56,8 +55,7 @@ class TestWEBSurveyResponse(MangroveTestCase):
         self.form_model.save()
 
         #Activity Report Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                              entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='reporter',name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)])

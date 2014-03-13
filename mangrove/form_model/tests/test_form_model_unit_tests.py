@@ -8,6 +8,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField, Date
 # from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
+from mangrove.form_model.validators import  MandatoryValidator, UniqueIdExistsValidator
 
 
 class TestFormModel(unittest.TestCase):
@@ -218,6 +219,22 @@ class TestFormModel(unittest.TestCase):
                         "Description",
                         "Event time field",
                         "Geo Location Field"].sort(),values.sort())
+
+    def test_should_add_validator_to_form_model_if_not_already_present(self):
+        self.form_model.validators = [MandatoryValidator()]
+        self.form_model.add_validator(UniqueIdExistsValidator)
+        self.assertEquals(len(self.form_model.validators),2)
+
+    def test_should_not_add_validator_to_form_model_if_already_present(self):
+        self.form_model.validators = [MandatoryValidator(),UniqueIdExistsValidator()]
+        self.form_model.add_validator(UniqueIdExistsValidator)
+        self.assertEquals(len(self.form_model.validators),2)
+
+    def test_should_remove_validator_from_form_model(self):
+        self.form_model.validators = [MandatoryValidator(),UniqueIdExistsValidator()]
+        self.form_model.remove_validator(UniqueIdExistsValidator)
+        self.assertEquals(len(self.form_model.validators),1)
+
 
 class DatabaseManagerStub(DatabaseManager):
 

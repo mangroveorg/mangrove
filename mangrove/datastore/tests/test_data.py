@@ -4,7 +4,7 @@ from pytz import UTC
 from mangrove.datastore.entity import Entity, create_entity, get_by_short_code
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException
-from mangrove.form_model.field import TextField, IntegerField, SelectField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel, get_form_model_by_code
 from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, delete_and_create_entity_instance
 
@@ -60,8 +60,7 @@ class TestData(object):
                 form.delete()
         except FormModelDoesNotExistsException:
             pass
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                              entity_question_flag=True)
+        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="ID", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                               defaultValue="some default value")
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age")

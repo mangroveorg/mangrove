@@ -9,8 +9,8 @@ from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
-from mangrove.form_model.field import TextField, IntegerField, SelectField
-from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE
+from mangrove.form_model.field import TextField, IntegerField, SelectField, ShortCodeField
+from mangrove.form_model.form_model import FormModel, MOBILE_NUMBER_FIELD_CODE
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import WebPlayer
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
@@ -28,18 +28,9 @@ class TestWEBSubmission(MangroveTestCase):
         self.entity = create_entity(self.manager, entity_type=self.entity_type,
                                     location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
-        self.data_record_id = self.entity.add_data(data=[("Name", "Ruby")],
-                                                   submission=dict(submission_id="1"))
 
-        self.reporter = create_entity(self.manager, entity_type=["reporter"],
-                                      location=["India", "Pune"], aggregation_paths=None, short_code="rep1",
-                                      )
-        self.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, '1234'),
-            (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
-
-        #Web submission Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                               entity_question_flag=True)
+        #Form Model with unique id question
+        question1 = ShortCodeField(name="entity_question", code="EID", label="What is associated entity",entity_question_flag=True)
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)], required=False)
@@ -48,20 +39,8 @@ class TestWEBSubmission(MangroveTestCase):
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], required=False)
         self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="clinic", type='survey', fields=[question1, question2, question3, question4])
+                                    form_code="clinic", type='survey', fields=[question1, question2, question3, question4], is_registration_model=True)
         self.form_model.save()
-
-        #Activity Report Form Model
-        question1 = TextField(name="entity_question", code="EID", label="What is associated entity",
-                               entity_question_flag=True)
-        question2 = TextField(name="Name", code="NAME", label="Clinic Name",
-                              defaultValue="some default value",
-                              constraints=[TextLengthConstraint(4, 15)])
-        question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
-                                 constraints=[NumericRangeConstraint(min=15, max=120)])
-        activity_report = FormModel(self.manager, entity_type=["reporter"], name="report", label="reporting form_model",
-                                    form_code="acp", type='survey', fields=[question1, question2, question3])
-        activity_report.save()
 
         self.web_player = WebPlayer(self.manager, location_tree=LocationTree())
 
@@ -73,30 +52,15 @@ class TestWEBSubmission(MangroveTestCase):
         response = self.web_player.accept(Request(message=text, transportInfo=transport_info))
         return response
 
-    def test_should_save_submitted_form(self):
-        text = {'form_code':'clinic', 'EID':self.entity.short_code, 'name': 'CLINIC-MADA', 'ARV': '50', 'COL': ['a']}
-        response = self.send_request_to_web_player(text)
-        self.assertTrue(response.success)
-        data_record_id = response.datarecord_id
-        data_record = self.manager._load_document(id=data_record_id, document_class=DataRecordDocument)
-        data = data_record.data
-        self.assertEqual("clinic", data_record.submission['form_code'])
-        self.assertEqual([], response.reporters)
-        self.assertEqual(50.0, data['Arv stock']['value'])
-        self.assertEqual('CLINIC-MADA', data['Name']['value'])
-        self.assertEqual(['RED'], data['Color']['value'])
 
     def test_should_save_submitted_form_for_activity_report(self):
-        text = {'form_code':'acp', 'eid':self.reporter.short_code, 'name': 'tester' ,'ARV': '50' }
+        text = {'form_code':'reg', 'n':'name','l':'location','m':'768686' ,'t':'reporter'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
 
         data_record_id = response.datarecord_id
         data_record = self.manager._load_document(id=data_record_id, document_class=DataRecordDocument)
-        self.assertEqual("acp", data_record.submission['form_code'])
-        data = self.reporter.values({"Name": "latest", "Arv stock": "latest"})
-        self.assertEquals(50 , data['Arv stock'])
-        self.assertEquals("tester", data['Name'])
+        self.assertEqual("reg", data_record.submission['form_code'])
 
     def test_should_give_error_for_wrong_integer_value(self):
         text = {'form_code': 'clinic', 'EID':self.entity.short_code, 'ARV': '150'}
@@ -197,9 +161,9 @@ class TestWEBSubmission(MangroveTestCase):
             self.send_request_to_web_player(text)
 
     def test_entity_instance_is_case_insensitive(self):
-        text = {'form_code':'clinic', 'EID':'CLI1', 'NAME': 'CLINIC-MADA', 'ARV': '50', 'COL': ['b']}
-        response = self.send_request_to_web_player(text)
-        self.assertTrue(response.success)
+        with self.assertRaises(DataObjectAlreadyExists):
+            text = {'form_code':'clinic', 'EID':'CLI1', 'NAME': 'CLINIC-MADA', 'ARV': '50', 'COL': ['b']}
+            self.send_request_to_web_player(text)
 
     def test_entity_type_is_case_insensitive_in_registration(self):
         text = {'form_code':'reg', 'n':'buddy', 't': 'DOG', 'g':'80 80', 'm':'123456'}

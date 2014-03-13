@@ -6,7 +6,7 @@ from mock import Mock, patch
 
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException, RequiredFieldNotPresentException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field, ShortCodeField
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, \
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ExcelDate
@@ -174,14 +174,12 @@ class TestField(unittest.TestCase):
             "label": "What is your name",
             "name": "field1_Name",
             "code": "Q1",
-            "type": "text",
-            
-            "entity_question_flag": True,
+            "type": "short_code",
             "required": True,
             "instruction": "test_instruction"
         }
-        field = TextField(name="field1_Name", code="Q1", label="What is your name",
-                          entity_question_flag=True, instruction="test_instruction")
+        field = ShortCodeField(name="field1_Name", code="Q1", label="What is your name",
+                          instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 

@@ -4,7 +4,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField, UniqueIdField
 # from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
@@ -15,8 +15,7 @@ class TestFormModel(unittest.TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)
 
-        q1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-                        entity_question_flag=True)
+        q1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         q2 = TextField(name="question1_Name", code="Q1", label="What is your name",
                        defaultValue="some default value",  constraints=[TextLengthConstraint(5, 10)],
                        required=False)

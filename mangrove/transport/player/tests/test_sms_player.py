@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from unittest.case import TestCase
 from mock import Mock, patch, PropertyMock
-from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
+from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField, UniqueIdField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
@@ -59,7 +59,7 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.get_field_by_name = self._location_field
-        field = TextField('q1', 'id', 'q1', entity_question_flag=True)
+        field = UniqueIdField('clinic','q1', 'id', 'q1')
         self.form_model_mock.fields = [field]
         self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
@@ -85,21 +85,6 @@ class TestSMSPlayer(TestCase):
         self.get_form_model_mock_player_patcher.stop()
         self.get_form_model_mock_parser_patcher.stop()
 
-#    def test_sms_player_should_parse_message(self):
-#        parser_mock = Mock(spec=OrderSMSParser)
-#        parser_mock.parse.return_value = ('FORM_CODE', {'id': '1'}, [])
-#        message = 'FORM_CODE 1'
-#
-#        sms_player = SMSPlayerV2(self.dbm, [])
-#
-#        with patch(
-#            'mangrove.transport.services.survey_response_service.SurveyResponseService.save') as get_form_submission_mock:
-#            with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
-#                mock_form_model = Mock(spec=FormModel)
-#                mock_get_form_model_by_code.return_value = mock_form_model
-#                mock_form_model.is_entity_type_reporter.return_value = False
-#                get_form_submission_mock.return_value = self.form_submission_mock
-#                sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
 
     def test_should_call_parser_post_processor_and_continue_for_no_response(self):
         self.loc_tree.get_location_hierarchy.return_value = None

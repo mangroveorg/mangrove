@@ -37,8 +37,7 @@ class TestEditSurveyResponseForm(TestCase):
             survey_response.set_status.assert_called_once_with('')
 
     def test_edit_survey_response_form_with_invalid_data(self):
-        question1 = TextField(name="entity_question", code="q1", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         values = {'q1': question1, 'q2': question2}

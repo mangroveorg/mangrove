@@ -31,7 +31,7 @@ def construct_global_registration_form(manager):
     question3 = ShortCodeField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value" ,
                           instruction="Enter a id, or allow us to generate it",
-                          entity_question_flag=True, constraints=[TextLengthConstraint(max=12), ShortCodeRegexConstraint(reg='^[a-zA-Z0-9]+$')], required=False)
+                           constraints=[TextLengthConstraint(max=12), ShortCodeRegexConstraint(reg='^[a-zA-Z0-9]+$')], required=False)
     question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
                                label="What is the subject's location?" , instruction="Enter a region, district, or commune", required=False)
     question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?" , instruction="Enter lat and long. Eg 20.6, 47.3", required=False)

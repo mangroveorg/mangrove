@@ -4,7 +4,7 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.validator_types import ValidatorTypes
-from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField
+from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField, ShortCodeField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME, LOCATION_TYPE_FIELD_CODE, GEO_CODE_FIELD_NAME, GEO_CODE, REPORTER
 from mangrove.contrib.registration_validators import AtLeastOneLocationFieldMustBeAnsweredValidator, MobileNumberValidationsForReporterRegistrationValidator
 
@@ -46,7 +46,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidator(unitt
 
     def setUp(self):
         self.validator = MobileNumberValidationsForReporterRegistrationValidator()
-        self.field1 = TextField('t', 't', 't',  entity_question_flag=True)
+        self.field1 = ShortCodeField('t', 't', 't')
         self.field2 = TextField('m', 'm', 'm')
         self.fields = [self.field1, self.field2]
         self.dbm = Mock(spec=DatabaseManager)

@@ -30,7 +30,7 @@ class TestWEBSubmission(MangroveTestCase):
                                     )
 
         #Form Model with unique id question
-        question1 = ShortCodeField(name="entity_question", code="EID", label="What is associated entity",entity_question_flag=True)
+        question1 = ShortCodeField(name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)], required=False)

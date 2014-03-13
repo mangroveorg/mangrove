@@ -1,15 +1,13 @@
-
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.datastore.entity import get_by_short_code
-from mangrove.form_model.field import HierarchyField, TextField
+from mangrove.form_model.field import HierarchyField, TextField, UniqueIdField, ShortCodeField
 from mangrove.form_model.validator_types import ValidatorTypes
 from collections import OrderedDict
 
 
 class EntityShouldExistValidator(object):
-
-    def validate(self,values,fields, dbm):
-        errors=OrderedDict()
+    def validate(self, values, fields, dbm):
+        errors = OrderedDict()
         entity_type_field, entity_id_field = self._get_field_codes(fields)
         try:
             get_by_short_code(dbm, entity_id_field.value, [entity_type_field.value])
@@ -31,8 +29,8 @@ class EntityShouldExistValidator(object):
         for field in fields:
             if isinstance(field, HierarchyField):
                 entity_type_field = field
-            if isinstance(field, TextField) and field.is_entity_field:
+            if isinstance(field, UniqueIdField) or isinstance(field, ShortCodeField):
                 entity_id_field = field
-        return entity_type_field,entity_id_field
+        return entity_type_field, entity_id_field
 
 

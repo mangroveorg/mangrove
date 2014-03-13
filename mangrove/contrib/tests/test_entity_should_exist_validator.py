@@ -6,7 +6,7 @@ from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.validator_types import ValidatorTypes
-from mangrove.form_model.field import HierarchyField, TextField
+from mangrove.form_model.field import HierarchyField, TextField, ShortCodeField
 from mangrove.contrib.delete_validators import EntityShouldExistValidator
 from collections import OrderedDict
 
@@ -19,7 +19,7 @@ class TestEntityShouldExistValidator(TestCase):
 
         self.validator = EntityShouldExistValidator()
         self.field1 = HierarchyField('a', 'entity_type', 'a')
-        self.field2 = TextField('b', 'entity_id', 'b', entity_question_flag=True)
+        self.field2 = ShortCodeField('b', 'entity_id', 'b')
         self.field1.set_value('clinic')
         self.field2.set_value('cli01')
         self.fields = [self.field1, self.field2]

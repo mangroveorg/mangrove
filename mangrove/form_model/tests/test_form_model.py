@@ -7,7 +7,7 @@ from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.validators import MandatoryValidator
 
 from mangrove.datastore.documents import FormModelDocument
-from mangrove.form_model.field import  TextField, IntegerField, SelectField, DateField
+from mangrove.form_model.field import  TextField, IntegerField, SelectField, DateField, UniqueIdField,ShortCodeField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
@@ -159,7 +159,7 @@ class FormModelTest(MangroveTestCase):
     def test_should_raise_exception_if_entity_field_already_exist(self):
         with self.assertRaises(EntityQuestionAlreadyExistsException):
             form_model = FormModel.get(self.manager, self.form_model_id)
-            question = TextField(name="added_question", code="Q5", label="How are you", entity_question_flag=True )
+            question = UniqueIdField('health facility',name="added_question", code="Q5", label="How are you")
             form_model.add_field(question)
             form_model.save()
 
@@ -194,10 +194,8 @@ class FormModelTest(MangroveTestCase):
                 "name": "What are you reporting on?",
                 "defaultValue": "",
                 "label": "Entity being reported on",
-                "entity_question_flag": True,
-                "type": "text",
+                "type": "unique_id",
                 "code": "eid",
-                "constraints": [("length", {"min": 1, "max": 10})],
                 "required": True
             },
             {
@@ -235,9 +233,8 @@ class FormModelTest(MangroveTestCase):
         document.name = "New Project"
         document.type = "survey"
         document.type = "survey"
-        entityQ = TextField(name="What are you reporting on?", code="eid",
-            label="Entity being reported on", entity_question_flag=True,
-            constraints=[TextLengthConstraint(min=1, max=10)])
+        entityQ = UniqueIdField('reporter',name="What are you reporting on?", code="eid",
+            label="Entity being reported on",)
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
             constraints=[NumericRangeConstraint(min=0, max=10)], required=False)
         placeQ = SelectField(name="Where do you live?", code="PLC", label="",
@@ -262,16 +259,14 @@ class FormModelTest(MangroveTestCase):
         self.assertEqual(self.form_model.entity_type, ["WaterPoint", "Dam"])
 
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="1", type='survey', fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
             form_model.save()
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="2", type='survey', fields=[question1])
         form_model2.save()
@@ -280,30 +275,15 @@ class FormModelTest(MangroveTestCase):
             form_model2.save()
 
     def test_should_not_raise_exception_if_form_code_is_updated(self):
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         form_model2 = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
             form_code="2", type='survey', fields=[question1])
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
 
-    # def test_should_return_none_if_no_registraion_form_found_for_entity_type(self):
-    #     self.assertIsNone(get_form_model_by_entity_type(self.manager, ['test']))
-
-    # def test_should_return_the_registration_form_model_for_the_entity_type(self):
-    #     field1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-    #         entity_question_flag=True)
-    #     expected_form_model = FormModel(self.manager, 'registration_form', 'registration_form', 'foo', fields=[field1],
-    #         entity_type=self.entity_type, is_registration_model=True)
-    #     expected_form_model.save()
-    #
-    #     reg_form_model = get_form_model_by_entity_type(self.manager, self.entity_type)
-    #     self.assertEqual(expected_form_model.id, reg_form_model.id)
-    #     self.assertEqual(expected_form_model.name, reg_form_model.name)
-
     def test_should_save_form_model_with_validators(self):
-        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
+        fields = [ShortCodeField('name', 'eid', 'label')]
         form = FormModel(self.manager, 'test_form', 'label', 'foo', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
@@ -313,12 +293,12 @@ class FormModelTest(MangroveTestCase):
         self.assertTrue(isinstance(form.validators[1], MobileNumberValidationsForReporterRegistrationValidator))
 
     def test_should_batch_get_form_models(self):
-        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
+        fields = [ShortCodeField('name', 'eid', 'label')]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code1', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
 
-        fields = [TextField('name', 'eid', 'label', entity_question_flag=True)]
+        fields = [ShortCodeField('name', 'eid', 'label')]
         form = FormModel(self.manager, 'test_form', 'label', 'form_code2', fields=fields, entity_type=['Clinic'],
             validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
         form.save()
@@ -340,8 +320,7 @@ class FormModelTest(MangroveTestCase):
 
     def _create_form_model(self):
         self.entity_type = ["HealthFacility", "Clinic"]
-        question1 = TextField(name="entity_question", code="ID", label="What is associated entity",
-            entity_question_flag=True)
+        question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="Q1", label="What is your name",
             defaultValue="some default value", constraints=[TextLengthConstraint(5, 10), RegexConstraint("\w+")] )
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",

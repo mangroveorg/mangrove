@@ -20,13 +20,12 @@ def create_question_from(dictionary, dbm):
     type = dictionary.get("type")
     name = dictionary.get("name")
     code = dictionary.get("code")
-    is_entity_question = dictionary.get("entity_question_flag")
     label = dictionary.get("label")
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
     is_event_time_field = dictionary.get("event_time_field_flag")
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, dictionary, is_entity_question, label, name, instruction, required)
+        return _get_text_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
         return _get_integer_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
@@ -40,29 +39,29 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
         return _get_telephone_number_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.SHORT_CODE_FIELD:
-        return _get_short_code_field(code, dictionary, is_entity_question, label, name, instruction, required)
+        return _get_short_code_field(code, dictionary,label, name, instruction, required)
     elif type == field_attributes.UNIQUE_ID_FIELD:
-        return _get_unique_id_field(code, dictionary, is_entity_question, label, name, instruction, required)
+        return _get_unique_id_field(code, dictionary, label, name, instruction, required)
     return None
 
 
-def _get_text_field(code, dictionary, is_entity_question, label, name, instruction, required):
+def _get_text_field(code, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
-    field = TextField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+    field = TextField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required)
     return field
 
-def _get_short_code_field(code, dictionary, is_entity_question, label, name, instruction, required):
+def _get_short_code_field(code, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
-    field = ShortCodeField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+    field = ShortCodeField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required)
     return field
 
-def _get_unique_id_field(code, dictionary, is_entity_question, label, name, instruction, required):
+def _get_unique_id_field(code, dictionary, label, name, instruction, required):
     return UniqueIdField(unique_id_type='clinic', name=name, code=code,
                          label=dictionary["label"],
                          instruction=dictionary.get("instruction"))
@@ -373,17 +372,14 @@ class ExcelDate(object):
 class TextField(Field):
     DEFAULT_VALUE = "defaultValue"
     CONSTRAINTS = "constraints"
-    ENTITY_QUESTION_FLAG = 'entity_question_flag'
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
-                 entity_question_flag=False, required=True):
+                required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
                        label=label, instruction=instruction, constraints=constraints, required=required)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
-        if entity_question_flag:
-            self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
     def validate(self, value):
         Field.validate(self, value)
@@ -397,9 +393,6 @@ class TextField(Field):
         except VdtValueTooShortError as valueTooShortError:
             raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE], value, valueTooShortError.args[1])
 
-    @property
-    def is_entity_field(self):
-        return self._dict.get(self.ENTITY_QUESTION_FLAG)
 
     def get_constraint_text(self):
         if not is_empty(self.constraints):
@@ -433,6 +426,10 @@ class UniqueIdField(Field):
         super(UniqueIdField, self).validate(value)
         return value
 
+     @property #TODO:Remove
+     def is_entity_field(self):
+        return True
+
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
                  required=True):
@@ -452,11 +449,11 @@ class TelephoneNumberField(TextField):
 
 class ShortCodeField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True, entity_question_flag=None):
+                 required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints, defaultValue=defaultValue,
-                           required=required, entity_question_flag = entity_question_flag)
+                           required=required)
         self._dict['type'] = field_attributes.SHORT_CODE_FIELD
 
 
@@ -467,6 +464,9 @@ class ShortCodeField(TextField):
         value = self._clean(value)
         return super(ShortCodeField, self).validate(value)
 
+    @property #TODO:Remove
+    def is_entity_field(self):
+        return True
 
 
 class HierarchyField(Field):

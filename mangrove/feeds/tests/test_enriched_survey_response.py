@@ -127,7 +127,7 @@ class TestSurveyResponseEventBuilder(TestCase):
     def test_data_sender_answer_not_included(self):
         value_mock = PropertyMock(return_value={'Q1': 'rep023'})
         type(self.survey_response).values = value_mock
-        data_sender_field = TextField('name', 'q1', 'Reporting on Behalf of', entity_question_flag=True)
+        data_sender_field = UniqueIdField('reporter','name', 'q1', 'Reporting on Behalf of')
         type(self.form_model).fields = [data_sender_field]
         type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
         type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])

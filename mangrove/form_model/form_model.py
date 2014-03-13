@@ -7,7 +7,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
-from mangrove.form_model.field import TextField, UniqueIdField
+from mangrove.form_model.field import TextField, UniqueIdField, ShortCodeField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -168,7 +168,7 @@ class FormModel(DataObject):
     def entity_question(self):
         eq = None
         for f in self._form_fields:
-            if isinstance(f, TextField) and f.is_entity_field:
+            if isinstance(f, ShortCodeField) or isinstance(f, UniqueIdField):
                 eq = f
                 break
         return eq
@@ -392,7 +392,7 @@ class FormModel(DataObject):
 
     def _validate_existence_of_only_one_entity_field(self, fields):
         """Validate only 1 entity question is there"""
-        entity_question_list = [f for f in fields if isinstance(f, TextField) and f.is_entity_field == True]
+        entity_question_list = [f for f in fields if isinstance(f, ShortCodeField) or isinstance(f, UniqueIdField)]
         if len(entity_question_list) > 1:
             raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 

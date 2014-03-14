@@ -235,9 +235,6 @@ class FormModel(DataObject):
     def get_short_code(self, values):
         return self._case_insensitive_lookup(values, self.entity_question.code)
 
-    def get_unique_id(self, values):
-        return self._case_insensitive_lookup(values, self.unique_id_field.code)
-
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
         return entity_type.lower() if is_not_empty(entity_type) else None

@@ -129,6 +129,13 @@ class TestFormModel(unittest.TestCase):
                                     form_code="1", type='survey', fields=[question1])
         self.assertTrue(activity_report.is_entity_type_reporter())
 
+    def test_should_give_back_unique_id_field(self):
+        question1 = UniqueIdField('entity_type',name="question1_Name", code="Q1", label="What is your name",
+                              defaultValue="some default value")
+        activity_report = FormModel(self.dbm,name="aids", label="Aids form_model",
+                                    form_code="1", type='survey', fields=[question1])
+        self.assertIsNotNone(activity_report.unique_id_field)
+
 
     def _case_insensitive_lookup(self, values, code):
         for fieldcode in values:

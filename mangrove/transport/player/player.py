@@ -46,9 +46,6 @@ class SMSPlayer(Player):
         values = GeneralWorkFlow().process(values)
         if form_model.is_entity_registration_form():
             values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
-        if form_model.is_entity_type_reporter():
-            values = ActivityReportWorkFlow(form_model, reporter_entity).process(values)
-
         return form_model, values
 
     def _process_post_parse_callback(self, form_code, values, extra_elements=[]):

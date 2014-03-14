@@ -14,8 +14,10 @@ class FormSubmission(object):
 
         self.form_model = form_model
         self._cleaned_data = form_answers
-        entity_short_code = form_model.entity_question.code if form_model.is_entity_registration_form() else form_model.unique_id_field.code
-        entity_short_code = self.get_answer_for(entity_short_code)
+        if form_model.is_entity_registration_form():
+            short_code_field = form_model.entity_question.code
+        else: short_code_field = form_model.unique_id_field.code if form_model.unique_id_field else ''
+        entity_short_code = self.get_answer_for(short_code_field)
         self.short_code = entity_short_code.lower() if entity_short_code is not None else None
         self.entity_type = self.get_entity_type(form_model)
         self.is_valid = (errors is None or len(errors) == 0)
@@ -120,9 +122,11 @@ class DataFormSubmission(FormSubmission):
         return entity.get_by_short_code(dbm, self.short_code, self.entity_type)
 
     def save(self, dbm):
-        entity = self.create_entity(dbm)
+        doc = None
+        if self.short_code:
+            entity = self.create_entity(dbm)
+            doc = entity._doc
         submission_information = dict(form_code=self.form_code)
-        doc = entity._doc
         data_record_doc = DataRecordDocument(
             entity_doc=doc,
             event_time=self._get_event_time_value(),

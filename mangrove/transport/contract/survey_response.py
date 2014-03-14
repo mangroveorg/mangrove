@@ -124,16 +124,16 @@ class SurveyResponse(DataObject):
 
     def set_form(self, form_model):
         self._doc.form_model_revision = form_model.revision
-        self.entity_question_code = form_model.unique_id_field.code if form_model.unique_id_field else ''
+        #self.entity_question_code = form_model.unique_id_field.code if form_model.unique_id_field else ''
 
     def set_answers(self, entity_short_code, values):
         if values:
             self._doc.values = values
-            for key in self.values:
-                if key.lower() == self.entity_question_code.lower():
-                    self.values[key] = entity_short_code
-                    return
-            self.values[self.entity_question_code] = entity_short_code
+            #for key in self.values:
+            #    if key.lower() == self.entity_question_code.lower():
+            #        self.values[key] = entity_short_code
+            #        return
+            #self.values[self.entity_question_code] = entity_short_code
 
     def set_status(self, errors):
         if errors.__len__() == 0:

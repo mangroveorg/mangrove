@@ -6,6 +6,8 @@ from mangrove.form_model.validators import MandatoryValidator
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, SHORT_CODE, get_form_model_by_code
 from mangrove.contrib.deletion import create_default_delete_form_model, ENTITY_DELETION_FORM_CODE
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model
+from mangrove.datastore.database import  _delete_db_and_remove_db_manager
+from mangrove.datastore.cache_manager import get_cache_manager
 
 
 class TestEntityDeletionFormModel(unittest.TestCase):
@@ -14,6 +16,11 @@ class TestEntityDeletionFormModel(unittest.TestCase):
     def setUpClass(cls):
         create_dbmanager_for_ut(cls)
         cls.form = delete_and_create_form_model(cls.manager, ENTITY_DELETION_FORM_CODE)
+
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.manager)
+        get_cache_manager().flush_all()
 
     def test_should_create_deletion_form_model(self):
         self.assertEqual(2, len(self.form.fields))

@@ -149,7 +149,6 @@ class TestSMSPlayer(TestCase):
             with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
                 mock_form_model = Mock(spec=FormModel)
                 mock_get_form_model_by_code.return_value = mock_form_model
-                mock_form_model.is_entity_type_reporter.return_value = False
                 save_survey.return_value = Mock(spec=Response)
                 self.sms_player.add_survey_response(request)
                 save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],

@@ -36,7 +36,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         MangroveTestCase.setUp(self)
         initializer.run(self.manager)
         define_type(self.manager, ["dog"])
-        self.entity_type = ["healthfacility", "clinic"]
+        self.entity_type = ["clinic"]
         define_type(self.manager, self.entity_type)
 
         self.entity = create_entity(self.manager, entity_type=self.entity_type,
@@ -62,7 +62,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
         question4 = SelectField(name="Color", code="COL", label="Color",
             options=[("RED", 1), ("YELLOW", 2)] , required=False)
 
-        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.manager,  name="aids", label="Aids form_model",
             form_code="clinic", type='survey', fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()

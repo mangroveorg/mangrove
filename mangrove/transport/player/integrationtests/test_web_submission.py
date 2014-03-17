@@ -10,7 +10,7 @@ from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ShortCodeField
-from mangrove.form_model.form_model import FormModel, MOBILE_NUMBER_FIELD_CODE
+from mangrove.form_model.form_model import FormModel, MOBILE_NUMBER_FIELD_CODE, EntityFormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.transport.player.player import WebPlayer
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
@@ -38,7 +38,7 @@ class TestWEBSubmission(MangroveTestCase):
                                  constraints=[NumericRangeConstraint(min=15, max=120)], required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], required=False)
-        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+        self.form_model = EntityFormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
                                     form_code="clinic", type='survey', fields=[question1, question2, question3, question4], is_registration_model=True)
         self.form_model.save()
 

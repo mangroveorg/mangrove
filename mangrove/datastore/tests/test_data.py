@@ -16,8 +16,8 @@ class TestData(object):
 
     def setup(self):
     #        Two forms with data for two months with monthly frequency
-        self.ENTITY_TYPE = ["health_facility", "clinic"]
-        self.entity_type_string = "health_facility.clinic"
+        self.ENTITY_TYPE = ["clinic"]
+        self.entity_type_string = "clinic"
         self.create_clinic_type(self.ENTITY_TYPE)
         self._create_form_model("CL2")
         self._create_form_model("CL1")
@@ -67,7 +67,7 @@ class TestData(object):
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 'a'), ("YELLOW", 'b')])
 
-        self.form_model = FormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.manager, name="aids", label="Aids form_model",
                                     form_code=form_code, type='survey', fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()

@@ -11,19 +11,20 @@ import datetime
 from couchdb.design import ViewDefinition
 from mangrove.bootstrap import initializer
 from mangrove.bootstrap.views import view_js
-from mangrove.datastore.database import get_db_manager
+from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
  DataObjectNotFound, FormModelDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ShortCodeField
 from mangrove.form_model.form_model import FormModel, NAME_FIELD, MOBILE_NUMBER_FIELD, MOBILE_NUMBER_FIELD_CODE,\
-SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code
+SHORT_CODE, ENTITY_TYPE_FIELD_CODE, get_form_model_by_code,EntityFormModel
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, ut_reporter_id
 from mangrove.transport.player.player import SMSPlayer
 from mangrove.transport.contract.transport_info import TransportInfo
 from mangrove.transport.contract.request import Request
+from mangrove.datastore.cache_manager import get_cache_manager
 
 class LocationTree(object):
     def get_location_hierarchy_for_geocode(self, lat, long ):
@@ -91,7 +92,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         try:
             cls.form_model = get_form_model_by_code(cls.dbm, "clinic")
         except FormModelDoesNotExistsException:
-            cls.form_model = FormModel(cls.dbm, entity_type=cls.entity_type, name="aids", label="Aids form_model",
+            cls.form_model = EntityFormModel(cls.dbm, entity_type=cls.entity_type, name="aids", label="Aids form_model",
                 form_code="clinic", type='survey', fields=[question1, question2, question3], is_registration_model=True)
             cls.form_model.add_field(question4)
             cls.form_model.save()
@@ -99,6 +100,10 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.sms_player = SMSPlayer(cls.dbm, LocationTree())
         cls.sms_ordered_message_player = SMSPlayer(cls.dbm, LocationTree())
 
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.dbm)
+        get_cache_manager().flush_all()
 
     def send_sms(self,text, player = None):
         player = player or self.sms_player

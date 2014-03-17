@@ -3,6 +3,8 @@ import unittest
 from mangrove.form_model.form_model import REGISTRATION_FORM_CODE, MOBILE_NUMBER_FIELD_CODE
 from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model
+from mangrove.datastore.database import  _delete_db_and_remove_db_manager
+from mangrove.datastore.cache_manager import get_cache_manager
 
 
 class TestRegistrationFormModel(unittest.TestCase):
@@ -11,6 +13,10 @@ class TestRegistrationFormModel(unittest.TestCase):
         create_dbmanager_for_ut(cls)
         cls.form = delete_and_create_form_model(cls.manager, GLOBAL_REGISTRATION_FORM_CODE)
 
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.manager)
+        get_cache_manager().flush_all()
 
     def test_should_create_registration_form_model(self):
         self.assertEqual(7, len(self.form.fields))

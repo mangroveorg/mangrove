@@ -22,7 +22,7 @@ class TestFormSubmission(unittest.TestCase):
                                              label="Event time field",
                                              date_format="dd.mm.yyyy", required=False,
                                              event_time_field_flag=True)
-        return FormModel(self.dbm, entity_type=ENTITY_TYPE, name="aids", label="Aids form_model",
+        return FormModel(self.dbm, name="aids", label="Aids form_model",
                          form_code="AIDS", type='survey',
                          fields=[question1, question2, self.event_time_question])
 

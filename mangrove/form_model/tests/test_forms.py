@@ -60,7 +60,7 @@ class TestEditSurveyResponseForm(TestCase):
         question1 = UniqueIdField('patient',name="entity_question", code="q1", label="What is associated entity")
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
-        form_model = FormModel(self.dbm, entity_type=['patient'], name="aids", label="Aids form_model",
+        form_model = FormModel(self.dbm, name="aids", label="Aids form_model",
             form_code="clinic", type='survey', fields=[question1, question2])
 
         entity = Mock(spec=Entity)

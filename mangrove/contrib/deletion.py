@@ -2,7 +2,7 @@
 from mangrove.contrib.delete_validators import EntityShouldExistValidator
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.form_model.field import HierarchyField, TextField,ShortCodeField
-from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, FormModel
+from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_NAME, ENTITY_TYPE_FIELD_CODE, SHORT_CODE, SHORT_CODE_FIELD, FormModel, EntityFormModel
 from mangrove.form_model.validation import TextLengthConstraint
 
 ENTITY_DELETION_FORM_CODE = "delete"
@@ -21,7 +21,7 @@ def _construct_global_deletion_form(manager):
         defaultValue="some default value" ,
         instruction="Enter the id of the entity you want to delete", constraints=[])
 
-    form_model = FormModel(manager, name=ENTITY_DELETION_FORM_CODE, form_code=ENTITY_DELETION_FORM_CODE, fields=[
+    form_model = EntityFormModel(manager, name=ENTITY_DELETION_FORM_CODE, form_code=ENTITY_DELETION_FORM_CODE, fields=[
         question1, question2], entity_type=["deletion"],
         validators=[MandatoryValidator(), EntityShouldExistValidator()])
     return form_model

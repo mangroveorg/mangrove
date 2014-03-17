@@ -2,15 +2,21 @@ import unittest
 from unittest.case import SkipTest
 from mangrove.datastore.data import EntityAggregration
 from mangrove.datastore.tests.test_data import TestData
+from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.datastore.time_period_aggregation import aggregate_for_time_period, Sum, Min, Max, Month, Latest, Week, Year, Day
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, uniq
-
+from mangrove.datastore.database import _delete_db_and_remove_db_manager
 
 class TestTimeGroupedAggregation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         create_dbmanager_for_ut(cls)
         cls.test_data = TestData(cls.manager)
+
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.manager)
+        get_cache_manager().flush_all()
 
 
     def test_monthly_time_aggregation(self):

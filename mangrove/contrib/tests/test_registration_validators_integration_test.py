@@ -7,6 +7,8 @@ from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model, safe_define_type, ut_reporter_id, safe_delete_reporter_by_phone
 from mangrove.datastore.entity import create_entity
 from mangrove.form_model.form_model import REPORTER
+from mangrove.datastore.database import  _delete_db_and_remove_db_manager
+from mangrove.datastore.cache_manager import get_cache_manager
 
 
 class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegrationTest(unittest.TestCase):
@@ -15,6 +17,11 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         create_dbmanager_for_ut(cls)
         safe_define_type(cls.manager, [REPORTER])
         cls.reg_form = delete_and_create_form_model(cls.manager, GLOBAL_REGISTRATION_FORM_CODE)
+
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.manager)
+        get_cache_manager().flush_all()
 
     def test_should_return_error_dict_if_mobile_number_field_missing(self):
         values = dict(t='reporter')

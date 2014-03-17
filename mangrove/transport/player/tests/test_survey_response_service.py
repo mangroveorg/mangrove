@@ -37,7 +37,7 @@ class TestSurveyResponseService(TestCase):
                               )
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
                                  constraints=[NumericRangeConstraint(min=10, max=100)])
-        return FormModel(self.dbm, entity_type=["clinic"], name="aids", label="Aids form_model",
+        return FormModel(self.dbm, name="aids", label="Aids form_model",
                          form_code="aids", type=['survey'], fields=[question1, question2])
 
     #TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
@@ -183,6 +183,9 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
     def setUp(self):
         super(TestSurveyResponseServiceIT, self).setUp()
         register_datasender(self.manager)
+
+    def tearDown(self):
+        super(TestSurveyResponseServiceIT, self).tearDown()
 
     def test_survey_response_is_saved(self):
         test_data = TestData(self.manager)

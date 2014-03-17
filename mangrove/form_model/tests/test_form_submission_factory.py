@@ -4,28 +4,25 @@ from couchdb.mapping import Document
 from mock import Mock, patch
 from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.documents import  DataRecordDocument, EntityDocument, DocumentBase
+from mangrove.datastore.documents import  DataRecordDocument, EntityDocument, DocumentBase,FormModelDocument
 from mangrove.datastore.entity import DataRecord
-from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
+from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE, EntityFormModel
 from mangrove.form_model.form_model import FormModel
 
 class TestFormSubmissionFactory(unittest.TestCase):
     def test_should_give_data_form_submission(self):
-        mocked_form_model = Mock(spec=FormModel)
-        mocked_form_model.is_entity_registration_form.return_value = False
-        mocked_form_model.entity_type = "clinic"
+        mocked_form_model = FormModel(dbm=Mock(spec=DatabaseManager))
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
         self.assertEqual(type(form_submission), DataFormSubmission)
 
     def test_should_give_global_registration_form_submission(self):
-        mocked_form_model = Mock(spec=FormModel)
+        mocked_form_model = Mock(spec=EntityFormModel)
         mocked_form_model.is_entity_registration_form.return_value = True
-        mocked_form_model.entity_type = GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
         self.assertEqual(type(form_submission), GlobalRegistrationFormSubmission)
 
     def test_should_give_entity_specific_registration_form_submission(self):
-        mocked_form_model = Mock(spec=FormModel)
+        mocked_form_model = Mock(spec=EntityFormModel)
         mocked_form_model.is_entity_registration_form.return_value = True
         mocked_form_model.is_global_registration_form.return_value = False
         mocked_form_model.entity_type = "clinic"

@@ -7,6 +7,8 @@ from mangrove.datastore.entity import Entity, get_by_short_code, create_entity, 
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound, FailedToSaveDataObject
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, safe_define_type, ut_reporter_id
+from mangrove.datastore.database import _delete_db_and_remove_db_manager
+from mangrove.datastore.cache_manager import get_cache_manager
 
 
 class TestEntity(unittest.TestCase):
@@ -14,6 +16,11 @@ class TestEntity(unittest.TestCase):
     def setUpClass(cls):
         create_dbmanager_for_ut(cls)
         cls.test_data = TestData(cls.manager)
+
+    @classmethod
+    def tearDownClass(cls):
+        _delete_db_and_remove_db_manager(cls.manager)
+        get_cache_manager().flush_all()
 
     def test_create_entity(self):
         e = Entity(self.manager, entity_type="clinic", location=["India", "MH", "Pune"])

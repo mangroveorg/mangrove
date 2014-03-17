@@ -11,7 +11,7 @@ from mangrove.transport.repository.reporters import find_reporters_by_from_numbe
 
 
 def create_dbmanager_for_ut(cls):
-        cls.db_name = 'mangrove-test-unit'
+        cls.db_name = uniq('mangrove-test-unit')
         cls.manager = get_db_manager('http://localhost:5984/', cls.db_name)
         _delete_db_and_remove_db_manager(cls.manager)
         cls.manager = get_db_manager('http://localhost:5984/', cls.db_name)

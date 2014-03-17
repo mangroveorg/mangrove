@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 from datetime import *
 from mangrove.datastore.cache_manager import get_cache_manager
@@ -36,7 +35,8 @@ EMAIL_FIELD = "email"
 EMAIL_FIELD_CODE = "email"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
-FORM_MODEL_EXPIRY_TIME_IN_SEC = 2*60*60
+FORM_MODEL_EXPIRY_TIME_IN_SEC = 2 * 60 * 60
+
 
 def get_form_model_by_code(dbm, code):
     cache_manger = get_cache_manager()
@@ -47,8 +47,10 @@ def get_form_model_by_code(dbm, code):
         cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
 
     doc = FormModelDocument.wrap(row_value)
-
+    if doc.is_registration_model:
+        return EntityFormModel.new_from_doc(dbm,doc)
     return FormModel.new_from_doc(dbm, doc)
+
 #dummy commit new
 def _load_questionnaire(form_code, dbm):
     assert isinstance(dbm, DatabaseManager)
@@ -57,6 +59,7 @@ def _load_questionnaire(form_code, dbm):
     if not len(rows):
         raise FormModelDoesNotExistsException(form_code)
     return rows[0]['value']
+
 
 def list_form_models_by_code(dbm, codes):
     assert isinstance(dbm, DatabaseManager)
@@ -70,10 +73,12 @@ def list_form_models_by_code(dbm, codes):
 
     return map(_row_to_form_model, rows)
 
+
 def get_form_model_cache_key(form_code, dbm):
-        assert isinstance(dbm, DatabaseManager)
-        assert form_code is not None
-        return str("%s_%s" % (dbm.database.name, form_code))
+    assert isinstance(dbm, DatabaseManager)
+    assert form_code is not None
+    return str("%s_%s" % (dbm.database.name, form_code))
+
 
 def header_fields(form_model, key_attribute="name", ref_header_dict=None):
     header_dict = ref_header_dict or OrderedDict()
@@ -83,7 +88,8 @@ def header_fields(form_model, key_attribute="name", ref_header_dict=None):
             header_dict.update({key: field.label})
     return header_dict
 
-def get_field_by_attribute_value(form_model, key_attribute,attribute_label):
+
+def get_field_by_attribute_value(form_model, key_attribute, attribute_label):
     #ex: field1.name='first_name' field1.code='q1'
     #    field2.name='location' field2.code='q3'
     #    and both field1 and field2 are form_model fields,
@@ -93,19 +99,21 @@ def get_field_by_attribute_value(form_model, key_attribute,attribute_label):
             return field
     return None
 
+
 def get_form_model_by_entity_type(dbm, entity_type):
     assert isinstance(dbm, DatabaseManager)
     assert is_sequence(entity_type)
     rows = dbm.view.registration_form_model_by_entity_type(key=entity_type, include_docs=True)
     if len(rows):
         doc = FormModelDocument.wrap(rows[0]['doc'])
-        return FormModel.new_from_doc(dbm, doc)
+        return EntityFormModel.new_from_doc(dbm, doc)
     return None
 
 
 def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_code if form_model else None
+
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
@@ -114,8 +122,8 @@ class FormModel(DataObject):
     def new_from_doc(cls, dbm, doc):
         return super(FormModel, cls).new_from_doc(dbm, doc)
 
-    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, entity_type=None, type=None,
-                 language="en", is_registration_model=False,  validators=None,
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
+                 language="en", is_registration_model=False, validators=None,
                  enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
@@ -123,7 +131,6 @@ class FormModel(DataObject):
         assert fields is None or is_sequence(fields)
         assert form_code is None or (is_string(form_code) and is_not_empty(form_code))
         assert type is None or is_not_empty(type)
-        assert entity_type is None or is_sequence(entity_type)
 
         DataObject.__init__(self, dbm)
 
@@ -144,7 +151,6 @@ class FormModel(DataObject):
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
-        doc.entity_type = entity_type
         doc.type = type
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
@@ -168,7 +174,7 @@ class FormModel(DataObject):
     def entity_question(self):
         eq = None
         for f in self._form_fields:
-            if isinstance(f, ShortCodeField) or isinstance(f, UniqueIdField):
+            if isinstance(f, UniqueIdField):
                 eq = f
                 break
         return eq
@@ -179,6 +185,14 @@ class FormModel(DataObject):
             if isinstance(f, UniqueIdField):
                 return f
         return None
+
+    @property
+    def entity_type(self):
+        unique_id_field = self.unique_id_field
+        if unique_id_field:
+            return [unique_id_field.unique_id_type]
+        else:
+            return []
 
     @property
     def event_time_question(self):
@@ -207,14 +221,6 @@ class FormModel(DataObject):
     @property
     def choice_fields(self):
         return [field for field in self._form_fields if field.type in ("select", "select1")]
-
-    @property
-    def entity_type(self):
-        return self._doc.entity_type
-
-    @entity_type.setter
-    def entity_type(self, value):
-        self._doc.entity_type = value
 
     @property
     def type(self):
@@ -296,7 +302,7 @@ class FormModel(DataObject):
         field_code_label_dict = {}
         for form_field in self._form_fields:
             quoted_label = '&#39;' + form_field.label + '&#39;'
-            field_code_label_dict.update({form_field.code:quoted_label})
+            field_code_label_dict.update({form_field.code: quoted_label})
         return field_code_label_dict
 
     def _non_rp_fields(self):
@@ -347,15 +353,8 @@ class FormModel(DataObject):
     def revision(self, rev):
         self._doc.rev = rev
 
-    def is_global_registration_form(self):
-        return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
-
     def is_entity_registration_form(self):
-        return self._doc['is_registration_model']
-
-    def is_entity_type_reporter(self):
-        return self.entity_type == [REPORTER]
-
+        return False
 
     def bind(self, submission):
         self.submission = submission
@@ -483,3 +482,40 @@ class FormModel(DataObject):
                 self.validators.remove(validator)
                 return
 
+
+class EntityFormModel(FormModel):
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
+                 language="en", is_registration_model=False, validators=None,
+                 enforce_unique_labels=True, entity_type=None):
+        super(EntityFormModel, self).__init__(dbm, name, label, form_code, fields, type,
+                                              language, is_registration_model, validators,
+                                              enforce_unique_labels)
+        assert entity_type is None or is_sequence(entity_type)
+        if self._doc:
+            self._doc.entity_type = entity_type
+
+    @property
+    def entity_type(self):
+        return self._doc.entity_type
+
+    @entity_type.setter
+    def entity_type(self, value):
+        self._doc.entity_type = value
+
+    def is_entity_registration_form(self):
+        return True
+
+    def is_entity_type_reporter(self):
+        return self.entity_type == [REPORTER]
+
+    def is_global_registration_form(self):
+        return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
+
+    @property
+    def entity_question(self):
+        eq = None
+        for f in self._form_fields:
+            if isinstance(f, ShortCodeField):
+                eq = f
+                break
+        return eq

@@ -36,6 +36,7 @@ EMAIL_FIELD_CODE = "email"
 REPORTER = "reporter"
 GLOBAL_REGISTRATION_FORM_ENTITY_TYPE = "registration"
 FORM_MODEL_EXPIRY_TIME_IN_SEC = 2 * 60 * 60
+ENTITY_DELETION_FORM_CODE = "delete"
 
 
 def get_form_model_by_code(dbm, code):
@@ -47,7 +48,7 @@ def get_form_model_by_code(dbm, code):
         cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
 
     doc = FormModelDocument.wrap(row_value)
-    if doc.is_registration_model:
+    if doc.is_registration_model or doc.form_code == ENTITY_DELETION_FORM_CODE:
         return EntityFormModel.new_from_doc(dbm,doc)
     return FormModel.new_from_doc(dbm, doc)
 
@@ -237,9 +238,6 @@ class FormModel(DataObject):
     @activeLanguages.setter
     def activeLanguages(self, value):
         self._doc.active_languages = value
-
-    def get_short_code(self, values):
-        return self._case_insensitive_lookup(values, self.entity_question.code)
 
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
@@ -519,3 +517,6 @@ class EntityFormModel(FormModel):
                 eq = f
                 break
         return eq
+
+    def get_short_code(self, values):
+        return self._case_insensitive_lookup(values, self.entity_question.code)

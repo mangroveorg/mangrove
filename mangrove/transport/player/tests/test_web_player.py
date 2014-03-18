@@ -2,7 +2,7 @@ from collections import OrderedDict
 from unittest.case import TestCase
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
-from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.form_model import FormModel, EntityFormModel
 from mangrove.form_model.form_submission import FormSubmissionFactory, FormSubmission
 from mangrove.transport.player.player import WebPlayer
 from mangrove.utils.test_utils.dummy_location_tree import DummyLocationTree
@@ -30,7 +30,7 @@ class TestWebPlayer(TestCase):
         self._mock_form_model()
 
     def _mock_form_model(self):
-        self.form_model_mock = Mock(spec=FormModel)
+        self.form_model_mock = Mock(spec=EntityFormModel)
         self.get_form_model_mock_patcher = patch('mangrove.transport.player.player.get_form_model_by_code')
         get_form_model_mock = self.get_form_model_mock_patcher.start()
         get_form_model_mock.return_value = self.form_model_mock

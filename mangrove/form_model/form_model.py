@@ -181,15 +181,8 @@ class FormModel(DataObject):
         return eq
 
     @property
-    def unique_id_field(self):
-        for f in self._form_fields:
-            if isinstance(f, UniqueIdField):
-                return f
-        return None
-
-    @property
     def entity_type(self):
-        unique_id_field = self.unique_id_field
+        unique_id_field = self.entity_question
         if unique_id_field:
             return [unique_id_field.unique_id_type]
         else:

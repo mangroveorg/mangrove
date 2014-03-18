@@ -27,7 +27,7 @@ class EditSurveyResponseForm(object):
 
     @property
     def unique_id_question_code(self):
-        return self.form_model.unique_id_field.code
+        return self.form_model.entity_question.code
 
     @property
     def data_record_id(self):

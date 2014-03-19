@@ -496,9 +496,6 @@ class EntityFormModel(FormModel):
     def is_entity_registration_form(self):
         return True
 
-    def is_entity_type_reporter(self):
-        return self.entity_type == [REPORTER]
-
     def is_global_registration_form(self):
         return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
 

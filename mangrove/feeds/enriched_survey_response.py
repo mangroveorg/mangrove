@@ -20,15 +20,11 @@ class EnrichedSurveyResponseBuilder(object):
         values = {}
         if self.survey_response.status:
             for field in self.form_model.fields:
-                if (self._is_not_data_sender_field(field)):
-                    answer_dictionary = self._create_answer_dictionary(field)
-                    values.update({lower(field.code): answer_dictionary})
+                answer_dictionary = self._create_answer_dictionary(field)
+                values.update({lower(field.code): answer_dictionary})
         else:
             values = self.survey_response.values
         return values
-
-    def _is_not_data_sender_field(self, field):
-        return not (field.is_entity_field and self.form_model.entity_type == ['reporter'])
 
     def feed_document(self):
         status = 'success' if self.survey_response.status else 'error'

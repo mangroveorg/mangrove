@@ -124,19 +124,6 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertEquals('true', dictionary.get('is_entity_question'))
 
 
-    def test_data_sender_answer_not_included(self):
-        value_mock = PropertyMock(return_value={'Q1': 'rep023'})
-        type(self.survey_response).values = value_mock
-        data_sender_field = UniqueIdField('reporter','name', 'q1', 'Reporting on Behalf of')
-        type(self.form_model).fields = [data_sender_field]
-        type(self.form_model).entity_question = PropertyMock(return_value=data_sender_field)
-        type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
-        type(self.survey_response).status = PropertyMock(return_value=True)
-        builder = EnrichedSurveyResponseBuilder(self.dbm, self.survey_response, self.form_model, {})
-        dictionary = builder._values()
-
-        self.assertFalse(dictionary)
-
     def test_delete_status_updated(self):
         type(self.survey_response).status = PropertyMock(return_value=True)
         self.survey_response.is_void.return_value = True

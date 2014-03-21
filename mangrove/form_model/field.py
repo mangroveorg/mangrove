@@ -24,6 +24,7 @@ def create_question_from(dictionary, dbm):
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
     is_event_time_field = dictionary.get("event_time_field_flag")
+    unique_id_type = dictionary.get("unique_id_type")
     if type == field_attributes.TEXT_FIELD:
         return _get_text_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
@@ -41,7 +42,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.SHORT_CODE_FIELD:
         return _get_short_code_field(code, dictionary,label, name, instruction, required)
     elif type == field_attributes.UNIQUE_ID_FIELD:
-        return _get_unique_id_field(code, dictionary, label, name, instruction, required)
+        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required)
     return None
 
 
@@ -61,8 +62,9 @@ def _get_short_code_field(code, dictionary, label, name, instruction, required):
                       constraints=constraints, instruction=instruction, required=required)
     return field
 
-def _get_unique_id_field(code, dictionary, label, name, instruction, required):
-    return UniqueIdField(unique_id_type='clinic', name=name, code=code,
+
+def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required):
+    return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
                          label=dictionary["label"],
                          instruction=dictionary.get("instruction"))
 
@@ -429,6 +431,12 @@ class UniqueIdField(Field):
      @property #TODO:Remove
      def is_entity_field(self):
         return True
+
+     def _to_json(self):
+         dict = super(UniqueIdField, self)._to_json()
+         dict['unique_id_type'] = self.unique_id_type
+         return dict
+
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,

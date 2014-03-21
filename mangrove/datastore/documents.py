@@ -151,11 +151,15 @@ class FormModelDocument(DocumentBase):
     type = TextField()
     label = TextField()
     form_code = TextField()
-    state = TextField()
     is_registration_model = BooleanField(default=False)
     json_fields = ListField(DictField())
     validators = ListField(DictField())
     snapshots = DictField()
+    goals = TextField()
+    devices = ListField(TextField())
+    sender_group = TextField()
+    reminder_and_deadline = DictField()
+    data_senders = ListField(TextField())
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')

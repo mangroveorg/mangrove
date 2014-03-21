@@ -145,8 +145,6 @@ class DataRecordDocument(DocumentBase):
         if submission:
             self.submission = submission
 
-
-
 class FormModelDocument(DocumentBase):
     metadata = DictField()
     name = TextField()
@@ -155,7 +153,6 @@ class FormModelDocument(DocumentBase):
     form_code = TextField()
     state = TextField()
     is_registration_model = BooleanField(default=False)
-    entity_type = ListField(TextField())
     json_fields = ListField(DictField())
     validators = ListField(DictField())
     snapshots = DictField()
@@ -174,6 +171,12 @@ class FormModelDocument(DocumentBase):
 
     def set_label(self, label):
         self.label = label
+
+class EntityFormModelDocument(FormModelDocument):
+    entity_type = ListField(TextField())
+
+    def __init__(self,id=None):
+        super(EntityFormModelDocument,self).__init__(id)
 
 
 class SubmissionLogDocument(DocumentBase):

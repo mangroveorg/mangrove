@@ -3,7 +3,7 @@ from datetime import *
 from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import FormModelDocument, attributes
+from mangrove.datastore.documents import FormModelDocument, attributes, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.field import TextField, UniqueIdField, ShortCodeField
@@ -47,10 +47,9 @@ def get_form_model_by_code(dbm, code):
         row_value = _load_questionnaire(code, dbm)
         cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
 
-    doc = FormModelDocument.wrap(row_value)
-    if doc.is_registration_model or doc.form_code == ENTITY_DELETION_FORM_CODE:
-        return EntityFormModel.new_from_doc(dbm,doc)
-    return FormModel.new_from_doc(dbm, doc)
+    if row_value.get('is_registration_model') or row_value.get('form_code')==ENTITY_DELETION_FORM_CODE:
+        return EntityFormModel.new_from_doc(dbm, EntityFormModelDocument.wrap(row_value))
+    return FormModel.new_from_doc(dbm, FormModelDocument.wrap(row_value))
 
 #dummy commit new
 def _load_questionnaire(form_code, dbm):
@@ -106,7 +105,7 @@ def get_form_model_by_entity_type(dbm, entity_type):
     assert is_sequence(entity_type)
     rows = dbm.view.registration_form_model_by_entity_type(key=entity_type, include_docs=True)
     if len(rows):
-        doc = FormModelDocument.wrap(rows[0]['doc'])
+        doc = EntityFormModelDocument.wrap(rows[0]['doc'])
         return EntityFormModel.new_from_doc(dbm, doc)
     return None
 
@@ -122,6 +121,16 @@ class FormModel(DataObject):
     @classmethod
     def new_from_doc(cls, dbm, doc):
         return super(FormModel, cls).new_from_doc(dbm, doc)
+
+    def _set_doc(self, form_code, is_registration_model, label, language, name, type):
+        doc = FormModelDocument()
+        doc.name = name
+        doc.set_label(label)
+        doc.form_code = form_code
+        doc.type = type
+        doc.active_languages = [language]
+        doc.is_registration_model = is_registration_model
+        DataObject._set_document(self, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
                  language="en", is_registration_model=False, validators=None,
@@ -148,14 +157,7 @@ class FormModel(DataObject):
         self._validate_fields(fields)
         self._form_fields = fields
 
-        doc = FormModelDocument()
-        doc.name = name
-        doc.set_label(label)
-        doc.form_code = form_code
-        doc.type = type
-        doc.active_languages = [language]
-        doc.is_registration_model = is_registration_model
-        DataObject._set_document(self, doc)
+        self._set_doc(form_code, is_registration_model, label, language, name, type)
 
     @property
     def name(self):
@@ -475,6 +477,8 @@ class FormModel(DataObject):
 
 
 class EntityFormModel(FormModel):
+    __document_class__ = EntityFormModelDocument
+
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
                  language="en", is_registration_model=False, validators=None,
                  enforce_unique_labels=True, entity_type=None):
@@ -510,3 +514,13 @@ class EntityFormModel(FormModel):
 
     def get_short_code(self, values):
         return self._case_insensitive_lookup(values, self.entity_question.code)
+
+    def _set_doc(self, form_code, is_registration_model, label, language, name, type):
+        doc = EntityFormModelDocument()
+        doc.name = name
+        doc.set_label(label)
+        doc.form_code = form_code
+        doc.type = type
+        doc.active_languages = [language]
+        doc.is_registration_model = is_registration_model
+        DataObject._set_document(self, doc)

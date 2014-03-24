@@ -155,12 +155,12 @@ class FormModelTest(MangroveTestCase):
         form_model.delete_all_fields()
         self.assertEquals(len(form_model.fields), 0)
 
-    def test_should_raise_exception_if_entity_field_already_exist(self):
-        with self.assertRaises(EntityQuestionAlreadyExistsException):
-            form_model = FormModel.get(self.manager, self.form_model_id)
-            question = UniqueIdField('health facility', name="added_question", code="Q5", label="How are you")
-            form_model.add_field(question)
-            form_model.save()
+    #def test_should_raise_exception_if_entity_field_already_exist(self):
+    #    with self.assertRaises(EntityQuestionAlreadyExistsException):
+    #        form_model = FormModel.get(self.manager, self.form_model_id)
+    #        question = UniqueIdField('health facility', name="added_question", code="Q5", label="How are you")
+    #        form_model.add_field(question)
+    #        form_model.save()
 
     def test_should_raise_exception_if_code_is_not_unique(self):
         with self.assertRaises(QuestionCodeAlreadyExistsException):

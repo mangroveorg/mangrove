@@ -416,7 +416,7 @@ class TextField(Field):
         return value
 
 class UniqueIdField(Field):
-     def __init__(self, unique_id_type,name, code, label, constraints=None, defaultValue=None, instruction=None,
+     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
                  required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)

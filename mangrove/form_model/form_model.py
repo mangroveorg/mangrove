@@ -356,7 +356,6 @@ class FormModel(DataObject):
             field.set_value(answer)
 
     def _validate_fields(self, fields):
-        self._validate_existence_of_only_one_entity_field(fields)
         self._validate_uniqueness_of_field_codes(fields)
         self._validate_uniqueness_of_field_labels(fields)
 
@@ -378,12 +377,6 @@ class FormModel(DataObject):
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
             raise QuestionCodeAlreadyExistsException("All question codes must be unique")
-
-    def _validate_existence_of_only_one_entity_field(self, fields):
-        """Validate only 1 entity question is there"""
-        entity_question_list = [f for f in fields if isinstance(f, ShortCodeField) or isinstance(f, UniqueIdField)]
-        if len(entity_question_list) > 1:
-            raise EntityQuestionAlreadyExistsException("Entity Question already exists")
 
     def _validate_answer_for_field(self, answer, field):
         try:

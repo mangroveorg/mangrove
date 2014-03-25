@@ -59,16 +59,12 @@ class EnrichedSurveyResponseBuilder(object):
     def _update_feed_with_latest_info(self, enriched_survey_response):
         enriched_survey_response.update(self.feed_document())
 
-    def _reporter_question_code(self):
-        for field in self.form_model.fields:
-            if field.code == self.form_model.entity_question.code and self.form_model.entity_type[0] == 'reporter':
-                return field.code.lower()
-        return ''
 
     def _data_sender(self):
         try:
             data_sender = Entity.get(self.dbm, self.survey_response.owner_uid)
-            return self._get_data_sender_info_dict(data_sender, self._reporter_question_code())
+            #todo Do we need to store datasender question code information in enriched survey response?
+            return self._get_data_sender_info_dict(data_sender, '')
         except:
             #This will only happen during migration when introducing the feeds feature
             return {'id': None,

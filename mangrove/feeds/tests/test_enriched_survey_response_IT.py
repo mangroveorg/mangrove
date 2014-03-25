@@ -3,6 +3,7 @@ from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db
 from mangrove.datastore.tests.test_data import TestData
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder, get_feed_document_by_id
 from mangrove.form_model.form_model import get_form_model_by_code
+from mangrove.utils.test_utils.database_utils import uniq
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.utils.test_utils.survey_response_builder import TestSurveyResponseBuilder
 
@@ -10,9 +11,10 @@ from mangrove.utils.test_utils.survey_response_builder import TestSurveyResponse
 class TestEnrichedSurveyResponseIT(MangroveTestCase):
     def setUp(self):
         MangroveTestCase.setUp(self)
-        self.feed_manager = get_db_manager('http://localhost:6984/', 'feed-mangrove-test')
+        database_name = uniq('feed-mangrove-test')
+        self.feed_manager = get_db_manager('http://localhost:6984/', database_name)
         _delete_db_and_remove_db_manager(self.feed_manager)
-        self.feed_manager = get_db_manager('http://localhost:6984/', 'feed-mangrove-test')
+        self.feed_manager = get_db_manager('http://localhost:6984/', database_name)
         self.owner_uid = self.create_reporter().id
         TestData(self.manager)
 

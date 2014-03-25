@@ -83,7 +83,7 @@ class RegistrationWorkFlow(object):
 
 
 def _set_short_code(dbm, form_model, values):
-    entity_q_code = form_model.entity_question.code
+    entity_q_code = form_model.entity_questions[0].code
     try:
         if GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in form_model.entity_type:
             values[entity_q_code] = _generate_short_code(dbm, values[ENTITY_TYPE_FIELD_CODE].lower())

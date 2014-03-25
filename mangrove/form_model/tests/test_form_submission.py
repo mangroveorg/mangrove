@@ -5,7 +5,7 @@ from mock import Mock, patch, MagicMock
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
-from mangrove.form_model.field import TextField, DateField, UniqueIdField
+from mangrove.form_model.field import TextField, DateField, UniqueIdField, ShortCodeField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.form_submission import FormSubmissionFactory
 
@@ -97,5 +97,6 @@ class TestFormSubmission(unittest.TestCase):
     def _construct_global_registration_form(self):
         mocked_form_model = Mock()
         mocked_form_model.entity_type = GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
-        mocked_form_model.entity_question.code = 's'
+        mocked_form_model.entity_questions = [ShortCodeField('name','s','label')]
+
         return mocked_form_model

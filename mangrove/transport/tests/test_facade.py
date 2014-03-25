@@ -2,7 +2,7 @@ import unittest
 from mock import Mock, patch
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.form_submission import FormSubmission
-from mangrove.form_model.field import HierarchyField, GeoCodeField
+from mangrove.form_model.field import HierarchyField, GeoCodeField, ShortCodeField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
@@ -32,7 +32,7 @@ class TestRegistrationWorkFlow(unittest.TestCase):
         registration_work_flow = RegistrationWorkFlow(self.dbm, self.form_model_mock, DummyLocationTree())
         self.form_model_mock.get_short_code = Mock(return_value=None)
         self.form_model_mock.entity_type=['clinic']
-        self.form_model_mock.entity_question = TextField(name="entity question", code="s", label="bar")
+        self.form_model_mock.entity_questions = [ShortCodeField(name="entity question", code="s", label="bar")]
         values = registration_work_flow.process({'t': 'clinic', 'l':'pune'})
         self.assertEqual({'s': 'cli1', 't': 'clinic', 'l': ['pune', 'mh', 'india']}, values)
 

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mangrove.transport.contract.transport_info import TransportInfo
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from mangrove.datastore.documents import EntityDocument
 from mangrove.form_model.field import TextField, UniqueIdField
 from mangrove.datastore.entity import Entity
@@ -27,7 +27,7 @@ class TestEditSurveyResponseForm(TestCase):
             get_by_short_code_mock.return_value = entity
             form_model.validate_submission.return_value = dictionary, ''
             form_model._get_field_by_code.side_effect = lambda arg: values[arg]
-
+            form_model.entity_questions = [question1]
             form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
             form.save()
 
@@ -43,7 +43,7 @@ class TestEditSurveyResponseForm(TestCase):
         values = {'q1': question1, 'q2': question2}
 
         survey_response = Mock(spec=SurveyResponse)
-        form_model = Mock(spec=FormModel)
+        form_model = MagicMock(spec=FormModel)
         dictionary = {'q1': 'a1', 'q2': 1}
         entity = Mock(spec=Entity)
         with patch('mangrove.form_model.forms.get_by_short_code') as get_by_short_code_mock:
@@ -88,7 +88,7 @@ class TestEditSurveyResponseForm(TestCase):
             get_by_short_code_mock.return_value = entity
             form_model.validate_submission.return_value = dictionary, 'error'
             form_model._get_field_by_code.side_effect = lambda arg: values[arg]
-
+            form_model.entity_questions = [question1]
             form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
             self.assertFalse(form.is_valid)
             self.assertEquals(form.errors, 'error')
@@ -107,7 +107,7 @@ class TestEditSurveyResponseForm(TestCase):
             get_by_short_code_mock.return_value = entity
             form_model.validate_submission.return_value = dictionary, 'error'
             form_model._get_field_by_code.side_effect = lambda arg: values[arg]
-
+            form_model.entity_questions = [question1]
             form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
             self.assertRaises(AssertionError, form.save)
             self.assertFalse(form.saved)

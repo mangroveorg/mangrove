@@ -43,7 +43,7 @@ def xform_for(dbm, form_id, reporter_id):
                                                                       get_all_entities(dbm, questionnaire.entity_type)]
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
             entities=entities, default_template=env.get_template('text_field.xml'),
-            entity_field=questionnaire.entity_question)
+            entity_field=questionnaire.entity_questions[0])
 
 
 def _escape_special_characters(questionnaire):

@@ -126,7 +126,7 @@ class TestFormModel(unittest.TestCase):
                                   defaultValue="some default value")
         activity_report = FormModel(self.dbm, name="aids", label="Aids form_model",
                                     form_code="1", type='survey', fields=[question1])
-        self.assertIsNotNone(activity_report.entity_question)
+        self.assertIsNotNone(activity_report.entity_questions)
 
 
     def _case_insensitive_lookup(self, values, code):

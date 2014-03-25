@@ -4,10 +4,12 @@ from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db
 from mangrove.datastore.entity import Entity
 from mangrove.datastore.entity_type import get_all_entity_types, define_type
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
+from mangrove.utils.test_utils.database_utils import uniq
+
 
 class TestEntityType(unittest.TestCase):
     def setUp(self):
-        self.dbm = get_db_manager(database='mangrove-test')
+        self.dbm = get_db_manager(database=uniq('mangrove-test'))
         e = Entity(self.dbm, entity_type="clinic", location=["India", "MH", "Pune"])
         self.uuid = e.save()
 

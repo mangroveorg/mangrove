@@ -2,6 +2,7 @@ from collections import OrderedDict
 import unittest
 from couchdb.mapping import Document
 from mock import Mock, patch
+from mangrove.form_model.field import ShortCodeField
 from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.documents import  DataRecordDocument, EntityDocument, DocumentBase,FormModelDocument
@@ -18,6 +19,7 @@ class TestFormSubmissionFactory(unittest.TestCase):
     def test_should_give_global_registration_form_submission(self):
         mocked_form_model = Mock(spec=EntityFormModel)
         mocked_form_model.is_entity_registration_form.return_value = True
+        mocked_form_model.entity_questions = [ShortCodeField('name','code','label')]
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
         self.assertEqual(type(form_submission), GlobalRegistrationFormSubmission)
 
@@ -26,6 +28,7 @@ class TestFormSubmissionFactory(unittest.TestCase):
         mocked_form_model.is_entity_registration_form.return_value = True
         mocked_form_model.is_global_registration_form.return_value = False
         mocked_form_model.entity_type = "clinic"
+        mocked_form_model.entity_questions = [ShortCodeField('name','code','label')]
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
         self.assertEqual(type(form_submission), EntityRegistrationFormSubmission)
 

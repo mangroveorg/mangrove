@@ -174,19 +174,18 @@ class FormModel(DataObject):
         self._doc.name = value
 
     @property
-    def entity_question(self):
-        eq = None
+    def entity_questions(self):
+        ef = []
         for f in self._form_fields:
             if isinstance(f, UniqueIdField):
-                eq = f
-                break
-        return eq
+                ef.append(f)
+        return ef
 
     @property
     def entity_type(self):
-        unique_id_field = self.entity_question
-        if unique_id_field:
-            return [unique_id_field.unique_id_type]
+        unique_id_fields = self.entity_questions
+        if unique_id_fields:
+            return [unique_id_fields[0].unique_id_type]
         else:
             return []
 
@@ -497,16 +496,15 @@ class EntityFormModel(FormModel):
         return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
 
     @property
-    def entity_question(self):
-        eq = None
+    def entity_questions(self):
+        eq = []
         for f in self._form_fields:
             if isinstance(f, ShortCodeField):
-                eq = f
-                break
+                eq.append(f)
         return eq
 
     def get_short_code(self, values):
-        return self._case_insensitive_lookup(values, self.entity_question.code)
+        return self._case_insensitive_lookup(values, self.entity_questions[0].code)
 
     def _set_doc(self, form_code, is_registration_model, label, language, name, type):
         doc = EntityFormModelDocument()

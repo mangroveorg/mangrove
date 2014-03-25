@@ -89,13 +89,12 @@ class TestSurveyResponseService(TestCase):
                             entity_mock = MagicMock(spec=Entity)
                             entity_mock._doc = EntityDocument()
                             by_short_code.return_value = entity_mock
-                            mock_form_model = Mock(spec=FormModel)
-                            get_form_model_by_code.return_value = mock_form_model
+                            mock_form_model = MagicMock(spec=FormModel)
                             mock_form_model.validate_submission.return_value = OrderedDict(values), OrderedDict('')
-                            mock_form_model.entity_type = None
-                            code = PropertyMock(return_value='ID')
-                            type(mock_form_model.entity_question).code = code
+                            mock_form_model.is_entity_registration_form.return_value = False
+                            mock_form_model.entity_questions = []
                             mock_form_model.entity_type = 'sometype'
+                            get_form_model_by_code.return_value = mock_form_model
                             survey_response_service.save_survey('CL1', values, [], transport_info, request.message,'',
                                                                 additional_dictionary)
                             self.assertEquals(1, feed_manager._save_document.call_count)

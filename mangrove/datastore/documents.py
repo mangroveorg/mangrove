@@ -59,11 +59,11 @@ class DocumentBase(Document):
         self.document_type = document_type
         self.void = False
 
-    def post_update(self, dbm):
+    def post_update(self, dbm,pre_save_object):
         if hasattr(self.__class__ , 'registered_functions'):
             for callback in self.__class__.registered_functions:
                 try:
-                    callback(self, dbm)
+                    callback(self, dbm,pre_save_object) if pre_save_object else callback(self,dbm)
                 except Exception as e:
                     logging.error(e.message)
                     #raise

@@ -206,7 +206,7 @@ class DatabaseManager(object):
     def _delete_design_docs(self):
         for doc in self._get_design_docs(): del self.database[doc.id]
 
-    def _save_document(self, document, modified=None, process_post_update=True):
+    def _save_document(self, document, modified=None, process_post_update=True, prev_doc=None):
         u"""'Returns document ID''"""
         # TODO: Throw exception if an error
         result = self._save_documents([document], modified)[0]
@@ -214,7 +214,7 @@ class DatabaseManager(object):
         if not result[0]:
             raise FailedToSaveDataObject(str(result))
         if process_post_update:
-            document.post_update(self)
+            document.post_update(self,prev_doc)
         # second item is doc ID
         return result[1]
 

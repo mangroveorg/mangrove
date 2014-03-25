@@ -5,7 +5,7 @@ from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, attributes, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
-    EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
+    EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
 from mangrove.form_model.field import TextField, UniqueIdField, ShortCodeField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -120,7 +120,9 @@ class FormModel(DataObject):
 
     @classmethod
     def new_from_doc(cls, dbm, doc):
-        return super(FormModel, cls).new_from_doc(dbm, doc)
+        form_model = super(FormModel, cls).new_from_doc(dbm, doc)
+        form_model._old_doc = form_model._doc
+        return form_model
 
     def _set_doc(self, form_code, is_registration_model, label, language, name, type):
         doc = FormModelDocument()
@@ -143,6 +145,7 @@ class FormModel(DataObject):
         assert type is None or is_not_empty(type)
 
         DataObject.__init__(self, dbm)
+        self._old_doc = None
 
         self._snapshots = {}
         self._form_fields = []
@@ -263,7 +266,10 @@ class FormModel(DataObject):
             json_snapshots[key] = [each._to_json() for each in value]
         self._doc.snapshots = json_snapshots
         self._delete_form_model_from_cache()
-        return DataObject.save(self)
+        if self._doc is None:
+            raise NoDocumentError('No document to save')
+        return self._dbm._save_document(self._doc, prev_doc=self._old_doc)
+
 
 
     def get_field_by_name(self, name):

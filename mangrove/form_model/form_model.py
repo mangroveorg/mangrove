@@ -122,8 +122,7 @@ class FormModel(DataObject):
     def new_from_doc(cls, dbm, doc):
         return super(FormModel, cls).new_from_doc(dbm, doc)
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, type,goals,devices,sender_group):
-
+    def _set_doc(self, form_code, is_registration_model, label, language, name, type):
         doc = FormModelDocument()
         doc.name = name
         doc.set_label(label)
@@ -131,20 +130,11 @@ class FormModel(DataObject):
         doc.type = type
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
-        doc.goals = goals
-        doc.devices = devices
-        doc.sender_group = sender_group
-        doc.reminder_and_deadline = {"deadline_type": "Following",
-                                      "should_send_reminder_to_all_ds": False,
-                                      "has_deadline": True,
-                                      "deadline_month": "5",
-                                      "frequency_period": "month"}
-
         DataObject._set_document(self, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
                  language="en", is_registration_model=False, validators=None,
-                 enforce_unique_labels=True,goals=None,devices=None,sender_group=None):
+                 enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
         assert name is None or is_not_empty(name)
@@ -167,7 +157,7 @@ class FormModel(DataObject):
         self._validate_fields(fields)
         self._form_fields = fields
 
-        self._set_doc(form_code, is_registration_model, label, language, name, type,goals,devices,sender_group)
+        self._set_doc(form_code, is_registration_model, label, language, name, type)
 
     @property
     def name(self):
@@ -243,30 +233,6 @@ class FormModel(DataObject):
     def activeLanguages(self, value):
         self._doc.active_languages = value
 
-    @property
-    def data_senders(self):
-        return self._doc.data_senders
-
-    @data_senders.setter
-    def data_senders(self,value):
-        self._doc.data_senders = value
-
-    @property
-    def devices(self):
-        return self._doc.devices
-
-    @property
-    def language(self):
-        return self.activeLanguages[0]
-
-    @property
-    def reminder_and_deadline(self):
-        return self._doc.reminder_and_deadline
-
-    @reminder_and_deadline.setter
-    def reminder_and_deadline(self,value):
-        self._doc.reminder_and_deadline = value
-
     def get_entity_type(self, values):
         entity_type = self._case_insensitive_lookup(values, ENTITY_TYPE_FIELD_CODE)
         return entity_type.lower() if is_not_empty(entity_type) else None
@@ -285,16 +251,10 @@ class FormModel(DataObject):
         self._delete_form_model_from_cache()
         super(FormModel, self).void(void=void)
 
-    def _check_if_project_name_unique(self):
-        rows = self._dbm.load_all_rows_in_view('project_names', key=self.name)
-        if len(rows) and rows[0]['value'] != self.id:
-            raise DataObjectAlreadyExists('Questionnaire', "Name", "'%s'" % self.name)
-
     def save(self):
         # convert fields and validators to json fields before save
         if not self._is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
-        self._check_if_project_name_unique()
 
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         self._doc.validators = [validator.to_json() for validator in self.validators]

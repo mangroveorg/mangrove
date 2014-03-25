@@ -155,11 +155,6 @@ class FormModelDocument(DocumentBase):
     json_fields = ListField(DictField())
     validators = ListField(DictField())
     snapshots = DictField()
-    goals = TextField()
-    devices = ListField(TextField())
-    sender_group = TextField()
-    reminder_and_deadline = DictField()
-    data_senders = ListField(TextField())
 
     def __init__(self, id=None):
         DocumentBase.__init__(self, id=id, document_type='FormModel')
@@ -179,8 +174,18 @@ class FormModelDocument(DocumentBase):
 class EntityFormModelDocument(FormModelDocument):
     entity_type = ListField(TextField())
 
-    def __init__(self,id=None):
-        super(EntityFormModelDocument,self).__init__(id)
+    def __init__(self, id=None):
+        super(EntityFormModelDocument, self).__init__(id)
+
+class ProjectDocument(FormModelDocument):
+    goals = TextField()
+    devices = ListField(TextField())
+    sender_group = TextField()
+    reminder_and_deadline = DictField()
+    data_senders = ListField(TextField())
+
+    def __init__(self, id=None):
+        super(ProjectDocument, self).__init__(id)
 
 
 class SubmissionLogDocument(DocumentBase):

@@ -168,20 +168,21 @@ class TestField(unittest.TestCase):
                              instruction="test_instruction")
         self.assertEqual(['RED', 'YELLOW'], field.validate('a b'))
 
-    def test_should_add_entity_field(self):
+    def test_should_add_entity_field_with_default_constraints(self):
         expected_json = {
             "defaultValue": "",
             "label": "What is your name",
             "name": "field1_Name",
             "code": "Q1",
             "type": "short_code",
+            "constraints": [("length", {"max": 20}), ("short_code", "^[a-zA-Z0-9]+$")],
             "required": True,
             "instruction": "test_instruction"
         }
         field = ShortCodeField(name="field1_Name", code="Q1", label="What is your name",
                           instruction="test_instruction")
         actual_json = field._to_json()
-        self.assertEqual(actual_json, expected_json)
+        self.assertDictEqual(actual_json, expected_json)
 
     def test_should_create_text_field_from_dictionary(self):
         field_json = {

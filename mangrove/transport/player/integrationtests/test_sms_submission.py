@@ -286,8 +286,8 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
 
     def test_should_throw_error_if_deleting_entity_that_does_not_exist(self):
         with self.assertRaises(DataObjectNotFound):
-            get_by_short_code(self.dbm, 'thisreportershouldnotexist', ["reporter"])
-        message = 'delete reporter thisreportershouldnotexist'
+            get_by_short_code(self.dbm, 'nonexistingreporter', ["reporter"])
+        message = 'delete reporter nonexistingreporter'
         response = self.send_sms(message, self.sms_ordered_message_player)
         self.assertFalse(response.success)
         self.assertTrue(SHORT_CODE in response.errors)

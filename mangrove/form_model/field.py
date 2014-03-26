@@ -65,7 +65,7 @@ def _get_short_code_field(code, dictionary, label, name, instruction, required):
 
 def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required):
     return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
-                         label=dictionary["label"],
+                         label=dictionary.get("label"),
                          instruction=dictionary.get("instruction"))
 
 

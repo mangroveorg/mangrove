@@ -1,4 +1,3 @@
-
 import re
 import abc
 
@@ -6,7 +5,7 @@ from datetime import datetime
 from babel.dates import format_date
 from mangrove.data_cleaner import TelephoneNumber
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
-from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory
+from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory, TextLengthConstraint, ShortCodeRegexConstraint
 
 from mangrove.utils.types import is_sequence, is_empty, sequence_to_str
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
@@ -40,7 +39,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
         return _get_telephone_number_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.SHORT_CODE_FIELD:
-        return _get_short_code_field(code, dictionary,label, name, instruction, required)
+        return _get_short_code_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.UNIQUE_ID_FIELD:
         return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required)
     return None
@@ -54,20 +53,20 @@ def _get_text_field(code, dictionary, label, name, instruction, required):
                       constraints=constraints, instruction=instruction, required=required)
     return field
 
+
 def _get_short_code_field(code, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = ShortCodeField(name=name, code=code, label=label,
-                      constraints=constraints, instruction=instruction, required=required)
+                           constraints=constraints, instruction=instruction, required=required)
     return field
 
 
 def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required):
     return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
-                         label=dictionary.get("label"),
+                         label=dictionary["label"],
                          instruction=dictionary.get("instruction"))
-
 
 
 def _get_telephone_number_field(code, dictionary, label, name, instruction, required):
@@ -92,7 +91,7 @@ def _get_integer_field(code, dictionary, label, name, instruction, required):
     return integer_field
 
 
-def _get_date_field(code,  dictionary, label, name, instruction, required, is_event_time_field):
+def _get_date_field(code, dictionary, label, name, instruction, required, is_event_time_field):
     date_format = dictionary.get("date_format")
 
     date_field = DateField(name=name, code=code, label=label, date_format=date_format,
@@ -106,7 +105,7 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
-                         instruction=instruction, required=required)
+                        instruction=instruction, required=required)
 
     return field
 
@@ -308,7 +307,8 @@ class IntegerField(Field):
 class DateField(Field):
     DATE_FORMAT = "date_format"
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
-    FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy','submission_date_format':'MMM. dd, yyyy, hh:mm a'}
+    FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
+                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a'}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True, event_time_field_flag=False):
@@ -376,7 +376,7 @@ class TextField(Field):
     CONSTRAINTS = "constraints"
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
-                required=True):
+                 required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
@@ -415,29 +415,31 @@ class TextField(Field):
     def formatted_field_values_for_excel(self, value):
         return value
 
+
 class UniqueIdField(Field):
-     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
+    def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
                  required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label, instruction=instruction,
-                 constraints=constraints, required=required)
+        Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label,
+                       instruction=instruction,
+                       constraints=constraints, required=required)
         self.unique_id_type = unique_id_type
 
-     def validate(self,value):
+    def validate(self, value):
         super(UniqueIdField, self).validate(value)
         return value
 
-     @property #TODO:Remove
-     def is_entity_field(self):
+    @property #TODO:Remove
+    def is_entity_field(self):
         return True
 
-     def _to_json(self):
-         dict = super(UniqueIdField, self)._to_json()
-         dict['unique_id_type'] = self.unique_id_type
-         return dict
+    def _to_json(self):
+        dict = super(UniqueIdField, self)._to_json()
+        dict['unique_id_type'] = self.unique_id_type
+        return dict
 
-     def convert_to_unicode(self):
+    def convert_to_unicode(self):
         if self.value is None:
             return unicode("")
         return unicode("(%s)%s" % (self.unique_id_type, self.value))
@@ -448,7 +450,8 @@ class TelephoneNumberField(TextField):
                  required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        TextField.__init__(self, name=name, code=code, label=label,instruction=instruction, constraints=constraints, defaultValue=defaultValue,
+        TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
+                           defaultValue=defaultValue,
                            required=required)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
@@ -462,10 +465,12 @@ class TelephoneNumberField(TextField):
 
 class ShortCodeField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True):
-        if not constraints: constraints = []
+                 required=False):
+        if not constraints:
+            constraints = [TextLengthConstraint(max=20), ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")]
         assert isinstance(constraints, list)
-        TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints, defaultValue=defaultValue,
+        TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
+                           defaultValue=defaultValue,
                            required=required)
         self._dict['type'] = field_attributes.SHORT_CODE_FIELD
 
@@ -548,7 +553,8 @@ class SelectField(Field):
     def convert_to_unicode(self):
         if self.value is None:
             return unicode("")
-        return unicode(",".join([unicode(i) for i in self.value])) if isinstance(self.value, list) else unicode(self.value)
+        return unicode(",".join([unicode(i) for i in self.value])) if isinstance(self.value, list) else unicode(
+            self.value)
 
     def _get_value_by_option(self, option):
         for opt in self.options:

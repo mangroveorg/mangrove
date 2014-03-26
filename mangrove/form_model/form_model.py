@@ -459,7 +459,7 @@ class FormModel(DataObject):
         self.bind(values)
         dict = OrderedDict()
         for field in self.fields:
-            dict[field.code] = field.convert_to_unicode()
+            dict[field.code] = field.stringify()
 
         return dict
 

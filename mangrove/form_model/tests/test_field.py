@@ -791,12 +791,8 @@ class TestField(unittest.TestCase):
 
 class TestUniqueIdField(unittest.TestCase):
 
-    def test_should_generate_empty_unicode_value_when_value_not_present(self):
-
-        self.assertEqual(UniqueIdField("unique_id_type", "name", "q1", "label").convert_to_unicode(), "")
-
     def test_should_generate_unicode_value_when_value_present(self):
 
         field = UniqueIdField("unique_id_type", "name", "q1", "label")
         field.value = "cli001"
-        self.assertEqual(field.convert_to_unicode(), "(unique_id_type)cli001")
+        self.assertEqual(field.stringify(), "(unique_id_type)cli001")

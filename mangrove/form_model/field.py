@@ -243,6 +243,9 @@ class Field(object):
             return unicode("")
         return unicode(self.value)
 
+    def stringify(self):
+        return self.convert_to_unicode()
+
     def xform_constraints(self):
         return " and ".join(filter(None, [constraint.xform_constraint() for constraint in self.constraints]))
 
@@ -439,10 +442,8 @@ class UniqueIdField(Field):
         dict['unique_id_type'] = self.unique_id_type
         return dict
 
-    def convert_to_unicode(self):
-        if self.value is None:
-            return unicode("")
-        return unicode("(%s)%s" % (self.unique_id_type, self.value))
+    def stringify(self):
+        return unicode("(%s)%s" % (unicode(self.unique_id_type), self.convert_to_unicode() ))
 
 
 class TelephoneNumberField(TextField):

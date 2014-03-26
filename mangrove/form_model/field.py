@@ -439,6 +439,12 @@ class UniqueIdField(Field):
         dict['unique_id_type'] = self.unique_id_type
         return dict
 
+    def convert_to_unicode(self):
+        if self.value is None:
+            return unicode("")
+        return unicode("(%s)%s"%(self.unique_id_type, self.value))
+
+
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,

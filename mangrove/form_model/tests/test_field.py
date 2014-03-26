@@ -176,7 +176,7 @@ class TestField(unittest.TestCase):
             "code": "Q1",
             "type": "short_code",
             "constraints": [("length", {"max": 20}), ("short_code", "^[a-zA-Z0-9]+$")],
-            "required": True,
+            "required": False,
             "instruction": "test_instruction"
         }
         field = ShortCodeField(name="field1_Name", code="Q1", label="What is your name",

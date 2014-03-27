@@ -43,7 +43,6 @@ def delete_type(dbm, entity):
     assert isinstance(dbm, DatabaseManager)
     entity_tree = AggregationTree.get(dbm, ENTITY_TYPE_TREE_ID, get_or_create=True)
     for entity_item in entity:
-        #u = unicode.encode(entity_item)
         entity_tree.remove_node(entity_item)
         entity_tree.save()
 

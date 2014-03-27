@@ -1,5 +1,5 @@
 import unittest
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from unittest.case import SkipTest
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity
@@ -46,7 +46,7 @@ class TestXform(unittest.TestCase):
 
     def test_should_return_specific_form_for_project_on_subject(self):
         dbm = Mock(spec=DatabaseManager)
-        questionnaire_mock = Mock()
+        questionnaire_mock = MagicMock()
         field1 = self.text_field(code='code')
         questionnaire_mock.name = 'name'
         questionnaire_mock.fields = [field1]

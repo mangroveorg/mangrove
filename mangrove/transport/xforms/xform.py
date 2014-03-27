@@ -15,13 +15,14 @@ field_xmls = {
     field_attributes.SELECT_FIELD: env.get_template('select_field.xml'),
     field_attributes.MULTISELECT_FIELD: env.get_template('select_field.xml'),
     field_attributes.LOCATION_FIELD: env.get_template('geo_code_field.xml'),
-    }
+}
 
 field_types = {
     field_attributes.LOCATION_FIELD: 'geopoint',
     field_attributes.TEXT_FIELD: 'string',
     field_attributes.INTEGER_FIELD: 'decimal',
-    }
+}
+
 
 def list_all_forms(form_tuples, xform_base_url):
     template = env.get_template('form_list.xml')
@@ -35,15 +36,15 @@ def xform_for(dbm, form_id, reporter_id):
     if questionnaire.unique_id_field is None:
         template = env.get_template('reporter_entity_form.xml')
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
-            reporter_id=reporter_id,
-            default_template=env.get_template('text_field.xml'))
+                               reporter_id=reporter_id,
+                               default_template=env.get_template('text_field.xml'))
     else:
         template = env.get_template('entity_form.xml')
         entities = [(entity.short_code, entity.data['name']['value']) for entity in
-                                                                      get_all_entities(dbm, questionnaire.entity_type)]
+                    get_all_entities(dbm, questionnaire.entity_type[0])]
         return template.render(questionnaire=questionnaire, field_xmls=field_xmls, field_types=field_types,
-            entities=entities, default_template=env.get_template('text_field.xml'),
-            entity_field=questionnaire.entity_questions[0])
+                               entities=entities, default_template=env.get_template('text_field.xml'),
+                               entity_field=questionnaire.entity_questions[0])
 
 
 def _escape_special_characters(questionnaire):

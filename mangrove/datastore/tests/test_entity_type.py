@@ -2,7 +2,7 @@
 import unittest
 from mangrove.datastore.database import _delete_db_and_remove_db_manager, get_db_manager
 from mangrove.datastore.entity import Entity
-from mangrove.datastore.entity_type import get_all_entity_types, define_type
+from mangrove.datastore.entity_type import get_all_entity_types, define_type, delete_type
 from mangrove.errors.MangroveException import EntityTypeAlreadyDefined
 from mangrove.utils.test_utils.database_utils import uniq
 
@@ -24,6 +24,15 @@ class TestEntityType(unittest.TestCase):
         types = get_all_entity_types(self.dbm)
         self.assertIn(entity_type, types)
         self.assertIn([entity_type[0]], types)
+
+    def test_should_delete_entity_type(self):
+        entity_type = ["clinic", "Clinic"]
+        entity_types = get_all_entity_types(self.dbm)
+        self.assertNotIn(entity_type, entity_types)
+        define_type(self.dbm, entity_type)
+        delete_type(self.dbm, entity_type)
+        types = get_all_entity_types(self.dbm)
+        self.assertNotIn(entity_type, types)
 
     def test_should_throw_assertionError_if_entity_type_is_not_list(self):
         with self.assertRaises(AssertionError):

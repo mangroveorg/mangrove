@@ -35,11 +35,17 @@ def get_all_entity_types(dbm):
     """
     return AggregationTree.get(dbm, ENTITY_TYPE_TREE_ID, get_or_create=True).get_paths()
 
-
 def get_unique_id_types(manager):
     entity_types = get_all_entity_types(manager)
     return sorted([entity_type[0] for entity_type in entity_types if entity_type[0] != 'reporter'])
 
+def delete_type(dbm, entity):
+    assert isinstance(dbm, DatabaseManager)
+    entity_tree = AggregationTree.get(dbm, ENTITY_TYPE_TREE_ID, get_or_create=True)
+    for entity_item in entity:
+        #u = unicode.encode(entity_item)
+        entity_tree.remove_node(entity_item)
+        entity_tree.save()
 
 def entity_type_already_defined(dbm, entity_type):
     """

@@ -22,8 +22,9 @@ class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 
     def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None, owner_uid=None,
-                 admin_id=None):
+                 admin_id=None, response=None):
         DataObject.__init__(self, dbm)
+        self.response = response
         if transport_info is not None:
             doc = SurveyResponseDocument(channel=transport_info.transport,
                                          destination=transport_info.destination,
@@ -136,12 +137,12 @@ class SurveyResponse(DataObject):
             #self.values[self.entity_question_code] = entity_short_code
 
     def set_status(self, errors):
-        if errors.__len__() == 0:
+        if errors.__len__() == 0 and self.response is None:
             self._doc.status = True
             self._doc.error_message = ''
         else:
             self._doc.status = False
-            self._doc.error_message = self._to_string(errors)
+            self._doc.error_message = self._to_string(errors) if self.response is None else self.response.errors
 
     def _void_existing_data_record(self, void=True):
         data_record_id = self._doc.data_record_id

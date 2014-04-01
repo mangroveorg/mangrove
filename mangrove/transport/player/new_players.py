@@ -55,7 +55,7 @@ class SMSPlayerV2(object):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._post_parse_processor(form_code, values, extra_elements)
 
-        if post_sms_processor_response is not None:
+        if post_sms_processor_response is not None and not post_sms_processor_response.success:
             if logger is not None:
                 log_entry = "message:message " + repr(request.message) + "|source: " + request.transport.source + "|"
                 log_entry += "Status: False"
@@ -65,7 +65,7 @@ class SMSPlayerV2(object):
         reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
         reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
 
-        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
+        service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, response=post_sms_processor_response)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
                                    reporter_entity.short_code,
                                    additional_feed_dictionary=additional_feed_dictionary)

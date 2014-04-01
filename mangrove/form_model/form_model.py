@@ -473,6 +473,10 @@ class FormModel(DataObject):
                 self.validators.remove(validator)
                 return
 
+    @property
+    def data_senders(self):
+        return self._doc._data.get('data_senders')
+
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

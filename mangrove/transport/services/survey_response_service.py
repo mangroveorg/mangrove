@@ -12,17 +12,18 @@ from mangrove.transport.repository.survey_responses import SurveyResponse
 
 
 class SurveyResponseService(object):
-    def __init__(self, dbm, logger=None, feeds_dbm=None, admin_id=None):
+    def __init__(self, dbm, logger=None, feeds_dbm=None, admin_id=None, response=None):
         self.dbm = dbm
         self.logger = logger
         self.feeds_dbm = feeds_dbm
         self.admin_id = admin_id
+        self.response = response
 
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
                     additional_feed_dictionary=None):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
         survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id,
-                                         admin_id=self.admin_id or reporter_id)
+                                         admin_id=self.admin_id or reporter_id, response=self.response)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
         survey_response.set_form(form_model)
@@ -56,8 +57,15 @@ class SurveyResponseService(object):
                 feed_create_errors += e.message + '\n'
                 feed_create_errors += traceback.format_exc()
         subject = form_submission.get_entity(self.dbm) if form_submission.short_code else None
-        return Response(reporter_names,  survey_response.uuid, form_submission.saved,
-                        form_submission.errors, form_submission.data_record_id, form_submission.short_code,
+        if self.response is None:
+            errors = form_submission.errors
+            success = form_submission.saved
+        else:
+            errors = self.response.errors
+            success = False
+
+        return Response(reporter_names,  survey_response.uuid, success,
+                        errors, form_submission.data_record_id, form_submission.short_code,
                         form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
                         form_submission.form_model.form_code, feed_create_errors)
 

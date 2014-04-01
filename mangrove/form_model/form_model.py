@@ -10,6 +10,7 @@ from mangrove.form_model.field import TextField, UniqueIdField, ShortCodeField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
+import copy
 
 ARPT_SHORT_CODE = "dummy"
 
@@ -121,7 +122,7 @@ class FormModel(DataObject):
     @classmethod
     def new_from_doc(cls, dbm, doc):
         form_model = super(FormModel, cls).new_from_doc(dbm, doc)
-        form_model._old_doc = form_model._doc
+        form_model._old_doc = copy.deepcopy(form_model._doc)
         return form_model
 
     def _set_doc(self, form_code, is_registration_model, label, language, name, type):

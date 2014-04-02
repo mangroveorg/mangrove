@@ -29,7 +29,7 @@ class SurveyResponseService(object):
         form_model.bind(values)
         cleaned_data, errors = form_model.validate_submission(values=values)
 
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=cleaned_data, owner_uid=reporter.id,
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=form_model.bound_values(), owner_uid=reporter.id,
                                          admin_id=self.admin_id or reporter_id, response=self.response)
 
         survey_response.set_form(form_model)

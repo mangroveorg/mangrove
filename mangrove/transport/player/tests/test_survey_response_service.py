@@ -193,8 +193,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                       'rep2')
+        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message, 'rep2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())

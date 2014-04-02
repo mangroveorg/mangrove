@@ -361,6 +361,12 @@ class FormModel(DataObject):
             answer = self._case_insensitive_lookup(self.submission, field.code)
             field.set_value(answer)
 
+    def bound_values(self):
+        values = {}
+        for field in self.fields:
+            values.update({field.code: field.value})
+        return values
+
     def _validate_fields(self, fields):
         self._validate_uniqueness_of_field_codes(fields)
         self._validate_uniqueness_of_field_labels(fields)

@@ -353,3 +353,16 @@ class FormModelTest(MangroveTestCase):
         id = entity_form_model.save()
         saved_entity = EntityFormModel.get(self.manager,id)
         self.assertEquals(saved_entity.entity_type,['clinic'])
+
+    def test_form_model_bound_values(self):
+        field1 = UniqueIdField('clinic', 'uniqueid', 'q1', 'wat is unique id')
+        field2 = SelectField('singleselect', 'q2', 'select among this', [('one', 1),('two', 2)])
+        field3 = TextField('word', 'q3', 'wat is word')
+        form_model = FormModelBuilder(self.manager, ['clinic'], "form1", 'survey').label("Aids form_model").name(
+            "aids").add_fields(*[field1, field2, field3]).build()
+        form_model.bind({'q1': 'CID001', 'q2':'a','q3':'word'})
+
+        bound_values = form_model.bound_values()
+
+        expected = {'q1':'cid001', 'q2': 'a', 'q3':'word'}
+        self.assertEqual(bound_values, expected)

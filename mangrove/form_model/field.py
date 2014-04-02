@@ -445,6 +445,9 @@ class UniqueIdField(Field):
     def stringify(self):
         return unicode("(%s)%s" % (unicode(self.unique_id_type), self.convert_to_unicode() ))
 
+    def set_value(self, value):
+        if value:
+            self.value = value.lower()
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,

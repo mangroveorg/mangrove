@@ -86,3 +86,11 @@ class TestSurveyResponse(TestCase):
         expected = {'abc': 'XyZ', 'pqr': 'hIj'}
         result = convert_dict_keys_to_lowercase(somedict)
         self.assertEquals(expected, result)
+
+    def test_set_answers_uses_case_insensitive_key_value(self):
+        values = {'eid': 'cli001'}
+        survey_response = SurveyResponse(Mock(), transport_info=TransportInfo('web', 'test@gmail.com', 'destination'),
+            values=values)
+        survey_response.entity_question_code = 'EID'
+        survey_response.set_answers(values)
+        self.assertEquals(1, len(values))

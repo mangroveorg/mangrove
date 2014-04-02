@@ -431,7 +431,7 @@ class UniqueIdField(Field):
 
     def validate(self, value):
         super(UniqueIdField, self).validate(value)
-        return value
+        return value.lower()
 
     @property #TODO:Remove
     def is_entity_field(self):

@@ -22,20 +22,22 @@ class SurveyResponseService(object):
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
                     additional_feed_dictionary=None):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, copy(values), owner_uid=reporter.id,
-                                         admin_id=self.admin_id or reporter_id, response=self.response)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
-        survey_response.set_form(form_model)
 
         #TODO : validate_submission should use form_model's bound values
         form_model.bind(values)
         cleaned_data, errors = form_model.validate_submission(values=values)
 
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=cleaned_data, owner_uid=reporter.id,
+                                         admin_id=self.admin_id or reporter_id, response=self.response)
+
+        survey_response.set_form(form_model)
+
+
         form_submission = DataFormSubmission(form_model, cleaned_data, errors)
         feed_create_errors = None
         try:
-            survey_response.set_answers(values)
             if form_submission.is_valid:
                 form_submission.save(self.dbm)
 

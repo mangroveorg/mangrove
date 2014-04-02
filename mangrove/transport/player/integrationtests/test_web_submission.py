@@ -169,9 +169,7 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'n':'buddy', 't': 'DOG', 'g':'80 80', 'm':'123456'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
-        data_record = self.manager._load_document(response.datarecord_id, DataRecordDocument)
-        actual_type = data_record["entity"]["aggregation_paths"]["_type"]
-        self.assertEquals(["dog"], actual_type) 
+        self.assertEquals(["dog"], response.entity_type)
 
     def test_should_accept_unicode_submissions_and_able_to_invalidate_wrong_GPS(self):
         text = {'form_code':'reg', 'n':'Agra', 't': 'clinic', 'g':'480 80', 'm':'08045'}

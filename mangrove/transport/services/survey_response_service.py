@@ -35,7 +35,7 @@ class SurveyResponseService(object):
         form_submission = DataFormSubmission(form_model, cleaned_data, errors)
         feed_create_errors = None
         try:
-            survey_response.set_answers(form_submission.short_code, values)
+            survey_response.set_answers(values)
             if form_submission.is_valid:
                 form_submission.save(self.dbm)
 
@@ -56,6 +56,7 @@ class SurveyResponseService(object):
                 feed_create_errors = 'error while creating feed doc for %s \n' % survey_response.id
                 feed_create_errors += e.message + '\n'
                 feed_create_errors += traceback.format_exc()
+        subject = form_submission.get_entity(self.dbm) if form_submission.short_code else None
         if self.response is None:
             errors = form_submission.errors
             success = form_submission.saved
@@ -97,7 +98,7 @@ class SurveyResponseService(object):
         finally:
             self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names,  survey_response.uuid, form.saved,
-                        form.errors, form.data_record_id, form.short_code,
+                        form.errors, form.data_record_id, None,
                         form._cleaned_data, form.is_registration, form.entity_type,
                         form.form_model.form_code, feed_create_errors)
 

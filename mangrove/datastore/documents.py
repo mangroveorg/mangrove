@@ -131,7 +131,6 @@ class DataRecordDocument(DocumentBase):
     submission = DictField()
 
     def __init__(self, id=None, entity_doc=None, event_time=None, data=None, submission=None):
-        assert entity_doc is None or isinstance(entity_doc, EntityDocument)
         DocumentBase.__init__(self, id, 'DataRecord')
         data_record = {}
         if data is not None:

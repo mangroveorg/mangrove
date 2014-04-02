@@ -273,7 +273,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         self.assertIsNotNone(edited_response.survey_response_id)
         self.assertEqual(test_data.entity_type, edited_response.entity_type)
         self.assertEqual('CL1', edited_response.form_code)
-        self.assertEqual('1', edited_response.short_code)
         self.assertDictEqual(OrderedDict([('Q1', 'new_name'), ('Q3', ['YELLOW']), ('Q2', 430), ('ID', u'1')]),
                              edited_response.processed_data)
 

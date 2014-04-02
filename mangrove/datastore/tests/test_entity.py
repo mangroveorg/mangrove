@@ -318,7 +318,8 @@ class TestEntity(unittest.TestCase):
         self.assertTrue(invalid_doc.voided)
 
     def test_all_data_record_are_invalidated_when_entity_is_invalidated(self):
-        e = Entity(self.manager, entity_type='store', location=['nyc'])
+        self.entity = Entity(self.manager, entity_type='store', location=['nyc'])
+        e = self.entity
         e.save()
         self.assertFalse(e._doc.void)
         data = [

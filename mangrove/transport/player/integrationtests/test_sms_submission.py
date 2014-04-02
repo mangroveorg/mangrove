@@ -217,9 +217,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         text = "reg .n buddy .T DOG .G 80 80 .M 123456"
         response = self.send_sms(text)
         self.assertTrue(response.success)
-        data_record = self.dbm._load_document(response.datarecord_id, DataRecordDocument)
-        actual_type = data_record["entity"]["aggregation_paths"]["_type"]
-        self.assertEquals(["dog"], actual_type)
+        self.assertEquals(["dog"], response.entity_type)
 
     def test_should_accept_unicode_submissions(self):
         text = "reg .s agra .n Agra .m 080456 .t clinic .g 45 56"

@@ -125,7 +125,6 @@ class SurveyResponse(DataObject):
 
     def set_form(self, form_model):
         self._doc.form_model_revision = form_model.revision
-        #self.entity_question_code = form_model.unique_id_field.code if form_model.unique_id_field else ''
 
     def set_answers(self, values):
         if values:

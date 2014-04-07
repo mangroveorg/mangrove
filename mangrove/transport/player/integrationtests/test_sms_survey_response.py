@@ -63,7 +63,7 @@ class TestShouldSaveSMSSurveyResponse(MangroveTestCase):
             options=[("RED", 1), ("YELLOW", 2)] , required=False)
 
         self.form_model = FormModel(self.manager,  name="aids", label="Aids form_model",
-            form_code="clinic", type='survey', fields=[question1, question2, question3])
+            form_code="clinic", fields=[question1, question2, question3])
         self.form_model.add_field(question4)
         self.form_model__id = self.form_model.save()
 

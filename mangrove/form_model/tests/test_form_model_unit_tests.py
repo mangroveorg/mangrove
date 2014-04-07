@@ -28,7 +28,7 @@ class TestFormModel(unittest.TestCase):
                        date_format="%m.%d.%Y", required=False, event_time_field_flag=True)
         q7 = GeoCodeField(name="My Location", code="loc", label="Geo Location Field", required=False)
         self.form_model = FormModel(self.dbm, name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[q1, q2, q3, q4, q5, q6, q7])
+                                    form_code="1", fields=[q1, q2, q3, q4, q5, q6, q7])
 
         self.form_model_patch = patch('mangrove.form_model.form_model.FormModel')
         self.form_model_document_patch = patch('mangrove.form_model.form_model.FormModelDocument')
@@ -125,7 +125,7 @@ class TestFormModel(unittest.TestCase):
         question1 = UniqueIdField('entity_type', name="question1_Name", code="Q1", label="What is your name",
                                   defaultValue="some default value")
         activity_report = FormModel(self.dbm, name="aids", label="Aids form_model",
-                                    form_code="1", type='survey', fields=[question1])
+                                    form_code="1", fields=[question1])
         self.assertIsNotNone(activity_report.entity_questions)
 
 

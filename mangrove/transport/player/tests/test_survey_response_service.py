@@ -38,7 +38,7 @@ class TestSurveyResponseService(TestCase):
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
                                  constraints=[NumericRangeConstraint(min=10, max=100)])
         return FormModel(self.dbm, name="aids", label="Aids form_model",
-                         form_code="aids", type=['survey'], fields=[question1, question2])
+                         form_code="aids", fields=[question1, question2])
 
     #TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
     def test_edit_survey_response_when_fields_constraints_are_not_satisfied(self):

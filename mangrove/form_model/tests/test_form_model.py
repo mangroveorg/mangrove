@@ -25,7 +25,6 @@ class FormModelTest(MangroveTestCase):
     def test_get_form_model(self):
         form = FormModel.get(self.manager, self.form_model_id)
         self.assertIsNotNone(form.id)
-        self.assertEqual(form.type, "survey")
         constraints = form.fields[1].constraints
         self.assertEqual(10, constraints[0].max)
         self.assertEqual(5, constraints[0].min)
@@ -244,7 +243,6 @@ class FormModelTest(MangroveTestCase):
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, [])
         self.assertEqual(questionnaire.name, "New Project")
-        self.assertEqual(questionnaire.type, "survey")
         for i in range(len(questions)):
             self.assertEqual(questionnaire.fields[i]._to_json(), questions[i]._to_json())
 
@@ -262,14 +260,14 @@ class FormModelTest(MangroveTestCase):
     def test_should_raise_exception_if_form_code_already_exists_on_creation(self):
         question1 = UniqueIdField('clinic', name="entity_question", code="ID", label="What is associated entity")
         form_model = FormModel(self.manager,  name="aids", label="Aids form_model",
-                               form_code="1", type='survey', fields=[question1])
+                               form_code="1", fields=[question1])
         with self.assertRaises(DataObjectAlreadyExists):
             form_model.save()
 
     def test_should_raise_exception_if_form_code_already_exists_on_updation(self):
         question1 = UniqueIdField('clinic', name="entity_question", code="ID", label="What is associated entity")
         form_model2 = FormModel(self.manager,  name="aids", label="Aids form_model",
-                                form_code="2", type='survey', fields=[question1])
+                                form_code="2", fields=[question1])
         form_model2.save()
         with self.assertRaises(DataObjectAlreadyExists):
             form_model2.form_code = "1"
@@ -278,7 +276,7 @@ class FormModelTest(MangroveTestCase):
     def test_should_not_raise_exception_if_form_code_is_updated(self):
         question1 = UniqueIdField('clinic', name="entity_question", code="ID", label="What is associated entity")
         form_model2 = FormModel(self.manager, name="aids", label="Aids form_model",
-                                form_code="2", type='survey', fields=[question1])
+                                form_code="2", fields=[question1])
         form_model2.save()
         form_model2.form_code = "2"
         form_model2.save()
@@ -328,7 +326,7 @@ class FormModelTest(MangroveTestCase):
                                  constraints=[NumericRangeConstraint(min=15, max=120)])
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
                                 options=[("RED", 1), ("YELLOW", 2)])
-        self.form_model = FormModelBuilder(self.manager, self.entity_type, "1", 'survey').label("Aids form_model").name(
+        self.form_model = FormModelBuilder(self.manager, self.entity_type, "1").label("Aids form_model").name(
             "aids").add_fields(question1,
                                question2, question3, question4).build()
         self.form_model_id = self.form_model.id
@@ -338,7 +336,7 @@ class FormModelTest(MangroveTestCase):
 
         date_question = DateField("entity_question", "ID", "What is the reporting date", 'dd.mm.yyyy',
                                   event_time_field_flag=True)
-        form_model = FormModelBuilder(self.manager, entity_type, "2", 'survey').label("Aids form_model").name(
+        form_model = FormModelBuilder(self.manager, entity_type, "2").label("Aids form_model").name(
             "aids").add_fields(date_question).build()
         form_model.bind({'id': '12.12.2001'})
         expected_date = datetime.strptime('12.12.2001', date_question.DATE_DICTIONARY.get('dd.mm.yyyy'))
@@ -347,7 +345,6 @@ class FormModelTest(MangroveTestCase):
     def test_should_get_entity_form_model(self):
         entity_form_model = EntityFormModel(self.manager, name='entity_form_model', label='Entity Form Model',
                                             form_code='entity_form_code', fields=[TextField('name','code','label')],
-                                            type='survey',
                                             language="en", is_registration_model=True,
                                             enforce_unique_labels=True, entity_type=['clinic'])
         id = entity_form_model.save()
@@ -358,7 +355,7 @@ class FormModelTest(MangroveTestCase):
         field1 = UniqueIdField('clinic', 'uniqueid', 'q1', 'wat is unique id')
         field2 = SelectField('singleselect', 'q2', 'select among this', [('one', 1),('two', 2)])
         field3 = TextField('word', 'q3', 'wat is word')
-        form_model = FormModelBuilder(self.manager, ['clinic'], "form1", 'survey').label("Aids form_model").name(
+        form_model = FormModelBuilder(self.manager, ['clinic'], "form1").label("Aids form_model").name(
             "aids").add_fields(*[field1, field2, field3]).build()
         form_model.bind({'q1': 'CID001', 'q2':'a','q3':'word'})
 

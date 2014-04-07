@@ -39,7 +39,7 @@ class TestWEBSubmission(MangroveTestCase):
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], required=False)
         self.form_model = EntityFormModel(self.manager, entity_type=self.entity_type, name="aids", label="Aids form_model",
-                                    form_code="clinic", type='survey', fields=[question1, question2, question3, question4], is_registration_model=True)
+                                    form_code="clinic",  fields=[question1, question2, question3, question4], is_registration_model=True)
         self.form_model.save()
 
         self.web_player = WebPlayer(self.manager, location_tree=LocationTree())

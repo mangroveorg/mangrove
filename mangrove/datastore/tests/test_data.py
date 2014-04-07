@@ -68,7 +68,7 @@ class TestData(object):
                                 options=[("RED", 'a'), ("YELLOW", 'b')])
 
         self.form_model = FormModel(self.manager, name="aids", label="Aids form_model",
-                                    form_code=form_code, type='survey', fields=[
+                                    form_code=form_code, fields=[
                 question1, question2, question3, question4])
         self.form_model__id = self.form_model.save()
 

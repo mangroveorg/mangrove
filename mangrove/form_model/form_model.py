@@ -125,17 +125,16 @@ class FormModel(DataObject):
         form_model._old_doc = copy.deepcopy(form_model._doc)
         return form_model
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, type):
+    def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = FormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
-        doc.type = type
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
 
-    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None,
                  language="en", is_registration_model=False, validators=None,
                  enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
@@ -143,7 +142,7 @@ class FormModel(DataObject):
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
         assert form_code is None or (is_string(form_code) and is_not_empty(form_code))
-        assert type is None or is_not_empty(type)
+        #assert type is None or is_not_empty(type)
 
         DataObject.__init__(self, dbm)
         self._old_doc = None
@@ -161,7 +160,7 @@ class FormModel(DataObject):
         self._validate_fields(fields)
         self._form_fields = fields
 
-        self._set_doc(form_code, is_registration_model, label, language, name, type)
+        self._set_doc(form_code, is_registration_model, label, language, name)
 
     @property
     def name(self):
@@ -221,9 +220,9 @@ class FormModel(DataObject):
     def choice_fields(self):
         return [field for field in self._form_fields if field.type in ("select", "select1")]
 
-    @property
-    def type(self):
-        return self._doc.type
+    #@property
+    #def type(self):
+    #    return self._doc.type
 
     @property
     def label(self):
@@ -488,10 +487,10 @@ class FormModel(DataObject):
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument
 
-    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None, type=None,
+    def __init__(self, dbm, name=None, label=None, form_code=None, fields=None,
                  language="en", is_registration_model=False, validators=None,
                  enforce_unique_labels=True, entity_type=None):
-        super(EntityFormModel, self).__init__(dbm, name, label, form_code, fields, type,
+        super(EntityFormModel, self).__init__(dbm, name, label, form_code, fields,
                                               language, is_registration_model, validators,
                                               enforce_unique_labels)
         assert entity_type is None or is_sequence(entity_type)
@@ -523,12 +522,11 @@ class EntityFormModel(FormModel):
     def get_short_code(self, values):
         return self._case_insensitive_lookup(values, self.entity_questions[0].code)
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, type):
+    def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = EntityFormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
-        doc.type = type
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)

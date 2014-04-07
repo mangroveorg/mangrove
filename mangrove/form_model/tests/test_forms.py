@@ -58,7 +58,7 @@ class TestEditSurveyResponseForm(TestCase):
         question2 = TextField(name="question1_Name", code="q2", label="What is your name",
             defaultValue="some default value")
         form_model = FormModel(self.dbm, name="aids", label="Aids form_model",
-            form_code="clinic", type='survey', fields=[question1, question2])
+            form_code="clinic", fields=[question1, question2])
 
         errored_survey_response = self.errored_survey_response()
         form = EditSurveyResponseForm(self.dbm, errored_survey_response, form_model, {'q1': 'a1', 'q2': 'a2'})

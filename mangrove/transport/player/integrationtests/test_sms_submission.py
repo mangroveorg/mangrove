@@ -93,7 +93,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             cls.form_model = get_form_model_by_code(cls.dbm, "clinic")
         except FormModelDoesNotExistsException:
             cls.form_model = EntityFormModel(cls.dbm, entity_type=cls.entity_type, name="aids", label="Aids form_model",
-                form_code="clinic", type='survey', fields=[question1, question2, question3], is_registration_model=True)
+                form_code="clinic",  fields=[question1, question2, question3], is_registration_model=True)
             cls.form_model.add_field(question4)
             cls.form_model.save()
         cls.submission_handler = None

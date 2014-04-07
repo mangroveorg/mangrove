@@ -147,7 +147,7 @@ class DataRecordDocument(DocumentBase):
 class FormModelDocument(DocumentBase):
     metadata = DictField()
     name = TextField()
-    type = TextField()
+    #type = TextField()
     label = TextField()
     form_code = TextField()
     is_registration_model = BooleanField(default=False)

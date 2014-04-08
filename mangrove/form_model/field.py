@@ -602,6 +602,11 @@ class SelectField(Field):
                 result.append(option_value)
         return result
 
+    def get_options_map(self):
+        options_map = {}
+        for option in self.options:
+            options_map.update({option['val']:option['text']})
+        return options_map
 
 class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD

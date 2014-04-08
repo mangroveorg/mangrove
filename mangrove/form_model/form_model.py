@@ -48,7 +48,7 @@ def get_form_model_by_code(dbm, code):
         row_value = _load_questionnaire(code, dbm)
         cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
 
-    if row_value.get('is_registration_model') or row_value.get('form_code')==ENTITY_DELETION_FORM_CODE:
+    if row_value.get('is_registration_model') or row_value.get('form_code') == ENTITY_DELETION_FORM_CODE:
         return EntityFormModel.new_from_doc(dbm, EntityFormModelDocument.wrap(row_value))
     return FormModel.new_from_doc(dbm, FormModelDocument.wrap(row_value))
 
@@ -188,7 +188,7 @@ class FormModel(DataObject):
     def entity_type(self):
         unique_id_fields = self.entity_questions
         if unique_id_fields:
-            return [unique_id_fields[0].unique_id_type]
+            return [unique_id_field.unique_id_type for unique_id_field in unique_id_fields]
         else:
             return []
 
@@ -269,7 +269,6 @@ class FormModel(DataObject):
         if self._doc is None:
             raise NoDocumentError('No document to save')
         return self._dbm._save_document(self._doc, prev_doc=self._old_doc)
-
 
 
     def get_field_by_name(self, name):

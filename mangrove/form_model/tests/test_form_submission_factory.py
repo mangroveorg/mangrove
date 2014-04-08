@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import unittest
 from couchdb.mapping import Document
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from mangrove.form_model.field import ShortCodeField
 from mangrove.form_model.form_submission import FormSubmissionFactory, DataFormSubmission, GlobalRegistrationFormSubmission, EntityRegistrationFormSubmission
 from mangrove.datastore.database import DatabaseManager
@@ -12,7 +12,9 @@ from mangrove.form_model.form_model import FormModel
 
 class TestFormSubmissionFactory(unittest.TestCase):
     def test_should_give_data_form_submission(self):
-        mocked_form_model = FormModel(dbm=Mock(spec=DatabaseManager))
+        mocked_form_model = MagicMock(spec=FormModel)
+        mocked_form_model.entity_type = []
+        mocked_form_model.is_entity_registration_form.return_value =False
         form_submission = FormSubmissionFactory().get_form_submission(mocked_form_model, OrderedDict(), None)
         self.assertEqual(type(form_submission), DataFormSubmission)
 

@@ -19,7 +19,8 @@ class FormSubmission(object):
         else: short_code_field = form_model.entity_questions[0].code if form_model.entity_questions else ''
         entity_short_code = self.get_answer_for(short_code_field)
         self.short_code = entity_short_code.lower() if entity_short_code is not None else None
-        self.entity_type = self.get_entity_type(form_model)
+        entity_types = self.get_entity_type(form_model)
+        self.entity_type = [entity_types[0]] if entity_types else entity_types
         self.is_valid = (errors is None or len(errors) == 0)
         self.errors = errors
         self.data_record_id = None

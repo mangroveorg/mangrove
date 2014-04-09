@@ -7,15 +7,13 @@
             <instance>
                 <data id="{{ questionnaire.id }}">
                     {% block entity_instance %}{% endblock %}
-                    {% for field in questionnaire.fields %}
-                        {% if not field.is_entity_field %}
-                            <{{ field.code }}/>
-                        {% endif %}
+                    {% for field in fields %}
+                        <{{ field.code }}/>
                     {% endfor %}
                     <form_code>{{ questionnaire.form_code }}</form_code>
                 </data>
             </instance>
-            {% for field in questionnaire.fields %}
+            {% for field in fields %}
                 <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" constraint="{{ field.xform_constraints() }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
             {% endfor %}
             <bind nodeset="/data/form_code" type="string">{{ questionnaire.form_code }}</bind>
@@ -24,10 +22,8 @@
     </h:head>
     <h:body>
         {% block entity_body %}{% endblock %}
-        {% for field in questionnaire.fields %}
-            {% if not field.is_entity_field %}
-                {{ field_xmls.get(field.type, default_template).render(field=field) }}
-            {% endif %}
+        {% for field in fields %}
+            {{ field_xmls.get(field.type, default_template).render(field=field) }}
         {% endfor %}
     </h:body>
 </h:html>

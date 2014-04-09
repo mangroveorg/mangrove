@@ -1,0 +1,9 @@
+<select1 ref="{{ field.code }}" appearance="quick">
+        <label>{{ field.name }}</label>
+        {% for (code, name) in field.options %}
+            <item>
+                <label>{{ name }} ({{ code }})</label>
+                <value>{{ code }}</value>
+            </item>
+        {% endfor %}
+</select1>

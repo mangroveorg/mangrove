@@ -255,10 +255,15 @@ class FormModel(DataObject):
         super(FormModel, self).void(void=void)
 
     def save(self):
-        # convert fields and validators to json fields before save
-        if not self._is_form_code_unique():
+    # convert fields and validators to json fields before save
+        self.check_if_form_model_unique()
+        return self.update_doc_and_save()
+
+    def check_if_form_model_unique(self):
+        if not self.is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 
+    def update_doc_and_save(self):
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         self._doc.validators = [validator.to_json() for validator in self.validators]
         json_snapshots = {}
@@ -415,7 +420,7 @@ class FormModel(DataObject):
                     f = field.create_question_from(each, self._dbm)
                     self._snapshots[key].append(f)
 
-    def _is_form_code_unique(self):
+    def is_form_code_unique(self):
         try:
             form = get_form_model_by_code(self._dbm, self.form_code)
             is_form_code_same_as_existing_form_code = True if form.id == self.id else False

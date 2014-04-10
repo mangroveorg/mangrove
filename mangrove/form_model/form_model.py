@@ -188,7 +188,8 @@ class FormModel(DataObject):
     def entity_type(self):
         unique_id_fields = self.entity_questions
         if unique_id_fields:
-            return [unique_id_field.unique_id_type for unique_id_field in unique_id_fields]
+            #There can be multiple fields with similar unique id types. we need set of unique id types.
+            return list(set([unique_id_field.unique_id_type for unique_id_field in unique_id_fields]))
         else:
             return []
 

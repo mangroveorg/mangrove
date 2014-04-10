@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import unittest
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField, UniqueIdField
@@ -256,6 +256,14 @@ class TestFormModel(unittest.TestCase):
         self.assertIsInstance(form_model, EntityFormModel)
         self.assertTrue(hasattr(form_model, 'entity_type'))
 
+    def test_should_filter_duplicate_unique_id_types(self):
+        field1 = UniqueIdField(unique_id_type='clinic', name='q1',code='q1',label='q1')
+        field2 = UniqueIdField(unique_id_type='school', name='q2',code='q2',label='q2')
+        field3 = UniqueIdField(unique_id_type='clinic', name='q3',code='q3',label='q3')
+        fields=[field1, field2, field3]
+        form_model = FormModel(Mock(spec=DatabaseManager))
+        form_model._form_fields = fields
+        self.assertListEqual(['clinic','school'], form_model.entity_type)
 
 class DatabaseManagerStub(DatabaseManager):
     def __init__(self):

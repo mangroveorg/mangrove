@@ -706,33 +706,8 @@ class TestField(unittest.TestCase):
             field.validate("  ")
 
 
-    def test_should_create_date_field_with_event_time_flag(self):
-        field = DateField('event_time', 'et', 'event_time', 'mm.dd.yyyy',
-                          event_time_field_flag=True)
-        self.assertTrue(field.is_event_time_field)
-        field.set_value(datetime.strptime('25-12-2012', '%d-%m-%Y'))
-        self.assertEqual("12.25.2012", field.convert_to_unicode())
-
-    def test_should_create_date_field_with_event_time_flag_from_json(self):
-        field_json = {
-            "defaultValue": "",
-            "label": "What is your birth date",
-            "name": "Birth_date",
-            "code": "Q1",
-            "type": "date",
-            "date_format": "%m.%Y",
-            
-            "required": False,
-            'event_time_field_flag': True
-        }
-        created_field = field.create_question_from(field_json, self.dbm)
-        self.assertIsInstance(created_field, DateField)
-        self.assertEqual(created_field.date_format, "%m.%Y")
-        self.assertFalse(created_field.is_required())
-        self.assertTrue(created_field.is_event_time_field)
-
     def test_date_field_with_event_time_flag_should_return_expected_json(self):
-        field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y', event_time_field_flag=True)
+        field = DateField('event_time', 'et', 'event_time', '%m.%d.%Y')
         expected_json = {
             "instruction": None,
             "label": "event_time",
@@ -742,7 +717,6 @@ class TestField(unittest.TestCase):
             "date_format": "%m.%d.%Y",
             
             "required": True,
-            'event_time_field_flag': True
         }
         self.assertEqual(expected_json, field._to_json())
 

@@ -1,10 +1,9 @@
 from collections import OrderedDict
 import unittest
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField, UniqueIdField
-# from mangrove.form_model.form_model import get_form_model_by_entity_type
 from mangrove.form_model.form_model import FormModel, get_form_model_by_code, EntityFormModel, get_form_model_by_entity_type
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.form_model.validators import MandatoryValidator, UniqueIdExistsValidator
@@ -25,7 +24,7 @@ class TestFormModel(unittest.TestCase):
         q5 = TextField(name="Desc", code="Q4", label="Description", required=False)
         self.event_time_field_code = "Q6"
         q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field",
-                       date_format="%m.%d.%Y", required=False, event_time_field_flag=True)
+                       date_format="%m.%d.%Y", required=False)
         q7 = GeoCodeField(name="My Location", code="loc", label="Geo Location Field", required=False)
         self.form_model = FormModel(self.dbm, name="aids", label="Aids form_model",
                                     form_code="1", fields=[q1, q2, q3, q4, q5, q6, q7])
@@ -159,46 +158,6 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 0)
         for field in self.form_model.fields:
             self.assertEqual([], field.errors)
-
-
-    def test_should_get_event_time_question(self):
-        self.assertEqual(self.event_time_field_code, self.form_model.event_time_question.code)
-
-    # def test_should_check_if_proper_database_manager_passed_for_get_registration_form(self):
-    #     with self.assertRaises(AssertionError):
-    #         get_form_model_by_entity_type(Mock(), Mock())
-    #
-    # def test_should_check_if_entity_type_is_sequesnce_for_get_registration_form(self):
-    #     with self.assertRaises(AssertionError):
-    #         get_form_model_by_entity_type(Mock(spec=DatabaseManager), 'clinic')
-    #
-    # def test_return_none_if_registration_form_model_for_an_entity_does_not_exist(self):
-    #     manager_stub = DatabaseManagerStub()
-    #     manager_stub.view.registration_form_model_by_entity_type.return_value = []
-    #     self.assertIsNone(get_form_model_by_entity_type(manager_stub, ["XYZ"]))
-
-    # def test_should_return_registration_form_model_if_found_for_an_entity(self):
-    #     manager_stub = DatabaseManagerStub()
-    #     document = {'foo':'bar'}
-    #     manager_stub.view.registration_form_model_by_entity_type.return_value = [
-    #             {"id": "tes_id", "key": ["test"], "value": None,
-    #              'doc': document}]
-    #     mock_form_instance = Mock(FormModel)
-    #     mock_form_document_instance = Mock(FormModelDocument)
-    #
-    #     form_model_mock = self.form_model_patch.start()
-    #     form_model_mock.new_from_doc.return_value = mock_form_instance
-    #
-    #     form_model_document_mock = self.form_model_document_patch.start()
-    #     form_model_document_mock.wrap.return_value = mock_form_document_instance
-    #
-    #     reg_form_model = get_form_model_by_entity_type(manager_stub, ['test'])
-    #
-    #     self.assertEqual(mock_form_instance, reg_form_model)
-    #     manager_stub.view.registration_form_model_by_entity_type.assert_called_once_with(key=['test'],
-    #         include_docs=True)
-    #     self.assertEqual(1, form_model_mock.new_from_doc.call_count)
-    #     form_model_document_mock.wrap.assert_called_once_with(document)
 
     def test_should_return_choice_fields(self):
         self.assertEquals(self.form_model.choice_fields[0].code, "Q3")

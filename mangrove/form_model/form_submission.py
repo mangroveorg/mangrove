@@ -60,16 +60,9 @@ class FormSubmission(object):
         item_ = item[0]
         return item_ == GEO_CODE_FIELD_NAME
 
-    def _get_event_time_value(self):
-        return self.cleaned_data.get(self._get_event_time_code())
-
-    def _get_event_time_code(self):
-        event_time_field = self.form_model.event_time_question
-        return event_time_field.code if event_time_field else None
-
     def _save_data(self, entity):
         submission_information = dict(form_code=self.form_code)
-        self.data_record_id = entity.add_data(data=self._values, event_time=self._get_event_time_value(),
+        self.data_record_id = entity.add_data(data=self._values,
                                               submission=submission_information)
         return self.data_record_id
 
@@ -130,7 +123,6 @@ class DataFormSubmission(FormSubmission):
         submission_information = dict(form_code=self.form_code)
         data_record_doc = DataRecordDocument(
             entity_doc=doc,
-            event_time=self._get_event_time_value(),
             data=self._values,
             submission=submission_information
         )

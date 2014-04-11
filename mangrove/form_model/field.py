@@ -22,14 +22,13 @@ def create_question_from(dictionary, dbm):
     label = dictionary.get("label")
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
-    is_event_time_field = dictionary.get("event_time_field_flag")
     unique_id_type = dictionary.get("unique_id_type")
     if type == field_attributes.TEXT_FIELD:
         return _get_text_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.INTEGER_FIELD:
         return _get_integer_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, dictionary, label, name, instruction, required, is_event_time_field)
+        return _get_date_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.LOCATION_FIELD:
         return _get_geo_code_field(code, instruction, label, name, required)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
@@ -91,11 +90,11 @@ def _get_integer_field(code, dictionary, label, name, instruction, required):
     return integer_field
 
 
-def _get_date_field(code, dictionary, label, name, instruction, required, is_event_time_field):
+def _get_date_field(code, dictionary, label, name, instruction, required):
     date_format = dictionary.get("date_format")
 
     date_field = DateField(name=name, code=code, label=label, date_format=date_format,
-                           instruction=instruction, required=required, event_time_field_flag=is_event_time_field)
+                           instruction=instruction, required=required)
 
     return date_field
 
@@ -314,12 +313,10 @@ class DateField(Field):
                               'submission_date_format': 'MMM. dd, yyyy, hh:mm a'}
 
     def __init__(self, name, code, label, date_format, instruction=None,
-                 required=True, event_time_field_flag=False):
+                 required=True):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
                        label=label, instruction=instruction, required=required)
         self._dict[self.DATE_FORMAT] = date_format
-        if event_time_field_flag:
-            self._dict['event_time_field_flag'] = event_time_field_flag
 
     def validate(self, value):
         Field.validate(self, value)
@@ -335,10 +332,6 @@ class DateField(Field):
 
     def get_constraint_text(self):
         return self.date_format
-
-    @property
-    def is_event_time_field(self):
-        return self._dict.get('event_time_field_flag', False)
 
     def convert_to_unicode(self):
         if self.value is None:

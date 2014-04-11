@@ -92,29 +92,6 @@ class FormModelTest(MangroveTestCase):
         updated_form = FormModel.get(self.manager, self.form_model_id)
         self.assertEqual("Color", updated_form.get_field_by_code_and_rev("Q3", rev).name)
 
-    def test_should_get_fields_excludes_reporting_period_field(self):
-        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy",
-                              event_time_field_flag=True)
-        self.form_model.add_field(dateField)
-        self.form_model.save()
-        form_model = FormModel.get(self.manager, self.form_model_id)
-
-        self.assertEqual(5, len(form_model.fields))
-        self.assertEqual(4, len(form_model.non_rp_fields_by()))
-
-    def test_should_get_fields_excludes_reporting_period_field_if_revision_provided(self):
-        dateField = DateField(name="f2", code="c2", label="f2", date_format="dd.mm.yyyy",
-                              event_time_field_flag=True)
-        rev = self.form_model.revision
-        self.form_model.add_field(dateField)
-        self.form_model.create_snapshot()
-        self.form_model.delete_field("c2")
-        self.form_model.save()
-        form_model = FormModel.get(self.manager, self.form_model_id)
-
-        self.assertEqual(4, len(form_model.fields))
-        self.assertEqual(4, len(form_model.non_rp_fields_by(rev)))
-
     def test_should_add_integer_field_with_constraints(self):
         integer_question = FormModel.get(self.manager, self.form_model_id).fields[2]
         range_constraint = integer_question.constraints[0]
@@ -331,16 +308,6 @@ class FormModelTest(MangroveTestCase):
                                question2, question3, question4).build()
         self.form_model_id = self.form_model.id
 
-    def test_event_time_value_should_return_datetime(self):
-        entity_type = ["HealthFacility", "Clinic"]
-
-        date_question = DateField("entity_question", "ID", "What is the reporting date", 'dd.mm.yyyy',
-                                  event_time_field_flag=True)
-        form_model = FormModelBuilder(self.manager, entity_type, "2").label("Aids form_model").name(
-            "aids").add_fields(date_question).build()
-        form_model.bind({'id': '12.12.2001'})
-        expected_date = datetime.strptime('12.12.2001', date_question.DATE_DICTIONARY.get('dd.mm.yyyy'))
-        self.assertEqual(expected_date, form_model._get_event_time_value())
 
     def test_should_get_entity_form_model(self):
         entity_form_model = EntityFormModel(self.manager, name='entity_form_model', label='Entity Form Model',

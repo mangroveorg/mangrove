@@ -194,18 +194,6 @@ class FormModel(DataObject):
             return []
 
     @property
-    def event_time_question(self):
-        event_time_questions = [event_time_question for event_time_question in self._form_fields if
-                                event_time_question.is_event_time_field]
-        return event_time_questions[0] if event_time_questions else None
-
-    def _get_event_time_value(self):
-        if self.event_time_question and self.event_time_question.code:
-            field = self.get_field_by_code(self.event_time_question.code)
-            return datetime.strptime(field.value, field.DATE_DICTIONARY.get(field.date_format)) if field.value else None
-        return None
-
-    @property
     def form_code(self):
         return self._doc.form_code
 
@@ -307,15 +295,6 @@ class FormModel(DataObject):
             quoted_label = '&#39;' + form_field.label + '&#39;'
             field_code_label_dict.update({form_field.code: quoted_label})
         return field_code_label_dict
-
-    def _non_rp_fields(self):
-        return [field for field in self.fields if not field.is_event_time_field]
-
-    def non_rp_fields_by(self, revision=None):
-        if revision is None or revision == self.revision:
-            return self._non_rp_fields()
-        else:
-            return [field for field in self._snapshots.get(revision, []) if not field.is_event_time_field]
 
     def add_field(self, field):
         self._validate_fields(self._form_fields + [field])

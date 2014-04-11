@@ -17,14 +17,9 @@ class TestFormSubmission(unittest.TestCase):
         question1 = UniqueIdField('clinic',name="entity_question", code="ID", label="What is associated entity")
         question2 = TextField(name="Name", code="Q1", label="What is your name",
                               defaultValue="some default value")
-        event_time_field_code = "ET"
-        self.event_time_question = DateField(name="Event time", code=event_time_field_code,
-                                             label="Event time field",
-                                             date_format="dd.mm.yyyy", required=False,
-                                             event_time_field_flag=True)
         return FormModel(self.dbm, name="aids", label="Aids form_model",
                          form_code="AIDS",
-                         fields=[question1, question2, self.event_time_question])
+                         fields=[question1, question2])
 
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)

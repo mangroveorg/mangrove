@@ -152,7 +152,7 @@ class SurveyResponse(DataObject):
     def update(self, bound_form_model, data, entity=None):
         assert self.errors == ''
         submission_information = dict(form_code=self.form_code)
-        data_record_id = self.add_data(data=data, event_time=bound_form_model._get_event_time_value(),
+        data_record_id = self.add_data(data=data,
                                        submission=submission_information)
         self._void_existing_data_record()
         self._doc.data_record_id = data_record_id

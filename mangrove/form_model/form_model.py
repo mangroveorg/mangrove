@@ -201,7 +201,7 @@ class FormModel(DataObject):
 
     def _get_event_time_value(self):
         if self.event_time_question and self.event_time_question.code:
-            field = self._get_field_by_code(self.event_time_question.code)
+            field = self.get_field_by_code(self.event_time_question.code)
             return datetime.strptime(field.value, field.DATE_DICTIONARY.get(field.date_format)) if field.value else None
         return None
 
@@ -221,9 +221,9 @@ class FormModel(DataObject):
     def choice_fields(self):
         return [field for field in self._form_fields if field.type in ("select", "select1")]
 
-    #@property
-    #def type(self):
-    #    return self._doc.type
+    @property
+    def date_fields(self):
+        return [field for field in self._form_fields if field.type == 'date']
 
     @property
     def label(self):
@@ -283,7 +283,7 @@ class FormModel(DataObject):
                 return field
         return None
 
-    def _get_field_by_code(self, code):
+    def get_field_by_code(self, code):
         for field in self._form_fields:
             if code is not None and field.code.lower() == code.lower():
                 return field
@@ -291,7 +291,7 @@ class FormModel(DataObject):
 
     def get_field_by_code_and_rev(self, code, revision=None):
         if self.revision == revision or not self._snapshots:
-            return self._get_field_by_code(code)
+            return self.get_field_by_code(code)
 
         if revision is None:
             revision = min(self._snapshots, key=lambda x: int(x.split('-')[0]))
@@ -439,7 +439,7 @@ class FormModel(DataObject):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_unknown_fields(self, answers):
-        return OrderedDict([(k, v) for k, v in answers.items() if self._get_field_by_code(k) is not None])
+        return OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
     #TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
     def validate_submission(self, values):
@@ -451,7 +451,7 @@ class FormModel(DataObject):
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:
-            field = self._get_field_by_code(key)
+            field = self.get_field_by_code(key)
             index = self.fields.index(field)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:

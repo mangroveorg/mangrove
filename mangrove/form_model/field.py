@@ -329,6 +329,10 @@ class DateField(Field):
     def date_format(self):
         return self._dict.get(self.DATE_FORMAT)
 
+    @property
+    def is_monthly_format(self):
+        return self.date_format == 'mm.yyyy'
+
     def get_constraint_text(self):
         return self.date_format
 

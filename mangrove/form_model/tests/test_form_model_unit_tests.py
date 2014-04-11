@@ -148,9 +148,9 @@ class TestFormModel(unittest.TestCase):
         answers = {"id": "1", "q1": "ab", "q2": "200"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertEqual(len(errors), 2)
-        self.assertEqual(["Answer 200 for question Q2 is greater than allowed."], self.form_model._get_field_by_code(
+        self.assertEqual(["Answer 200 for question Q2 is greater than allowed."], self.form_model.get_field_by_code(
             "q2").errors)
-        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'], self.form_model._get_field_by_code(
+        self.assertEqual(['Answer ab for question Q1 is shorter than allowed.'], self.form_model.get_field_by_code(
             "q1").errors)
 
     def test_should_not_set_error_if_validation_success(self):

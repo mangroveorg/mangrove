@@ -26,7 +26,7 @@ class TestEntityDeletionFormModel(unittest.TestCase):
         self.assertEqual(2, len(self.form.fields))
 
     def test_delete_form_should_have_entity_type_field(self):
-        self.assertIsNotNone(self.form._get_field_by_code(ENTITY_TYPE_FIELD_CODE))
+        self.assertIsNotNone(self.form.get_field_by_code(ENTITY_TYPE_FIELD_CODE))
 
     def test_delete_form_model_should_have_all_required_validators(self):
         self.assertEqual(2, len(self.form.validators))

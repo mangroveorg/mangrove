@@ -23,7 +23,7 @@ class TestEditSurveyResponseForm(TestCase):
         form_model = Mock(spec=FormModel)
         dictionary = {'q1': 'a1', 'q2': 'a2'}
         form_model.validate_submission.return_value = dictionary, ''
-        form_model._get_field_by_code.side_effect = lambda arg: values[arg]
+        form_model.get_field_by_code.side_effect = lambda arg: values[arg]
         form_model.entity_questions = [question1]
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
         form.save()
@@ -46,7 +46,7 @@ class TestEditSurveyResponseForm(TestCase):
         # with patch('mangrove.form_model.forms.get_by_short_code') as get_by_short_code_mock:
         #     get_by_short_code_mock.return_value = entity
         form_model.validate_submission.return_value = dictionary, 'error'
-        form_model._get_field_by_code.side_effect = lambda arg: values[arg]
+        form_model.get_field_by_code.side_effect = lambda arg: values[arg]
 
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
 
@@ -79,7 +79,7 @@ class TestEditSurveyResponseForm(TestCase):
         #     get_by_short_code_mock.return_value = entity
 
         form_model.validate_submission.return_value = dictionary, 'error'
-        form_model._get_field_by_code.side_effect = lambda arg: values[arg]
+        form_model.get_field_by_code.side_effect = lambda arg: values[arg]
         form_model.entity_questions = [question1]
         # form_model.entity_type = entity
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
@@ -99,7 +99,7 @@ class TestEditSurveyResponseForm(TestCase):
         # with patch('mangrove.form_model.forms.get_by_short_code') as get_by_short_code_mock:
         #     get_by_short_code_mock.return_value = entity
         form_model.validate_submission.return_value = dictionary, 'error'
-        form_model._get_field_by_code.side_effect = lambda arg: values[arg]
+        form_model.get_field_by_code.side_effect = lambda arg: values[arg]
         form_model.entity_questions = [question1]
         form = EditSurveyResponseForm(self.dbm, survey_response, form_model, dictionary)
         form.entity_type = entity

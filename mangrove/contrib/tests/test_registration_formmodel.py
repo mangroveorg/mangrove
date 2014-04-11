@@ -23,10 +23,10 @@ class TestRegistrationFormModel(unittest.TestCase):
         self.assertEqual(REGISTRATION_FORM_CODE, self.form.form_code)
 
     def test_registration_form_should_have_entity_type_field(self):
-        self.assertIsNotNone(self.form._get_field_by_code("T"))
+        self.assertIsNotNone(self.form.get_field_by_code("T"))
 
     def test_registration_form_should_have_multiple_constraints_on_mobile(self):
-        field = self.form._get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
+        field = self.form.get_field_by_code(MOBILE_NUMBER_FIELD_CODE)
         self.assertEqual(15, field.constraints[0].max)
         self.assertEqual("^[0-9]+$", field.constraints[1].pattern)
 

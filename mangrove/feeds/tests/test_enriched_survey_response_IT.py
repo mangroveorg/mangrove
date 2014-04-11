@@ -36,6 +36,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         expected_values = {
             'id': {'answer': {'id': '1', 'name': 'clinic1', 'deleted': False}, 'is_entity_question': 'true',
                    'type': 'unique_id',
+                   'unique_id_type': 'clinic',
                    'label': 'What is associated entity'},
             'q1': {'answer': 'name2', 'type': 'text', 'label': 'What is your name'},
             'q2': {'answer': 24, 'type': 'integer', 'label': "What is your Father's Age"},

@@ -83,11 +83,11 @@ class EnrichedSurveyResponseBuilder(object):
                 'deleted': data_sender.is_void()
         }
 
-    def _update_entity_answer_in_dictionary(self, answer_dictionary, value):
+    def _update_entity_answer_in_dictionary(self, answer_dictionary, value, unique_id_type):
         answer_dictionary.update({'is_entity_question': 'true'})
         if self.form_model.entity_type != ["reporter"]:
             try:
-                subject = by_short_code(self.dbm, value, self.form_model.entity_type)
+                subject = by_short_code(self.dbm, value, [unique_id_type])
                 answer_dictionary.update(
                     {'answer': {'id': value, 'name': subject.data['name']['value'], 'deleted': False}})
             except DataObjectNotFound:
@@ -107,7 +107,8 @@ class EnrichedSurveyResponseBuilder(object):
             selected = self._select_field_values(answer_dictionary.get('answer'), field)
             answer_dictionary.update({'answer': selected})
         if isinstance(field, UniqueIdField):
-            self._update_entity_answer_in_dictionary(answer_dictionary, value)
+            answer_dictionary.update({'unique_id_type': field.unique_id_type})
+            self._update_entity_answer_in_dictionary(answer_dictionary, value, field.unique_id_type)
         #if field.code == self.form_model.entity_question.code:
         return answer_dictionary
 

@@ -189,7 +189,10 @@ class FormModel(DataObject):
         unique_id_fields = self.entity_questions
         if unique_id_fields:
             #There can be multiple fields with similar unique id types. we need set of unique id types.
-            return list(set([unique_id_field.unique_id_type for unique_id_field in unique_id_fields]))
+            entity_types = OrderedDict()
+            for unique_id_field in unique_id_fields:
+                entity_types.update({unique_id_field.unique_id_type:None})
+            return entity_types.keys()
         else:
             return []
 

@@ -290,3 +290,13 @@ class DeleteRequestParserInvalidFormatException(MangroveException):
 class DeleteRequestParserWrongNumberOfAnswersException(MangroveException):
     def __init__(self, message):
         MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (message, ))
+
+
+class ExceedSubmissionLimitException(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, u"You have reached your limit of 1000 free Submissions. Ask your Project Manager to sign up for a monthly subscription to continue submitting data.")
+
+
+class ExceedSMSLimitException(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your projects.")

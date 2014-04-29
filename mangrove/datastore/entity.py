@@ -59,6 +59,22 @@ def by_short_code(dbm, short_code, entity_type):
     doc = EntityDocument.wrap(rows[0]['doc'])
     return Entity.new_from_doc(dbm, doc)
 
+def by_short_codes(dbm, short_codes, entity_type, limit=None):
+    kwargs = {
+                'include_docs': True,
+                'reduce': False
+             }
+    if limit:
+        kwargs['limit'] = limit
+
+    keys = [[entity_type, short_code] for short_code in short_codes]
+    kwargs["keys"] = keys
+
+    rows = dbm.view.by_short_codes(**kwargs)
+    if is_empty(rows):
+        raise DataObjectNotFound(entity_type[0], "Unique Identification Number (ID)", short_code)
+    docs = [EntityDocument.wrap(row['doc']) for row in rows]
+    return [Entity.new_from_doc(dbm, doc) for doc in docs]
 
 def _entity_by_short_code(dbm, short_code, entity_type):
     rows = dbm.view.entity_by_short_code(key=[entity_type, short_code], include_docs=True)
@@ -79,46 +95,14 @@ def get_by_short_code_include_voided(dbm, short_code, entity_type):
     assert is_sequence(entity_type)
     return _entity_by_short_code(dbm, short_code.lower(), entity_type)
 
-
-# def get_entities_in(dbm, geo_path, type_path=None):
-#     """
-#     Retrieve an entity within the given fully-qualified geographic placename.
-#     """
-#     assert isinstance(dbm, DatabaseManager)
-#     assert is_string(geo_path) or isinstance(geo_path, list)
-#     assert is_string(type_path) or isinstance(type_path, list) or type_path is None
-#
-#     if is_string(geo_path):
-#         geo_path = [geo_path]
-#     if is_string(type_path):
-#         type_path = [type_path]
-#
-#     entities = []
-#
-#     # if type is unspecified, then return all entities
-#     if type_path is not None:
-#         # TODO: is the type field necessarily a heirarchy?
-#         # if not, then this needs to perform a query for each type and then take the intersection
-#         # of the result sets
-#         rows = dbm.load_all_rows_in_view(u'by_type_geo', key=(type_path + geo_path))
-#         entities = dbm.get_many([row.id for row in rows], Entity)
-#
-#     # otherwise, filter by type
-#     if type_path is None:
-#         rows = dbm.load_all_rows_in_view(u'by_geo', key=geo_path)
-#         entities = dbm.get_many([row.id for row in rows], Entity)
-#
-#     return entities
-
-
-def get_all_entities(dbm, entity_type=None):
+def get_all_entities(dbm, entity_type=None, limit=None):
     """
     Returns all the entities in the Database
     """
     if entity_type is not None:
-        return _get_all_entities_of_type(dbm, entity_type)
+        return _get_all_entities_of_type(dbm, entity_type, limit)
     else:
-        return _get_all_entities(dbm)
+        return _get_all_entities(dbm, limit)
 
 
 def get_short_codes_by_entity_type(dbm, entity_type):
@@ -514,15 +498,29 @@ def _make_short_code(entity_type, num):
     return SHORT_CODE_FORMAT % (entity_prefix, num)
 
 
-def _get_all_entities(dbm):
-    rows = dbm.view.by_short_codes(reduce=False, include_docs=True)
+def _get_all_entities(dbm, limit=None):
+    kwargs = {
+                'include_docs': True,
+                'reduce': False
+             }
+    if limit:
+        kwargs['limit'] = limit
+
+    rows = dbm.view.by_short_codes(**kwargs)
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 
-def _get_all_entities_of_type(dbm, entity_type):
-    startkey = [entity_type]
-    endkey = [entity_type, {}]
-    rows = dbm.view.by_short_codes(reduce=False, include_docs=True, startkey=startkey, endkey=endkey)
+def _get_all_entities_of_type(dbm, entity_type, limit=None):
+    kwargs = {
+                'startkey': [entity_type],
+                'endkey': [entity_type, {}],
+                'include_docs': True,
+                'reduce': False
+             }
+    if limit:
+        kwargs['limit'] = limit
+
+    rows = dbm.view.by_short_codes(**kwargs)
     return [_from_row_to_entity(dbm, row) for row in rows]
 
 

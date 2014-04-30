@@ -72,7 +72,7 @@ def by_short_codes(dbm, short_codes, entity_type, limit=None):
 
     rows = dbm.view.by_short_codes(**kwargs)
     if is_empty(rows):
-        raise DataObjectNotFound(entity_type[0], "Unique Identification Number (ID)", short_code)
+        raise DataObjectNotFound(entity_type[0], "Unique Identification Number (ID)", "")
     docs = [EntityDocument.wrap(row['doc']) for row in rows]
     return [Entity.new_from_doc(dbm, doc) for doc in docs]
 

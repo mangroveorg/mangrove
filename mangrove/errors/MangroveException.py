@@ -299,4 +299,4 @@ class ExceedSubmissionLimitException(MangroveException):
 
 class ExceedSMSLimitException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your projects.")
+        MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your Questionnaires.")

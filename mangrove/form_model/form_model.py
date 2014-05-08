@@ -517,3 +517,8 @@ class EntityFormModel(FormModel):
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
+
+    def get_entity_name_question_code(self):
+        for f in self._form_fields:
+            if f.name == 'name':
+                return f.code

@@ -288,7 +288,7 @@ class FormModelTest(MangroveTestCase):
     def test_should_get_string_rep_of_form_model(self):
         submission = {"ID": "id", "Q1": "12345", "Q2": "25", "Q3": "a"}
         stringified_dict = self.form_model.stringify(values=self.form_model.validate_submission(submission)[0])
-        self.assertEquals("(clinic)id", stringified_dict.get("ID"))
+        self.assertEquals("Clinic(id)", stringified_dict.get("ID"))
         self.assertEquals("12345", stringified_dict.get("Q1"))
         self.assertEquals("25", stringified_dict.get("Q2"))
         self.assertEquals("RED", stringified_dict.get("Q3"))

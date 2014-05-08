@@ -291,12 +291,16 @@ class DeleteRequestParserWrongNumberOfAnswersException(MangroveException):
     def __init__(self, message):
         MangroveException.__init__(self, u"Could not parse, Wrong number of answers submitted.", (message, ))
 
-
+        
 class ExceedSubmissionLimitException(MangroveException):
     def __init__(self):
-        MangroveException.__init__(self, u"You have reached your limit of 1000 free Submissions. Ask your Project Manager to sign up for a monthly subscription to continue submitting data.")
+        MangroveException.__init__(self, u"You have reached your limit of 1000 free Submissions. Upgrade to a monthly subscription to continue sending in Submissions.")
 
 
 class ExceedSMSLimitException(MangroveException):
     def __init__(self):
         MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your Questionnaires.")
+
+class DatasenderIsNotLinkedException(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.")

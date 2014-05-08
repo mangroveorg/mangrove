@@ -440,7 +440,7 @@ class UniqueIdField(Field):
         return dict
 
     def stringify(self):
-        return unicode("(%s)%s" % (unicode(self.unique_id_type), self.convert_to_unicode() ))
+        return unicode("%s(%s)" % (unicode(self.unique_id_type.capitalize()), self.convert_to_unicode() ))
 
     def set_value(self, value):
         if value:

@@ -769,4 +769,4 @@ class TestUniqueIdField(unittest.TestCase):
 
         field = UniqueIdField("unique_id_type", "name", "q1", "label")
         field.value = "cli001"
-        self.assertEqual(field.stringify(), "(unique_id_type)cli001")
+        self.assertEqual(field.stringify(), "Unique_id_type(cli001)")

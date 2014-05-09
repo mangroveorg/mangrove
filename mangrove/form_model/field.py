@@ -174,6 +174,9 @@ class Field(object):
     def set_name(self, new_name):
         self._dict["name"] = new_name
 
+    def set_label(self, new_label):
+        self._dict["label"] = new_label
+
     def set_instruction(self, new_instruction):
         self._dict["instruction"] = new_instruction
 

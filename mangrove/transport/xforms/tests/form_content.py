@@ -97,7 +97,7 @@ expected_xform_for_project_with_unique_id = """
     <hint>instruction</hint>
 </input>
                     <select1 ref="cl" appearance="quick">
-        <label>cl</label>
+        <label>Clinic</label>
                     <item>
                 <label>nameOfEntity (shortCode1)</label>
                 <value>shortCode1</value>

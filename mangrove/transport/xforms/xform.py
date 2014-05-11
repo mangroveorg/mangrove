@@ -37,7 +37,7 @@ class UniqueIdUIField(UniqueIdField):
 
     @property
     def options(self):
-        return [(entity.short_code, entity.data['name']['value']) for entity in
+        return [(entity.short_code, escape(entity.data['name']['value'])) for entity in
                     get_all_entities(self.dbm, [self.unique_id_type])]
 
 def xform_for(dbm, form_id, reporter_id):

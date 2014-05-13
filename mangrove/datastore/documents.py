@@ -66,7 +66,7 @@ class DocumentBase(Document):
                     callback(self, dbm,pre_save_object) if pre_save_object else callback(self,dbm)
                 except Exception as e:
                     logging.error(e.message)
-                    #raise
+                    raise
 
     @classmethod
     def register_post_update(cls, func):

@@ -67,6 +67,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.entity = create_entity(cls.dbm, entity_type=cls.entity_type,
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.entity_short_code,
         )
+        cls.entity.save()
 
         cls.data_record_id = cls.entity.add_data(data=[("Name", "Ruby")],
             submission=dict(submission_id="1"))
@@ -75,6 +76,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         cls.reporter = create_entity(cls.dbm, entity_type=["reporter"],
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.reporter_id,
         )
+        cls.reporter.save()
 
         cls.phone_number = str(int(random.random() * 10000000))
         cls.reporter.add_data(data=[(MOBILE_NUMBER_FIELD, cls.phone_number),

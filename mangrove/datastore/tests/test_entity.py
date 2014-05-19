@@ -123,41 +123,43 @@ class TestEntity(unittest.TestCase):
 
     def test_should_create_entity_with_short_code(self):
         with self.assertRaises(AssertionError):
-            create_entity(self.manager, entity_type=["reporter"], short_code=None)
+            create_entity(self.manager, entity_type=["reporter"], short_code=None).save()
 
         with self.assertRaises(AssertionError):
-            create_entity(self.manager, entity_type=["reporter"], short_code="")
+            create_entity(self.manager, entity_type=["reporter"], short_code="").save()
 
         with self.assertRaises(AssertionError):
-            create_entity(self.manager, entity_type="Reporter", short_code="BLAH")
+            create_entity(self.manager, entity_type="Reporter", short_code="BLAH").save()
         with self.assertRaises(AssertionError):
-            create_entity(self.manager, entity_type=[], short_code="BLAH")
+            create_entity(self.manager, entity_type=[], short_code="BLAH").save()
         with self.assertRaises(AssertionError):
-            create_entity(self.manager, entity_type=("reporter"), short_code="BLAH")
+            create_entity(self.manager, entity_type=("reporter"), short_code="BLAH").save()
 
         safe_define_type(self.manager, ["reporter"])
         short_code = ut_reporter_id()
         entity = create_entity(self.manager, entity_type=["reporter"], short_code=short_code)
+        entity.save()
         saved_entity = get_by_short_code(self.manager, short_code=short_code, entity_type=["reporter"])
         self.assertEqual(saved_entity.id, entity.id)
 
         with self.assertRaises(DataObjectAlreadyExists):
-            create_entity(self.manager, entity_type=["reporter"], short_code=short_code)
+            create_entity(self.manager, entity_type=["reporter"], short_code=short_code).save()
 
         with self.assertRaises(EntityTypeDoesNotExistsException):
-            create_entity(self.manager, entity_type=["Dog"], short_code=short_code)
+            create_entity(self.manager, entity_type=["Dog"], short_code=short_code).save()
 
     def test_should_raise_exception_if_void_entity_with_same_short_code_exists(self):
         entity_type = ["reporter"]
         safe_define_type(self.manager, entity_type)
         short_code = ut_reporter_id()
         entity = create_entity(self.manager, entity_type=entity_type, short_code=short_code)
+        entity.save()
         saved_entity = get_by_short_code(self.manager, short_code=short_code, entity_type=entity_type)
         self.assertEqual(saved_entity.id, entity.id)
 
         void_entity(self.manager, entity_type, short_code)
         with self.assertRaises(DataObjectAlreadyExists):
-            create_entity(self.manager, entity_type=entity_type, short_code=short_code)
+            create_entity(self.manager, entity_type=entity_type, short_code=short_code).save()
 
 
     def test_should_get_entity_by_short_code(self):

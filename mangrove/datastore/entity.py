@@ -36,7 +36,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
                                       existing_name=entity_name)
     e = Entity(dbm, entity_type=entity_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)
-    e.save()
+    #e.save()
     return e
 
 

@@ -28,7 +28,7 @@ class TestWEBSubmission(MangroveTestCase):
         self.entity = create_entity(self.manager, entity_type=self.entity_type,
                                     location=["India", "Pune"], aggregation_paths=None, short_code="cli1",
                                     )
-
+        self.entity.save()
         #Form Model with unique id question
         question1 = ShortCodeField(name="entity_question", code="EID", label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",

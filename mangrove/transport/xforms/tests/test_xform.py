@@ -26,13 +26,12 @@ class TestXform(unittest.TestCase):
     def test_should_return_specific_form_for_project_without_unique_id(self):
         dbm = Mock()
         questionnaire_mock = Mock()
-        field1 = Field(type='text', name='name', code='code', instruction='instruction', constraints=[
+        field1 = Field(type='text', name='name', label='name', code='code', instruction='instruction', constraints=[
             (self.mock_constraint())])
         questionnaire_mock.name = 'name'
         questionnaire_mock.fields = [field1]
         questionnaire_mock.form_code = 'form_code'
         questionnaire_mock.id = 'id'
-        #questionnaire_mock.is_entity_type_reporter.return_value = True
         questionnaire_mock.unique_id_field = None
         questionnaire_mock.activeLanguages = ["en"]
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
@@ -42,7 +41,7 @@ class TestXform(unittest.TestCase):
                 unicode(expected_xform_for_project_on_reporter), 0), actual_response)
 
     def text_field(self, code):
-        return Field(type='text', name='name', code=code, instruction='instruction', constraints=[
+        return Field(type='text', name='name', label='name', code=code, instruction='instruction', constraints=[
             (self.mock_constraint())])
 
     def test_should_return_specific_form_for_project_with_unique_id(self):
@@ -72,7 +71,7 @@ class TestXform(unittest.TestCase):
     def test_should_escape_special_characters_from_requested_form(self):
         dbm = Mock()
         questionnaire_mock = Mock()
-        field1 = SelectField(name='name&', code='selectcode', label="", instruction='instruction&',
+        field1 = SelectField(name='name&', label='name&', code='selectcode', instruction='instruction&',
             options=[{'text':'option1&'}])
         questionnaire_mock.name = '<mock_name'
         questionnaire_mock.fields = [field1]
@@ -82,6 +81,6 @@ class TestXform(unittest.TestCase):
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
             form_model_mock.get.return_value = questionnaire_mock
             one_of_unicode_unknown_ = xform_for(dbm, "someFormId", 'rep1')
-            u = unicode(expected_xform_with_escaped_characters)
+            expected = unicode(expected_xform_with_escaped_characters)
             self.assertTrue(self.checker.check_output(one_of_unicode_unknown_,
-                u, 0))
+                expected, 0))

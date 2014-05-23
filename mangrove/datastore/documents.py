@@ -22,6 +22,7 @@ class attributes(object):
     TYPE_PATH = '_type'
     DATA = 'data'
     ACTIVE_LANGUAGES = 'activeLanguages'
+    ENABLE_SMS_REPLIES = 'enableSMSReplies'
 
 
 class TZAwareDateTimeField(DateTimeField):
@@ -163,6 +164,7 @@ class FormModelDocument(DocumentBase):
     def active_languages(self):
         return self.metadata[attributes.ACTIVE_LANGUAGES]
 
+
     @active_languages.setter
     def active_languages(self, language):
         self.metadata[attributes.ACTIVE_LANGUAGES] = language
@@ -182,6 +184,15 @@ class ProjectDocument(FormModelDocument):
     sender_group = TextField()
     reminder_and_deadline = DictField()
     data_senders = ListField(TextField())
+    enable_sms_replies = BooleanField()
+
+    #@property
+    #def enable_sms_replies(self):
+    #    return self.enable_sms_replies
+    #
+    #@enable_sms_replies.setter
+    #def enable_sms_replies(self, enable_replies):
+    #    self.enable_sms_replies = enable_replies
 
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)

@@ -7,6 +7,7 @@ from mangrove.form_model.field import TextField, IntegerField, SelectField, Date
 from mangrove.form_model.form_model import FormModel, get_form_model_by_code, EntityFormModel, get_form_model_by_entity_type
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.form_model.validators import MandatoryValidator, UniqueIdExistsValidator
+import mangrove.errors.MangroveException as ex
 
 
 class TestFormModel(unittest.TestCase):
@@ -50,6 +51,8 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual({'Q2': "Answer 200 for question Q2 is greater than allowed."}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+        self.assertTrue(isinstance(self.form_model.validation_exception[0], ex.AnswerTooBigException))
+        self.assertEqual(len(self.form_model.validation_exception), 1)
 
     def test_should_return_error_if_exceeding_value_of_the_word_field_limit(self):
         answers = {"id": "1", "Q1": "TextThatLongerThanAllowed"}
@@ -57,6 +60,9 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual({'Q1': 'Answer TextThatLongerThanAllowed for question Q1 is longer than allowed.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+        self.assertEqual(len(self.form_model.validation_exception), 1)
+        self.assertTrue(isinstance(self.form_model.validation_exception[0], ex.AnswerTooLongException))
+
 
     def test_should_return_error_if_answering_with_invalid_geo_format(self):
         answers = {"id": "1", "loc": "127.178057 -78.007789"}
@@ -64,6 +70,8 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual({'loc': 'Invalid GPS value.'}, errors)
         self.assertEqual(OrderedDict([('ID', '1')]), cleaned_answers)
+        self.assertEqual(len(self.form_model.validation_exception), 1)
+        self.assertTrue(isinstance(self.form_model.validation_exception[0], ex.LatitudeNotInRange))
 
 
     def test_should_ignore_field_validation_if_the_answer_is_not_present(self):
@@ -92,6 +100,9 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual({'Q1': 'Answer Asif for question Q1 is shorter than allowed.',
                           'Q2': "Answer 200 for question Q2 is greater than allowed."}, errors)
         self.assertEqual(OrderedDict([('Q3', ['RED']), ('ID', '1')]), cleaned_answers)
+        self.assertTrue(isinstance(self.form_model.validation_exception[1], ex.AnswerTooBigException))
+        self.assertTrue(isinstance(self.form_model.validation_exception[0], ex.AnswerTooShortException))
+        self.assertEqual(len(self.form_model.validation_exception), 2)
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
@@ -119,6 +130,8 @@ class TestFormModel(unittest.TestCase):
         cleaned_data, errors = self.form_model.validate_submission(answers)
         self.assertEqual({'ID': '1'}, cleaned_data)
         self.assertEqual(1, len(errors))
+        self.assertEqual(1, len(self.form_model.validation_exception))
+        self.assertTrue(isinstance(self.form_model.validation_exception[0], ex.AnswerWrongType))
 
     def test_should_give_back_unique_id_field(self):
         question1 = UniqueIdField('entity_type', name="question1_Name", code="Q1", label="What is your name",
@@ -158,6 +171,7 @@ class TestFormModel(unittest.TestCase):
         self.assertEqual(len(errors), 0)
         for field in self.form_model.fields:
             self.assertEqual([], field.errors)
+        self.assertEqual(self.form_model.validation_exception, [])
 
     def test_should_return_choice_fields(self):
         self.assertEquals(self.form_model.choice_fields[0].code, "Q3")

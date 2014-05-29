@@ -302,5 +302,5 @@ class ExceedSMSLimitException(MangroveException):
         MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your Questionnaires.")
 
 class DatasenderIsNotLinkedException(MangroveException):
-    def __init__(self):
-        MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.")
+    def __init__(self, dsname, dsid):
+        MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.", (dsname, dsid))

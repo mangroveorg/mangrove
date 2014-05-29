@@ -45,7 +45,7 @@ class SurveyResponseService(object):
             raise
         finally:
             if translation_processor is not None:
-                translated_errors = translation_processor(form_model).process()
+                translated_errors = translation_processor(form_model, self.response).process()
                 survey_response.set_status(translated_errors)
             else:
                 survey_response.set_status(errors)

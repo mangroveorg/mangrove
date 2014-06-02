@@ -116,11 +116,7 @@ class EnrichedSurveyResponseBuilder(object):
         choice_array = field.get_option_list(choices)
         value_array = field.get_option_value_list(choices)
         if len(choice_array) != len(value_array):
-            error_message = 'Survey Response Id : %s, ' % self.survey_response.id
-            error_message += 'field code %s, ' % field.code
-            error_message += 'number of values not equal to number of selected choices: %s' % choices
-            if self.logger: self.logger.error(error_message)
-            raise Exception(error_message)
+            return {}
 
         selected = {}
         for i in range(len(choice_array)):

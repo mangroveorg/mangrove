@@ -17,23 +17,6 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.form_model = Mock(spec=FormModel)
         self.dbm = Mock(spec=DatabaseManager)
 
-    def test_raise_exception_when_value_for_selected_option_not_found(self):
-        try:
-            options = [{'text': 'orange', 'val': 'a'}]
-
-            self.form_model.fields = [
-                SelectField('name', 'q1', 'label', options, single_select_flag=False)]
-            type(self.survey_response).values = PropertyMock(return_value={'q1': 'ba'})
-            self.survey_response.id = 'someid'
-
-            builder = EnrichedSurveyResponseBuilder(None, self.survey_response, self.form_model, {})
-            builder.feed_document()
-            self.fail('Since We dont have the correct values for options this should raised an exception')
-        except Exception as e:
-            self.assertEqual(
-                'Survey Response Id : someid, field code q1, number of values not equal to number of selected choices: ba',
-                e.message)
-
 
     def test_format_is_present_for_date_fields(self):
         value_mock = PropertyMock(return_value={'q3': '21.03.2011'})

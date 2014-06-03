@@ -32,7 +32,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     existing = _check_if_entity_exists(dbm, entity_type, short_code, return_entity=True)
     if existing:
         entity_name = existing.data.get('name', {'value': ''}).get('value')
-        raise DataObjectAlreadyExists(entity_type[0], "Unique Identification Number (ID)", short_code,
+        raise DataObjectAlreadyExists(entity_type[0].capitalize(), "Unique Identification Number (ID)", short_code,
                                       existing_name=entity_name)
     e = Entity(dbm, entity_type=entity_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry)

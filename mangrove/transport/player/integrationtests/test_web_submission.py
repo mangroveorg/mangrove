@@ -113,7 +113,7 @@ class TestWEBSubmission(MangroveTestCase):
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_GEOCODE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertFalse(response.success)
-        self.assertEqual({'g': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315'}, response.errors)
+        self.assertEqual({'g': u'Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx,yy.yyyy. Example -18.8665,47.5315'}, response.errors)
         
         text = {'form_code':'reg', 'N':'buddy2', 'S':'bud', 'T': 'dog', 'g':INVALID_LATITUDE, 'D':'its another dog!', 'M': '745557'}
         response = self.send_request_to_web_player(text)

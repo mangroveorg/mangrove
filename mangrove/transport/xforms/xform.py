@@ -57,7 +57,7 @@ def xform_for(dbm, form_id, reporter_id):
 def _escape_special_characters(questionnaire):
     questionnaire.name = escape(questionnaire.name)
     for question in questionnaire.fields:
-        question.set_name(escape(question.name))
+        question.set_label(escape(question.label))
         question.set_instruction(escape(question.instruction))
         if type(question) == SelectField:
             for option in question.options:

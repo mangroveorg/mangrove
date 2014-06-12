@@ -42,25 +42,17 @@ class TestFormSubmission(unittest.TestCase):
     def test_should_create_global_form_submission_location_tree(self):
         form_model = self._construct_global_registration_form()
         submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
-        entity_mock, patcher = self._create_entity_mock()
-        location_tree = {1: 2}
-        form_submission = FormSubmissionFactory().get_form_submission(form_model, submission,
-                                                                      location_tree=location_tree)
-        data_record_id = form_submission.save(self.dbm)
-        patcher.stop()
-        self.assertEqual(1, data_record_id)
-        self.assertEqual(form_submission.location_tree, location_tree)
+        with patch('mangrove.form_model.form_submission.FormSubmission.create_entity') as create_entity:
+            entity_mock = Mock(spec=Entity)
+            entity_mock.add_data.return_value = 1
+            create_entity.return_value = entity_mock
 
-    #TODO : struggled and Not happy with they way this test has been written. indicates that some basic design flaw.
-    #need to correct this
-    def test_should_do_submission_for_global_registration_form(self):
-        form_model = self._construct_global_registration_form()
-        submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
-        entity_mock, patcher = self._create_entity_mock()
-        form_submission = FormSubmissionFactory().get_form_submission(form_model, submission)
-        data_record_id = form_submission.save(self.dbm)
-        patcher.stop()
-        self.assertEqual(1, data_record_id)
+            location_tree = {1: 2}
+            form_submission = FormSubmissionFactory().get_form_submission(form_model, submission,
+                                                                          location_tree=location_tree)
+            data_record_id = form_submission.save(self.dbm)
+            self.assertEqual(1, data_record_id)
+            self.assertEqual(form_submission.location_tree, location_tree)
 
     def _assert_data_submission_entity_mock(self, entity_mock, event_time=None):
         submission_values = [('Name', 'My Name')]
@@ -71,23 +63,6 @@ class TestFormSubmission(unittest.TestCase):
         submission_information = {'form_code': u'AIDS'}
         entity_mock.add_data.assert_called_once_with(data=submission_values,
                                                      event_time=event_time, submission=submission_information)
-
-    def _get_entity_mock(self):
-        entity_patcher = patch('mangrove.form_model.form_submission.entity.get_by_short_code')
-        entity_patcher_mock = entity_patcher.start()
-        entity_mock = MagicMock(spec=Entity)
-        self.expected_entity_document = EntityDocument()
-        entity_mock._doc = self.expected_entity_document
-        entity_patcher_mock.return_value = entity_mock
-        return entity_mock, entity_patcher
-
-    def _create_entity_mock(self):
-        entity_patcher = patch('mangrove.form_model.form_submission.entity.create_entity')
-        entity_patcher_mock = entity_patcher.start()
-        entity_mock = Mock(spec=Entity)
-        entity_patcher_mock.return_value = entity_mock
-        entity_mock.add_data.return_value = 1
-        return entity_mock, entity_patcher
 
     def _construct_global_registration_form(self):
         mocked_form_model = Mock()

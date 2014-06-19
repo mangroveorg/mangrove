@@ -78,6 +78,8 @@ def list_form_models_by_code(dbm, codes):
 def get_form_model_cache_key(form_code, dbm):
     assert isinstance(dbm, DatabaseManager)
     assert form_code is not None
+    if type(form_code) == unicode:
+        return "%s_%s" % (dbm.database.name.encode('utf-8'), form_code.encode('utf-8'))
     return str("%s_%s" % (dbm.database.name, form_code))
 
 

@@ -21,6 +21,16 @@ class TestLocation(unittest.TestCase):
         augmented_submission={LOCATION_TYPE_FIELD_CODE:['pune','mh','india'],'q':"sdasd"}
         self.assertEquals(augmented_submission,self.location.process_submission(submission))
 
+    def test_should_convert_location_to_location_hierarchy_when_there_are_multiple_levels(self):
+        submission={LOCATION_TYPE_FIELD_CODE: 'a,b','q':"sdasd"}
+        augmented_submission={LOCATION_TYPE_FIELD_CODE:['a','b'],'q':"sdasd"}
+        self.assertEquals(augmented_submission,self.location.process_submission(submission))
+
+    def test_should_aggregate_highest_level_locations_when_levels_exceed_max_level_in_location_tree(self):
+        submission={LOCATION_TYPE_FIELD_CODE: 'a,b,c,d,e,mada','q':"sdasd"}
+        augmented_submission={LOCATION_TYPE_FIELD_CODE:['a,b','c','d','e','mada'],'q':"sdasd"}
+        self.assertEquals(augmented_submission,self.location.process_submission(submission))
+
     def test_should_not_do_anything_when_location_and_geo_is_not_present_for_entity_creation(self):
         answers={'name':'something'}
         self.assertEquals((None,None),self.location.process_entity_creation(answers))

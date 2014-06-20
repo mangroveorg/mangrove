@@ -44,14 +44,6 @@ class TestLocation(unittest.TestCase):
         answers={GEO_CODE: (-12, 60),LOCATION_TYPE_FIELD_CODE: location_hierarchy}
         self.assertEquals((location_hierarchy,convert_to_geometry((TEST_LAT,TEST_LONG))),self.location.process_entity_creation(answers))
 
-
-    def test_use_first_gps_answer_when_multiple_gps_questions_are_present_in_questionnaire(self):
-        location = Location(DummyLocationTree(), self.form_with_multiple_gps_questions())
-
-        location_hierarchy = ['pune', 'mh', 'india']
-        answers={GEO_CODE: (-12, 60),LOCATION_TYPE_FIELD_CODE: location_hierarchy, GEO_CODE+'1':(-13,70)}
-        self.assertEquals((location_hierarchy,convert_to_geometry((-12,60))), location.process_entity_creation(answers))
-
     def location_hierarchy_stub(self,lowest_level_location_name):
         if lowest_level_location_name=='pune':
             return ['pune','mh','india']
@@ -63,14 +55,5 @@ class TestLocation(unittest.TestCase):
         question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?")
         form_model = FormModel(manager, name="asd", form_code="asd", fields=[
             question4,question5])
-        return form_model
-
-    def form_with_multiple_gps_questions(self):
-        manager=Mock(spec=DatabaseManager)
-        question4 = HierarchyField(name=LOCATION_TYPE_FIELD_NAME, code=LOCATION_TYPE_FIELD_CODE,
-            label=LOCATION_TYPE_FIELD_NAME)
-        question5 = GeoCodeField(name=GEO_CODE_FIELD_NAME, code=GEO_CODE, label="What is the subject's GPS co-ordinates?")
-        question6 = GeoCodeField(name=GEO_CODE_FIELD_NAME+'1', code=GEO_CODE+'1', label="What is the user's GPS co-ordinates?")
-        form_model = FormModel(manager, name="asd", form_code="asd", fields=[question4,question5,question6])
         return form_model
 

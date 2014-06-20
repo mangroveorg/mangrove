@@ -1,4 +1,3 @@
-from mangrove.form_model.field import field_attributes
 from mangrove.utils.geo_utils import convert_to_geometry
 from mangrove.utils.types import is_empty
 
@@ -34,8 +33,7 @@ class Location(object):
         return field.code if field is not None else None
 
     def _get_geo_field_code(self):
-        fields = [field for field in self.form_model.fields if field.type.lower() == field_attributes.LOCATION_FIELD]
-        return fields[0].code if len(fields) else None
+        return self._get_field_code_by_name(GEO_CODE_FIELD_NAME)
 
     def _get_location_details(self, location_hierarchy):
         lowest_level_name = location_hierarchy[0]

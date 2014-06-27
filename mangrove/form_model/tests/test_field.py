@@ -6,7 +6,7 @@ from mock import Mock
 
 from mangrove.datastore.database import DatabaseManager
 from mangrove.errors.MangroveException import IncorrectDate, GeoCodeFormatException, RegexMismatchException, RequiredFieldNotPresentException
-from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field, ShortCodeField
+from mangrove.form_model.field import DateField, GeoCodeField, field_to_json, HierarchyField, TelephoneNumberField, Field, ShortCodeField, FieldSet
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, \
     AnswerTooLongException, AnswerTooShortException, AnswerWrongType, AnswerHasTooManyValuesException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ExcelDate, UniqueIdField
@@ -126,8 +126,8 @@ class TestField(unittest.TestCase):
         expected_json = {
             "label": "What is your favorite color",
             "name": "color",
-            "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
-                        {"text": 'green', "val": 3}],
+            "choices": [{"text": "RED", "val": 'a'}, {"text": "YELLOW", "val": 'b'},
+                        {"text": 'green', "val": 'c'}],
             "code": "Q3",
             
             "type": "select1",
@@ -135,7 +135,7 @@ class TestField(unittest.TestCase):
             "instruction": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-                            options=[("RED", 1), ("YELLOW", 2), ('green', 3)])
+                            options=[("RED", 'a'), ("YELLOW", 'b'), ('green', 'c')])
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
 
@@ -146,8 +146,8 @@ class TestField(unittest.TestCase):
         expected_json = {
             "label": "What is your favorite color",
             "name": "color",
-            "choices": [{"text": "RED", "val": 1}, {"text": "YELLOW", "val": 2},
-                        {"text": 'green'}],
+            "choices": [{"text": "RED", "val": 'a'}, {"text": "YELLOW", "val": 'b'},
+                        {"text": 'green', 'val':'green'}],
             "code": "Q3",
             
             "type": "select",
@@ -155,7 +155,7 @@ class TestField(unittest.TestCase):
             "instruction": "test_instruction"
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-                            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
+                            options=[("RED", 'a'), ("YELLOW", 'b'), ('green')], single_select_flag=False,
                              instruction="test_instruction")
         actual_json = field._to_json()
         self.assertEqual(actual_json, expected_json)
@@ -164,7 +164,7 @@ class TestField(unittest.TestCase):
 
     def test_should_remove_spaces_if_present_in_answer_for_multi_select(self):
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
-                            options=[("RED", 1), ("YELLOW", 2), ('green')], single_select_flag=False,
+                            options=[("RED", 'a'), ("YELLOW", 'b'), ('green')], single_select_flag=False,
                              instruction="test_instruction")
         self.assertEqual(['RED', 'YELLOW'], field.validate('a b'))
 
@@ -595,6 +595,18 @@ class TestField(unittest.TestCase):
         field = TextField(name="test", code='MC', label='question', constraints=constraints)
 
         self.assertEqual(constraints, field.constraints)
+
+    def test_should_create_field_set_which_is_an_entity(self):
+        fieldset = FieldSet(name="test", code='q1', label='question')
+        expected_json = {'required': True, 'name': 'test', 'fields': [], 'instruction': None, 'label': 'question',
+                         'code': 'q1', 'type': 'field_set', 'fieldset_type': 'entity'}
+        self.assertEquals(expected_json, field_to_json(fieldset))
+
+    def test_should_create_field_set_which_is_not_an_entity(self):
+        fieldset = FieldSet(name="test", code='q1', label='question')
+        expected_json = {'code': 'q1', 'required': True, 'name': 'test', 'fields': [], 'instruction': None,
+                         'type': 'field_set', 'label': 'question', 'fieldset_type': 'entity'}
+        self.assertEquals(expected_json, field_to_json(fieldset))
 
     def test_should_validate_text_data_based_on_list_of_constraints(self):
         length_constraint = TextLengthConstraint(min=10, max=12)

@@ -20,7 +20,7 @@ class TestFormModel(unittest.TestCase):
         q3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                           constraints=[NumericRangeConstraint(min=15, max=120)], required=False)
         q4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                         options=[("RED", 1), ("YELLOW", 2)], required=False)
+                         options=[("RED", 'a'), ("YELLOW", 'b')], required=False)
         q5 = TextField(name="Desc", code="Q4", label="Description", required=False)
         self.event_time_field_code = "Q6"
         q6 = DateField(name="Event time", code=self.event_time_field_code, label="Event time field",

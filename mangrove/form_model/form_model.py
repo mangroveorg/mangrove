@@ -1,16 +1,17 @@
 from collections import OrderedDict
-from datetime import *
+import copy
+
 from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import FormModelDocument, attributes, EntityFormModelDocument
+from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
-    EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import TextField, UniqueIdField, ShortCodeField
+    DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
-import copy
+
 
 ARPT_SHORT_CODE = "dummy"
 
@@ -83,12 +84,17 @@ def get_form_model_cache_key(form_code, dbm):
 
 def header_fields(form_model, key_attribute="name", ref_header_dict=None):
     header_dict = ref_header_dict or OrderedDict()
-    for field in form_model.fields:
+    _header_fields(form_model.fields, key_attribute, header_dict)
+    return header_dict
+
+def _header_fields(fields, key_attribute, header_dict):
+    for field in fields:
+        if isinstance(field, FieldSet) and field.is_group():
+            _header_fields(field.fields, key_attribute, header_dict)
+            continue
         key = field.__getattribute__(key_attribute) if type(key_attribute) == str else key_attribute(field)
         if not header_dict.get(key):
             header_dict.update({key: field.label})
-    return header_dict
-
 
 def get_field_by_attribute_value(form_model, key_attribute, attribute_label):
     #ex: field1.name='first_name' field1.code='q1'
@@ -185,6 +191,14 @@ class FormModel(DataObject):
         return ef
 
     @property
+    def xform(self):
+        return self._doc.xform
+
+    @xform.setter
+    def xform(self, value):
+        self._doc.xform = value
+
+    @property
     def entity_type(self):
         unique_id_fields = self.entity_questions
         if unique_id_fields:
@@ -267,6 +281,14 @@ class FormModel(DataObject):
             raise NoDocumentError('No document to save')
         return self._dbm._save_document(self._doc, prev_doc=self._old_doc)
 
+    def update_attachments(self, attachments, attachment_name=None):
+        return self.put_attachment(self._doc, attachments, filename=attachment_name)
+
+    def add_attachments(self, attachments, attachment_name=None):
+        return self.put_attachment(self._doc, attachments, filename=attachment_name)
+
+    def get_attachments(self, attachment_name=None):
+        return self.get_attachment(self._doc.id, filename=attachment_name)
 
     def get_field_by_name(self, name):
         for field in self._form_fields:
@@ -355,7 +377,6 @@ class FormModel(DataObject):
 
     def _validate_fields(self, fields):
         self._validate_uniqueness_of_field_codes(fields)
-        self._validate_uniqueness_of_field_labels(fields)
 
 
     def _validate_uniqueness_of_field_labels(self, fields):

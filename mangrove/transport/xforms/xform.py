@@ -42,6 +42,10 @@ class UniqueIdUIField(UniqueIdField):
 
 def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)
+    xform = questionnaire.xform
+    if xform:
+        return xform
+
     _escape_special_characters(questionnaire)
     ui_fields = []
     for field in questionnaire.fields:
@@ -60,8 +64,4 @@ def _escape_special_characters(questionnaire):
         question.set_label(escape(question.label))
         question.set_instruction(escape(question.instruction))
         if type(question) == SelectField:
-            for option in question.options:
-                option['text'] = escape(option['text'])
-
-
-
+            question.escape_option_text()

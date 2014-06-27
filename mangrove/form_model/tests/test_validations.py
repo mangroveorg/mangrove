@@ -101,7 +101,8 @@ class TestTextValidations(unittest.TestCase):
 
 class TestChoiceValidations(unittest.TestCase):
     def test_should_validate_multiple_choice(self):
-        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=["village", "urban"],
+        constraint = ChoiceConstraint(single_select_constraint=False, list_of_valid_choices=[{"val":"a", "text":"village"},
+                                                                                             {"val":"b", "text":"urban"}],
                                       code="Q1")
         v_data = constraint.validate("ab")
         self.assertEquals(v_data, ["village", "urban"])
@@ -117,10 +118,10 @@ class TestChoiceValidations(unittest.TestCase):
     def test_should_not_validate_multiple_values_sent_for_single_choice(self):
         with self.assertRaises(AnswerHasTooManyValuesException):
             valid_choices = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
-                             "s", "t", "u", "v","w","x", "y","z", "1a", "1b must be returned", "1c"]
+                             "s", "t", "u", "v","w","x", "y","z", "1a", "1b", "1c"]
             constraint = ChoiceConstraint(single_select_constraint=True, list_of_valid_choices=valid_choices,
                                           code="Q1")
-            self.assertEqual(constraint.validate("1b"), ["1b must be returned"])
+            self.assertEqual(constraint.validate("1b"), ['1b'])
             constraint.validate("a1a")
 
     def test_should_not_validate_no_values_sent_for_choice(self):

@@ -89,7 +89,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
             constraints=[NumericRangeConstraint(min=15, max=120)], required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
-            options=[("RED", 1), ("YELLOW", 2)], required=False)
+            options=[("RED", 'a'), ("YELLOW", 'a')], required=False)
 
         try:
             cls.form_model = get_form_model_by_code(cls.dbm, "clinic")

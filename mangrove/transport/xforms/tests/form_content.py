@@ -64,7 +64,7 @@ expected_xform_with_escaped_characters = """
             <hint>Choose answer(s) from the list.</hint>
             <item>
                 <label>option1&amp;</label>
-                <value>None</value>
+                <value>o1</value>
             </item>
 
         </select1>

@@ -6,11 +6,11 @@ import re
 
 from babel.dates import format_date
 import xlrd
-import xmldict
+import xmltodict
 
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
-from mangrove.form_model.field import SelectField, GeoCodeField, DateField, IntegerField
+from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, ImageField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
@@ -312,11 +312,22 @@ class XFormParser(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
+    def is_field_set_answer(self, value):
+        return type(value) is list
+
     def _fetch_string_value(self, message):
-        return {code: self._to_str(value) for code, value in message.iteritems()}
+        str_dict = OrderedDict()
+        for code, value in message.iteritems():
+            if not self.is_field_set_answer(value):
+                str_dict.update({code: self._to_str(value)})
+            else:
+                str_dict.update({code: value})
+
+        return str_dict
 
     def parse(self, message):
-        submission_dict = xmldict.xml_to_dict(message).get('data')
+        submission_dict = xmltodict.parse(message, 'utf-8').values()[0]
+        # xform elements don't have namespace information since it's being default, so form_code don't include namespace
         form_code = submission_dict.pop('form_code')
         form_model = get_form_model_by_code(self.dbm, form_code)
         self.__format_response_fields(form_model, submission_dict)
@@ -325,24 +336,49 @@ class XFormParser(object):
     def _to_str(self, value):
         if isinstance(value, (int, float, long)):
             return str(value)
-        return "".join(value) if value is not None else None
+
+        if type(value) is list:
+            return " ".join(value)
+
+        return value if value is not None else None
+
+    def _format_field_set(self, field, values):
+        if type(values) is not list:
+            values = [values]
+
+        for field in field.fields:
+            [self._format_field(field, value) for value in values]
+
+        return values
+
+    def _format_field(self, field, values):
+        code = field.code
+        if not values.get(code):
+            return
+        if type(field) == GeoCodeField:
+            geo_code_list = values[code].split(' ')
+            values[code] = '{0},{1}'.format(geo_code_list[0], geo_code_list[1])
+        if type(field) == DateField:
+            date = datetime.strptime(values[code], "%Y-%m-%d")
+            values[code] = self.__get_formatted_date(field.date_format, date)
+        if type(field) == IntegerField:
+            values[code] = "%g" % float(values[code])
+        if type(field) == FieldSet:
+            value_list = self._format_field_set(field, values[code])
+            values[code] =  [self._fetch_string_value(r) for r in value_list]
+        if type(field) == ImageField:
+            attachment = self._get_attachment(values[code])
+            values[code] = attachment
 
     def __format_response_fields(self, form_model, values):
-        for field in form_model.fields:
-            if type(field) == SelectField and field.single_select_flag == False:
-                values[field.code] = values[field.code].replace(' ', '')
-            if type(field) == GeoCodeField:
-                geo_code_list = values[field.code].split(' ')
-                values[field.code] = '{0},{1}'.format(geo_code_list[0], geo_code_list[1])
-            if type(field) == DateField:
-                date = datetime.strptime(values[field.code], "%Y-%m-%d")
-                values[field.code] = self.__get_formatted_date(field.date_format, date)
-            if type(field) == IntegerField:
-                values[field.code] = "%g" % float(values[field.code])
+        [self._format_field(field, values) for field in form_model.fields]
         return values
 
     def __get_formatted_date(self, date_format, date):
         return format_date(date, DateField.FORMAT_DATE_DICTIONARY.get(date_format))
+
+    def _get_attachment(self, field):
+        return field['#text']
 
 
 class XlsDatasenderParser(XlsParser):

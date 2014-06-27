@@ -6,7 +6,7 @@ from babel.dates import format_date
 from mangrove.data_cleaner import TelephoneNumber
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
 from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory, TextLengthConstraint, ShortCodeRegexConstraint
-
+from coverage.html import escape
 from mangrove.utils.types import is_sequence, is_empty, sequence_to_str
 from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
 
@@ -41,8 +41,33 @@ def create_question_from(dictionary, dbm):
         return _get_short_code_field(code, dictionary, label, name, instruction, required)
     elif type == field_attributes.UNIQUE_ID_FIELD:
         return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required)
+    elif type == field_attributes.FIELD_SET:
+        return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm)
+    elif type == field_attributes.IMAGE:
+        return _get_image_field(code, dictionary, label, name, instruction, required)
+
     return None
 
+def _get_image_field(code, dictionary, is_entity_question, label, name, instruction, required):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+    field = ImageField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
+                      constraints=constraints, instruction=instruction, required=required)
+    return field
+
+
+def _get_field_set_field(code, dictionary, label, name, instruction, required, dbm):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+
+    sub_fields = dictionary.get("fields")
+    fieldset_type = dictionary.get("fieldset_type")
+    repeat_question_fields = [create_question_from(f, dbm) for f in sub_fields]
+    field = FieldSet(name=name, code=code, label=label, instruction=instruction, required=required,
+                      field_set=repeat_question_fields, fieldset_type=fieldset_type)
+    return field
 
 def _get_text_field(code, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
@@ -148,6 +173,8 @@ class field_attributes(object):
     NAME = "name"
     LIST_FIELD = "list"
     UNIQUE_ID_FIELD = "unique_id"
+    FIELD_SET = "field_set"
+    IMAGE = "image"
 
 
 class Field(object):
@@ -208,6 +235,9 @@ class Field(object):
     def is_event_time_field(self):
         return False
 
+    @property
+    def is_field_set(self):
+        return False
 
     def _to_json(self):
         dict = self._dict.copy()
@@ -531,17 +561,17 @@ class SelectField(Field):
                 elif isinstance(option, dict):
                     single_language_specific_option = option
                 else:
-                    single_language_specific_option = {'text': option}
+                    single_language_specific_option = {'text': option, 'val': option}
                 valid_choices.append(single_language_specific_option)
         self.constraint = ChoiceConstraint(
-            list_of_valid_choices=[each.get('text') for each in valid_choices],
+            list_of_valid_choices=valid_choices,
             single_select_constraint=single_select_flag, code=code)
 
     SINGLE_SELECT_FLAG = 'single_select_flag'
 
     def validate(self, value):
         Field.validate(self, value)
-        return self.constraint.validate(answer=value.replace(' ', '')) #data from ODK collect is submitted with spaces
+        return self.constraint.validate(answer=value)
 
     @property
     def options(self):
@@ -588,13 +618,25 @@ class SelectField(Field):
 
     def get_option_list(self, question_value):
         if question_value is None: return []
-        return re.findall(r'[1-9]?[a-zA-Z]', question_value)
+
+        if ',' in question_value:
+            responses = question_value.split(',')
+            responses = [r.strip() for r in responses]
+        elif ' ' in question_value:
+            responses = question_value.split(' ')
+        elif question_value in [item.get('val') for item in self._dict[self.OPTIONS]]:
+            # yes in ['yes','no']
+            responses = [question_value]
+        else:
+            responses = re.findall(r'[1-9]?[a-zA-Z]', question_value)
+
+        return responses
 
 
     def formatted_field_values_for_excel(self, value):
         if value is None: return []
 
-        options = re.findall(r'[1-9]?[a-zA-Z]', value)
+        options = self.get_option_list(value)
         result = []
         for option in options:
             option_value = self.get_value_by_option(option)
@@ -607,6 +649,10 @@ class SelectField(Field):
         for option in self.options:
             options_map.update({option['val']:option['text']})
         return options_map
+
+    def escape_option_text(self):
+       for option in self._dict.get(self.OPTIONS):
+            option['text'] = escape(option['text'])
 
 class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD
@@ -645,3 +691,54 @@ class GeoCodeField(Field):
                 return float(list[index])
             except ValueError:
                 return list[index]
+class ImageField(Field):
+
+    def formatted_field_values_for_excel(self, value):
+        return value
+
+    def __init__(self, name, code, label,  constraints=None, instruction=None,
+                 entity_question_flag=False, required=True):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type=field_attributes.IMAGE, name=name, code=code,
+                       label=label, instruction=instruction,constraints=constraints, required=required)
+        if entity_question_flag:
+            self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
+
+class FieldSet(Field):
+    FIELDSET_TYPE = 'fieldset_type'
+
+    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='entity'):
+        Field.__init__(self, type=field_attributes.FIELD_SET, name=name, code=code,
+                       label=label, instruction=instruction, required=required)
+        self.fields = self._dict['fields'] = field_set
+        self._dict[self.FIELDSET_TYPE] = fieldset_type
+
+    def is_field_set(self):
+        return True
+
+    def is_group(self):
+        return self._dict.get(self.FIELDSET_TYPE) == 'group'
+
+    @property
+    def fieldset_type(self):
+        return self._dict.get(self.FIELDSET_TYPE)
+
+    def validate(self, value):
+        # todo call all validators of the child fields
+        Field.validate(self, value)
+        if is_sequence(value) or value is None:
+            return value
+        return [value]
+
+    #todo find the application of this
+    def convert_to_unicode(self):
+        if self.value is None:
+            return unicode("")
+        return sequence_to_str(self.value) if isinstance(self.value, list) else unicode(self.value)
+
+    def _to_json(self):
+        dict = self._dict.copy()
+        dict['instruction'] = self._dict['instruction']
+        dict['fields'] = [f._to_json() for f in self.fields]
+        return dict

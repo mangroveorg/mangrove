@@ -67,7 +67,7 @@ class SurveyResponseService(object):
         return Response(reporter_names,  survey_response.uuid, success,
                         errors, form_submission.data_record_id, form_submission.short_code,
                         form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
-                        form_submission.form_model.form_code, feed_create_errors)
+                        form_submission.form_model.form_code, feed_create_errors, created=survey_response.created)
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
                     additional_feed_dictionary=None, owner_id=None):
@@ -100,7 +100,7 @@ class SurveyResponseService(object):
         return Response(reporter_names,  survey_response.uuid, form.saved,
                         form.errors, form.data_record_id, None,
                         form._cleaned_data, form.is_registration, form.entity_type,
-                        form.form_model.form_code, feed_create_errors)
+                        form.form_model.form_code, feed_create_errors, created=survey_response.created)
 
     def delete_survey(self, survey_response, additional_details):
         feed_delete_errors = None
@@ -117,6 +117,7 @@ class SurveyResponseService(object):
 
     def log_request(self, status, source, message):
         if self.logger is not None:
-            log_entry = "message: " + str(message) + "|source: " + source + "|"
+            log_msg = message.encode('utf-8') if type(message) is unicode else str(message)
+            log_entry = "message: " + log_msg + "|source: " + source.encode('utf-8') + "|"
             log_entry += "status: True" if status else "status: False"
             self.logger.info(log_entry)

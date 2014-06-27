@@ -107,6 +107,13 @@ class DataObject(object):
             raise NoDocumentError('No document to save')
         return self._dbm._save_document(self._doc)
 
+    def put_attachment(self, document, file, filename=None):
+        if self._doc is not None:
+            self._dbm.put_attachment(document, file, attachment_name=filename)
+
+    def get_attachment(self, doc_id, filename=None):
+           return self._dbm.get_attachments(doc_id, attachment_name=filename)
+
     def delete(self):
         if self.id is not None:
             self._dbm.delete(self)
@@ -239,6 +246,17 @@ class DatabaseManager(object):
             if results[x][0]:
                 documents[x]._data['_rev'] = results[x][2]
         return results
+
+    def put_attachment(self, document, attachment, attachment_name=None):
+        if attachment_name is not None:
+            return self.database.put_attachment(document, attachment, attachment_name)
+
+    def get_attachments(self, id, attachment_name=None):
+        if attachment_name is not None:
+            file = self.database.get_attachment(id, attachment_name, 'Not Found')
+            if isinstance(file, basestring):
+                raise LookupError("Attachment not found")
+            return file.read()
 
     def invalidate(self, uid):
         doc = self._load_document(uid)

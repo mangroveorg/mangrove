@@ -2,7 +2,6 @@
 import re
 from mangrove.errors.MangroveException import AnswerNotInListException, AnswerHasTooManyValuesException, AnswerHasNoValuesException, LatitudeNotFloat, LongitudeNotFloat, LatitudeNotInRange, LongitudeNotInRange, RegexMismatchException, ShortCodeRegexMismatchException
 from mangrove.utils.types import is_empty
-from mangrove.utils.helpers import find_index_represented
 
 from mangrove.validate import is_string, is_float, VdtTypeError, VdtValueError
 
@@ -73,34 +72,52 @@ class ChoiceConstraint(object):
     def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
         self.single_select_constraint = single_select_constraint
         self.list_of_valid_choices = list_of_valid_choices
+        self.choice_dict = self.get_item(self.list_of_valid_choices)
+        self.choice_vals = self.choice_dict.keys()
         self.code = code
+
+    def get_item(self, items):
+        item_dict = {}
+        for item in items:
+            if type(item) is dict:
+                item_dict.update({item.get('val'):item.get('text')})
+            else:
+                item_dict.update({item: item})
+        return item_dict
 
     def validate(self, answer):
         assert answer is not None
-        answer_string = answer.lower().strip()
+        answer_string = answer.strip()
         if not answer_string:
             raise AnswerHasNoValuesException(code=self.code, answer=answer)
-        choices = []
-        responses = re.findall(r'[1-9]?[a-z]', answer_string)
+
+        choices_text = []
+        if ',' in answer_string:
+            responses = answer_string.split(',')
+            responses = [r.strip() for r in responses]
+        elif ' ' in answer_string:
+            responses = answer_string.split(' ')
+        elif answer_string in self.choice_vals:
+            responses = [answer_string]
+        else:
+            invalid_responses = re.split(r'[1-9]?[a-z]', answer_string)
+            invalid_responses = filter(None, invalid_responses)
+            if len(invalid_responses) > 0:
+                raise AnswerNotInListException(code=self.code, answer=invalid_responses[0])
+
+            responses = re.findall(r'[1-9]?[a-zA-Z]', answer_string)
 
         if self.single_select_constraint and len(responses) > 1:
             raise AnswerHasTooManyValuesException(code=self.code, answer=answer)
 
-        invalid_responses = re.split(r'[1-9]?[a-z]', answer_string)
-        invalid_responses = filter(None, invalid_responses)
-
-        if len(invalid_responses) > 0:
-            raise AnswerNotInListException(code=self.code, answer=invalid_responses[0])
-
         for response in responses:
-            index_represented = find_index_represented(response)
-            if index_represented > len(self.list_of_valid_choices) - 1 or index_represented < 0:
-                raise AnswerNotInListException(code=self.code, answer=response)
+            if response in self.choice_vals:
+                choice_selected = self.choice_dict[response]
+                if choice_selected not in choices_text:
+                    choices_text.append(choice_selected)
             else:
-                choice_selected = self.list_of_valid_choices[index_represented]
-                if choice_selected not in choices:
-                    choices.append(choice_selected)
-        return choices
+                raise AnswerNotInListException(code=self.code, answer=response)
+        return choices_text
 
 
 class GeoCodeConstraint(object):

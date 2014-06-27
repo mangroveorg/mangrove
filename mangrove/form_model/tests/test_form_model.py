@@ -1,5 +1,6 @@
 from datetime import *
 # from mangrove.form_model.form_model import get_form_model_by_entity_type
+from nose.plugins.attrib import attr
 from mangrove.form_model.form_model import list_form_models_by_code
 from mangrove.contrib.registration_validators import MobileNumberValidationsForReporterRegistrationValidator
 from mangrove.form_model.form_model import get_form_model_by_code, EntityFormModel
@@ -99,12 +100,19 @@ class FormModelTest(MangroveTestCase):
         self.assertTrue(range_constraint.min, 15)
         self.assertTrue(range_constraint.max, 120)
 
+    @attr('dcs')
+    def test_should_add_attachments(self):
+        form_with_attachment = FormModel.get(self.manager, self.form_model_id)
+        self.form_model.add_attachments('attachments','questionnaire.xls')
+        attachment_data = form_with_attachment.get_attachments('questionnaire.xls')
+        self.assertEquals(attachment_data,'attachments')
+
     def test_should_add_select1_field(self):
         select_question = FormModel.get(self.manager, self.form_model_id).fields[3]
         option_constraint = select_question.options
 
         self.assertEquals(len(option_constraint), 2)
-        self.assertEquals(option_constraint[0].get("val"), 1)
+        self.assertEquals(option_constraint[0].get("val"), 'a')
 
     def test_should_add_new_field(self):
         form_model = FormModel.get(self.manager, self.form_model_id)

@@ -216,7 +216,7 @@ class LatitudeNotInRange(MangroveException):
 class GeoCodeFormatException(MangroveException):
     def __init__(self, data):
         MangroveException.__init__(self,
-                                   u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx yy.yyyy. Example -18.8665 47.5315"
+                                   u"Incorrect GPS format. The GPS coordinates must be in the following format: xx.xxxx,yy.yyyy. Example -18.8665,47.5315"
                                    , (data,))
 
 
@@ -302,5 +302,5 @@ class ExceedSMSLimitException(MangroveException):
         MangroveException.__init__(self, u"You have reached your 50 SMS Submission limit. Please upgrade to a monthly subscription to continue sending in SMS Submissions to your Questionnaires.")
 
 class DatasenderIsNotLinkedException(MangroveException):
-    def __init__(self):
-        MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.")
+    def __init__(self, dsname, dsid):
+        MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.", (dsname, dsid))

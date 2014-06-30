@@ -20,7 +20,7 @@ class SurveyResponseService(object):
         self.response = response
 
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
-                    additional_feed_dictionary=None):
+                    additional_feed_dictionary=None, translation_processor=None):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
 
         form_model = get_form_model_by_code(self.dbm, form_code)
@@ -44,7 +44,11 @@ class SurveyResponseService(object):
             errors = exception.message
             raise
         finally:
-            survey_response.set_status(errors)
+            if translation_processor is not None:
+                translated_errors = translation_processor(form_model, self.response).process()
+                survey_response.set_status(translated_errors)
+            else:
+                survey_response.set_status(errors)
             survey_response.create(form_submission.data_record_id)
             self.log_request(form_submission.saved, transport_info.source, message)
             try:

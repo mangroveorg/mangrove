@@ -52,7 +52,8 @@ class SMSPlayerV2(object):
             if response is not None:
                 return response
 
-    def add_survey_response(self, request, logger=None, additional_feed_dictionary=None):
+    def add_survey_response(self, request, logger=None, additional_feed_dictionary=None,
+                            translation_processor=None):
         form_code, values, extra_elements = self._parse(request.message)
         post_sms_processor_response = self._post_parse_processor(form_code, values, extra_elements)
 
@@ -68,8 +69,8 @@ class SMSPlayerV2(object):
 
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, response=post_sms_processor_response)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-                                   reporter_entity.short_code,
-                                   additional_feed_dictionary=additional_feed_dictionary)
+                                   reporter_entity.short_code, additional_feed_dictionary=additional_feed_dictionary,
+                                   translation_processor=translation_processor)
 
     def _parse(self, message):
         return SMSParserFactory().getSMSParser(message, self.dbm).parse(message)

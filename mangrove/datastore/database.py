@@ -293,6 +293,8 @@ class DatabaseManager(object):
         for row in rows:
             if 'error' in row:
                 continue
+            if 'value' in row and row['value'].get('deleted', False): #Ignore deleted documents
+                continue
             obj = object_class.new_from_doc(self, object_class.__document_class__.wrap(row.get('doc')))
             objs.append(obj)
         return objs

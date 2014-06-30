@@ -185,15 +185,7 @@ class ProjectDocument(FormModelDocument):
     sender_group = TextField()
     reminder_and_deadline = DictField()
     data_senders = ListField(TextField())
-    enable_sms_replies = BooleanField()
-
-    #@property
-    #def enable_sms_replies(self):
-    #    return self.enable_sms_replies
-    #
-    #@enable_sms_replies.setter
-    #def enable_sms_replies(self, enable_replies):
-    #    self.enable_sms_replies = enable_replies
+    is_outgoing_sms_replies_enabled = BooleanField()
 
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)

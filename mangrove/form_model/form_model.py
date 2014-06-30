@@ -79,6 +79,8 @@ def list_form_models_by_code(dbm, codes):
 def get_form_model_cache_key(form_code, dbm):
     assert isinstance(dbm, DatabaseManager)
     assert form_code is not None
+    if type(form_code) == unicode:
+        return "%s_%s" % (dbm.database.name.encode('utf-8'), form_code.encode('utf-8'))
     return str("%s_%s" % (dbm.database.name, form_code))
 
 
@@ -158,6 +160,7 @@ class FormModel(DataObject):
         self.errors = []
         self.validators = validators
         self._enforce_unique_labels = enforce_unique_labels
+        self._validation_exception = []
         # Are we being constructed from scratch or existing doc?
         if name is None:
             return
@@ -403,6 +406,7 @@ class FormModel(DataObject):
             return True, value
         except Exception as e:
             field.errors.append(e.message)
+            self._validation_exception.append(e)
             return False, e.message
 
     def _set_document(self, document):
@@ -450,7 +454,10 @@ class FormModel(DataObject):
         cleaned_values = OrderedDict()
         errors = OrderedDict()
         for validator in self.validators:
-            errors.update(validator.validate(values, self.fields, self._dbm))
+            validator_error = validator.validate(values, self.fields, self._dbm)
+            if hasattr(validator, 'exception'):
+                self._validation_exception.extend(getattr(validator, 'exception'))
+            errors.update(validator_error)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:
@@ -491,6 +498,9 @@ class FormModel(DataObject):
     def data_senders(self):
         return self._doc._data.get('data_senders')
 
+    @property
+    def validation_exception(self):
+        return self._validation_exception
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

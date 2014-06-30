@@ -23,6 +23,7 @@ class MandatoryValidator(object):
         for field in mandatory_fields:
             if is_empty(case_insensitive_lookup(values, field.code)):
                 errors[field.code] = "Answer for question %s is required." % str(field.code)
+                self.exception = Exception("Answer for question %s is required." % str(field.code))
         return errors
 
     def to_json(self):
@@ -42,11 +43,13 @@ class UniqueIdExistsValidator(object):
     def validate(self, values, fields, dbm=None):
         errors = OrderedDict()
         unique_id_fields = self.get_unique_id_field(fields)
+        self.exception = []
         for field in unique_id_fields:
             unique_id = case_insensitive_lookup(values, field.code)
             try:
                 get_by_short_code(dbm, unique_id, [field.unique_id_type])
             except DataObjectNotFound as e:
+                self.exception.append(e)
                 errors[field.code] = e.message
         return errors
 

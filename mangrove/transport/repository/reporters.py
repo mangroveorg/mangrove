@@ -1,6 +1,6 @@
 
 from mangrove.datastore.entity import  get_all_entities, Entity
-# from mangrove.datastore.queries import get_entities_by_type
+from mangrove.datastore.queries import get_entities_by_type
 
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MultipleReportersForANumberException
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD

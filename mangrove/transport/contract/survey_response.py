@@ -136,7 +136,7 @@ class SurveyResponse(DataObject):
             self._doc.error_message = ''
         else:
             self._doc.status = False
-            self._doc.error_message = self._to_string(errors) if self.response is None else self.response.errors
+            self._doc.error_message = self._to_string(errors)
 
     def _void_existing_data_record(self, void=True):
         data_record_id = self._doc.data_record_id

@@ -380,6 +380,7 @@ class FormModel(DataObject):
 
     def _validate_fields(self, fields):
         self._validate_uniqueness_of_field_codes(fields)
+        self._validate_uniqueness_of_field_labels(fields)
 
 
     def _validate_uniqueness_of_field_labels(self, fields):

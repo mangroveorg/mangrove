@@ -310,7 +310,7 @@ class FormModelTest(MangroveTestCase):
         question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
                                  constraints=[NumericRangeConstraint(min=15, max=120)])
         question4 = SelectField(name="Color", code="Q3", label="What is your favourite color",
-                                options=[("RED", 1), ("YELLOW", 2)])
+                                options=[("RED", 'a'), ("YELLOW", 'b')])
         self.form_model = FormModelBuilder(self.manager, self.entity_type, "1").label("Aids form_model").name(
             "aids").add_fields(question1,
                                question2, question3, question4).build()

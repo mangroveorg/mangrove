@@ -14,3 +14,5 @@ networkx
 gdata
 xlrd
 pylibmc
+pyxform
+xmltodict==0.8.6

@@ -2,7 +2,7 @@ class Response(object):
     def __init__(self, reporters=[],  survey_response_id=None, success=False, errors=None,
                  data_record_id=None, short_code=None,
                  cleaned_data=None, is_registration=False, entity_type=None, form_code=None, feed_error_message=None,
-                 subject=None, created=None, exception=None):
+                 subject=None, created=None, exception=None, version=None):
         self.reporters = reporters if reporters is not None else []
         self.success = success
         self.survey_response_id = survey_response_id
@@ -17,6 +17,7 @@ class Response(object):
         self.subject = subject
         self.created = created
         self.exception = exception
+        self.version = version
 
 
 def create_response_from_form_submission(reporters, form_submission=None):

@@ -50,7 +50,6 @@ class SurveyResponseService(object):
             else:
                 survey_response.set_status(errors)
             survey_response.create(form_submission.data_record_id)
-            self.log_request(form_submission.saved, transport_info.source, message)
             try:
                 if self.feeds_dbm:
                     builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model,
@@ -100,8 +99,6 @@ class SurveyResponseService(object):
 
         except MangroveException as exception:
             raise
-        finally:
-            self.log_request(form.saved, transport_info.source, message)
         return Response(reporter_names,  survey_response.uuid, form.saved,
                         form.errors, form.data_record_id, None,
                         form._cleaned_data, form.is_registration, form.entity_type,
@@ -120,10 +117,3 @@ class SurveyResponseService(object):
         except MangroveException as e:
             return Response(errors=e.message, feed_error_message=feed_delete_errors)
         return Response(success=True, feed_error_message=feed_delete_errors)
-
-    def log_request(self, status, source, message):
-        if self.logger is not None:
-            log_msg = message.encode('utf-8') if type(message) is unicode else str(message)
-            log_entry = "message: " + log_msg + "|source: " + source.encode('utf-8') + "|"
-            log_entry += "status: True" if status else "status: False"
-            self.logger.info(log_entry)

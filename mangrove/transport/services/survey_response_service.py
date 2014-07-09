@@ -71,7 +71,7 @@ class SurveyResponseService(object):
                         errors, form_submission.data_record_id, form_submission.short_code,
                         form_submission.cleaned_data, form_submission.is_registration, form_submission.entity_type,
                         form_submission.form_model.form_code, feed_create_errors, created=survey_response.created,
-                        version=survey_response._doc.rev)
+                        version=survey_response.version)
 
     def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
                     additional_feed_dictionary=None, owner_id=None):
@@ -103,7 +103,7 @@ class SurveyResponseService(object):
                         form.errors, form.data_record_id, None,
                         form._cleaned_data, form.is_registration, form.entity_type,
                         form.form_model.form_code, feed_create_errors, created=survey_response.created,
-                        version=survey_response._doc.rev)
+                        version=survey_response.version)
 
     def delete_survey(self, survey_response, additional_details):
         feed_delete_errors = None

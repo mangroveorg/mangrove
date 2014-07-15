@@ -63,12 +63,19 @@ class SMSPlayerV2(object):
                 logger.info(log_entry)
             return post_sms_processor_response
 
-        reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
-        reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+        try:
+            reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
+            reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+            reporter_short_code = reporter_entity.short_code
+        except Exception as e:
+            form_model = get_form_model_by_code(self.dbm, form_code)
+            if not form_model.is_open_datasender: raise e
+            reporter_short_code = None
+            reporter_entity_names = None
 
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, response=post_sms_processor_response)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-                                   reporter_entity.short_code, additional_feed_dictionary=additional_feed_dictionary,
+                                   reporter_short_code, additional_feed_dictionary=additional_feed_dictionary,
                                    translation_processor=translation_processor)
 
     def _parse(self, message):

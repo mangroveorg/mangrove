@@ -53,20 +53,24 @@ class TestSMSPlayer(TestCase):
         self.get_form_model_mock_player_patcher = patch(
             'mangrove.transport.services.survey_response_service.get_form_model_by_code')
         self.get_form_model_mock_parser_patcher = patch('mangrove.transport.player.parser.get_form_model_by_code')
+        self.get_form_model_mock_player_v2_patcher = patch('mangrove.transport.player.new_players.get_form_model_by_code')
         get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
         get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
+        get_form_model_player_v2_mock = self.get_form_model_mock_player_v2_patcher.start()
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.get_field_by_name = self._location_field
         field = UniqueIdField('clinic','q1', 'id', 'q1')
         self.form_model_mock.fields = [field]
+        self.form_model_mock.is_open_datasender = False
         self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
         self.form_submission_mock = mock_form_submission(self.form_model_mock)
 
         get_form_model_player_mock.return_value = self.form_model_mock
         get_form_model_parser_mock.return_value = self.form_model_mock
+        get_form_model_player_v2_mock.return_value = self.form_model_mock
 
 
     def _location_field(self, *args, **kwargs):
@@ -122,6 +126,17 @@ class TestSMSPlayer(TestCase):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
         with self.assertRaises(NumberNotRegisteredException):
             self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
+
+
+    def test_should_allow_submission_by_unregistered_reporter_for_open_datasender_questionnaire(self):
+        self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
+        self.form_model_mock.is_open_datasender = True
+        entity_question_field = Mock()
+        entity_question_field.code = 'q1'
+        self.form_model_mock.entity_questions = [entity_question_field]
+        response = self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
+        self.assertEqual(response.errors, {})
+        self.assertTrue(response.success)
 
 
     def test_should_not_submit_if_parsing_is_not_successful(self):

@@ -229,6 +229,13 @@ class SurveyResponse(DataObject):
                                                   deepcopy(self.event_time))
         return survey_copy
 
+    @property
+    def open_datasender_phone_number(self):
+        return self._doc.open_datasender_phone_number
+
+    @open_datasender_phone_number.setter
+    def open_datasender_phone_number(self, value):
+        self._doc.open_datasender_phone_number = value
 
 class SurveyResponseDifference(object):
     def __init__(self, submitted_on, status_changed):

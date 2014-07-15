@@ -189,6 +189,16 @@ class ProjectDocument(FormModelDocument):
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)
 
+    @property
+    def is_open_datasender(self):
+        return self.get('is_open_datasender', False)
+
+    @is_open_datasender.setter
+    def is_open_datasender(self, value):
+        if value:
+            self['is_open_datasender'] = True
+        else:
+            del self['is_open_datasender']
 
 class SubmissionLogDocument(DocumentBase):
     """
@@ -267,6 +277,17 @@ class SurveyResponseDocument(DocumentBase):
         self.event_time = event_time if event_time is not None else self.created
         self.data_record_history = []
         self.owner_uid = owner_uid
+
+    @property
+    def open_datasender_phone_number(self):
+        return self.get('open_datasender_phone_number', None)
+
+    @open_datasender_phone_number.setter
+    def open_datasender_phone_number(self, value):
+        if value:
+            self['open_datasender_phone_number'] = value
+        else:
+            del self['open_datasender_phone_number']
 
 
 class EnrichedSurveyResponseDocument(DocumentBase):

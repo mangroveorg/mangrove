@@ -164,50 +164,6 @@ class FormModelTest(MangroveTestCase):
 
 
     def test_should_create_a_questionnaire_from_dictionary(self):
-        fields = [
-            #{
-            #    "name": "What are you reporting on?",
-            #    "defaultValue": "",
-            #    "label": "Entity being reported on",
-            #    "type": "unique_id",
-            #    "code": "eid",
-            #    "required": True
-            #},
-            {
-                "constraints": [('range', {
-                    "max": 10,
-                    "min": 0
-                })],
-                "label": "",
-                "type": "integer",
-                "name": "What is your age?",
-                "code": "AGE",
-                "required": False
-            },
-            {
-                "choices": [
-                    {
-                        "text": "Pune"
-                    },
-                    {
-                        "text": "Bangalore"
-                    }
-                ],
-                "label": "",
-                "type": "select",
-                "name": "Where do you live?",
-                "code": "PLC",
-                "required": False
-            }
-        ]
-        document = FormModelDocument()
-        document.json_fields = fields
-        #document.entity_type = ["Reporter"]
-        document.document_type = "FormModel"
-        document.form_code = "F1"
-        document.name = "New Project"
-        document.type = "survey"
-        document.type = "survey"
         #entityQ = UniqueIdField('reporter', name="What are you reporting on?", code="eid",
         #                        label="Entity being reported on", )
         ageQ = IntegerField(name="What is your age?", code="AGE", label="",
@@ -216,6 +172,7 @@ class FormModelTest(MangroveTestCase):
                              options=[{"text": "Pune"}, {"text": "Bangalore"}],
                              single_select_flag=False, required=False)
         questions = [ageQ, placeQ]
+        document = self.get_form_model_doc()
         questionnaire = FormModel.new_from_doc(self.manager, document)
         self.maxDiff = None
         self.assertListEqual(questionnaire.entity_type, [])
@@ -330,3 +287,48 @@ class FormModelTest(MangroveTestCase):
 
         expected = {'q1':'cid001', 'q2': 'a', 'q3':'word'}
         self.assertEqual(bound_values, expected)
+
+    def get_form_model_doc(self):
+        fields = [
+            {
+                "constraints": [('range', {
+                    "max": 10,
+                    "min": 0
+                })],
+                "label": "",
+                "type": "integer",
+                "name": "What is your age?",
+                "code": "AGE",
+                "required": False
+            },
+            {
+                "choices": [
+                    {
+                        "text": "Pune"
+                    },
+                    {
+                        "text": "Bangalore"
+                    }
+                ],
+                "label": "",
+                "type": "select",
+                "name": "Where do you live?",
+                "code": "PLC",
+                "required": False
+            }
+        ]
+        document = FormModelDocument()
+        document.json_fields = fields
+        document.document_type = "FormModel"
+        document.form_code = "F1"
+        document.name = "New Project"
+        document.type = "survey"
+        document.type = "survey"
+        return document
+
+    def test_should_set_is_open_datasender(self):
+        document = self.get_form_model_doc()
+        form_model = FormModel.new_from_doc(self.manager, document)
+        self.assertFalse(form_model.is_open_datasender)
+        document['is_open_datasender'] = True
+        self.assertTrue(form_model.is_open_datasender)

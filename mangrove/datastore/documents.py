@@ -197,7 +197,7 @@ class ProjectDocument(FormModelDocument):
     def is_open_datasender(self, value):
         if value:
             self['is_open_datasender'] = True
-        else:
+        elif self.is_open_datasender:
             del self['is_open_datasender']
 
 class SubmissionLogDocument(DocumentBase):

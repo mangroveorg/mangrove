@@ -300,9 +300,15 @@ class FormModel(DataObject):
         return None
 
     def get_field_by_code(self, code):
-        for field in self._form_fields:
+        return self._get_by_code(self._form_fields,code)
+
+    def _get_by_code(self,fields,code):
+        for field in fields:
             if code is not None and field.code.lower() == code.lower():
                 return field
+            if isinstance(field,FieldSet):
+                field_by_code = self._get_by_code(field.fields,code)
+                if field_by_code: return field_by_code
         return None
 
     def get_field_by_code_and_rev(self, code, revision=None):

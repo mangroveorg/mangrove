@@ -12,7 +12,7 @@ class EditSurveyResponseForm(object):
         self.dbm = dbm
         self.form_model = form_model
         self.form_model.bind(form_answers)
-        self._cleaned_data, self.errors = form_model.validate_submission(values=form_answers)
+        self._cleaned_data, self.errors = form_model.validate_submission(values=form_model.bound_values())
         self.is_valid = (self.errors is None or len(self.errors) == 0)
 
         self.entity_type = form_model.entity_type

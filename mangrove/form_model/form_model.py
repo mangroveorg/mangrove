@@ -460,11 +460,12 @@ class FormModel(DataObject):
         assert values is not None
         cleaned_values = OrderedDict()
         errors = OrderedDict()
-        for validator in self.validators:
-            validator_error = validator.validate(values, self.fields, self._dbm)
-            if hasattr(validator, 'exception'):
-                self._validation_exception.extend(getattr(validator, 'exception'))
-            errors.update(validator_error)
+        if not self.xform:
+            for validator in self.validators:
+                validator_error = validator.validate(values, self.fields, self._dbm)
+                if hasattr(validator, 'exception'):
+                    self._validation_exception.extend(getattr(validator, 'exception'))
+                errors.update(validator_error)
         values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:

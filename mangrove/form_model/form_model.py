@@ -199,7 +199,7 @@ class FormModel(DataObject):
         return self._doc.xform
 
     def update_xform_with_questionnaire_name(self, questionnaire_name):
-        return re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % questionnaire_name, self.xform)
+        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % questionnaire_name, self.xform)
 
     @xform.setter
     def xform(self, value):

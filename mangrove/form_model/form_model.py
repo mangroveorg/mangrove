@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import copy
+import re
 
 from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.form_model.validator_factory import validator_factory
@@ -196,6 +197,9 @@ class FormModel(DataObject):
     @property
     def xform(self):
         return self._doc.xform
+
+    def update_xform_with_questionnaire_name(self, questionnaire_name):
+        return re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % questionnaire_name, self.xform)
 
     @xform.setter
     def xform(self, value):

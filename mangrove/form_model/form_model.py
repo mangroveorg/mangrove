@@ -267,16 +267,16 @@ class FormModel(DataObject):
         self._delete_form_model_from_cache()
         super(FormModel, self).void(void=void)
 
-    def save(self):
+    def save(self, process_post_update=True):
     # convert fields and validators to json fields before save
         self.check_if_form_model_unique()
-        return self.update_doc_and_save()
+        return self.update_doc_and_save(process_post_update)
 
     def check_if_form_model_unique(self):
         if not self.is_form_code_unique():
             raise DataObjectAlreadyExists('Form Model', 'Form Code', self.form_code)
 
-    def update_doc_and_save(self):
+    def update_doc_and_save(self, process_post_update=True):
         self._doc.json_fields = [f._to_json() for f in self._form_fields]
         self._doc.validators = [validator.to_json() for validator in self.validators]
         json_snapshots = {}
@@ -286,7 +286,7 @@ class FormModel(DataObject):
         self._delete_form_model_from_cache()
         if self._doc is None:
             raise NoDocumentError('No document to save')
-        return self._dbm._save_document(self._doc, prev_doc=self._old_doc)
+        return self._dbm._save_document(self._doc, prev_doc=self._old_doc, process_post_update=process_post_update)
 
     def update_attachments(self, attachments, attachment_name=None):
         return self.put_attachment(self._doc, attachments, filename=attachment_name)

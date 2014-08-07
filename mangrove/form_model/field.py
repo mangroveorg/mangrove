@@ -341,9 +341,9 @@ class IntegerField(Field):
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
-    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
+    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y','yyyy':'%Y'}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
-                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a'}
+                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a','yyyy':'yyyy'}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True):

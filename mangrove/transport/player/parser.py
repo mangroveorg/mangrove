@@ -362,7 +362,7 @@ class XFormParser(object):
             date = datetime.strptime(values[code], "%Y-%m-%d")
             values[code] = self.__get_formatted_date(field.date_format, date)
         if type(field) == IntegerField:
-            values[code] = "%g" % float(values[code])
+            values[code] = "%s" % values[code].__str__()
         if type(field) == FieldSet:
             value_list = self._format_field_set(field, values[code])
             values[code] =  [self._fetch_string_value(r) for r in value_list]

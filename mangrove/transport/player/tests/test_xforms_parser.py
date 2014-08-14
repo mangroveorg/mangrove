@@ -11,7 +11,7 @@ class TestXFormParser(TestCase):
     def test_should_parse_input_and_return_submission_values(self):
         form_code = 'someFormCode'
         submission_values = {
-            'data': {'form_code': form_code, 'q1': 'a b c', 'q2': 'lat long alt accuracy', 'q3': '1012-01-23', 'q4':'1.0'}}
+            'data': {'form_code': form_code, 'q1': 'a b c', 'q2': 'lat long alt accuracy', 'q3': '1012-01-23', 'q4':'1'}}
         expected_values = {'q1': 'a b c', 'q2': 'lat,long', 'q3': '01.1012', 'q4': '1'}
         with patch("mangrove.transport.player.parser.xmltodict") as mock_xml_dict:
             mock_xml_dict.parse.return_value = submission_values

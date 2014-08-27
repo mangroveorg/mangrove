@@ -54,9 +54,7 @@ class TestSurveyResponseService(TestCase):
                     values = {'form_code': 'aids', 'q1': 'a1', 'q2': '200'}
 
                     request = Request(values, transport_info)
-                    response = self.survey_response_service.edit_survey('aids', values, [], transport_info,
-                                                                        request.message,
-                                                                        survey_response)
+                    response = self.survey_response_service.edit_survey('aids', values, [], survey_response)
                     self.assertFalse(response.success)
                     self.assertEquals('aids', response.form_code)
                     self.assertEquals(OrderedDict([('q2', u'Answer 200 for question q2 is greater than allowed.')]),
@@ -263,7 +261,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
         new_values = {'ID': test_data.entity1.short_code, 'Q1': 'new_name', 'Q2': '430', 'Q3': 'b'}
         survey_response_to_edit = SurveyResponse.get(self.manager, saved_response.survey_response_id)
-        edited_response = survey_response_service.edit_survey('CL1', new_values, [], transport_info, request.message,
+        edited_response = survey_response_service.edit_survey('CL1', new_values, [],
                                                               survey_response_to_edit)
 
         self.assertTrue(edited_response.success)

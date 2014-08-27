@@ -27,7 +27,7 @@ class WebPlayerV2(object):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, feeds_dbm=self.feeds_dbm, admin_id=self.admin_id)
-        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,
+        return service.edit_survey(form_code, values, [], survey_response,
                                    additional_feed_dictionary, owner_id)
 
     def delete_survey_response(self, survey_response, additional_details, logger=None):
@@ -95,9 +95,9 @@ class XFormPlayerV2(object):
                 self.dbm.put_attachment(get_survey_response_document(self.dbm, response.survey_response_id), base64.decodestring(mediaFiles[mediaFile].split(',')[1]), attachment_name=mediaFile)
         return response
 
-    def update_survey_response(self, request, reporter_id, logger=None, survey_response=None, additional_feed_dictionary=None):
+    def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.edit_survey(form_code, values, [], request.transport, request.message, survey_response,
-                                   additional_feed_dictionary, reporter_id)
+        return service.edit_survey(form_code, values, [], survey_response,
+                                   additional_feed_dictionary)

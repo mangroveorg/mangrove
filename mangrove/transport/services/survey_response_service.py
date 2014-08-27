@@ -73,7 +73,7 @@ class SurveyResponseService(object):
                         form_submission.form_model.form_code, feed_create_errors, created=survey_response.created,
                         version=survey_response.version)
 
-    def edit_survey(self, form_code, values, reporter_names, transport_info, message, survey_response,
+    def edit_survey(self, form_code, values, reporter_names,  survey_response,
                     additional_feed_dictionary=None, owner_id=None):
         form_model = get_form_model_by_code(self.dbm, form_code)
 

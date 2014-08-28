@@ -61,6 +61,11 @@ class EntityQuestionAlreadyExistsException(MangroveException):
 class QuestionAlreadyExistsException(MangroveException):
     pass
 
+
+class SpaceInChoicesNotAllowedException(MangroveException):
+    pass
+
+
 class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 

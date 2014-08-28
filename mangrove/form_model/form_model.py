@@ -7,7 +7,7 @@ from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
-    DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
+    DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError, SpaceInChoicesNotAllowedException
 from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
@@ -391,7 +391,17 @@ class FormModel(DataObject):
     def _validate_fields(self, fields):
         self._validate_uniqueness_of_field_codes(fields)
         self._validate_uniqueness_of_field_labels(fields)
+        self._validate_choice_names(fields)
 
+    def _validate_choice_names(self, fields):
+        for field in fields:
+            if field.is_field_set:
+                self._validate_choice_names(field.fields)
+            else:
+                if hasattr(field, 'options') and filter(lambda x: " " in x['text'], field.options):
+                    raise SpaceInChoicesNotAllowedException(
+                        "Invalid choice name. Names must begin with a letter, colon, or underscore."
+                        "Subsequent characters can include numbers, dashes, and periods.")
 
     def _validate_uniqueness_of_field_labels(self, fields):
         """ Validate all question labels are unique

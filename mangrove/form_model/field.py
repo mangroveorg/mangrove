@@ -714,6 +714,7 @@ class FieldSet(Field):
         self.fields = self._dict['fields'] = field_set
         self._dict[self.FIELDSET_TYPE] = fieldset_type
 
+    @property
     def is_field_set(self):
         return True
 

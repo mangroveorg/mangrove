@@ -398,7 +398,7 @@ class FormModel(DataObject):
             if field.is_field_set:
                 self._validate_choice_names(field.fields)
             else:
-                if hasattr(field, 'options') and filter(lambda x: " " in x['text'], field.options):
+                if hasattr(field, 'options') and filter(lambda x: " " in unicode(x['val']), field.options):
                     raise SpaceInChoicesNotAllowedException(
                         "Invalid choice name. Names must begin with a letter, colon, or underscore."
                         "Subsequent characters can include numbers, dashes, and periods.")

@@ -50,18 +50,22 @@ def create_question_from(dictionary, dbm):
                                     parent_field_code)
     elif type == field_attributes.FIELD_SET:
         return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code)
-    elif type == field_attributes.IMAGE:
-        return _get_image_field(code, dictionary, label, name, instruction, required, parent_field_code)
+    elif type == field_attributes.PHOTO or type == field_attributes.VIDEO or type == field_attributes.AUDIO:
+        return _get_media_field(type, code, dictionary, label, name, instruction, required)
 
     return None
 
+def _get_media_class(type):
+    type_media_dict = {'photo': PhotoField, 'video': VideoField, 'audio': AudioField}
+    return type_media_dict[type]
 
-def _get_image_field(code, dictionary, label, name, instruction, required, parent_field_code):
+def _get_media_field(type, code, dictionary, label, name, instruction, required):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
-    field = ImageField(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
-                       required=required, parent_field_code=parent_field_code)
+    MediaClass = _get_media_class(type)
+    field = MediaClass(name=name, code=code, label=label,
+                      constraints=constraints, instruction=instruction, required=required)
     return field
 
 
@@ -186,7 +190,9 @@ class field_attributes(object):
     LIST_FIELD = "list"
     UNIQUE_ID_FIELD = "unique_id"
     FIELD_SET = "field_set"
-    IMAGE = "image"
+    PHOTO = "photo"
+    VIDEO = "video"
+    AUDIO = "audio"
 
 
 class Field(object):
@@ -734,21 +740,41 @@ class GeoCodeField(Field):
             except ValueError:
                 return list[index]
 
+class MediaField(Field):
 
-class ImageField(Field):
+    def __init__(self, type, name, code, label,  constraints=None, instruction=None, required=True):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type=type, name=name, code=code,
+                       label=label, instruction=instruction,constraints=constraints, required=required)
+
     def formatted_field_values_for_excel(self, value):
         return value
 
-    def __init__(self, name, code, label, constraints=None, instruction=None,
-                 entity_question_flag=False, required=True, parent_field_code=None):
+
+class PhotoField(MediaField):
+
+    def __init__(self, name, code, label, constraints=None, instruction=None, required=True):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        Field.__init__(self, type=field_attributes.IMAGE, name=name, code=code,
-                       label=label, instruction=instruction, constraints=constraints, required=required,
-                       parent_field_code=parent_field_code)
-        if entity_question_flag:
-            self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
+        MediaField.__init__(self, type=field_attributes.PHOTO, name=name, code=code, label=label, instruction=instruction,
+                            constraints=constraints, required=required)
 
+class VideoField(MediaField):
+
+    def __init__(self, name, code, label,  constraints=None, instruction=None, required=True):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        MediaField.__init__(self, type=field_attributes.VIDEO, name=name, code=code, label=label, instruction=instruction,
+                            constraints=constraints, required=required)
+
+class AudioField(MediaField):
+
+    def __init__(self, name, code, label,  constraints=None, instruction=None, required=True):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        MediaField.__init__(self, type=field_attributes.AUDIO, name=name, code=code, label=label, instruction=instruction,
+                            constraints=constraints, required=required)
 
 class FieldSet(Field):
     FIELDSET_TYPE = 'fieldset_type'

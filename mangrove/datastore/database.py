@@ -111,6 +111,10 @@ class DataObject(object):
         if self._doc is not None:
             self._dbm.put_attachment(document, file, attachment_name=filename)
 
+    def delete_attachment(self, document, filename):
+        if self._doc is not None:
+            self._dbm.delete_attachment(document, filename)
+
     def get_attachment(self, doc_id, filename=None):
            return self._dbm.get_attachments(doc_id, attachment_name=filename)
 
@@ -250,6 +254,10 @@ class DatabaseManager(object):
     def put_attachment(self, document, attachment, attachment_name=None):
         if attachment_name is not None:
             return self.database.put_attachment(document, attachment, attachment_name)
+
+    def delete_attachment(self, document, attachment_name):
+        if attachment_name is not None:
+            return self.database.delete_attachment(document, attachment_name)
 
     def get_attachments(self, id, attachment_name=None):
         if attachment_name is not None:

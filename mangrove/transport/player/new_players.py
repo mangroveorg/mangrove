@@ -93,19 +93,46 @@ class XFormPlayerV2(object):
     def add_survey_response(self, request, reporter_id, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        mediaFiles = request.media
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
-        if mediaFiles:
-            for mediaFile in mediaFiles:
-                self.dbm.put_attachment(get_survey_response_document(self.dbm, response.survey_response_id),
-                                        base64.decodestring(mediaFiles[mediaFile].split(',')[1]),
-                                        attachment_name=mediaFile)
+        self.add_new_attachments(request.media, response.survey_response_id)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        return service.edit_survey(form_code, values, [], survey_response,
-                                   additional_feed_dictionary)
+        response = service.edit_survey(form_code, values, [], survey_response, additional_feed_dictionary)
+        self.delete_removed_attachments(request, survey_response.id)
+        self.add_new_attachments(request.media, survey_response.id)
+
+        return response
+
+    def add_new_attachments(self, mediaFiles, survey_response_id):
+        for name, file in mediaFiles.iteritems():
+            # TODO may be we don't need this check
+            if name != 'xml_submission_file':
+                self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),
+                                        file, attachment_name=name)
+
+    def delete_removed_attachments(self, request, survey_response_id):
+        survey_responce_doc = get_survey_response_document(self.dbm, survey_response_id)
+        #TODO can get_attachment method be added to survey_doc
+        existing_media = survey_responce_doc._data.get('_attachments', {}).keys()
+
+        if request.retain_files and len(request.retain_files) > 0:
+            self.keep_attachments(survey_response_id, existing_media, request.retain_files)
+        else:
+            self.delete_all_attachments(survey_response_id, existing_media)
+
+
+    def keep_attachments(self, survey_response_id, existing_attachments, retain_files):
+        for existing_attachment in existing_attachments:
+            if existing_attachment not in retain_files:
+                self.dbm.delete_attachment(get_survey_response_document(self.dbm, survey_response_id),
+                                           existing_attachment)
+
+    def delete_all_attachments(self, survey_response_id, existing_attachments):
+        for existing_attachment in existing_attachments:
+            self.dbm.delete_attachment(get_survey_response_document(self.dbm, survey_response_id),
+                                       existing_attachment)

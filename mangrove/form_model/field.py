@@ -598,6 +598,10 @@ class SelectField(Field):
                 return opt_text
         return None
 
+    @property
+    def is_single_select(self):
+        return self.type == "select1"
+
     def get_value_by_option(self, option):
         for opt in self.options:
             opt_text = opt['text']
@@ -708,7 +712,7 @@ class ImageField(Field):
 class FieldSet(Field):
     FIELDSET_TYPE = 'fieldset_type'
 
-    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='entity'):
+    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group'):
         Field.__init__(self, type=field_attributes.FIELD_SET, name=name, code=code,
                        label=label, instruction=instruction, required=required)
         self.fields = self._dict['fields'] = field_set

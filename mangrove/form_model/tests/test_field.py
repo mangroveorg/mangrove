@@ -596,18 +596,6 @@ class TestField(unittest.TestCase):
 
         self.assertEqual(constraints, field.constraints)
 
-    def test_should_create_field_set_which_is_an_entity(self):
-        fieldset = FieldSet(name="test", code='q1', label='question')
-        expected_json = {'required': True, 'name': 'test', 'fields': [], 'instruction': None, 'label': 'question',
-                         'code': 'q1', 'type': 'field_set', 'fieldset_type': 'entity'}
-        self.assertEquals(expected_json, field_to_json(fieldset))
-
-    def test_should_create_field_set_which_is_not_an_entity(self):
-        fieldset = FieldSet(name="test", code='q1', label='question')
-        expected_json = {'code': 'q1', 'required': True, 'name': 'test', 'fields': [], 'instruction': None,
-                         'type': 'field_set', 'label': 'question', 'fieldset_type': 'entity'}
-        self.assertEquals(expected_json, field_to_json(fieldset))
-
     def test_should_validate_text_data_based_on_list_of_constraints(self):
         length_constraint = TextLengthConstraint(min=10, max=12)
         regex_constraint = RegexConstraint("^[A-Za-z0-9]+$")

@@ -53,7 +53,7 @@ expected_xform_with_escaped_characters = """
                     <form_code>form_code</form_code>
                 </data>
             </instance>
-            <bind nodeset="/data/selectcode" type="select1" constraint="" required="true()"/>
+            <bind nodeset="/data/selectcode" type="select1" required="true()"/>
             <bind nodeset="/data/form_code" type="string">form_code</bind>
 
         </model>
@@ -86,7 +86,7 @@ expected_xform_for_project_with_unique_id = """
                 </data>
             </instance>
                             <bind nodeset="/data/code" type="string" constraint="constraint" required="true()"/>
-                            <bind nodeset="/data/cl" type="unique_id" constraint="" required="true()"/>
+                            <bind nodeset="/data/cl" type="unique_id" required="true()"/>
                         <bind nodeset="/data/form_code" type="string">form_code</bind>
 
         </model>

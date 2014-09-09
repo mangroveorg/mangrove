@@ -14,7 +14,11 @@
                 </data>
             </instance>
             {% for field in fields %}
-                <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" constraint="{{ field.xform_constraints() }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
+                {% if field.xform_constraints() %}
+                    <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" constraint="{{ field.xform_constraints() }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
+                {% else %}
+                    <bind nodeset="/data/{{ field.code }}" type="{{ field_types.get(field.type,field.type) }}" required="{{ 'true()' if field.is_required() else 'false()'}}"/>
+                {% endif %}
             {% endfor %}
             <bind nodeset="/data/form_code" type="string">{{ questionnaire.form_code }}</bind>
 

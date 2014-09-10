@@ -54,7 +54,6 @@ def get_form_model_by_code(dbm, code):
         return EntityFormModel.new_from_doc(dbm, EntityFormModelDocument.wrap(row_value))
     return FormModel.new_from_doc(dbm, FormModelDocument.wrap(row_value))
 
-#dummy commit new
 def _load_questionnaire(form_code, dbm):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(form_code)
@@ -305,14 +304,14 @@ class FormModel(DataObject):
         return None
 
     def get_field_by_code(self, code):
-        return self._get_by_code(self._form_fields,code)
+        return self._get_by_code(self._form_fields, code)
 
     def _get_by_code(self,fields,code):
         for field in fields:
             if code is not None and field.code.lower() == code.lower():
                 return field
-            if isinstance(field,FieldSet):
-                field_by_code = self._get_by_code(field.fields,code)
+            if isinstance(field, FieldSet):
+                field_by_code = self._get_by_code(field.fields, code)
                 if field_by_code: return field_by_code
         return None
 

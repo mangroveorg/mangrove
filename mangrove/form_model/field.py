@@ -23,41 +23,41 @@ def create_question_from(dictionary, dbm):
     instruction = dictionary.get("instruction")
     required = dictionary.get("required")
     unique_id_type = dictionary.get("unique_id_type")
+    parent_field_code = dictionary.get("parent_field_code")
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, dictionary, label, name, instruction, required)
+        return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, dictionary, label, name, instruction, required)
+        return _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, dictionary, label, name, instruction, required)
+        return _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.LOCATION_FIELD:
-        return _get_geo_code_field(code, instruction, label, name, required)
+        return _get_geo_code_field(code, instruction, label, name, required, parent_field_code)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, dictionary, label, name, type, instruction, required)
+        return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, instruction, required)
+        return _get_list_field(name, code, label, instruction, required, parent_field_code)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, dictionary, label, name, instruction, required)
+        return _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.SHORT_CODE_FIELD:
-        return _get_short_code_field(code, dictionary, label, name, instruction, required)
+        return _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.UNIQUE_ID_FIELD:
-        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required)
+        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.FIELD_SET:
-        return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm)
+        return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code)
     elif type == field_attributes.IMAGE:
-        return _get_image_field(code, dictionary, label, name, instruction, required)
+        return _get_image_field(code, dictionary, label, name, instruction, required, parent_field_code)
 
     return None
 
-def _get_image_field(code, dictionary, is_entity_question, label, name, instruction, required):
+def _get_image_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
-    field = ImageField(name=name, code=code, label=label, entity_question_flag=is_entity_question,
-                      constraints=constraints, instruction=instruction, required=required)
+    field = ImageField(name=name, code=code, label=label, constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
     return field
 
 
-def _get_field_set_field(code, dictionary, label, name, instruction, required, dbm):
+def _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
@@ -66,83 +66,83 @@ def _get_field_set_field(code, dictionary, label, name, instruction, required, d
     fieldset_type = dictionary.get("fieldset_type")
     repeat_question_fields = [create_question_from(f, dbm) for f in sub_fields]
     field = FieldSet(name=name, code=code, label=label, instruction=instruction, required=required,
-                      field_set=repeat_question_fields, fieldset_type=fieldset_type)
+                      field_set=repeat_question_fields, fieldset_type=fieldset_type, parent_field_code=parent_field_code)
     return field
 
-def _get_text_field(code, dictionary, label, name, instruction, required):
+def _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = TextField(name=name, code=code, label=label,
-                      constraints=constraints, instruction=instruction, required=required)
+                      constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
     return field
 
 
-def _get_short_code_field(code, dictionary, label, name, instruction, required):
+def _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = ShortCodeField(name=name, code=code, label=label,
-                           constraints=constraints, instruction=instruction, required=required)
+                           constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
     return field
 
 
-def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required):
+def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code):
     return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
                          label=dictionary.get("label"),
-                         instruction=dictionary.get("instruction"))
+                         instruction=dictionary.get("instruction"), parent_field_code=parent_field_code)
 
 
-def _get_telephone_number_field(code, dictionary, label, name, instruction, required):
+def _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
 
     field = TelephoneNumberField(name=name, code=code, label=label, constraints=constraints,
-                                 instruction=instruction, required=required)
+                                 instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     return field
 
 
-def _get_integer_field(code, dictionary, label, name, instruction, required):
+def _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
         constraints = constraints_factory(constraint_list)
 
     integer_field = IntegerField(name=name, code=code, label=label, instruction=instruction,
-                                 constraints=constraints, required=required)
+                                 constraints=constraints, required=required, parent_field_code=parent_field_code)
 
     return integer_field
 
 
-def _get_date_field(code, dictionary, label, name, instruction, required):
+def _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code):
     date_format = dictionary.get("date_format")
 
     date_field = DateField(name=name, code=code, label=label, date_format=date_format,
-                           instruction=instruction, required=required)
+                           instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     return date_field
 
 
-def _get_select_field(code, dictionary, label, name, type, instruction, required):
+def _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code):
     choices = dictionary.get("choices")
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
-                        instruction=instruction, required=required)
+                        instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     return field
 
 
-def _get_list_field(name, code, label, instruction, required):
-    field = HierarchyField(name, code, label, instruction=instruction, required=required)
+def _get_list_field(name, code, label, instruction, required, parent_field_code):
+    field = HierarchyField(name, code, label, instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     return field
 
 
-def _get_geo_code_field(code, instruction, label, name, required):
+def _get_geo_code_field(code, instruction, label, name, required, parent_field_code):
     field = GeoCodeField(name=name, code=code, label=label, instruction=instruction,
-                         required=required)
+                         required=required, parent_field_code=parent_field_code)
 
     return field
 
@@ -179,11 +179,11 @@ class field_attributes(object):
 
 class Field(object):
     def __init__(self, type="", name="", code="", label='', instruction='',
-                 constraints=None, required=True):
+                 constraints=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         self._dict = {}
         self._dict = {'name': name, 'type': type, 'code': code, 'instruction': instruction,
-                      'label': label, 'required': required}
+                      'label': label, 'required': required, 'parent_field_code': parent_field_code}
         self.constraints = constraints
         self.errors = []
         self.value = None
@@ -226,6 +226,11 @@ class Field(object):
     @property
     def instruction(self):
         return self._dict.get('instruction')
+
+
+    @property
+    def parent_field_code(self):
+        return self._dict.get('parent_field_code')
 
     @property
     def is_entity_field(self):
@@ -288,10 +293,10 @@ class Field(object):
 
 class IntegerField(Field):
     def __init__(self, name, code, label, instruction=None,
-                 constraints=None, required=True):
+                 constraints=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, constraints=constraints, required=required)
+                       label=label, instruction=instruction, constraints=constraints, required=required, parent_field_code=parent_field_code)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -346,9 +351,9 @@ class DateField(Field):
                               'submission_date_format': 'MMM. dd, yyyy, hh:mm a','yyyy':'yyyy'}
 
     def __init__(self, name, code, label, date_format, instruction=None,
-                 required=True):
+                 required=True, parent_field_code=None):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, required=required)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
         self._dict[self.DATE_FORMAT] = date_format
 
     def validate(self, value):
@@ -409,11 +414,11 @@ class TextField(Field):
     CONSTRAINTS = "constraints"
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
-                 required=True):
+                 required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, constraints=constraints, required=required)
+                       label=label, instruction=instruction, constraints=constraints, required=required, parent_field_code=parent_field_code)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
 
     def validate(self, value):
@@ -451,12 +456,12 @@ class TextField(Field):
 
 class UniqueIdField(Field):
     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True):
+                 required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label,
                        instruction=instruction,
-                       constraints=constraints, required=required)
+                       constraints=constraints, required=required, parent_field_code=parent_field_code)
         self.unique_id_type = unique_id_type
 
     def validate(self, value):
@@ -481,12 +486,12 @@ class UniqueIdField(Field):
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True):
+                 required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
                            defaultValue=defaultValue,
-                           required=required)
+                           required=required, parent_field_code=parent_field_code)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
     def _clean(self, value):
@@ -499,13 +504,13 @@ class TelephoneNumberField(TextField):
 
 class ShortCodeField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=False):
+                 required=False, parent_field_code=None):
         if not constraints:
             constraints = [TextLengthConstraint(max=20), ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")]
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
                            defaultValue=defaultValue,
-                           required=required)
+                           required=required, parent_field_code=parent_field_code)
         self._dict['type'] = field_attributes.SHORT_CODE_FIELD
 
 
@@ -523,9 +528,9 @@ class ShortCodeField(TextField):
 
 class HierarchyField(Field):
     def __init__(self, name, code, label, instruction=None,
-                 required=True):
+                 required=True, parent_field_code=None):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, required=required)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -546,12 +551,12 @@ class SelectField(Field):
 
     def __init__(self, name, code, label, options, instruction=None,
 
-                 single_select_flag=True, required=True):
+                 single_select_flag=True, required=True, parent_field_code=None):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
-                       label=label, instruction=instruction, required=required)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if options is not None:
@@ -661,9 +666,9 @@ class SelectField(Field):
 class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD
 
-    def __init__(self, name, code, label, instruction=None, required=True):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, required=required)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
 
     def validate(self, lat_long_string):
         Field.validate(self, lat_long_string)
@@ -701,20 +706,20 @@ class ImageField(Field):
         return value
 
     def __init__(self, name, code, label,  constraints=None, instruction=None,
-                 entity_question_flag=False, required=True):
+                 entity_question_flag=False, required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.IMAGE, name=name, code=code,
-                       label=label, instruction=instruction,constraints=constraints, required=required)
+                       label=label, instruction=instruction,constraints=constraints, required=required, parent_field_code=parent_field_code)
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
 
 class FieldSet(Field):
     FIELDSET_TYPE = 'fieldset_type'
 
-    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group'):
+    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group', parent_field_code=None):
         Field.__init__(self, type=field_attributes.FIELD_SET, name=name, code=code,
-                       label=label, instruction=instruction, required=required)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
         self.fields = self._dict['fields'] = field_set
         self._dict[self.FIELDSET_TYPE] = fieldset_type
 

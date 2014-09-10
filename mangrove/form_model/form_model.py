@@ -474,7 +474,6 @@ class FormModel(DataObject):
         values = self._remove_unknown_fields(values)
         for key in values:
             field = self.get_field_by_code(key)
-            index = self.fields.index(field)
             is_valid, result = self._validate_answer_for_field(values[key], field)
             if is_valid:
                 cleaned_values[field.code] = result

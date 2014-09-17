@@ -27,6 +27,7 @@ GEO_CODE_FIELD_NAME = "geo_code"
 
 NAME_FIELD = "name"
 FORM_MODEL_ID = "form_model_id"
+FORM_CODE = "form_code"
 NAME_FIELD_CODE = "n"
 SHORT_CODE_FIELD = "short_code"
 SHORT_CODE = "s"

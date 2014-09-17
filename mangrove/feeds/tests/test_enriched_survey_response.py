@@ -199,10 +199,10 @@ class TestSurveyResponseEventBuilder(TestCase):
 
         type(self.form_model).entity_type = PropertyMock(return_value=['reporter'])
 
-        self.form_model.form_code = 'form_code'
+        self.form_model.id= 'form_model_id'
         survey_response = SurveyResponse(Mock())
         survey_response._doc = SurveyResponseDocument(status=False, values={'q1': 'answer1'},
-                                                      form_code='form_code')
+                                                      form_model_id='form_model_id')
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, {})
 
         def patch_data_sender():
@@ -214,7 +214,7 @@ class TestSurveyResponseEventBuilder(TestCase):
         self.assertEquals(doc.values, {'q1': 'answer1'})
 
         edited_survey_response_doc = SurveyResponseDocument(status=True, values={'q1': 'answer2'},
-                                                            form_code='form_code')
+                                                            form_model_id='form_model_id')
         edited_survey_response = SurveyResponse(Mock())
         edited_survey_response._doc = edited_survey_response_doc
 

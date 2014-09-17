@@ -110,6 +110,6 @@ class TestEditSurveyResponseForm(TestCase):
         assert not entity.update_latest_data.called
 
     def errored_survey_response(self):
-        survey_response = SurveyResponse(self.dbm, TransportInfo('web', 'web', 'web'), form_code="clinic")
+        survey_response = SurveyResponse(self.dbm, TransportInfo('web', 'web', 'web'), form_model_id="clinic")
         survey_response.set_status('previous error')
         return survey_response

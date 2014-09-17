@@ -12,7 +12,7 @@ from couchdb.design import ViewDefinition
 from mangrove.bootstrap import initializer
 from mangrove.bootstrap.views import view_js
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
-from mangrove.datastore.documents import SubmissionLogDocument, DataRecordDocument
+from mangrove.datastore.documents import DataRecordDocument
 from mangrove.datastore.entity import get_by_short_code, create_entity
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
  DataObjectNotFound, FormModelDoesNotExistsException

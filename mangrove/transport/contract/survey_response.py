@@ -21,14 +21,14 @@ def convert_dict_keys_to_lowercase(dictionary):
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 
-    def __init__(self, dbm, transport_info=None, form_code=None, form_model_revision=None, values=None, owner_uid=None,
+    def __init__(self, dbm, transport_info=None, form_model_id=None, form_model_revision=None, values=None, owner_uid=None,
                  admin_id=None, response=None):
         DataObject.__init__(self, dbm)
         self.response = response
         if transport_info is not None:
             doc = SurveyResponseDocument(channel=transport_info.transport,
                                          destination=transport_info.destination,
-                                         form_code=form_code,
+                                         form_model_id=form_model_id,
                                          form_model_revision=form_model_revision,
                                          values=values, status=False,
                                          error_message="", owner_uid=owner_uid, modified_by_id=admin_id)
@@ -92,8 +92,8 @@ class SurveyResponse(DataObject):
         self._doc.channel = channel
 
     @property
-    def form_code(self):
-        return self._doc.form_code
+    def form_model_id(self):
+        return self._doc.form_model_id
 
     @property
     def form_model_revision(self):
@@ -103,9 +103,9 @@ class SurveyResponse(DataObject):
     def form_model_revision(self, form_model_revision):
         self._doc.form_model_revision = form_model_revision
 
-    @form_code.setter
-    def form_code(self, form_code):
-        self._doc.form_code = form_code
+    @form_model_id.setter
+    def form_model_id(self, form_model_id):
+        self._doc.form_model_id = form_model_id
 
     @property
     def values(self):
@@ -155,7 +155,7 @@ class SurveyResponse(DataObject):
 
     def update(self, bound_form_model, data, entity=None):
         assert self.errors == ''
-        submission_information = dict(form_code=self.form_code)
+        submission_information = dict(form_code=bound_form_model.form_code)
         data_record_id = self.add_data(data=data,
                                        submission=submission_information)
         self._void_existing_data_record()
@@ -228,7 +228,7 @@ class SurveyResponse(DataObject):
         survey_copy = SurveyResponse(None)
         survey_copy._doc = SurveyResponseDocument(self._doc.channel, self._doc.destination,
                                                   deepcopy(self.values), self.id, self.status, self.errors,
-                                                  self.form_code, self.form_model_revision,
+                                                  self.form_model_id, self.form_model_revision,
                                                   self.data_record.id if self.data_record else None,
                                                   deepcopy(self.event_time))
         return survey_copy

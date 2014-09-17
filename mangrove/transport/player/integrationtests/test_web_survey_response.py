@@ -78,15 +78,15 @@ class TestWEBSurveyResponse(MangroveTestCase):
 
     def test_should_get_survey_responses_for_form(self):
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="abc",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="abc",
                                    values={'Q1': 'ans1', 'Q2': 'ans2'},
                                    status=False, error_message="", data_record_id='2345678'))
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="abc",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="abc",
                                    values={'Q1': 'ans12', 'Q2': 'ans22'},
                                    status=False, error_message="", data_record_id='1234567'))
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="def",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="def",
                                    values={'defQ1': 'defans12', 'defQ2': 'defans22'},
                                    status=False, error_message="", data_record_id='345678'))
 
@@ -102,23 +102,23 @@ class TestWEBSurveyResponse(MangroveTestCase):
         self.add_survey_response(text,reporter_id="rep1")
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        survey_responses = get_survey_responses(self.manager, "clinic", 0, int(mktime(tomorrow.timetuple())) * 1000)
+        survey_responses = get_survey_responses(self.manager, self.form_model.id, 0, int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(survey_responses))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", survey_responses[0].errors)
 
     def test_get_submissions_for_form_for_an_activity_period(self):
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="abc",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="abc",
                                    values={'Q1': 'ans1', 'Q2': 'ans2'},
                                    status=False, error_message="", data_record_id='2345678',
                                    event_time=datetime.datetime(2011, 9, 1)))
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="abc",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="abc",
                                    values={'Q1': 'ans12', 'Q2': 'ans22'},
                                    status=False, error_message="", data_record_id='1234567',
                                    event_time=datetime.datetime(2011, 3, 3)))
         self.manager._save_document(
-            SurveyResponseDocument(channel="web", destination="", form_code="abc",
+            SurveyResponseDocument(channel="web", destination="", form_model_id="abc",
                                    values={'Q1': 'ans12', 'Q2': 'defans22'},
                                    status=False, error_message="", data_record_id='345678',
                                    event_time=datetime.datetime(2011, 3, 10)))

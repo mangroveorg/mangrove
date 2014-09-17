@@ -19,7 +19,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         TestData(self.manager)
 
     def test_should_update_enriched_survey_response(self):
-        survey_response = TestSurveyResponseBuilder(self.manager, form_code='CL1',
+        survey_response = TestSurveyResponseBuilder(self.manager, form_model_id='CL1',
                                                     values={'ID': '1', 'Q1': 'name', 'Q2': 21, 'Q3': 'a'}).build(
             self.owner_uid)
         form_model = get_form_model_by_code(self.manager, 'CL1')
@@ -46,7 +46,7 @@ class TestEnrichedSurveyResponseIT(MangroveTestCase):
         self.assertDictEqual(edited_feed_document.values, expected_values)
 
     def test_should_void_feed_document_and_set_status_as_deleted_when_submission_deleted(self):
-        survey_response = TestSurveyResponseBuilder(self.manager, form_code='CL1',
+        survey_response = TestSurveyResponseBuilder(self.manager, form_model_id='CL1',
                                                     values={'ID': '1', 'Q1': 'name', 'Q2': 21, 'Q3': 'a'}).build(
             self.owner_uid)
         form_model = get_form_model_by_code(self.manager, 'CL1')

@@ -26,8 +26,8 @@ def find_reporters_by_from_number(dbm, from_number):
     if (len(rows) == 0): raise NumberNotRegisteredException(from_number)
     return [Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
 
-def get_reporters_who_submitted_data_for_frequency_period(dbm, form_code, from_time=None, to_time=None):
-    survey_responses = get_survey_responses_for_activity_period(dbm, form_code, from_time, to_time)
+def get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id, from_time=None, to_time=None):
+    survey_responses = get_survey_responses_for_activity_period(dbm, form_model_id, from_time, to_time)
     source_owner_uids = set([survey_response.owner_uid for survey_response in survey_responses])
     all_reporters = get_entities_by_type(dbm, 'reporter')
     reporters = [reporter for reporter in all_reporters if reporter.id in source_owner_uids]

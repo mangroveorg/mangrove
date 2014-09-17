@@ -5,7 +5,7 @@ from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilde
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException
-from mangrove.form_model.form_model import get_form_model_by_code
+from mangrove.form_model.form_model import get_form_model_by_code, FormModel
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.repository.survey_responses import SurveyResponse
@@ -109,7 +109,7 @@ class SurveyResponseService(object):
         feed_delete_errors = None
         try:
             survey_response.void()
-            form_model = get_form_model_by_code(self.dbm, survey_response.form_code)
+            form_model = FormModel.get(self.dbm,survey_response.form_model_id)
             if self.feeds_dbm:
                 feed_delete_errors = EnrichedSurveyResponseBuilder(self.dbm, survey_response, form_model,
                                                                    additional_details).delete_feed_document(

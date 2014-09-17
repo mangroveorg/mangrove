@@ -40,8 +40,8 @@ def get_survey_response_document(dbm, survey_response_id):
     return  dbm._load_document(survey_response_id)
 
 
-def survey_responses_by_form_code(dbm, form_code):
-    return get_survey_responses(dbm, form_code, None, None)
+def survey_responses_by_form_model_id(dbm, form_model_id):
+    return get_survey_responses(dbm, form_model_id, None, None)
 
 
 # def count_valid_web_survey_responses(dbm, form_code, from_time, to_time):

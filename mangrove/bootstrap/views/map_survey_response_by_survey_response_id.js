@@ -1,8 +1,5 @@
 function(doc) {
-    var isNotNull = function(o) {
-        return !((o === undefined) || (o == null));
-    };
-    if (doc.document_type == 'SurveyResponse' && isNotNull(doc.form_model_id)) {
+    if (doc.document_type == 'SurveyResponse') {
         emit(doc._id,doc);
     }
 }

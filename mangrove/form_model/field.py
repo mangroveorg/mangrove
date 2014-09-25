@@ -595,13 +595,13 @@ class SelectField(Field):
         return unicode(",".join([unicode(i) for i in self.value])) if isinstance(self.value, list) else unicode(
             self.value)
 
-    def _get_value_by_option(self, option):
-        for opt in self.options:
-            opt_text = opt['text']
-            opt_value = opt['val']
-            if opt_value.lower() == option.lower():
-                return opt_text
-        return None
+    # def _get_value_by_option(self, option):
+    #     for opt in self.options:
+    #         opt_text = opt['text']
+    #         opt_value = opt['val']
+    #         if opt_value.lower() == option.lower():
+    #             return opt_text
+    #     return None
 
     @property
     def is_single_select(self):
@@ -627,6 +627,8 @@ class SelectField(Field):
 
     def get_option_list(self, question_value):
         if question_value is None: return []
+
+        question_value = question_value.lower()
 
         if ',' in question_value:
             responses = question_value.split(',')

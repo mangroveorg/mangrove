@@ -87,7 +87,7 @@ class ChoiceConstraint(object):
 
     def validate(self, answer):
         assert answer is not None
-        answer_string = answer.strip()
+        answer_string = answer.lower().strip()
         if not answer_string:
             raise AnswerHasNoValuesException(code=self.code, answer=answer)
 

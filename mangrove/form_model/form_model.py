@@ -180,6 +180,10 @@ class FormModel(DataObject):
         """
         return self._doc.name
 
+    @property
+    def id(self):
+        return self._doc.id
+
     @name.setter
     def name(self, value):
         """

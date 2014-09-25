@@ -102,10 +102,10 @@ class DataObject(object):
         assert isinstance(document, self.__document_class__)
         self._doc = document
 
-    def save(self):
+    def save(self, process_post_update=True):
         if self._doc is None:
             raise NoDocumentError('No document to save')
-        return self._dbm._save_document(self._doc)
+        return self._dbm._save_document(self._doc, process_post_update=process_post_update)
 
     def put_attachment(self, document, file, filename=None):
         if self._doc is not None:

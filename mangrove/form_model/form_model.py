@@ -482,8 +482,8 @@ class FormModel(DataObject):
         return self._validation_exception
 
     @property
-    def is_open_datasender(self):
-        return self._doc.get('is_open_datasender', False)
+    def is_open_survey(self):
+        return self._doc.get('is_open_survey', False)
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

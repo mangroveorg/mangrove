@@ -63,7 +63,7 @@ class TestSMSPlayer(TestCase):
         self.form_model_mock.get_field_by_name = self._location_field
         field = UniqueIdField('clinic','q1', 'id', 'q1')
         self.form_model_mock.fields = [field]
-        self.form_model_mock.is_open_datasender = False
+        self.form_model_mock.is_open_survey = False
         self.form_model_mock.validate_submission.return_value = OrderedDict(), OrderedDict()
 
         self.form_submission_mock = mock_form_submission(self.form_model_mock)
@@ -122,15 +122,10 @@ class TestSMSPlayer(TestCase):
             response = sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
             self.assertEqual(expected_response, response)
 
-    def test_should_check_if_submission_by_unregistered_reporter(self):
-        self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
-        with self.assertRaises(NumberNotRegisteredException):
-            self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
-
 
     def test_should_allow_submission_by_unregistered_reporter_for_open_datasender_questionnaire(self):
         self.reporter_module.find_reporter_entity.side_effect = NumberNotRegisteredException("1234")
-        self.form_model_mock.is_open_datasender = True
+        self.form_model_mock.is_open_survey = True
         entity_question_field = Mock()
         entity_question_field.code = 'q1'
         self.form_model_mock.entity_questions = [entity_question_field]

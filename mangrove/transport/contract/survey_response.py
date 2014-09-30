@@ -230,12 +230,12 @@ class SurveyResponse(DataObject):
         return survey_copy
 
     @property
-    def open_datasender_phone_number(self):
-        return self._doc.open_datasender_phone_number
+    def anonymous_submission(self):
+        return self._doc.anonymous_submission
 
-    @open_datasender_phone_number.setter
-    def open_datasender_phone_number(self, value):
-        self._doc.open_datasender_phone_number = value
+    @anonymous_submission.setter
+    def anonymous_submission(self, value):
+        self._doc.anonymous_submission = value
 
 class SurveyResponseDifference(object):
     def __init__(self, submitted_on, status_changed):

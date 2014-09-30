@@ -326,9 +326,9 @@ class FormModelTest(MangroveTestCase):
         document.type = "survey"
         return document
 
-    def test_should_set_is_open_datasender(self):
+    def test_should_set_is_open_survey(self):
         document = self.get_form_model_doc()
         form_model = FormModel.new_from_doc(self.manager, document)
-        self.assertFalse(form_model.is_open_datasender)
-        document['is_open_datasender'] = True
-        self.assertTrue(form_model.is_open_datasender)
+        self.assertFalse(form_model.is_open_survey)
+        document['is_open_survey'] = True
+        self.assertTrue(form_model.is_open_survey)

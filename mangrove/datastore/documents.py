@@ -190,15 +190,15 @@ class ProjectDocument(FormModelDocument):
         super(ProjectDocument, self).__init__(id)
 
     @property
-    def is_open_datasender(self):
-        return self.get('is_open_datasender', False)
+    def is_open_survey(self):
+        return self.get('is_open_survey', False)
 
-    @is_open_datasender.setter
-    def is_open_datasender(self, value):
+    @is_open_survey.setter
+    def is_open_survey(self, value):
         if value:
-            self['is_open_datasender'] = True
-        elif self.is_open_datasender:
-            del self['is_open_datasender']
+            self['is_open_survey'] = True
+        elif self.is_open_survey:
+            del self['is_open_survey']
 
 class SubmissionLogDocument(DocumentBase):
     """
@@ -279,15 +279,15 @@ class SurveyResponseDocument(DocumentBase):
         self.owner_uid = owner_uid
 
     @property
-    def open_datasender_phone_number(self):
-        return self.get('open_datasender_phone_number', None)
+    def anonymous_submission(self):
+        return self.get('anonymous_submission', None)
 
-    @open_datasender_phone_number.setter
-    def open_datasender_phone_number(self, value):
+    @anonymous_submission.setter
+    def anonymous_submission(self, value):
         if value:
-            self['open_datasender_phone_number'] = value
+            self['anonymous_submission'] = True
         else:
-            del self['open_datasender_phone_number']
+            del self['anonymous_submission']
 
 
 class EnrichedSurveyResponseDocument(DocumentBase):

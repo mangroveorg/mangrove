@@ -4,6 +4,7 @@ from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormP
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.utils.types import is_empty
 from mangrove.transport.repository import reporters
+from mangrove.errors.MangroveException import NumberNotRegisteredException
 
 
 class WebPlayerV2(object):
@@ -67,9 +68,7 @@ class SMSPlayerV2(object):
             reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
             reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
             reporter_short_code = reporter_entity.short_code
-        except Exception as e:
-            form_model = get_form_model_by_code(self.dbm, form_code)
-            if not form_model.is_open_datasender: raise e
+        except NumberNotRegisteredException:
             reporter_short_code = None
             reporter_entity_names = None
 

@@ -29,8 +29,12 @@ def get_survey_responses(dbm, form_model_id, from_time, to_time, page_number=0, 
 
 
 def get_survey_response_by_id(dbm, survey_response_id):
-    rows = dbm.load_all_rows_in_view("survey_response_by_survey_response_id", key=survey_response_id)
-    survey_responses = [SurveyResponse.new_from_doc(dbm=dbm, doc=SurveyResponse.__document_class__.wrap(row['value']))
+    rows = dbm.load_all_rows_in_view("survey_response_by_survey_response_id", key=survey_response_id, include_docs=True)
+
+    if not rows:
+        return None
+
+    survey_responses = [SurveyResponse.new_from_doc(dbm=dbm, doc=SurveyResponse.__document_class__.wrap(row['doc']))
                         for
                         row in
                         rows]

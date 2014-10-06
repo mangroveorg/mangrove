@@ -21,16 +21,19 @@ class SurveyResponseService(object):
 
     def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
                     additional_feed_dictionary=None, translation_processor=None):
-        reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
-
         form_model = get_form_model_by_code(self.dbm, form_code)
 
         #TODO : validate_submission should use form_model's bound values
         form_model.bind(values)
         cleaned_data, errors = form_model.validate_submission(values=values)
 
-        survey_response = SurveyResponse(self.dbm, transport_info, form_model.id, values=form_model.bound_values(), owner_uid=reporter.id,
-                                         admin_id=self.admin_id or reporter_id, response=self.response)
+        if reporter_id is not None:
+            survey_response = self.create_survey_response_from_known_datasender(transport_info, form_code,
+                                                                            form_model.bound_values(),
+                                                                            reporter_id, self.response)
+        else:
+            survey_response = self.create_survey_response_from_unknown_datasender(transport_info, form_code,
+                                                                            form_model.bound_values(), self.response)
 
         survey_response.set_form(form_model)
 
@@ -117,3 +120,18 @@ class SurveyResponseService(object):
         except MangroveException as e:
             return Response(errors=e.message, feed_error_message=feed_delete_errors)
         return Response(success=True, feed_error_message=feed_delete_errors)
+
+
+    def create_survey_response_from_known_datasender(self, transport_info, form_code, values, reporter_id, response):
+        reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
+        owner_uid = reporter.id
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=values, owner_uid=owner_uid,
+                                         admin_id=self.admin_id or reporter_id, response=response)
+        return survey_response
+
+
+    def create_survey_response_from_unknown_datasender(self, transport_info, form_code, values, response):
+        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=values, owner_uid=None,
+                                         admin_id=self.admin_id or transport_info.source, response=response)
+        survey_response.anonymous_submission = True
+        return survey_response

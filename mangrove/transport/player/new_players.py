@@ -5,6 +5,7 @@ from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormP
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
+from mangrove.errors.MangroveException import NumberNotRegisteredException
 
 
 class WebPlayerV2(object):
@@ -64,12 +65,17 @@ class SMSPlayerV2(object):
                 logger.info(log_entry)
             return post_sms_processor_response
 
-        reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
-        reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+        try:
+            reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
+            reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+            reporter_short_code = reporter_entity.short_code
+        except NumberNotRegisteredException:
+            reporter_short_code = None
+            reporter_entity_names = None
 
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, response=post_sms_processor_response)
         return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
-                                   reporter_entity.short_code, additional_feed_dictionary=additional_feed_dictionary,
+                                   reporter_short_code, additional_feed_dictionary=additional_feed_dictionary,
                                    translation_processor=translation_processor)
 
     def _parse(self, message):

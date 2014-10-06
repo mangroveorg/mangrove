@@ -190,6 +190,16 @@ class ProjectDocument(FormModelDocument):
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)
 
+    @property
+    def is_open_survey(self):
+        return self.get('is_open_survey', False)
+
+    @is_open_survey.setter
+    def is_open_survey(self, value):
+        if value:
+            self['is_open_survey'] = True
+        elif self.is_open_survey:
+            del self['is_open_survey']
 
 class SurveyResponseDocument(DocumentBase):
     """
@@ -230,6 +240,17 @@ class SurveyResponseDocument(DocumentBase):
         self.event_time = event_time if event_time is not None else self.created
         self.data_record_history = []
         self.owner_uid = owner_uid
+
+    @property
+    def anonymous_submission(self):
+        return self.get('anonymous_submission', None)
+
+    @anonymous_submission.setter
+    def anonymous_submission(self, value):
+        if value:
+            self['anonymous_submission'] = True
+        else:
+            del self['anonymous_submission']
 
 
 class EnrichedSurveyResponseDocument(DocumentBase):

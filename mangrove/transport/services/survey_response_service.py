@@ -28,11 +28,11 @@ class SurveyResponseService(object):
         cleaned_data, errors = form_model.validate_submission(values=values)
 
         if reporter_id is not None:
-            survey_response = self.create_survey_response_from_known_datasender(transport_info, form_code,
+            survey_response = self.create_survey_response_from_known_datasender(transport_info, form_model.id,
                                                                             form_model.bound_values(),
                                                                             reporter_id, self.response)
         else:
-            survey_response = self.create_survey_response_from_unknown_datasender(transport_info, form_code,
+            survey_response = self.create_survey_response_from_unknown_datasender(transport_info, form_model.id,
                                                                             form_model.bound_values(), self.response)
 
         survey_response.set_form(form_model)
@@ -122,16 +122,16 @@ class SurveyResponseService(object):
         return Response(success=True, feed_error_message=feed_delete_errors)
 
 
-    def create_survey_response_from_known_datasender(self, transport_info, form_code, values, reporter_id, response):
+    def create_survey_response_from_known_datasender(self, transport_info, form_model_id, values, reporter_id, response):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
         owner_uid = reporter.id
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=values, owner_uid=owner_uid,
+        survey_response = SurveyResponse(self.dbm, transport_info, form_model_id, values=values, owner_uid=owner_uid,
                                          admin_id=self.admin_id or reporter_id, response=response)
         return survey_response
 
 
-    def create_survey_response_from_unknown_datasender(self, transport_info, form_code, values, response):
-        survey_response = SurveyResponse(self.dbm, transport_info, form_code, values=values, owner_uid=None,
+    def create_survey_response_from_unknown_datasender(self, transport_info, form_model_id, values, response):
+        survey_response = SurveyResponse(self.dbm, transport_info, form_model_id, values=values, owner_uid=None,
                                          admin_id=self.admin_id or transport_info.source, response=response)
         survey_response.anonymous_submission = True
         return survey_response

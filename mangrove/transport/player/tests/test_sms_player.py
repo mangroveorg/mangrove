@@ -53,10 +53,10 @@ class TestSMSPlayer(TestCase):
         self.get_form_model_mock_player_patcher = patch(
             'mangrove.transport.services.survey_response_service.get_form_model_by_code')
         self.get_form_model_mock_parser_patcher = patch('mangrove.transport.player.parser.get_form_model_by_code')
-        self.get_form_model_mock_player_v2_patcher = patch('mangrove.transport.player.new_players.get_form_model_by_code')
+        # self.get_form_model_mock_player_v2_patcher = patch('mangrove.transport.player.new_players.get_form_model_by_code')
         get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
         get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
-        get_form_model_player_v2_mock = self.get_form_model_mock_player_v2_patcher.start()
+        # get_form_model_player_v2_mock = self.get_form_model_mock_player_v2_patcher.start()
         self.form_model_mock = Mock(spec=FormModel)
         self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
@@ -70,7 +70,7 @@ class TestSMSPlayer(TestCase):
 
         get_form_model_player_mock.return_value = self.form_model_mock
         get_form_model_parser_mock.return_value = self.form_model_mock
-        get_form_model_player_v2_mock.return_value = self.form_model_mock
+        # get_form_model_player_v2_mock.return_value = self.form_model_mock
 
 
     def _location_field(self, *args, **kwargs):

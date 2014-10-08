@@ -234,11 +234,11 @@ class SurveyResponse(DataObject):
         return survey_copy
 
     @property
-    def anonymous_submission(self):
+    def is_anonymous_submission(self):
         return self._doc.is_anonymous_submission
 
-    @anonymous_submission.setter
-    def anonymous_submission(self, value):
+    @is_anonymous_submission.setter
+    def is_anonymous_submission(self, value):
         self._doc.is_anonymous_submission = value
 
 class SurveyResponseDifference(object):

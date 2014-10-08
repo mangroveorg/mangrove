@@ -133,5 +133,5 @@ class SurveyResponseService(object):
     def create_survey_response_from_unknown_datasender(self, transport_info, form_model_id, values, response):
         survey_response = SurveyResponse(self.dbm, transport_info, form_model_id, values=values, owner_uid=None,
                                          admin_id=self.admin_id or transport_info.source, response=response)
-        survey_response.anonymous_submission = True
+        survey_response.is_anonymous_submission = True
         return survey_response

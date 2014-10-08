@@ -235,11 +235,11 @@ class SurveyResponse(DataObject):
 
     @property
     def anonymous_submission(self):
-        return self._doc.anonymous_submission
+        return self._doc.is_anonymous_submission
 
     @anonymous_submission.setter
     def anonymous_submission(self, value):
-        self._doc.anonymous_submission = value
+        self._doc.is_anonymous_submission = value
 
 class SurveyResponseDifference(object):
     def __init__(self, submitted_on, status_changed):

@@ -242,15 +242,15 @@ class SurveyResponseDocument(DocumentBase):
         self.owner_uid = owner_uid
 
     @property
-    def anonymous_submission(self):
-        return self.get('anonymous_submission', None)
+    def is_anonymous_submission(self):
+        return self.get('is_anonymous_submission', False)
 
-    @anonymous_submission.setter
-    def anonymous_submission(self, value):
+    @is_anonymous_submission.setter
+    def is_anonymous_submission(self, value):
         if value:
-            self['anonymous_submission'] = True
+            self['is_anonymous_submission'] = True
         else:
-            del self['anonymous_submission']
+            del self['is_anonymous_submission']
 
 
 class EnrichedSurveyResponseDocument(DocumentBase):

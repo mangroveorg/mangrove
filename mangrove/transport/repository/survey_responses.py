@@ -1,4 +1,4 @@
-
+from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.utils.dates import convert_date_time_to_epoch
 from mangrove.transport.contract.survey_response import SurveyResponse
 
@@ -29,12 +29,10 @@ def get_survey_responses(dbm, form_model_id, from_time, to_time, page_number=0, 
 
 
 def get_survey_response_by_id(dbm, survey_response_id):
-    rows = dbm.load_all_rows_in_view("survey_response_by_survey_response_id", key=survey_response_id)
-    survey_responses = [SurveyResponse.new_from_doc(dbm=dbm, doc=SurveyResponse.__document_class__.wrap(row['value']))
-                        for
-                        row in
-                        rows]
-    return survey_responses[0] if survey_responses.__len__() > 0 else None
+    try:
+        return dbm.get(survey_response_id, SurveyResponse)
+    except DataObjectNotFound:
+        return None
 
 def get_survey_response_document(dbm, survey_response_id):
     return  dbm._load_document(survey_response_id)

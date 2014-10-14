@@ -31,7 +31,7 @@ class EnrichedSurveyResponseBuilder(object):
 
         return EnrichedSurveyResponseDocument(self.survey_response.uuid, self.survey_response.modified,
                                               self.survey_response.channel,
-                                              self.survey_response.form_model_id, self.survey_response.form_model_revision,
+                                              self.form_model.form_code, self.survey_response.form_model_revision,
                                               self._values(), status,
                                               self.survey_response.errors, self._data_sender(), self.additional_details,
                                               self.survey_response.is_void())

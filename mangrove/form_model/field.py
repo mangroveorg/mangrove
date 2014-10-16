@@ -4,11 +4,15 @@ import abc
 from datetime import datetime
 from babel.dates import format_date
 from mangrove.data_cleaner import TelephoneNumber
-from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, RequiredFieldNotPresentException
-from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory, TextLengthConstraint, ShortCodeRegexConstraint
+from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, \
+    IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, \
+    RequiredFieldNotPresentException
+from mangrove.form_model.validation import ChoiceConstraint, GeoCodeConstraint, constraints_factory, \
+    TextLengthConstraint, ShortCodeRegexConstraint
 from coverage.html import escape
 from mangrove.utils.types import is_sequence, is_empty, sequence_to_str
-from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, VdtValueTooLongError
+from mangrove.validate import VdtValueTooBigError, VdtValueTooSmallError, VdtTypeError, VdtValueTooShortError, \
+    VdtValueTooLongError
 
 
 def create_question_from(dictionary, dbm):
@@ -41,7 +45,8 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.SHORT_CODE_FIELD:
         return _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.UNIQUE_ID_FIELD:
-        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code)
+        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required,
+                                    parent_field_code)
     elif type == field_attributes.FIELD_SET:
         return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code)
     elif type == field_attributes.IMAGE:
@@ -49,11 +54,13 @@ def create_question_from(dictionary, dbm):
 
     return None
 
+
 def _get_image_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
-    field = ImageField(name=name, code=code, label=label, constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
+    field = ImageField(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
+                       required=required, parent_field_code=parent_field_code)
     return field
 
 
@@ -66,15 +73,17 @@ def _get_field_set_field(code, dictionary, label, name, instruction, required, d
     fieldset_type = dictionary.get("fieldset_type")
     repeat_question_fields = [create_question_from(f, dbm) for f in sub_fields]
     field = FieldSet(name=name, code=code, label=label, instruction=instruction, required=required,
-                      field_set=repeat_question_fields, fieldset_type=fieldset_type, parent_field_code=parent_field_code)
+                     field_set=repeat_question_fields, fieldset_type=fieldset_type, parent_field_code=parent_field_code)
     return field
+
 
 def _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = TextField(name=name, code=code, label=label,
-                      constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
+                      constraints=constraints, instruction=instruction, required=required,
+                      parent_field_code=parent_field_code)
     return field
 
 
@@ -83,7 +92,8 @@ def _get_short_code_field(code, dictionary, label, name, instruction, required, 
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = ShortCodeField(name=name, code=code, label=label,
-                           constraints=constraints, instruction=instruction, required=required, parent_field_code=parent_field_code)
+                           constraints=constraints, instruction=instruction, required=required,
+                           parent_field_code=parent_field_code)
     return field
 
 
@@ -135,7 +145,8 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
 
 
 def _get_list_field(name, code, label, instruction, required, parent_field_code):
-    field = HierarchyField(name, code, label, instruction=instruction, required=required, parent_field_code=parent_field_code)
+    field = HierarchyField(name, code, label, instruction=instruction, required=required,
+                           parent_field_code=parent_field_code)
 
     return field
 
@@ -148,7 +159,7 @@ def _get_geo_code_field(code, instruction, label, name, required, parent_field_c
 
 
 def field_to_json(object):
-    #    assert isinstance(object, Field)
+    # assert isinstance(object, Field)
     if isinstance(object, datetime):
         return object.isoformat()
     else:
@@ -296,7 +307,8 @@ class IntegerField(Field):
                  constraints=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, constraints=constraints, required=required, parent_field_code=parent_field_code)
+                       label=label, instruction=instruction, constraints=constraints, required=required,
+                       parent_field_code=parent_field_code)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -346,9 +358,9 @@ class IntegerField(Field):
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
-    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y','yyyy':'%Y'}
+    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y'}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
-                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a','yyyy':'yyyy'}
+                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy'}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True, parent_field_code=None):
@@ -392,7 +404,8 @@ class DateField(Field):
             raise IncorrectDate(self._dict.get(field_attributes.FIELD_CODE), date_string,
                                 self._dict.get(self.DATE_FORMAT))
 
-#All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
+
+# All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
 #That will require atleast a couple of days of work
 class ExcelDate(object):
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
@@ -414,12 +427,24 @@ class TextField(Field):
     CONSTRAINTS = "constraints"
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
-                 required=True, parent_field_code=None):
+                 required=True, parent_field_code=None, is_calculated=False):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
-                       label=label, instruction=instruction, constraints=constraints, required=required, parent_field_code=parent_field_code)
+                       label=label, instruction=instruction, constraints=constraints, required=required,
+                       parent_field_code=parent_field_code)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
+        if is_calculated:
+            self.is_calculated = True
+
+
+    @property
+    def is_calculated(self):
+        return self._dict.get("is_calculated", False)
+
+    @is_calculated.setter
+    def is_calculated(self, is_calculated):
+        self._dict["is_calculated"] = is_calculated
 
     def validate(self, value):
         Field.validate(self, value)
@@ -468,7 +493,7 @@ class UniqueIdField(Field):
         super(UniqueIdField, self).validate(value)
         return value.lower()
 
-    @property #TODO:Remove
+    @property  #TODO:Remove
     def is_entity_field(self):
         return True
 
@@ -483,6 +508,7 @@ class UniqueIdField(Field):
     def set_value(self, value):
         if value:
             self.value = value.lower()
+
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
@@ -521,7 +547,7 @@ class ShortCodeField(TextField):
         value = self._clean(value)
         return super(ShortCodeField, self).validate(value)
 
-    @property #TODO:Remove
+    @property  #TODO:Remove
     def is_entity_field(self):
         return True
 
@@ -658,12 +684,13 @@ class SelectField(Field):
     def get_options_map(self):
         options_map = {}
         for option in self.options:
-            options_map.update({option['val']:option['text']})
+            options_map.update({option['val']: option['text']})
         return options_map
 
     def escape_option_text(self):
-       for option in self._dict.get(self.OPTIONS):
+        for option in self._dict.get(self.OPTIONS):
             option['text'] = escape(option['text'])
+
 
 class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD
@@ -702,24 +729,28 @@ class GeoCodeField(Field):
                 return float(list[index])
             except ValueError:
                 return list[index]
-class ImageField(Field):
 
+
+class ImageField(Field):
     def formatted_field_values_for_excel(self, value):
         return value
 
-    def __init__(self, name, code, label,  constraints=None, instruction=None,
+    def __init__(self, name, code, label, constraints=None, instruction=None,
                  entity_question_flag=False, required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.IMAGE, name=name, code=code,
-                       label=label, instruction=instruction,constraints=constraints, required=required, parent_field_code=parent_field_code)
+                       label=label, instruction=instruction, constraints=constraints, required=required,
+                       parent_field_code=parent_field_code)
         if entity_question_flag:
             self._dict[self.ENTITY_QUESTION_FLAG] = entity_question_flag
+
 
 class FieldSet(Field):
     FIELDSET_TYPE = 'fieldset_type'
 
-    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group', parent_field_code=None):
+    def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group',
+                 parent_field_code=None):
         Field.__init__(self, type=field_attributes.FIELD_SET, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
         self.fields = self._dict['fields'] = field_set

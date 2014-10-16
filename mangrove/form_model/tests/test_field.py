@@ -775,3 +775,25 @@ class TestUniqueIdField(unittest.TestCase):
         field = UniqueIdField("unique_id_type", "name", "q1", "label")
         field.value = "cli001"
         self.assertEqual(field.stringify(), "Unique_id_type(cli001)")
+
+
+class TestTextField(unittest.TestCase):
+
+    def test_should_update_value_to_empty_string_when_calculated_value_is_NaN(self):
+
+        field = TextField(name='height_calculate', code='height_calculate', label='My calculated question',
+                          is_calculated=True)
+
+        field.set_value("NaN")
+
+        self.assertEqual(field.value, "")
+
+    def test_should_retain_value_when_calculated_value_is_not_NaN(self):
+
+        field = TextField(name='height_calculate', code='height_calculate', label='My calculated question',
+                          is_calculated=True)
+
+        field.set_value("calculate_value")
+
+        self.assertEqual(field.value, "calculate_value")
+

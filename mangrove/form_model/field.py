@@ -83,7 +83,7 @@ def _get_text_field(code, dictionary, label, name, instruction, required, parent
         constraints = constraints_factory(constraints_json)
     field = TextField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required,
-                      parent_field_code=parent_field_code)
+                      parent_field_code=parent_field_code, is_calculated=dictionary.get('is_calculated'))
     return field
 
 
@@ -445,6 +445,9 @@ class TextField(Field):
     @is_calculated.setter
     def is_calculated(self, is_calculated):
         self._dict["is_calculated"] = is_calculated
+
+    def set_value(self, value):
+        self.value = "" if self.is_calculated and value == 'NaN' else value
 
     def validate(self, value):
         Field.validate(self, value)

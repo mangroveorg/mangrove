@@ -19,7 +19,7 @@ class EditSurveyResponseForm(object):
 
         self.survey_response = survey_response
         self.survey_response.set_form(form_model)
-        self.survey_response.set_answers(form_answers)
+        self.survey_response.set_answers(form_model.bound_values())
 
     @property
     def unique_id_question_code(self):

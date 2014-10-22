@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import re
 import abc
 
@@ -765,6 +766,25 @@ class FieldSet(Field):
 
     def is_group(self):
         return self._dict.get(self.FIELDSET_TYPE) == 'group'
+
+
+    def _find_field_for_code(self, code):
+        for field in self.fields:
+            if field.code.lower() == code.lower():
+                return field
+        return None
+
+    def set_value(self, value):
+        list = []
+        for current_value in value:
+            dict = OrderedDict()
+            for field_code, answer in current_value.iteritems():
+                field = self._find_field_for_code(field_code)
+                field.set_value(answer)
+                dict.update({field_code: field.value})
+            list.append(dict)
+        super(FieldSet, self).set_value(list)
+
 
     @property
     def fieldset_type(self):

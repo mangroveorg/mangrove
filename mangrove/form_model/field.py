@@ -780,8 +780,9 @@ class FieldSet(Field):
             dict = OrderedDict()
             for field_code, answer in current_value.iteritems():
                 field = self._find_field_for_code(field_code)
-                field.set_value(answer)
-                dict.update({field_code: field.value})
+                if field:
+                    field.set_value(answer)
+                    dict.update({field_code: field.value})
             list.append(dict)
         super(FieldSet, self).set_value(list)
 

@@ -20,7 +20,7 @@ class SurveyResponseService(object):
         self.admin_id = admin_id
         self.response = response
 
-    def save_survey(self, form_code, values, reporter_names, transport_info, message, reporter_id,
+    def save_survey(self, form_code, values, reporter_names, transport_info, reporter_id,
                     additional_feed_dictionary=None, translation_processor=None):
         form_model = get_form_model_by_code(self.dbm, form_code)
 
@@ -29,7 +29,7 @@ class SurveyResponseService(object):
         cleaned_data, errors = form_model.validate_submission(values=values)
 
         if reporter_id is not None:
-            survey_response = self.create_survey_response_from_known_datasender(transport_info, form_model.id,
+            survey_response = self.create_survey_response_from_known_datasender(transport_info, form_model,
                                                                             form_model.bound_values(),
                                                                             reporter_id, self.response)
         else:
@@ -123,11 +123,14 @@ class SurveyResponseService(object):
         return Response(success=True, feed_error_message=feed_delete_errors)
 
 
-    def create_survey_response_from_known_datasender(self, transport_info, form_model_id, values, reporter_id, response):
+    def create_survey_response_from_known_datasender(self, transport_info, form_model, values, reporter_id, response):
         reporter = by_short_code(self.dbm, reporter_id.lower(), REPORTER_ENTITY_TYPE)
         owner_uid = reporter.id
-        survey_response = SurveyResponse(self.dbm, transport_info, form_model_id, values=values, owner_uid=owner_uid,
+        survey_response = SurveyResponse(self.dbm, transport_info, form_model.id, values=values, owner_uid=owner_uid,
                                          admin_id=self.admin_id or reporter_id, response=response)
+        project = Project.from_form_model(form_model)
+        if reporter_id not in project.data_senders:
+            survey_response.is_anonymous_submission = True
         return survey_response
 
 

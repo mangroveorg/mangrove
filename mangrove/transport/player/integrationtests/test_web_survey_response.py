@@ -1,4 +1,3 @@
-
 #  This is an integration test.
 # Send message via web, parse them and save.
 
@@ -40,7 +39,8 @@ class TestWEBSurveyResponse(MangroveTestCase):
                                      (NAME_FIELD, "Test_reporter")], submission=dict(submission_id="2"))
 
         #Web submission Form Model
-        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="EID", label="What is associated entity")
+        question1 = UniqueIdField(unique_id_type='clinic', name="entity_question", code="EID",
+                                  label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)], required=False)
@@ -49,19 +49,20 @@ class TestWEBSurveyResponse(MangroveTestCase):
                                  required=False)
         question4 = SelectField(name="Color", code="COL", label="Color",
                                 options=[("RED", 1), ("YELLOW", 2)], required=False)
-        self.form_model = FormModel(self.manager,  name="aids", label="Aids form_model",
+        self.form_model = FormModel(self.manager, name="aids", label="Aids form_model",
                                     form_code="clinic",
                                     fields=[question1, question2, question3, question4])
         self.form_model.save()
 
         #Activity Report Form Model
-        question1 = UniqueIdField(unique_id_type='reporter',name="entity_question", code="EID", label="What is associated entity")
+        question1 = UniqueIdField(unique_id_type='reporter', name="entity_question", code="EID",
+                                  label="What is associated entity")
         question2 = TextField(name="Name", code="NAME", label="Clinic Name",
                               defaultValue="some default value",
                               constraints=[TextLengthConstraint(4, 15)])
         question3 = IntegerField(name="Arv stock", code="ARV", label="ARV Stock",
                                  constraints=[NumericRangeConstraint(min=15, max=120)])
-        activity_report = FormModel(self.manager,  name="report", label="reporting form_model",
+        activity_report = FormModel(self.manager, name="report", label="reporting form_model",
                                     form_code="acp", fields=[question1, question2, question3])
         activity_report.save()
 
@@ -99,10 +100,11 @@ class TestWEBSurveyResponse(MangroveTestCase):
 
     def test_error_messages_are_being_logged_in_survey_responses(self):
         text = {'form_code': 'clinic', 'EID': self.entity.short_code, 'ARV': '150'}
-        self.add_survey_response(text,reporter_id="rep1")
+        self.add_survey_response(text, reporter_id="rep1")
         oneDay = datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now() + oneDay
-        survey_responses = get_survey_responses(self.manager, self.form_model.id, 0, int(mktime(tomorrow.timetuple())) * 1000)
+        survey_responses = get_survey_responses(self.manager, self.form_model.id, 0,
+                                                int(mktime(tomorrow.timetuple())) * 1000)
         self.assertEquals(1, len(survey_responses))
         self.assertEquals(u"Answer 150 for question ARV is greater than allowed.", survey_responses[0].errors)
 

@@ -18,7 +18,7 @@ class WebPlayerV2(object):
         assert request is not None
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, self.admin_id)
-        return service.save_survey(form_code, values, [], request.transport, request.message,
+        return service.save_survey(form_code, values, [], request.transport,
                                    reporter_id, additional_feed_dictionary)
 
     def _parse(self, message):
@@ -74,7 +74,7 @@ class SMSPlayerV2(object):
             reporter_entity_names = None
 
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm, response=post_sms_processor_response)
-        return service.save_survey(form_code, values, reporter_entity_names, request.transport, request.message,
+        return service.save_survey(form_code, values, reporter_entity_names, request.transport,
                                    reporter_short_code, additional_feed_dictionary=additional_feed_dictionary,
                                    translation_processor=translation_processor)
 
@@ -95,10 +95,12 @@ class XFormPlayerV2(object):
         form_code, values = self._parse(request.message)
         mediaFiles = request.media
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
-        response = service.save_survey(form_code, values, [], request.transport, request.message, reporter_id)
+        response = service.save_survey(form_code, values, [], request.transport, reporter_id)
         if mediaFiles:
             for mediaFile in mediaFiles:
-                self.dbm.put_attachment(get_survey_response_document(self.dbm, response.survey_response_id), base64.decodestring(mediaFiles[mediaFile].split(',')[1]), attachment_name=mediaFile)
+                self.dbm.put_attachment(get_survey_response_document(self.dbm, response.survey_response_id),
+                                        base64.decodestring(mediaFiles[mediaFile].split(',')[1]),
+                                        attachment_name=mediaFile)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):

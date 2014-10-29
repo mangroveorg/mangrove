@@ -88,12 +88,15 @@ class TestSurveyResponseService(TestCase):
                             entity_mock._doc = EntityDocument()
                             by_short_code.return_value = entity_mock
                             mock_form_model = MagicMock(spec=FormModel)
+                            mock_form_model._dbm = manager
+                            mock_form_model._doc = MagicMock()
+                            mock_form_model._data = {}
                             mock_form_model.validate_submission.return_value = OrderedDict(values), OrderedDict('')
                             mock_form_model.is_entity_registration_form.return_value = False
                             mock_form_model.entity_questions = []
                             mock_form_model.entity_type = 'sometype'
                             get_form_model_by_code.return_value = mock_form_model
-                            survey_response_service.save_survey('CL1', values, [], transport_info, request.message,'',
+                            survey_response_service.save_survey('CL1', values, [], transport_info,'',
                                                                 additional_dictionary)
                             self.assertEquals(1, feed_manager._save_document.call_count)
 
@@ -125,13 +128,15 @@ class TestSurveyResponseService(TestCase):
                             instance_mock.save.side_effect = MangroveException("subject not found")
 
                             by_short_code.return_value = Mock(spec=Entity)
-                            mock_form_model = Mock(spec=FormModel)
+                            mock_form_model = MagicMock(spec=FormModel)
+                            mock_form_model._dbm = manager
+                            mock_form_model._doc = MagicMock()
+                            mock_form_model._data = {}
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
 
                             try:
-                                survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                                    '',
+                                survey_response_service.save_survey('CL1', values, [], transport_info, '',
                                                                     additional_dictionary)
                                 self.fail('the subject not found exception should be propagated')
                             except MangroveException:
@@ -166,11 +171,13 @@ class TestSurveyResponseService(TestCase):
                             type(instance_mock).errors = PropertyMock(return_value='')
 
                             by_short_code.return_value = Mock(spec=Entity)
-                            mock_form_model = Mock(spec=FormModel)
+                            mock_form_model = MagicMock(spec=FormModel)
+                            mock_form_model._dbm = manager
+                            mock_form_model._doc = MagicMock()
+                            mock_form_model._data = {}
                             mock_form_model.validate_submission.return_value = values, ""
                             get_form_model_by_code.return_value = mock_form_model
-                            response = survey_response_service.save_survey('CL1', values, [], transport_info,
-                                                                           request.message, '',
+                            response = survey_response_service.save_survey('CL1', values, [], transport_info, '',
                                                                            additional_dictionary)
                             self.assertFalse(response.errors)
                             self.assertTrue(response.feed_error_message)
@@ -191,7 +198,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message, 'rep2')
+        response = survey_response_service.save_survey('CL1', values, [], transport_info, 'rep2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
@@ -217,8 +224,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': test_data.entity1.short_code, 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                       'REP2')
+        response = survey_response_service.save_survey('CL1', values, [], transport_info, 'REP2')
 
         self.assertTrue(response.success)
         self.assertEqual(0, response.errors.__len__())
@@ -243,8 +249,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
-        self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info,
-                          request.message,'')
+        self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info, '')
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)
@@ -254,8 +259,7 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
 
-        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, request.message,
-                                                             "rep2")
+        saved_response = survey_response_service.save_survey('CL1', values, [], transport_info, "rep2")
         self.assertDictEqual(OrderedDict([('Q1', 'name'), ('Q3', ['RED']), ('Q2', 80), ('ID', u'1')]),
                              saved_response.processed_data)
 

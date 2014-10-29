@@ -1,7 +1,7 @@
 
 from collections import OrderedDict
 from unittest.case import TestCase
-from mock import Mock, patch, PropertyMock
+from mock import Mock, patch, PropertyMock, MagicMock
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField, UniqueIdField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
@@ -57,7 +57,7 @@ class TestSMSPlayer(TestCase):
         get_form_model_player_mock = self.get_form_model_mock_player_patcher.start()
         get_form_model_parser_mock = self.get_form_model_mock_parser_patcher.start()
         # get_form_model_player_v2_mock = self.get_form_model_mock_player_v2_patcher.start()
-        self.form_model_mock = Mock(spec=FormModel)
+        self.form_model_mock = MagicMock(spec=FormModel)
         self.form_model_mock.is_entity_registration_form.return_value = True
         self.form_model_mock.entity_type = ["clinic"]
         self.form_model_mock.get_field_by_name = self._location_field

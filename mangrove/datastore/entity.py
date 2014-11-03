@@ -463,6 +463,13 @@ class DataRecord(DataObject):
         return self._doc.void
 
 
+def delete_data_record(dbm, form_code, short_code):
+    data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
+    for data_record in data_records:
+        data_record_doc = data_record.value
+        dbm.database.delete(data_record_doc)
+
+
 def _check_if_entity_exists(dbm, entity_type, short_code, return_entity=False):
     try:
         entity = get_by_short_code_include_voided(dbm, short_code, entity_type)

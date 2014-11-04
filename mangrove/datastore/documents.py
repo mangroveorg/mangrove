@@ -309,3 +309,22 @@ class AggregationTreeDocument(DocumentBase):
 
         if root is None:
             self.root = {}
+
+HARD_DELETE = 'hard-delete'
+SOFT_DELETE = 'soft-delete'
+
+class EntityActionDocument(DocumentBase):
+    """
+    Document to represent actions such as unique-id delete
+
+    """
+    entity_type = TextField()
+    short_code = TextField()
+    action = TextField()
+
+    def __init__(self, entity_type, short_code, action):
+        DocumentBase.__init__(self, document_type='EntityAction')
+        self.entity_type = entity_type
+        self.short_code = short_code
+        self.action = action
+

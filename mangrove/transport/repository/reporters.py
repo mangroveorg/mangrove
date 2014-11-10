@@ -1,5 +1,4 @@
-
-from mangrove.datastore.entity import  get_all_entities, Entity
+from mangrove.datastore.entity import get_all_entities, Entity
 from mangrove.datastore.queries import get_entities_by_type
 
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MultipleReportersForANumberException
@@ -22,9 +21,11 @@ def find_reporter_entity(dbm, from_number):
 
 
 def find_reporters_by_from_number(dbm, from_number):
-    rows = dbm.view.datasender_by_mobile(start_key=[from_number], end_key=[from_number,{},{}], include_docs=True)
-    if (len(rows) == 0): raise NumberNotRegisteredException(from_number)
+    rows = dbm.view.datasender_by_mobile(start_key=[from_number], end_key=[from_number, {}, {}], include_docs=True)
+    if len(rows) == 0:
+        raise NumberNotRegisteredException(from_number)
     return [Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
+
 
 def get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id, from_time=None, to_time=None):
     survey_responses = get_survey_responses_for_activity_period(dbm, form_model_id, from_time, to_time)

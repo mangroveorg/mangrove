@@ -1,12 +1,14 @@
 from collections import OrderedDict
 from datetime import timedelta
+
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
-from mangrove.datastore.entity import Entity, _from_row_to_entity
+from mangrove.datastore.entity import Entity
 from mangrove.errors.MangroveException import DataObjectAlreadyExists
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
+
 
 default_reminder_and_deadline = {"deadline_type": "Following", "should_send_reminder_to_all_ds": False,
                                  "has_deadline": True,
@@ -88,15 +90,18 @@ class Project(FormModel):
         rows = dbm.view.by_short_codes(reduce=False, include_docs=True, keys=keys)
         return [Entity.new_from_doc(dbm, Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
 
-    def _get_data_senders_ids_who_made_submission_for(self, dbm, deadline_date):
-        start_date, end_date = self.deadline().get_applicable_frequency_period_for(deadline_date)
+    def _get_data_senders_ids_who_made_submission_for(self, dbm, deadline_date, frequency_period):
+        if frequency_period == 'month':
+            start_date, end_date = deadline_date - timedelta(days=7), deadline_date + timedelta(days=7)
+        else:
+            start_date, end_date = deadline_date - timedelta(days=3), deadline_date + timedelta(days=3)
         form_model_id = self.id
         data_senders_with_submission = get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id, start_date,
                                                                                              end_date)
-        return [ds.short_code for ds in data_senders_with_submission]
+        return data_senders_with_submission
 
-    def get_data_senders_without_submissions_for(self, deadline_date, dbm):
-        data_sender_ids_with_submission = self._get_data_senders_ids_who_made_submission_for(dbm, deadline_date)
+    def get_data_senders_without_submissions_for(self, deadline_date, dbm, frequency_period):
+        data_sender_ids_with_submission = self._get_data_senders_ids_who_made_submission_for(dbm, deadline_date,  frequency_period)
         all_data_senders = self.get_data_senders(dbm)
         data_senders_without_submission = [data_sender for data_sender in all_data_senders if
                                            data_sender['short_code'] not in data_sender_ids_with_submission]

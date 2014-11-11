@@ -134,12 +134,6 @@ class TestSMSPlayer(TestCase):
         self.assertTrue(response.success)
 
 
-    def test_should_not_submit_if_parsing_is_not_successful(self):
-        with self.assertRaises(SMSParserInvalidFormatException):
-            self.sms_player.add_survey_response(Request(message="invalid .format", transportInfo=self.transport))
-
-        self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
-
 
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")

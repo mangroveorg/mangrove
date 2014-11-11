@@ -46,12 +46,6 @@ class TestOrderSMSParser(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.sms_parser.parse(None)
 
-    def test_invalid_format_message(self):
-        message = "questionnaire_code .q1 q1_answer .q2 q2_answer .q3 q3_answer"
-        self._mock_get_question_codes_from_couchdb(['q1', 'q2', 'q3'])
-        with self.assertRaises(SMSParserInvalidFormatException): self.sms_parser.parse(message)
-        self.get_question_codes_patch.stop()
-
     def test_should_ignore_additional_space_separators(self):
         message = "questionnaire_code q1_answer q2_answer                   q3_answer"
         self._mock_get_question_codes_from_couchdb(['q1', 'q2', 'q3'])

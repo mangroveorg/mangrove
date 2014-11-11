@@ -121,7 +121,7 @@ class KeyBasedSMSParser(SMSParser):
 
 
 class OrderSMSParser(SMSParser):
-    MESSAGE_PREFIX_FOR_ORDERED_SMS = ur'^(\w+)\s+(\w+)'
+    MESSAGE_PREFIX_FOR_ORDERED_SMS = ur'[^ ]+\s+[^ ]+'
 
     def __init__(self, dbm):
         self.dbm = dbm

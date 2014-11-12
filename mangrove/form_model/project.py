@@ -159,24 +159,31 @@ class Project(FormModel):
         self._doc.void = void
 
     def delete_datasender(self, dbm, entity_id):
-        from datawinners.search.datasender_index import update_datasender_index_by_id
+        # from datawinners.search.datasender_index import update_datasender_index_by_id
 
         self.data_senders.remove(entity_id)
         self.save(process_post_update=False)
-        update_datasender_index_by_id(entity_id, dbm)
+        # update_datasender_index_by_id(entity_id, dbm)
 
-    def associate_data_sender_to_project(self, dbm, data_senders_list):
+    def _remove_duplicate_datasenders(self, data_senders_list):
+        datasenders_already_linked_to_questionnaire = []
         for data_senders_code in data_senders_list:
             if data_senders_code in self.data_senders:
-                data_senders_list.remove(data_senders_code)
-        from datawinners.search.datasender_index import update_datasender_index_by_id
+                # data_senders_list.remove(data_senders_code)
+                datasenders_already_linked_to_questionnaire.append(data_senders_code)
+        for ds in datasenders_already_linked_to_questionnaire:
+            data_senders_list.remove(ds)
+
+    def associate_data_sender_to_project(self, dbm, data_senders_list):
+        self._remove_duplicate_datasenders(data_senders_list)
+        # from datawinners.search.datasender_index import update_datasender_index_by_id
         # Normally this case should not happen. However in a special case
         # blank id was sent from client side. So introduced this check.
         if data_senders_list:
             self.data_senders.extend(data_senders_list)
             self.save(process_post_update=False)
-            for data_senders_code in data_senders_list:
-                update_datasender_index_by_id(data_senders_code, dbm)
+            # for data_senders_code in data_senders_list:
+            #     update_datasender_index_by_id(data_senders_code, dbm)
 
     @property
     def is_open_survey(self):

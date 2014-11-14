@@ -235,6 +235,10 @@ class FormModel(DataObject):
         return self._form_fields
 
     @property
+    def has_nested_fields(self):
+        return filter(lambda f: f.is_field_set, self.fields)
+
+    @property
     def choice_fields(self):
         return [field for field in self._form_fields if field.type in ("select", "select1")]
 

@@ -448,7 +448,7 @@ class TextField(Field):
         self._dict["is_calculated"] = is_calculated
 
     def set_value(self, value):
-        self.value = "" if self.is_calculated and value == 'NaN' else value
+        self.value = "" if self.is_calculated and value in ['NaN', 'Invalid Date'] else value
 
     def validate(self, value):
         Field.validate(self, value)

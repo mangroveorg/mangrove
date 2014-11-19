@@ -776,14 +776,15 @@ class FieldSet(Field):
 
     def set_value(self, value):
         list = []
-        for current_value in value:
-            dict = OrderedDict()
-            for field_code, answer in current_value.iteritems():
-                field = self._find_field_for_code(field_code)
-                if field:
-                    field.set_value(answer)
-                    dict.update({field_code: field.value})
-            list.append(dict)
+        if value:
+            for current_value in value:
+                dict = OrderedDict()
+                for field_code, answer in current_value.iteritems():
+                    field = self._find_field_for_code(field_code)
+                    if field:
+                        field.set_value(answer)
+                        dict.update({field_code: field.value})
+                list.append(dict)
         super(FieldSet, self).set_value(list)
 
 

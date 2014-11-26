@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, _from_row_to_entity
 from mangrove.errors.MangroveException import DataObjectAlreadyExists
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel

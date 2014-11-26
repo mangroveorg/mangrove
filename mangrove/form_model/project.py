@@ -98,12 +98,12 @@ class Project(FormModel):
         form_model_id = self.id
         data_senders_with_submission = get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id, start_date,
                                                                                              end_date)
-        return data_senders_with_submission
+        return [datasender['short_code'] for datasender in data_senders_with_submission]
 
     def get_data_senders_without_submissions_for(self, deadline_date, dbm, frequency_period):
         data_sender_ids_with_submission = self._get_data_senders_ids_who_made_submission_for(dbm, deadline_date, frequency_period)
-        all_data_senders = self.get_data_senders(dbm)
-        data_senders_without_submission = [data_sender for data_sender in all_data_senders if
+        my_data_senders = self.get_data_senders(dbm)
+        data_senders_without_submission = [data_sender for data_sender in my_data_senders if
                                            data_sender['short_code'] not in data_sender_ids_with_submission]
         return data_senders_without_submission
 

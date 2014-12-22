@@ -95,7 +95,8 @@ class XFormPlayerV2(object):
         form_code, values = self._parse(request.message)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
-        self.add_new_attachments(request.media, response.survey_response_id)
+        if request.media:
+            self.add_new_attachments(request.media, response.survey_response_id)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):

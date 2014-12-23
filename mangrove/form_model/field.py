@@ -144,7 +144,7 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
-                        instruction=instruction, required=required, parent_field_code=parent_field_code)
+                        instruction=instruction, required=required, parent_field_code=parent_field_code, has_other=dictionary.get("has_other"))
 
     return field
 
@@ -586,8 +586,7 @@ class SelectField(Field):
     OPTIONS = "choices"
 
     def __init__(self, name, code, label, options, instruction=None,
-
-                 single_select_flag=True, required=True, parent_field_code=None):
+                 single_select_flag=True, required=True, parent_field_code=None, has_other=False):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
@@ -595,6 +594,8 @@ class SelectField(Field):
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
+        if has_other:
+            self._dict['has_other'] = has_other
         if options is not None:
             for option in options:
                 if isinstance(option, tuple):
@@ -606,7 +607,7 @@ class SelectField(Field):
                 valid_choices.append(single_language_specific_option)
         self.constraint = ChoiceConstraint(
             list_of_valid_choices=valid_choices,
-            single_select_constraint=single_select_flag, code=code)
+            single_select_constraint=single_select_flag, code=code, has_other=has_other)
 
     SINGLE_SELECT_FLAG = 'single_select_flag'
 
@@ -621,6 +622,10 @@ class SelectField(Field):
     def _to_json_view(self):
         dict = self._dict.copy()
         return dict
+
+    @property
+    def has_other(self):
+        return self._dict.get('has_other')
 
     def get_constraint_text(self):
         return [option["text"] for option in self.options]
@@ -649,10 +654,14 @@ class SelectField(Field):
             opt_value = opt['val']
             if opt_value.lower() == option.lower():
                 return opt_text
-        return None
+        return  None
 
 
     def get_option_value_list(self, question_value):
+
+        if isinstance(question_value, list) and question_value[0] == 'other':
+            return [question_value[1]]
+
         options = self.get_option_list(question_value)
         result = []
         for option in options:

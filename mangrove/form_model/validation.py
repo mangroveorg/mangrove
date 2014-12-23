@@ -69,12 +69,13 @@ class TextLengthConstraint(NumericRangeConstraint):
 
 
 class ChoiceConstraint(object):
-    def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None):
+    def __init__(self, single_select_constraint, list_of_valid_choices, code, dict=None, has_other=False):
         self.single_select_constraint = single_select_constraint
         self.list_of_valid_choices = list_of_valid_choices
         self.choice_dict = self.get_item(self.list_of_valid_choices)
         self.choice_vals = self.choice_dict.keys()
         self.code = code
+        self.has_other = has_other
 
     def get_item(self, items):
         item_dict = {}
@@ -87,7 +88,12 @@ class ChoiceConstraint(object):
 
     def validate(self, answer):
         assert answer is not None
-        answer_string = answer.lower().strip()
+
+        if self.has_other and isinstance(answer, list) and answer[0] == 'other':
+            answer_string = answer[1]
+        else:
+            answer_string = answer.lower().strip()
+
         if not answer_string:
             raise AnswerHasNoValuesException(code=self.code, answer=answer)
 
@@ -98,6 +104,8 @@ class ChoiceConstraint(object):
         elif ' ' in answer_string:
             responses = answer_string.split(' ')
         elif answer_string in self.choice_vals:
+            responses = [answer_string]
+        elif self.has_other:
             responses = [answer_string]
         else:
             invalid_responses = re.split(r'[1-9]?[a-z]', answer_string)
@@ -115,6 +123,8 @@ class ChoiceConstraint(object):
                 choice_selected = self.choice_dict[response]
                 if choice_selected not in choices_text:
                     choices_text.append(choice_selected)
+            elif self.has_other:
+                choices_text.append(response)
             else:
                 raise AnswerNotInListException(code=self.code, answer=response)
         return choices_text

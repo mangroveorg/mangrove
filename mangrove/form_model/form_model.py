@@ -8,7 +8,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -321,7 +321,8 @@ class FormModel(DataObject):
                 return field
             if isinstance(field, FieldSet):
                 field_by_code = self._get_by_code(field.fields, code)
-                if field_by_code: return field_by_code
+                if field_by_code:
+                    return field_by_code
         return None
 
     def get_field_by_code_and_rev(self, code, revision=None):
@@ -388,7 +389,7 @@ class FormModel(DataObject):
     def bind(self, submission):
         self.submission = submission
         for field in self.fields:
-            answer = self._case_insensitive_lookup(self.submission, field.code)
+            answer = self._lookup_answer_for_field_code(self.submission, field.code)
             field.set_value(answer)
 
     def bound_values(self):
@@ -465,7 +466,14 @@ class FormModel(DataObject):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_unknown_fields(self, answers):
-        return OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
+        key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
+        for key in answers.keys():
+            if key.endswith('_other'):
+                possible_choice_field_key = key[:-6]
+                field = self.get_field_by_code(possible_choice_field_key)
+                if isinstance(field, SelectField) and field.has_other:
+                    key_value_items[possible_choice_field_key] = answers[key]
+        return key_value_items
 
     #TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
     def validate_submission(self, values):
@@ -494,6 +502,13 @@ class FormModel(DataObject):
             if fieldcode.lower() == code.lower():
                 return values[fieldcode]
         return None
+
+    def _lookup_answer_for_field_code(self, values, code):
+        value = self._case_insensitive_lookup(values, code)
+        other_choice_value_key = code + '_other'
+        if value == 'other' and values.get(other_choice_value_key):
+            return ['other', values[other_choice_value_key]]
+        return value
 
     def stringify(self, values):
         self.bind(values)

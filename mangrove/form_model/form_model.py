@@ -55,6 +55,7 @@ def get_form_model_by_code(dbm, code):
         return EntityFormModel.new_from_doc(dbm, EntityFormModelDocument.wrap(row_value))
     return FormModel.new_from_doc(dbm, FormModelDocument.wrap(row_value))
 
+
 def _load_questionnaire(form_code, dbm):
     assert isinstance(dbm, DatabaseManager)
     assert is_string(form_code)
@@ -90,6 +91,7 @@ def header_fields(form_model, key_attribute="name", ref_header_dict=None):
     _header_fields(form_model.fields, key_attribute, header_dict)
     return header_dict
 
+
 def _header_fields(fields, key_attribute, header_dict, parent_field_name=None):
     for field in fields:
         if isinstance(field, FieldSet) and field.is_group():
@@ -100,8 +102,9 @@ def _header_fields(fields, key_attribute, header_dict, parent_field_name=None):
         if not header_dict.get(key):
             header_dict.update({key: field.label})
 
+
 def get_field_by_attribute_value(form_model, key_attribute, attribute_label):
-    #ex: field1.name='first_name' field1.code='q1'
+    # ex: field1.name='first_name' field1.code='q1'
     #    field2.name='location' field2.code='q3'
     #    and both field1 and field2 are form_model fields,
     #    get_field_by_attribute_value(form_model,'name','location') will give back field2
@@ -152,7 +155,7 @@ class FormModel(DataObject):
         assert name is None or is_not_empty(name)
         assert fields is None or is_sequence(fields)
         assert form_code is None or (is_string(form_code) and is_not_empty(form_code))
-        #assert type is None or is_not_empty(type)
+        # assert type is None or is_not_empty(type)
 
         DataObject.__init__(self, dbm)
         self._old_doc = None
@@ -214,10 +217,10 @@ class FormModel(DataObject):
     def entity_type(self):
         unique_id_fields = self.entity_questions
         if unique_id_fields:
-            #There can be multiple fields with similar unique id types. we need set of unique id types.
+            # There can be multiple fields with similar unique id types. we need set of unique id types.
             entity_types = OrderedDict()
             for unique_id_field in unique_id_fields:
-                entity_types.update({unique_id_field.unique_id_type:None})
+                entity_types.update({unique_id_field.unique_id_type: None})
             return entity_types.keys()
         else:
             return []
@@ -277,7 +280,7 @@ class FormModel(DataObject):
         super(FormModel, self).void(void=void)
 
     def save(self, process_post_update=True):
-    # convert fields and validators to json fields before save
+        # convert fields and validators to json fields before save
         self.check_if_form_model_unique()
         return self.update_doc_and_save(process_post_update)
 
@@ -315,7 +318,7 @@ class FormModel(DataObject):
     def get_field_by_code(self, code):
         return self._get_by_code(self._form_fields, code)
 
-    def _get_by_code(self,fields,code):
+    def _get_by_code(self, fields, code):
         for field in fields:
             if code is not None and field.code.lower() == code.lower():
                 return field
@@ -472,10 +475,15 @@ class FormModel(DataObject):
                 possible_choice_field_key = key[:-6]
                 field = self.get_field_by_code(possible_choice_field_key)
                 if isinstance(field, SelectField) and field.has_other:
-                    key_value_items[possible_choice_field_key] = answers[key]
+                    if field.is_single_select:
+                        key_value_items[possible_choice_field_key] = answers[key]
+                    else:
+                        key_value_items[possible_choice_field_key] = key_value_items[possible_choice_field_key].replace(
+                            'other', answers[key])
+
         return key_value_items
 
-    #TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
+    # TODO : does not handle value errors. eg. Text for Number. Done outside the service right now.
     def validate_submission(self, values):
         assert values is not None
         cleaned_values = OrderedDict()
@@ -506,8 +514,14 @@ class FormModel(DataObject):
     def _lookup_answer_for_field_code(self, values, code):
         value = self._case_insensitive_lookup(values, code)
         other_choice_value_key = code + '_other'
-        if value == 'other' and values.get(other_choice_value_key):
+        if values.get(other_choice_value_key) and value == 'other':
             return ['other', values[other_choice_value_key]]
+        if values.get(other_choice_value_key) and value and 'other' in value.split(' '):
+            multiple_answer_selected = [item for item in value.split(' ') if item != 'other']
+            answers_selected_including_other_choice = multiple_answer_selected + [item for item in
+                                                                                  values[other_choice_value_key].split(
+                                                                                      ' ')]
+            return ['other', ' '.join(answers_selected_including_other_choice)]
         return value
 
     def stringify(self, values):
@@ -539,6 +553,7 @@ class FormModel(DataObject):
     @property
     def is_open_survey(self):
         return self._doc.get('is_open_survey', False)
+
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

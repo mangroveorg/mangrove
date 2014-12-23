@@ -654,13 +654,17 @@ class SelectField(Field):
             opt_value = opt['val']
             if opt_value.lower() == option.lower():
                 return opt_text
-        return  None
+        return option
 
 
     def get_option_value_list(self, question_value):
 
         if isinstance(question_value, list) and question_value[0] == 'other':
-            return [question_value[1]]
+            if self.is_single_select:
+                return [question_value[1]]
+            else:
+                question_value = ','.join(question_value[1].split(' '))
+
 
         options = self.get_option_list(question_value)
         result = []

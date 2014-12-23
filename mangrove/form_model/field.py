@@ -648,13 +648,13 @@ class SelectField(Field):
     def is_single_select(self):
         return self.type == "select1"
 
-    def get_value_by_option(self, option):
+    def get_value_by_option(self, option, default=None):
         for opt in self.options:
             opt_text = opt['text']
             opt_value = opt['val']
             if opt_value.lower() == option.lower():
                 return opt_text
-        return option
+        return default
 
 
     def get_option_value_list(self, question_value):
@@ -669,7 +669,7 @@ class SelectField(Field):
         options = self.get_option_list(question_value)
         result = []
         for option in options:
-            option_value = self.get_value_by_option(option)
+            option_value = self.get_value_by_option(option, default=option)
             if option_value:
                 result.append(option_value)
         return result

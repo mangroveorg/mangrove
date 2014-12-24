@@ -114,8 +114,8 @@ class EnrichedSurveyResponseBuilder(object):
 
     def _select_field_values(self, choices, field):
 
-        if field.has_other and isinstance(choices, list) and choices[0] == 'other':
-            return choices[1]
+        # if field.has_other and isinstance(choices, list) and choices[0] == 'other':
+        #     return choices[1]
 
         choice_array = field.get_option_list(choices)
         value_array = field.get_option_value_list(choices)

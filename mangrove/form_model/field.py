@@ -659,11 +659,11 @@ class SelectField(Field):
 
     def get_option_value_list(self, question_value):
 
-        if isinstance(question_value, list) and question_value[0] == 'other':
-            if self.is_single_select:
-                return [question_value[1]]
-            else:
-                question_value = ','.join(question_value[1].split(' '))
+        # if isinstance(question_value, list) and question_value[0] == 'other':
+        #     if self.is_single_select:
+        #         return [question_value[1]]
+        #     else:
+        #         question_value = ','.join(question_value[1].split(' '))
 
 
         options = self.get_option_list(question_value)
@@ -687,6 +687,8 @@ class SelectField(Field):
         elif question_value in [item.get('val') for item in self._dict[self.OPTIONS]]:
             # yes in ['yes','no']
             responses = [question_value]
+        elif self.has_other and question_value == 'other':
+            responses = ['other']
         else:
             responses = re.findall(r'[1-9]?[a-zA-Z]', question_value)
 

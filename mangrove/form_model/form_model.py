@@ -470,16 +470,6 @@ class FormModel(DataObject):
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
-        for key in answers.keys():
-            if key.endswith('_other'):
-                possible_choice_field_key = key[:-6]
-                field = self.get_field_by_code(possible_choice_field_key)
-                if isinstance(field, SelectField) and field.has_other:
-                    if field.is_single_select:
-                        key_value_items[possible_choice_field_key] = answers[key]
-                    else:
-                        key_value_items[possible_choice_field_key] = key_value_items[possible_choice_field_key].replace(
-                            'other', answers[key])
 
         return key_value_items
 
@@ -513,15 +503,6 @@ class FormModel(DataObject):
 
     def _lookup_answer_for_field_code(self, values, code):
         value = self._case_insensitive_lookup(values, code)
-        other_choice_value_key = code + '_other'
-        if values.get(other_choice_value_key) and value == 'other':
-            return ['other', values[other_choice_value_key]]
-        if values.get(other_choice_value_key) and value and 'other' in value.split(' '):
-            multiple_answer_selected = [item for item in value.split(' ') if item != 'other']
-            answers_selected_including_other_choice = multiple_answer_selected + [item for item in
-                                                                                  values[other_choice_value_key].split(
-                                                                                      ' ')]
-            return ['other', ' '.join(answers_selected_including_other_choice)]
         return value
 
     def stringify(self, values):

@@ -3,6 +3,7 @@ import inspect
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.repository.survey_responses import get_survey_response_document
+from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
 from mangrove.errors.MangroveException import NumberNotRegisteredException
@@ -93,10 +94,12 @@ class XFormPlayerV2(object):
     def add_survey_response(self, request, reporter_id, logger=None):
         assert request is not None
         form_code, values = self._parse(request.message)
+        media_submission_service = MediaSubmissionService(self.dbm, logger, request.media, form_code)
+        attachments = media_submission_service.create_media_documents(values)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
-        if request.media:
-            self.add_new_attachments(request.media, response.survey_response_id)
+        if attachments:
+            self.add_new_attachments(attachments, response.survey_response_id)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
@@ -109,8 +112,8 @@ class XFormPlayerV2(object):
 
         return response
 
-    def add_new_attachments(self, mediaFiles, survey_response_id):
-        for name, file in mediaFiles.iteritems():
+    def add_new_attachments(self, media_files, survey_response_id):
+        for name, file in media_files.iteritems():
             # TODO may be we don't need this check
             if name != 'xml_submission_file':
                 self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),

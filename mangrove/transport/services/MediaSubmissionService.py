@@ -13,9 +13,12 @@ class MediaSubmissionService():
         self.form_model = get_form_model_by_code(self.dbm, form_code)
 
     def create_media_documents(self, values):
-        fields = self.form_model.fields
-        counter = self._get_count(self.form_model.id)
-        return self._get_media_fields_and_update_values(fields, [values], counter)
+        if self.form_model.is_media_type_fields_present and self.media:
+            fields = self.form_model.fields
+            counter = self._get_count(self.form_model.id)
+            return self._get_media_fields_and_update_values(fields, [values], counter)
+        else:
+            return None
 
     def _get_count(self, form_model_id):
         while True:

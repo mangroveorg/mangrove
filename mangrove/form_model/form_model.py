@@ -8,7 +8,7 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -201,6 +201,16 @@ class FormModel(DataObject):
             if isinstance(f, UniqueIdField):
                 ef.append(f)
         return ef
+
+    @property
+    def is_media_type_fields_present(self):
+        is_media = self._doc.is_media_type_fields_present
+        return True if is_media is None else is_media
+
+    def update_media_field_flag(self):
+        media_fields = self.get_media_fields()
+        if media_fields:
+            self._doc.is_media_type_fields_present = True
 
     @property
     def xform(self):
@@ -535,6 +545,16 @@ class FormModel(DataObject):
     def is_open_survey(self):
         return self._doc.get('is_open_survey', False)
 
+    def get_media_fields(self, fields=None):
+        media_fields = []
+        if not fields:
+            fields = self.fields
+        for field in fields:
+            if isinstance(field, MediaField):
+                media_fields.append(fields)
+            elif field.is_field_set:
+                media_fields.extend(self.get_media_fields(field.fields))
+        return media_fields
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

@@ -1,4 +1,4 @@
-from mangrove.form_model.field import field_attributes
+from mangrove.form_model.field import MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.media import Media
 
@@ -6,9 +6,8 @@ ONE_MB = 1000000
 
 
 class MediaSubmissionService():
-    def __init__(self, dbm, logger, media, form_code):
+    def __init__(self, dbm, media, form_code):
         self.dbm = dbm
-        self.logger = logger
         self.media = media
         self.form_model = get_form_model_by_code(self.dbm, form_code)
 
@@ -26,27 +25,26 @@ class MediaSubmissionService():
             count = rows[0][u"value"] + 1 if rows else 1
             yield count
 
-    def _create_document(self, old_name, new_name):
-        media_file = self.media[old_name]
-        size_in_mb = float(media_file.size) / ONE_MB
+    def _create_document(self, file_size, new_name):
+        size_in_mb = file_size / ONE_MB
         media = Media(self.dbm, new_name, size_in_mb, self.form_model.id)
         media.save()
-        return media_file
 
     def _get_media_fields_and_update_values(self, fields, values, counter):
         media_files = {}
-        media_field_types = [field_attributes.PHOTO, field_attributes.VIDEO, field_attributes.AUDIO]
         for field in fields:
             if field.is_field_set:
                 for value in values:
                     media_files.update(
                         self._get_media_fields_and_update_values(field.fields, value[field.code], counter))
-            elif field.type in media_field_types:
+            elif isinstance(field, MediaField):
                 for value in values:
                     old_name = value[field.code]
                     if old_name:
                         count = next(counter)
                         new_name = str(count) + '-' + old_name
                         value[field.code] = new_name
-                        media_files[new_name] = self._create_document(old_name, new_name)
+                        media_file = self.media[old_name]
+                        self._create_document(float(media_file.size), new_name)
+                        media_files[new_name] = media_file
         return media_files

@@ -14,14 +14,14 @@ class MediaSubmissionService():
     def create_media_documents(self, values):
         if self.form_model.is_media_type_fields_present and self.media:
             fields = self.form_model.fields
-            counter = self._get_count(self.form_model.id)
+            counter = self._get_count()
             return self._get_media_fields_and_update_values(fields, [values], counter)
         else:
             return None
 
-    def _get_count(self, form_model_id):
+    def _get_count(self):
         while True:
-            rows = self.dbm.view.media_attachment(reduce=True, key=form_model_id)
+            rows = self.dbm.view.media_attachment(group=True, reduce=True, key=self.form_model.id)
             count = rows[0][u"value"] + 1 if rows else 1
             yield count
 

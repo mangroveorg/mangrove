@@ -25,9 +25,9 @@ class MediaSubmissionService():
             count = rows[0][u"value"] + 1 if rows else 1
             yield count
 
-    def _create_document(self, file_size, new_name):
+    def create_media_details_document(self, file_size, name):
         size_in_mb = file_size / ONE_MB
-        media = Media(self.dbm, new_name, size_in_mb, self.form_model.id)
+        media = Media(self.dbm, name, size_in_mb, self.form_model.id)
         media.save()
 
     def _get_media_fields_and_update_values(self, fields, values, counter):
@@ -45,6 +45,6 @@ class MediaSubmissionService():
                         new_name = str(count) + '-' + old_name
                         value[field.code] = new_name
                         media_file = self.media[old_name]
-                        self._create_document(float(media_file.size), new_name)
+                        self.create_media_details_document(float(media_file.size), new_name)
                         media_files[new_name] = media_file
         return media_files

@@ -35,7 +35,7 @@ def get_survey_response_by_id(dbm, survey_response_id):
         return None
 
 def get_survey_response_document(dbm, survey_response_id):
-    return  dbm._load_document(survey_response_id)
+    return dbm._load_document(survey_response_id)
 
 
 def survey_responses_by_form_model_id(dbm, form_model_id):

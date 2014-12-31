@@ -10,6 +10,6 @@ class TestCreateMediaDocument(MangroveTestCase):
         media_submission_service = MediaSubmissionService(self.manager, {}, "code")
         count = next(media_submission_service._get_count(form_model.id))
         self.assertEquals(1, count)
-        media_submission_service._create_document(1000000, "new_image")
+        media_submission_service.create_media_details_document(1000000, "new_image")
         count = next(media_submission_service._get_count(form_model.id))
         self.assertEquals(2, count)

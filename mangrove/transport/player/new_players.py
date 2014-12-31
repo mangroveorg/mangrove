@@ -95,48 +95,52 @@ class XFormPlayerV2(object):
         assert request is not None
         form_code, values = self._parse(request.message)
         media_submission_service = MediaSubmissionService(self.dbm, request.media, form_code)
-        attachments = media_submission_service.create_media_documents(values)
+        media_files = media_submission_service.create_media_documents(values)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
-        if attachments:
-            self.add_new_attachments(attachments, response.survey_response_id)
+        self._add_new_attachments(media_files, response.survey_response_id)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
         assert request is not None
         form_code, values = self._parse(request.message)
+        media_submission_service = MediaSubmissionService(self.dbm, request.media, form_code)
+        media_files = media_submission_service.create_media_documents(values)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.edit_survey(form_code, values, [], survey_response, additional_feed_dictionary)
-        self.delete_removed_attachments(request, survey_response.id)
-        self.add_new_attachments(request.media, survey_response.id)
-
+        self._delete_removed_attachments(request, survey_response.id, media_submission_service)
+        self._add_new_attachments(media_files, survey_response.id)
         return response
 
-    def add_new_attachments(self, media_files, survey_response_id):
-        for name, file in media_files.iteritems():
-            # TODO may be we don't need this check
-            if name != 'xml_submission_file':
-                self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),
-                                        file, attachment_name=name)
+    def _add_new_attachments(self, media_files, survey_response_id):
+        if media_files:
+            for name, file in media_files.iteritems():
+                # TODO may be we don't need this check
+                if name != 'xml_submission_file':
+                    self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),
+                                            file, attachment_name=name)
 
-    def delete_removed_attachments(self, request, survey_response_id):
-        survey_responce_doc = get_survey_response_document(self.dbm, survey_response_id)
-        #TODO can get_attachment method be added to survey_doc
-        existing_media = survey_responce_doc._data.get('_attachments', {}).keys()
-
+    def _delete_removed_attachments(self, request, survey_response_id, media_submission_service):
         if request.retain_files and len(request.retain_files) > 0:
-            self.keep_attachments(survey_response_id, existing_media, request.retain_files)
+            self._keep_attachments(survey_response_id, request.retain_files, media_submission_service)
         else:
-            self.delete_all_attachments(survey_response_id, existing_media)
+            self._delete_all_attachments(survey_response_id, media_submission_service)
 
+    def _keep_attachments(self, survey_response_id, retain_files, media_submission_service):
+        survey_response_document = get_survey_response_document(self.dbm, survey_response_id)
+        existing_media_attachments = survey_response_document._data.get('_attachments', {})
 
-    def keep_attachments(self, survey_response_id, existing_attachments, retain_files):
-        for existing_attachment in existing_attachments:
-            if existing_attachment not in retain_files:
-                self.dbm.delete_attachment(get_survey_response_document(self.dbm, survey_response_id),
-                                           existing_attachment)
+        for existing_attachment_name in existing_media_attachments.keys():
+            if existing_attachment_name not in retain_files:
+                media_submission_service.create_media_details_document(
+                    existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
+                self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
 
-    def delete_all_attachments(self, survey_response_id, existing_attachments):
-        for existing_attachment in existing_attachments:
-            self.dbm.delete_attachment(get_survey_response_document(self.dbm, survey_response_id),
-                                       existing_attachment)
+    def _delete_all_attachments(self, survey_response_id, media_submission_service):
+        survey_response_document = get_survey_response_document(self.dbm, survey_response_id)
+        existing_media_attachments = survey_response_document._data.get('_attachments', {})
+
+        for existing_attachment_name in existing_media_attachments.keys():
+            media_submission_service.create_media_details_document(
+                existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
+            self.dbm.delete_attachment(survey_response_document, existing_attachment_name)

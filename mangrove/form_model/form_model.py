@@ -205,7 +205,7 @@ class FormModel(DataObject):
     @property
     def is_media_type_fields_present(self):
         is_media = self._doc.is_media_type_fields_present
-        return True if is_media is None else is_media
+        return False if is_media is None else is_media
 
     def update_media_field_flag(self):
         media_fields = self.get_media_fields()

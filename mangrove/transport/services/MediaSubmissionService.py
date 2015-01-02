@@ -21,7 +21,7 @@ class MediaSubmissionService():
 
     def _get_count(self, form_model_id):
         while True:
-            rows = self.dbm.view.media_attachment(group=True, reduce=True, key=form_model_id)
+            rows = self.dbm.view.media_attachment(reduce=True, key=form_model_id)
             count = rows[0][u"value"] + 1 if rows else 1
             yield count
 

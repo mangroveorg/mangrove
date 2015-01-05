@@ -114,11 +114,12 @@ class XFormPlayerV2(object):
 
     def _add_new_attachments(self, media_files, survey_response_id):
         if media_files:
+            document = get_survey_response_document(self.dbm, survey_response_id)
             for name, file in media_files.iteritems():
                 # Ignore submission xml file from ODK
                 if name != 'xml_submission_file':
-                    self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),
-                                            file, attachment_name=name)
+                    file.seek(0)
+                    self.dbm.put_attachment(document, file, attachment_name=name)
 
     def _delete_removed_attachments(self, request, survey_response_id, media_submission_service):
         if request.retain_files and len(request.retain_files) > 0:

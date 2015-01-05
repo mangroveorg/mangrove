@@ -208,8 +208,7 @@ class FormModel(DataObject):
         return False if is_media is None else is_media
 
     def update_media_field_flag(self):
-        media_fields = self.get_media_fields()
-        if media_fields:
+        if self.media_fields:
             self._doc.is_media_type_fields_present = True
 
     @property
@@ -559,17 +558,6 @@ class FormModel(DataObject):
     @property
     def is_open_survey(self):
         return self._doc.get('is_open_survey', False)
-
-    def get_media_fields(self, fields=None):
-        media_fields = []
-        if not fields:
-            fields = self.fields
-        for field in fields:
-            if isinstance(field, MediaField):
-                media_fields.append(fields)
-            elif field.is_field_set:
-                media_fields.extend(self.get_media_fields(field.fields))
-        return media_fields
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

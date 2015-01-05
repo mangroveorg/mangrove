@@ -115,7 +115,7 @@ class XFormPlayerV2(object):
     def _add_new_attachments(self, media_files, survey_response_id):
         if media_files:
             for name, file in media_files.iteritems():
-                # TODO may be we don't need this check
+                # Ignore submission xml file from ODK
                 if name != 'xml_submission_file':
                     self.dbm.put_attachment(get_survey_response_document(self.dbm, survey_response_id),
                                             file, attachment_name=name)

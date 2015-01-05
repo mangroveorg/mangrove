@@ -260,6 +260,21 @@ class FormModel(DataObject):
         return [field for field in self._form_fields if field.type == 'date']
 
     @property
+    def media_fields(self):
+        return self._get_media_fields(self._form_fields)
+
+    def _get_media_fields(self, fields):
+        media_fields = []
+        for field in fields:
+            if isinstance(field, MediaField):
+                media_fields.append(field)
+            if isinstance(field, FieldSet):
+                media_fields_from_field_set = self._get_media_fields(field.fields)
+                if media_fields_from_field_set:
+                        media_fields.extend(media_fields_from_field_set)
+        return media_fields
+
+    @property
     def label(self):
         return self._doc.label
 

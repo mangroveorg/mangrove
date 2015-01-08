@@ -10,7 +10,8 @@ import xmltodict
 
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
-from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, PhotoField, VideoField, AudioField
+from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, PhotoField, VideoField, AudioField, \
+    TimeField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
@@ -363,6 +364,8 @@ class XFormParser(object):
             values[code] = self.__get_formatted_date(field.date_format, date)
         if type(field) == IntegerField:
             values[code] = "%s" % values[code].__str__()
+        if type(field) == TimeField:
+            values[code] = "%s" % str(values[code])
         if type(field) == FieldSet:
             value_list = self._format_field_set(field, values[code])
             values[code] =  [self._fetch_string_value(r) for r in value_list]

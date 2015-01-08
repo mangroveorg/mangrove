@@ -31,6 +31,10 @@ def create_question_from(dictionary, dbm):
     parent_field_code = dictionary.get("parent_field_code")
     if type == field_attributes.TEXT_FIELD:
         return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code)
+    if type == field_attributes.TIME:
+        return _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code)
+    if type == field_attributes.DATE_TIME:
+        return _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.INTEGER_FIELD:
         return _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code)
     elif type == field_attributes.DATE_FIELD:
@@ -90,6 +94,25 @@ def _get_text_field(code, dictionary, label, name, instruction, required, parent
                       constraints=constraints, instruction=instruction, required=required,
                       parent_field_code=parent_field_code, is_calculated=dictionary.get('is_calculated'))
     return field
+
+def _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+    field = TimeField(name=name, code=code, label=label,
+                      constraints=constraints, instruction=instruction, required=required,
+                      parent_field_code=parent_field_code)
+    return field
+
+def _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+    field = DateTimeField(name=name, code=code, label=label,
+                      constraints=constraints, instruction=instruction, required=required,
+                      parent_field_code=parent_field_code)
+    return field
+
 
 
 def _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code):
@@ -193,6 +216,8 @@ class field_attributes(object):
     PHOTO = "photo"
     VIDEO = "video"
     AUDIO = "audio"
+    TIME = "time"
+    DATE_TIME = "dateTime"
 
 
 class Field(object):
@@ -854,3 +879,33 @@ class FieldSet(Field):
         dict['instruction'] = self._dict['instruction']
         dict['fields'] = [f._to_json() for f in self.fields]
         return dict
+
+class TimeField(Field):
+    def __init__(self, name, code, label, constraints=None, instruction=None, required=True,
+                 parent_field_code=None):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type='time', name=name, code=code, label=label, instruction=instruction,
+                       constraints=constraints, required=required, parent_field_code=parent_field_code)
+
+    @property
+    def format(self):
+        return "HH:mm"
+
+    def formatted_field_values_for_excel(self, value):
+        return value
+
+
+class DateTimeField(Field):
+    def __init__(self, name, code, label, constraints=None, instruction=None, required=True,
+                 parent_field_code=None):
+        if not constraints: constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type='dateTime', name=name, code=code, label=label, instruction=instruction,
+                       constraints=constraints, required=required, parent_field_code=parent_field_code)
+
+    def format(self):
+        return "dd.mm.yyyy HH:mm"
+
+    def formatted_field_values_for_excel(self, value):
+        return value

@@ -11,7 +11,7 @@ import xmltodict
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, PhotoField, VideoField, AudioField, \
-    TimeField
+    TimeField, DateTimeField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
@@ -366,6 +366,8 @@ class XFormParser(object):
             values[code] = "%s" % values[code].__str__()
         if type(field) == TimeField:
             values[code] = "%s" % str(values[code])
+        if type(field) == DateTimeField:
+            values[code] = self._parse_date_time(values[code])
         if type(field) == FieldSet:
             value_list = self._format_field_set(field, values[code])
             values[code] =  [self._fetch_string_value(r) for r in value_list]
@@ -386,6 +388,12 @@ class XFormParser(object):
 
     def _get_attachment(self, field):
         return field['#text']
+
+    def _parse_date_time(self, value):
+        value_split = value.split('T')
+        date_part = value_split[0]
+        time_part = value_split[1].split(":00.000")[0]
+        return datetime.strptime("%s%s" % (date_part, time_part), "%Y-%m-%d%H:%M")
 
 
 class XlsDatasenderParser(XlsParser):

@@ -59,9 +59,11 @@ def create_question_from(dictionary, dbm):
 
     return None
 
+
 def _get_media_class(type):
     type_media_dict = {'photo': PhotoField, 'video': VideoField, 'audio': AudioField}
     return type_media_dict[type]
+
 
 def _get_media_field(type, code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
@@ -69,7 +71,7 @@ def _get_media_field(type, code, dictionary, label, name, instruction, required,
         constraints = constraints_factory(constraints_json)
     MediaClass = _get_media_class(type)
     field = MediaClass(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
-                       required=required,  parent_field_code=parent_field_code)
+                       required=required, parent_field_code=parent_field_code)
     return field
 
 
@@ -95,6 +97,7 @@ def _get_text_field(code, dictionary, label, name, instruction, required, parent
                       parent_field_code=parent_field_code, is_calculated=dictionary.get('is_calculated'))
     return field
 
+
 def _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
@@ -104,15 +107,15 @@ def _get_time_field(code, dictionary, label, name, instruction, required, parent
                       parent_field_code=parent_field_code)
     return field
 
+
 def _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = DateTimeField(name=name, code=code, label=label,
-                      constraints=constraints, instruction=instruction, required=required,
-                      parent_field_code=parent_field_code)
+                          constraints=constraints, instruction=instruction, required=required,
+                          parent_field_code=parent_field_code)
     return field
-
 
 
 def _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code):
@@ -167,7 +170,8 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
-                        instruction=instruction, required=required, parent_field_code=parent_field_code, has_other=dictionary.get("has_other"))
+                        instruction=instruction, required=required, parent_field_code=parent_field_code,
+                        has_other=dictionary.get("has_other"))
 
     return field
 
@@ -392,7 +396,8 @@ class DateField(Field):
     DATE_FORMAT = "date_format"
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y'}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
-                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy', "HH:mm": "HH:mm"}
+                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy', "hh:mm": "hour_minute",
+                              "dd.MM.yyyy hh:mm": "dd.MM.yyyy hh:mm"}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True, parent_field_code=None):
@@ -438,7 +443,7 @@ class DateField(Field):
 
 
 # All the Field Types should be be wrapped with Excel Field types defined in other project including the lead part fields.
-#That will require atleast a couple of days of work
+# That will require atleast a couple of days of work
 class ExcelDate(object):
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y'}
 
@@ -794,29 +799,29 @@ class MediaField(Field):
 
 
 class PhotoField(MediaField):
-
     def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        MediaField.__init__(self, type=field_attributes.PHOTO, name=name, code=code, label=label, instruction=instruction,
+        MediaField.__init__(self, type=field_attributes.PHOTO, name=name, code=code, label=label,
+                            instruction=instruction,
                             constraints=constraints, required=required, parent_field_code=parent_field_code)
 
 
 class VideoField(MediaField):
-
-    def __init__(self, name, code, label,  constraints=None, instruction=None, required=True, parent_field_code=None):
+    def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        MediaField.__init__(self, type=field_attributes.VIDEO, name=name, code=code, label=label, instruction=instruction,
+        MediaField.__init__(self, type=field_attributes.VIDEO, name=name, code=code, label=label,
+                            instruction=instruction,
                             constraints=constraints, required=required, parent_field_code=parent_field_code)
 
 
 class AudioField(MediaField):
-
-    def __init__(self, name, code, label,  constraints=None, instruction=None, required=True, parent_field_code=None):
+    def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        MediaField.__init__(self, type=field_attributes.AUDIO, name=name, code=code, label=label, instruction=instruction,
+        MediaField.__init__(self, type=field_attributes.AUDIO, name=name, code=code, label=label,
+                            instruction=instruction,
                             constraints=constraints, required=required, parent_field_code=parent_field_code)
 
 
@@ -880,6 +885,7 @@ class FieldSet(Field):
         dict['fields'] = [f._to_json() for f in self.fields]
         return dict
 
+
 class TimeField(Field):
     def __init__(self, name, code, label, constraints=None, instruction=None, required=True,
                  parent_field_code=None):
@@ -890,7 +896,7 @@ class TimeField(Field):
 
     @property
     def format(self):
-        return "HH:mm"
+        return "hh:mm"
 
     def formatted_field_values_for_excel(self, value):
         return value
@@ -904,8 +910,9 @@ class DateTimeField(Field):
         Field.__init__(self, type='dateTime', name=name, code=code, label=label, instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code)
 
+    @property
     def format(self):
-        return "dd.mm.yyyy HH:mm"
+        return "%YYYY-%mm-%ddHH:mm"
 
     def formatted_field_values_for_excel(self, value):
         return value

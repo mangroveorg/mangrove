@@ -397,7 +397,7 @@ class DateField(Field):
     DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y'}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
                               'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy', "hh:mm": "hour_minute",
-                              "dd.MM.yyyy hh:mm": "dd.MM.yyyy hh:mm"}
+                              "yyyy-MM-dd'T'HH:mm:ss.SSSZ": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True, parent_field_code=None):
@@ -895,7 +895,7 @@ class TimeField(Field):
                        constraints=constraints, required=required, parent_field_code=parent_field_code)
 
     @property
-    def format(self):
+    def date_format(self):
         return "hh:mm"
 
     def formatted_field_values_for_excel(self, value):
@@ -911,8 +911,8 @@ class DateTimeField(Field):
                        constraints=constraints, required=required, parent_field_code=parent_field_code)
 
     @property
-    def format(self):
-        return "%YYYY-%mm-%ddHH:mm"
+    def date_format(self):
+        return "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
     def formatted_field_values_for_excel(self, value):
         return value

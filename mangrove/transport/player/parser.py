@@ -390,11 +390,7 @@ class XFormParser(object):
         return field['#text']
 
     def _parse_date_time(self, value):
-        value_split = value.split('T')
-        date_part = value_split[0]
-        time_part = value_split[1].split(":00.000")[0]
-        return datetime.strptime("%s%s" % (date_part, time_part), "%Y-%m-%d%H:%M")
-
+        return value
 
 class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):

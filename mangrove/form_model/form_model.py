@@ -210,6 +210,8 @@ class FormModel(DataObject):
     def update_media_field_flag(self):
         if self.media_fields:
             self._doc.is_media_type_fields_present = True
+        else:
+            self._doc.is_media_type_fields_present = False
 
     @property
     def xform(self):

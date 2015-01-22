@@ -221,7 +221,7 @@ class field_attributes(object):
     VIDEO = "video"
     AUDIO = "audio"
     TIME = "time"
-    DATE_TIME = "dateTime"
+    DATE_TIME = "datetime"
 
 
 class Field(object):
@@ -907,7 +907,7 @@ class DateTimeField(Field):
                  parent_field_code=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
-        Field.__init__(self, type='dateTime', name=name, code=code, label=label, instruction=instruction,
+        Field.__init__(self, type='datetime', name=name, code=code, label=label, instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code)
 
     @property

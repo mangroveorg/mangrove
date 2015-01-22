@@ -352,6 +352,9 @@ class XFormParser(object):
 
         return values
 
+    def _parse_time_string(self, time_string):
+        return time_string.split(":00.000")[0] if time_string else time_string
+
     def _format_field(self, field, values):
         code = field.code
         if not values.get(code):
@@ -365,7 +368,7 @@ class XFormParser(object):
         if type(field) == IntegerField:
             values[code] = "%s" % values[code].__str__()
         if type(field) == TimeField:
-            values[code] = "%s" % str(values[code])
+            values[code] = "%s" % self._parse_time_string(values[code])
         if type(field) == DateTimeField:
             values[code] = self._parse_date_time(values[code])
         if type(field) == FieldSet:

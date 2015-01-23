@@ -394,10 +394,10 @@ class IntegerField(Field):
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
-    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y'}
+    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y', "dd.MM.yyyy'T'HH:mm:ss": "%d.%m.%Y"}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
                               'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy', "hh:mm": "hour_minute",
-                              "yyyy-MM-dd'T'HH:mm:ss.SSSZ": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
+                              "dd.MM.yyyy'T'HH:mm:ss": "dd.MM.yyyy'T'HH:mm:ss"}
 
     def __init__(self, name, code, label, date_format, instruction=None,
                  required=True, parent_field_code=None):
@@ -912,7 +912,12 @@ class DateTimeField(Field):
 
     @property
     def date_format(self):
-        return "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        return "dd.MM.yyyy'T'HH:mm:ss"
+
+    @property
+    def is_monthly_format(self):
+        return False
+
 
     def formatted_field_values_for_excel(self, value):
         return value

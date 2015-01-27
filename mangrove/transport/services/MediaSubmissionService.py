@@ -1,9 +1,11 @@
+import logging
 from mangrove.form_model.field import MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.form_model.media import Media
 
 ONE_MB = 1000000
 
+logger = logging.getLogger('media-submission')
 
 class MediaSubmissionService():
     def __init__(self, dbm, media, form_code):
@@ -39,7 +41,7 @@ class MediaSubmissionService():
                         self._get_media_fields_and_update_values(field.fields, value[field.code], counter))
             elif isinstance(field, MediaField):
                 for value in values:
-                    old_name = value[field.code]
+                    old_name = value.get(field.code)
                     if old_name:
                         count = next(counter)
                         new_name = str(count) + '-' + old_name

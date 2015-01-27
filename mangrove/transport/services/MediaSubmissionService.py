@@ -46,7 +46,10 @@ class MediaSubmissionService():
                         count = next(counter)
                         new_name = str(count) + '-' + old_name
                         value[field.code] = new_name
-                        media_file = self.media[old_name]
-                        self.create_media_details_document(float(media_file.size), new_name)
-                        media_files[new_name] = media_file
+                        media_file = self.media.get(old_name)
+                        if media_file:
+                            self.create_media_details_document(float(media_file.size), new_name)
+                            media_files[new_name] = media_file
+                        else:
+                            logger.error("'%s' not found in [%s]" % (old_name, ",".join(self.media.keys())))
         return media_files

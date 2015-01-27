@@ -43,11 +43,11 @@ class MediaSubmissionService():
                 for value in values:
                     old_name = value.get(field.code)
                     if old_name:
-                        count = next(counter)
-                        new_name = str(count) + '-' + old_name
-                        value[field.code] = new_name
                         media_file = self.media.get(old_name)
                         if media_file:
+                            count = next(counter)
+                            new_name = str(count) + '-' + old_name
+                            value[field.code] = new_name
                             self.create_media_details_document(float(media_file.size), new_name)
                             media_files[new_name] = media_file
                         else:

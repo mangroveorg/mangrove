@@ -1,5 +1,11 @@
 import base64
 import inspect
+import os
+from tempfile import NamedTemporaryFile
+from PIL import Image
+import StringIO
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from mangrove.form_model.form_model import NAME_FIELD
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.repository.survey_responses import get_survey_response_document
@@ -99,6 +105,7 @@ class XFormPlayerV2(object):
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
         self._add_new_attachments(media_files, response.survey_response_id)
+        self._add_new_attachments_preview(media_files, response.survey_response_id)
         return response
 
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
@@ -110,6 +117,7 @@ class XFormPlayerV2(object):
         response = service.edit_survey(form_code, values, [], survey_response, additional_feed_dictionary)
         self._delete_removed_attachments(request, survey_response.id, media_submission_service)
         self._add_new_attachments(media_files, survey_response.id)
+        self._add_new_attachments_preview(media_files, response.survey_response_id)
         return response
 
     def _add_new_attachments(self, media_files, survey_response_id):
@@ -120,6 +128,29 @@ class XFormPlayerV2(object):
                 if name != 'xml_submission_file':
                     file.seek(0)
                     self.dbm.put_attachment(document, file, attachment_name=name)
+
+    def _add_new_attachments_preview(self, media_files, survey_response_id):
+        if media_files:
+            document = get_survey_response_document(self.dbm, survey_response_id)
+            for name, file in media_files.iteritems():
+                thumb_file = self._get_thumbnail(file)
+                if thumb_file:
+                    thumb_file.name = thumb_file
+                    thumb_file.seek(0)
+                    self.dbm.put_attachment(document, thumb_file, attachment_name='preview_'+name)
+
+    def _get_thumbnail(self, file):
+        small = 128, 128
+        file.seek(0)
+        try:
+            small_im = Image.open(file)
+        except IOError:
+            return
+        small_im.thumbnail(small, Image.ANTIALIAS)
+        small_im.resize(small, Image.ANTIALIAS)
+        temp_file = NamedTemporaryFile(suffix='.'+file.name.split('.')[1])
+        small_im.save(temp_file, quality=50)
+        return temp_file
 
     def _delete_removed_attachments(self, request, survey_response_id, media_submission_service):
         if request.retain_files and len(request.retain_files) > 0:
@@ -135,7 +166,7 @@ class XFormPlayerV2(object):
             if existing_attachment_name not in retain_files:
                 media_submission_service.create_media_details_document(
                     existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
-                self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
+                self.delete_attachment(survey_response_document, existing_attachment_name)
 
     def _delete_all_attachments(self, survey_response_id, media_submission_service):
         survey_response_document = get_survey_response_document(self.dbm, survey_response_id)
@@ -144,4 +175,8 @@ class XFormPlayerV2(object):
         for existing_attachment_name in existing_media_attachments.keys():
             media_submission_service.create_media_details_document(
                 existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
-            self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
+            self.delete_attachment(survey_response_document, existing_attachment_name)
+
+    def delete_attachment(self, survey_response_document, existing_attachment_name):
+        self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
+        self.dbm.delete_attachment(survey_response_document, 'preview_'+existing_attachment_name)

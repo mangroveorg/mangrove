@@ -32,6 +32,10 @@ class MediaSubmissionService():
         media = Media(self.dbm, name, size_in_mb, self.form_model.id)
         media.save()
 
+    def create_preview_documents(self, thumbnails):
+        for name, size in thumbnails.iteritems():
+            self.create_media_details_document(float(size), name)
+
     def _get_media_fields_and_update_values(self, fields, values, counter):
         media_files = {}
         for field in fields:

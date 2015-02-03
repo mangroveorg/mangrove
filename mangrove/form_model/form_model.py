@@ -344,6 +344,10 @@ class FormModel(DataObject):
     def get_field_by_code(self, code):
         return self._get_by_code(self._form_fields, code)
 
+    def get_field_by_code_in_fieldset(self, code, parent_code):
+        parent_field = self.get_field_by_code(parent_code)
+        return self._get_by_code(parent_field.fields, code)
+
     def _get_by_code(self, fields, code):
         for field in fields:
             if code is not None and field.code.lower() == code.lower():

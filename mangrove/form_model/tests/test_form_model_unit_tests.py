@@ -3,7 +3,8 @@ import unittest
 from mock import Mock, patch
 from mangrove.datastore.documents import FormModelDocument
 from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField, UniqueIdField
+from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, GeoCodeField, UniqueIdField, \
+    FieldSet
 from mangrove.form_model.form_model import FormModel, get_form_model_by_code, EntityFormModel, get_form_model_by_entity_type
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint
 from mangrove.form_model.validators import MandatoryValidator, UniqueIdExistsValidator
@@ -237,6 +238,15 @@ class TestFormModel(unittest.TestCase):
         form_model = FormModel(Mock(spec=DatabaseManager))
         form_model._form_fields = fields
         self.assertListEqual(['clinic','school'], form_model.entity_type)
+
+    def test_should_get_field_from_field_set(self):
+        field1 = TextField('text','text','text label',parent_field_code='field_set_code')
+        field2 = TextField('text1','text1','text label1',parent_field_code='field_set_code')
+        fieldset_field = FieldSet('field_set','field_set_code', 'field set label', field_set=[field1,field2])
+
+        form_model = FormModel(Mock(spec=DatabaseManager))
+        form_model._form_fields = [fieldset_field]
+        self.assertEqual(field1, form_model.get_field_by_code_in_fieldset('text','field_set_code'))
 
 class DatabaseManagerStub(DatabaseManager):
     def __init__(self):

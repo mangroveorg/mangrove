@@ -38,7 +38,7 @@ class MediaSubmissionService():
             if field.is_field_set:
                 for value in values:
                     media_files.update(
-                        self._get_media_fields_and_update_values(field.fields, value(field.code, []), counter))
+                        self._get_media_fields_and_update_values(field.fields, value.get(field.code, []), counter))
             elif isinstance(field, MediaField):
                 for value in values:
                     old_name = value.get(field.code)

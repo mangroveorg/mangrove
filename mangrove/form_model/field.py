@@ -55,7 +55,7 @@ def create_question_from(dictionary, dbm):
     elif type == field_attributes.FIELD_SET:
         return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code)
     elif type == field_attributes.PHOTO or type == field_attributes.VIDEO or type == field_attributes.AUDIO:
-        return _get_media_field(type, code, dictionary, label, name, instruction, required, parent_field_code)
+        return _get_media_field(type, code, label, name, instruction, required, parent_field_code)
 
     return None
 
@@ -65,12 +65,9 @@ def _get_media_class(type):
     return type_media_dict[type]
 
 
-def _get_media_field(type, code, dictionary, label, name, instruction, required, parent_field_code):
-    constraints, constraints_json = [], dictionary.get("constraints")
-    if constraints_json is not None:
-        constraints = constraints_factory(constraints_json)
+def _get_media_field(type, code, label, name, instruction, required, parent_field_code):
     MediaClass = _get_media_class(type)
-    field = MediaClass(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
+    field = MediaClass(name=name, code=code, label=label, instruction=instruction,
                        required=required, parent_field_code=parent_field_code)
     return field
 

@@ -101,7 +101,6 @@ class XFormPlayerV2(object):
         media_files = media_submission_service.create_media_documents(values)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.save_survey(form_code, values, [], request.transport, reporter_id)
-        self._add_new_attachments(media_files, response.survey_response_id)
         thumbnails = self._add_new_attachments(media_files, response.survey_response_id)
         media_submission_service.create_preview_documents(thumbnails)
         return response

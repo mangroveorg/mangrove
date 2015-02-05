@@ -27,14 +27,14 @@ class MediaSubmissionService():
             count = rows[0][u"value"] + 1 if rows else 1
             yield count
 
-    def create_media_details_document(self, file_size, name):
+    def create_media_details_document(self, file_size, name, is_preview=False):
         size_in_mb = file_size / ONE_MB
-        media = Media(self.dbm, name, size_in_mb, self.form_model.id)
+        media = Media(self.dbm, name, size_in_mb, self.form_model.id, is_preview)
         media.save()
 
     def create_preview_documents(self, thumbnails):
         for name, size in thumbnails.iteritems():
-            self.create_media_details_document(float(size), name)
+            self.create_media_details_document(float(size), name, is_preview=True)
 
     def _get_media_fields_and_update_values(self, fields, values, counter):
         media_files = {}

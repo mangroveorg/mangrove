@@ -121,8 +121,8 @@ class XFormPlayerV2(object):
         thumbnails = {}
         if media_files:
             document = get_survey_response_document(self.dbm, survey_response_id)
-            for name, file in media_files.iteritems():
-                thumb_file = self._get_thumbnail(file)
+            for name, attached_file in media_files.iteritems():
+                thumb_file = self._get_thumbnail(attached_file)
                 if thumb_file:
                     thumb_file.seek(0)
                     thumbnail_name = 'preview_' + name
@@ -130,20 +130,20 @@ class XFormPlayerV2(object):
                     thumbnails[thumbnail_name] = os.stat(thumb_file.name).st_size
                 # Ignore submission xml file from ODK
                 if name != 'xml_submission_file':
-                    file.seek(0)
-                    self.dbm.put_attachment(document, file, attachment_name=name)
+                    attached_file.seek(0)
+                    self.dbm.put_attachment(document, attached_file, attachment_name=name)
         return thumbnails
 
-    def _get_thumbnail(self, file):
+    def _get_thumbnail(self, attached_file):
         small = 128, 128
-        file.seek(0)
+        attached_file.seek(0)
         try:
-            small_im = Image.open(file)
+            small_im = Image.open(attached_file)
         except IOError:
-            return
+            return None
         small_im.thumbnail(small, Image.ANTIALIAS)
         small_im.resize(small, Image.ANTIALIAS)
-        temp_file = NamedTemporaryFile(suffix='.'+file.name.split('.')[1])
+        temp_file = NamedTemporaryFile(suffix='.' + attached_file.name.split('.')[-1])
         small_im.save(temp_file, quality=50)
         return temp_file
 

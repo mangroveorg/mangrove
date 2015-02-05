@@ -108,7 +108,7 @@ class XFormPlayerV2(object):
     def update_survey_response(self, request, logger=None, survey_response=None, additional_feed_dictionary=None):
         assert request is not None
         form_code, values = self._parse(request.message)
-        media_submission_service = MediaSubmissionService(self.dbm, request.media, form_code)
+        media_submission_service = MediaSubmissionService(self.dbm, request.media, form_code, is_update=True)
         media_files = media_submission_service.create_media_documents(values)
         service = SurveyResponseService(self.dbm, logger, self.feeds_dbm)
         response = service.edit_survey(form_code, values, [], survey_response, additional_feed_dictionary)

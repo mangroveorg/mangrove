@@ -11,7 +11,7 @@ import xmltodict
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
     CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
 from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, PhotoField, VideoField, AudioField, \
-    TimeField, DateTimeField
+    TimeField, DateTimeField, MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
@@ -374,12 +374,12 @@ class XFormParser(object):
         if type(field) == FieldSet:
             value_list = self._format_field_set(field, values[code])
             values[code] =  [self._fetch_string_value(r) for r in value_list]
-        if type(field) == PhotoField or type(field) == VideoField or type(field) == AudioField:
+        if type(field) == MediaField:
             values[code] = self._get_file_name(values[code])
 
     def _get_file_name(self, value):
-        web_new_file_seleted = type(value) is OrderedDict
-        return [v for k,v in value.iteritems() if k == '#text'][0] if web_new_file_seleted\
+        web_new_file_selected = type(value) is OrderedDict
+        return [v for k,v in value.iteritems() if k == '#text'][0] if web_new_file_selected\
                 else value
 
     def __format_response_fields(self, form_model, values):

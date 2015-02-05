@@ -787,42 +787,34 @@ class GeoCodeField(Field):
 
 
 class MediaField(Field):
-    def __init__(self, type, name, code, label, constraints=None, instruction=None, required=True,
+    def __init__(self, type, name, code, label, instruction=None, required=True,
                  parent_field_code=None):
-        if not constraints: constraints = []
-        assert isinstance(constraints, list)
         Field.__init__(self, type=type, name=name, code=code, label=label, instruction=instruction,
-                       constraints=constraints, required=required, parent_field_code=parent_field_code)
+                       constraints=[], required=required, parent_field_code=parent_field_code)
 
     def formatted_field_values_for_excel(self, value):
         return value
 
 
 class PhotoField(MediaField):
-    def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
-        if not constraints: constraints = []
-        assert isinstance(constraints, list)
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None):
         MediaField.__init__(self, type=field_attributes.PHOTO, name=name, code=code, label=label,
                             instruction=instruction,
-                            constraints=constraints, required=required, parent_field_code=parent_field_code)
+                            required=required, parent_field_code=parent_field_code)
 
 
 class VideoField(MediaField):
-    def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
-        if not constraints: constraints = []
-        assert isinstance(constraints, list)
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None):
         MediaField.__init__(self, type=field_attributes.VIDEO, name=name, code=code, label=label,
                             instruction=instruction,
-                            constraints=constraints, required=required, parent_field_code=parent_field_code)
+                            required=required, parent_field_code=parent_field_code)
 
 
 class AudioField(MediaField):
-    def __init__(self, name, code, label, constraints=None, instruction=None, required=True, parent_field_code=None):
-        if not constraints: constraints = []
-        assert isinstance(constraints, list)
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None):
         MediaField.__init__(self, type=field_attributes.AUDIO, name=name, code=code, label=label,
                             instruction=instruction,
-                            constraints=constraints, required=required, parent_field_code=parent_field_code)
+                            required=required, parent_field_code=parent_field_code)
 
 
 class FieldSet(Field):

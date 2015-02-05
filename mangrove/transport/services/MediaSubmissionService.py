@@ -8,9 +8,10 @@ ONE_MB = 1000000
 logger = logging.getLogger('media-submission')
 
 class MediaSubmissionService():
-    def __init__(self, dbm, media, form_code):
+    def __init__(self, dbm, media, form_code, is_update=False):
         self.dbm = dbm
         self.media = media
+        self.is_update = is_update
         self.form_model = get_form_model_by_code(self.dbm, form_code)
 
     def create_media_documents(self, values):
@@ -55,5 +56,18 @@ class MediaSubmissionService():
                             self.create_media_details_document(float(media_file.size), new_name)
                             media_files[new_name] = media_file
                         else:
-                            logger.error("'%s' not found in [%s]" % (old_name, ",".join(self.media.keys())))
+                            if not self.is_update:
+                                logger.error("'%s' not found in [%s]" % (old_name, ",".join(self.media.keys())))
+                                raise MediaAttachmentNotFoundException(old_name, self.media.keys())
         return media_files
+    
+
+class MediaAttachmentNotFoundException(Exception):
+    def __init__(self, missing_key, key_list):
+        self.missing_key = missing_key
+        self.key_list = key_list
+        error_message = u"%s is not present in  %s " % (missing_key, ",".join(key_list))
+        Exception.__init__(self, error_message)
+        
+    def __str__(self):
+        return self.message

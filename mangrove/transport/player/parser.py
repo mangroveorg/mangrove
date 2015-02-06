@@ -374,7 +374,7 @@ class XFormParser(object):
         if type(field) == FieldSet:
             value_list = self._format_field_set(field, values[code])
             values[code] =  [self._fetch_string_value(r) for r in value_list]
-        if type(field) == MediaField:
+        if isinstance(field, MediaField):
             values[code] = self._get_file_name(values[code])
 
     def _get_file_name(self, value):

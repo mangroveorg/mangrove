@@ -1,9 +1,11 @@
 import re
+
 from coverage.html import escape
 from jinja2 import Environment, PackageLoader
-from mangrove.datastore.entity import get_all_entities
-from mangrove.form_model.field import field_attributes, SelectField, UniqueIdField
+
+from mangrove.form_model.field import field_attributes, SelectField, UniqueIdField, UniqueIdUIField
 from mangrove.form_model.form_model import FormModel
+
 
 env = Environment(loader=PackageLoader('mangrove.transport.xforms'), trim_blocks=True)
 date_appearance = {
@@ -31,15 +33,6 @@ def list_all_forms(form_tuples, xform_base_url):
     form_tuples = [(escape(form_name), form_id) for form_name, form_id in form_tuples]
     return template.render(form_tuples=form_tuples, xform_base_url=xform_base_url)
 
-class UniqueIdUIField(UniqueIdField):
-    def __init__(self, field, dbm):
-        super(UniqueIdUIField, self).__init__(unique_id_type=field.unique_id_type, name=field.name, code=field.code, label=field.label, instruction=field.instruction, constraints=field.constraints)
-        self.dbm = dbm
-
-    @property
-    def options(self):
-        return [(entity.short_code, escape(entity.data['name']['value'])) for entity in
-                    get_all_entities(self.dbm, [self.unique_id_type])]
 
 def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)

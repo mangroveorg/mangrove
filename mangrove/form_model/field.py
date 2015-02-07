@@ -5,6 +5,7 @@ import abc
 from datetime import datetime
 from babel.dates import format_date
 from mangrove.data_cleaner import TelephoneNumber
+from mangrove.datastore.entity import get_all_entities
 from mangrove.errors.MangroveException import AnswerTooBigException, AnswerTooSmallException, AnswerWrongType, \
     IncorrectDate, AnswerTooLongException, AnswerTooShortException, GeoCodeFormatException, \
     RequiredFieldNotPresentException
@@ -128,7 +129,8 @@ def _get_short_code_field(code, dictionary, label, name, instruction, required, 
 def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code):
     return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
                          label=dictionary.get("label"),
-                         instruction=dictionary.get("instruction"), parent_field_code=parent_field_code)
+                         instruction=dictionary.get("instruction"), parent_field_code=parent_field_code,
+                         xform_field_reference=dictionary.get("xform_field_reference"))
 
 
 def _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code):
@@ -391,9 +393,11 @@ class IntegerField(Field):
 
 class DateField(Field):
     DATE_FORMAT = "date_format"
-    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y', "dd.MM.yyyy HH:mm:ss": "%d.%m.%Y"}
+    DATE_DICTIONARY = {'mm.yyyy': '%m.%Y', 'dd.mm.yyyy': '%d.%m.%Y', 'mm.dd.yyyy': '%m.%d.%Y', 'yyyy': '%Y',
+                       "dd.MM.yyyy HH:mm:ss": "%d.%m.%Y"}
     FORMAT_DATE_DICTIONARY = {'mm.yyyy': 'MM.yyyy', 'dd.mm.yyyy': 'dd.MM.yyyy', 'mm.dd.yyyy': 'MM.dd.yyyy',
-                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy', "hh:mm": "hour_minute",
+                              'submission_date_format': 'MMM. dd, yyyy, hh:mm a', 'yyyy': 'yyyy',
+                              "hh:mm": "hour_minute",
                               "dd.MM.yyyy HH:mm:ss": "dd.MM.yyyy HH:mm:ss"}
 
     def __init__(self, name, code, label, date_format, instruction=None,
@@ -518,13 +522,14 @@ class TextField(Field):
 
 class UniqueIdField(Field):
     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True, parent_field_code=None):
+                 required=True, parent_field_code=None, xform_field_reference=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label,
                        instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code)
         self.unique_id_type = unique_id_type
+        self.xform_field_reference = xform_field_reference
 
     def validate(self, value):
         super(UniqueIdField, self).validate(value)
@@ -534,9 +539,11 @@ class UniqueIdField(Field):
     def is_entity_field(self):
         return True
 
+
     def _to_json(self):
         dict = super(UniqueIdField, self)._to_json()
         dict['unique_id_type'] = self.unique_id_type
+        dict['xform_field_reference'] = self.xform_field_reference
         return dict
 
     def stringify(self):
@@ -545,6 +552,19 @@ class UniqueIdField(Field):
     def set_value(self, value):
         if value:
             self.value = value.lower()
+
+
+class UniqueIdUIField(UniqueIdField):
+    def __init__(self, field, dbm):
+        super(UniqueIdUIField, self).__init__(unique_id_type=field.unique_id_type, name=field.name, code=field.code,
+                                              label=field.label, instruction=field.instruction,
+                                              constraints=field.constraints)
+        self.dbm = dbm
+
+    @property
+    def options(self):
+        return [(entity.short_code, escape(entity.data['name']['value'])) for entity in
+                get_all_entities(self.dbm, [self.unique_id_type])]
 
 
 class TelephoneNumberField(TextField):
@@ -584,7 +604,7 @@ class ShortCodeField(TextField):
         value = self._clean(value)
         return super(ShortCodeField, self).validate(value)
 
-    @property  #TODO:Remove
+    @property  # TODO:Remove
     def is_entity_field(self):
         return True
 
@@ -664,7 +684,7 @@ class SelectField(Field):
             self.value)
 
     # def _get_value_by_option(self, option):
-    #     for opt in self.options:
+    # for opt in self.options:
     #         opt_text = opt['text']
     #         opt_value = opt['val']
     #         if opt_value.lower() == option.lower():
@@ -862,7 +882,7 @@ class FieldSet(Field):
             return value
         return [value]
 
-    #todo find the application of this
+    # todo find the application of this
     def convert_to_unicode(self):
         if self.value is None:
             return unicode("")
@@ -910,3 +930,5 @@ class DateTimeField(Field):
 
     def formatted_field_values_for_excel(self, value):
         return value
+
+

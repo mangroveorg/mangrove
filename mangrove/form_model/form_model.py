@@ -1,14 +1,17 @@
 from collections import OrderedDict
 import copy
 import re
+import xmldict
+import xmltodict
 
 from mangrove.datastore.cache_manager import get_cache_manager
+from mangrove.datastore.entity import get_all_entities
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -201,6 +204,19 @@ class FormModel(DataObject):
             if isinstance(f, UniqueIdField):
                 ef.append(f)
         return ef
+
+    def _update_xform_with_unique_id_choices(self, xform_dict_with_unique_ids, uniqueid_ui_field):
+        field_ref = uniqueid_ui_field.parent_field_code+'/'+uniqueid_ui_field.code if uniqueid_ui_field.parent_field_code else uniqueid_ui_field.code
+        for key,value in  xform_dict_with_unique_ids['html:html']['html:body'].itervalues():
+            if value['@ref'].endswith(field_ref):
+                value['item'] = OrderedDict(uniqueid_ui_field.options)
+
+    def xform_with_unique_ids_substituted(self):
+        xform_dict_with_unique_ids = xmltodict.parse(self.xform)
+        for entity_question in self.entity_questions:
+            uniqueid_ui_field = UniqueIdUIField(entity_question, self._dbm)
+            self._update_xform_with_unique_id_choices(xform_dict_with_unique_ids, uniqueid_ui_field)
+        return '<?xml version="1.0"?>' + xmldict.dict_to_xml(xform_dict_with_unique_ids)
 
     @property
     def is_media_type_fields_present(self):

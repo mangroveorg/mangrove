@@ -572,7 +572,7 @@ class UniqueIdUIField(UniqueIdField):
         for value in self.options:
             temp_dict = OrderedDict()
             temp_dict['label'] = value[1]+' ('+value[0]+')'
-            temp_dict['value'] = value[1]
+            temp_dict['value'] = value[0]
             enketo_options.append(temp_dict)
         return enketo_options
 

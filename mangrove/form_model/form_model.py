@@ -207,9 +207,9 @@ class FormModel(DataObject):
 
     def _update_xform_with_unique_id_choices(self, xform_dict_with_unique_ids, uniqueid_ui_field):
         field_ref = uniqueid_ui_field.parent_field_code+'/'+uniqueid_ui_field.code if uniqueid_ui_field.parent_field_code else uniqueid_ui_field.code
-        for key,value in  xform_dict_with_unique_ids['html:html']['html:body'].itervalues():
+        for key, value in enumerate(xform_dict_with_unique_ids['html:html']['html:body']['select1']):
             if value['@ref'].endswith(field_ref):
-                value['item'] = OrderedDict(uniqueid_ui_field.options)
+                value['item'] = uniqueid_ui_field.enketo_options
 
     def xform_with_unique_ids_substituted(self):
         xform_dict_with_unique_ids = xmltodict.parse(self.xform)

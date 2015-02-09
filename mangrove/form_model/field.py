@@ -566,6 +566,16 @@ class UniqueIdUIField(UniqueIdField):
         return [(entity.short_code, escape(entity.data['name']['value'])) for entity in
                 get_all_entities(self.dbm, [self.unique_id_type])]
 
+    @property
+    def enketo_options(self):
+        enketo_options = []
+        for value in self.options:
+            temp_dict = OrderedDict()
+            temp_dict['label'] = value[1]+' ('+value[0]+')'
+            temp_dict['value'] = value[1]
+            enketo_options.append(temp_dict)
+        return enketo_options
+
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,

@@ -558,7 +558,7 @@ class UniqueIdUIField(UniqueIdField):
     def __init__(self, field, dbm):
         super(UniqueIdUIField, self).__init__(unique_id_type=field.unique_id_type, name=field.name, code=field.code,
                                               label=field.label, instruction=field.instruction,
-                                              constraints=field.constraints)
+                                              constraints=field.constraints, parent_field_code=field.parent_field_code)
         self.dbm = dbm
 
     @property

@@ -4,6 +4,7 @@ class Channel(object):
     XFORMS = "xforms"
     CSV = "csv"
     XLS = "xls"
+    XLSX = "xlsx"
 
 class TransportInfo(object):
     def __init__(self, transport, source, destination):

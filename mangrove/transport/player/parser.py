@@ -15,6 +15,9 @@ from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, Fie
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
+from openpyxl import load_workbook
+import StringIO
+
 
 
 class SMSParserFactory(object):
@@ -268,6 +271,28 @@ class XlsParser(object):
             raise XlsParserInvalidHeaderFormatException()
         return parsedData
 
+class XlsxParser(XlsParser):
+
+    def parse(self, file_contents):
+        assert file_contents is not None
+        xlsx_file = StringIO.StringIO(file_contents)
+
+        workbook = load_workbook(xlsx_file, use_iterators = True)
+        sheet_name = workbook.get_sheet_names()[0]
+        worksheet = workbook.get_sheet_by_name(name=sheet_name)
+        parsedData = []
+        for row in worksheet.iter_rows():
+            row_values = [self._get_value(x.value) for x in row]
+            row_values = self._clean(row_values)
+            parsedData.append(row_values)
+        return parsedData
+    
+    def _get_value(self, value):
+        if value is not None:
+            return value
+        return ''
+
+
     def _remove_trailing_empty_header_field(self, field_header):
         for field in field_header[::-1]:
             if is_empty(field):
@@ -421,3 +446,32 @@ class XlsDatasenderParser(XlsParser):
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
         return parsedData
+
+class XlsxDataSenderParser(XlsxParser):
+
+    def parse(self, file_contents):
+        assert file_contents is not None
+        xlsx_file = StringIO.StringIO(file_contents)
+
+        workbook = load_workbook(xlsx_file, use_iterators = True)
+        sheet_name = workbook.get_sheet_names()[0]
+        code = workbook.get_sheet_names()[1]
+        worksheet = workbook.get_sheet_by_name(name=sheet_name)
+        codes_sheet  = workbook.get_sheet_by_name(name=code)
+
+        #rows = codes_sheet.rows[0] #row_values(0)
+        for cs in codes_sheet.iter_rows():
+            rows = [self._get_value(x.value) for x in cs]
+        header, header_found = self._is_header_row(rows)
+        parsedData = []
+        form_code = REGISTRATION_FORM_CODE
+        header = header[1:]
+        for row in worksheet.iter_rows():
+            row_values = [self._get_value(x.value) for x in row]
+            values = dict(zip(header, row_values))
+            values.update({"t": "reporter"})
+            parsedData.append((form_code, values))
+        if not header_found:
+            raise XlsParserInvalidHeaderFormatException()
+        return parsedData
+

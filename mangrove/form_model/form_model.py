@@ -213,8 +213,15 @@ class FormModel(DataObject):
         field = self.get_field_by_code(field_code)
         if field.parent_field_code:
             parent_node = self._get_parent_node(root_node, field.parent_field_code)
-            return self._get_node(parent_node, field.code, field.fieldset_type)
-        return self._get_node(root_node, field.code, field.fieldset_type)
+            return self.get_field_node(parent_node, field.code, field.fieldset_type)
+        return self.get_field_node(root_node, field.code, field.fieldset_type)
+
+    def get_field_node(self, root_node, field_code, type='select1'):
+        if type == 'repeat':
+            repeats_group_node = self._get_node(root_node, field_code, 'group')
+            return repeats_group_node._children[1]
+        else:
+            return self._get_node(root_node, field_code, type)
 
     def _get_node(self, root_node, field_code, type='select1'):
         for child in root_node:
@@ -263,6 +270,14 @@ class FormModel(DataObject):
             self._doc.is_media_type_fields_present = True
         else:
             self._doc.is_media_type_fields_present = False
+
+    def is_part_of_repeat_field(self, field):
+        if field.parent_field_code:
+            parent_field = self.get_field_by_code(field.parent_field_code)
+            if self.is_part_of_repeat_field(parent_field):
+                return True
+            return parent_field.is_field_set and not parent_field.is_group()
+        return False
 
     @property
     def xform(self):

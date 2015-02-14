@@ -15,6 +15,7 @@ from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, S
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
+from xml.sax.saxutils import escape
 
 
 ARPT_SHORT_CODE = "dummy"
@@ -284,7 +285,7 @@ class FormModel(DataObject):
         return self._doc.xform
 
     def update_xform_with_questionnaire_name(self, questionnaire_name):
-        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % questionnaire_name, self.xform)
+        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % escape(questionnaire_name), self.xform)
 
     @xform.setter
     def xform(self, value):

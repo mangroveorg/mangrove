@@ -62,7 +62,7 @@ class TestXform(unittest.TestCase):
         entity1._doc.data['name'] = {'value': 'nameOfEntity'}
         entities = [entity1, entity1]
         with patch("mangrove.transport.xforms.xform.FormModel") as form_model_mock:
-            with patch("mangrove.transport.xforms.xform.get_all_entities") as get_all_entities_mock:
+            with patch("mangrove.form_model.field.get_all_entities") as get_all_entities_mock:
                 get_all_entities_mock.return_value = entities
                 form_model_mock.get.return_value = questionnaire_mock
                 actual_response = xform_for(dbm, "someFormId", 'rep1')

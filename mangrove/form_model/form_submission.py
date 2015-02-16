@@ -156,6 +156,9 @@ class GlobalRegistrationFormSubmission(FormSubmission):
             data_record_doc['void'] = True
             dbm.database.save(data_record_doc)
 
+    def get_entity(self, dbm):
+        return entity.contact_by_short_code(dbm=dbm, short_code=self.short_code)
+
     def create_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)

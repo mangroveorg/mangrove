@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from mangrove.datastore.documents import DataRecordDocument
-from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FIELD_NAME, GEO_CODE, ENTITY_TYPE_FIELD_CODE, REGISTRATION_FORM_CODE
+from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FIELD_NAME, GEO_CODE, \
+    ENTITY_TYPE_FIELD_CODE, REGISTRATION_FORM_CODE
 from mangrove.form_model.location import Location
 from mangrove.datastore import entity
 from mangrove.utils.types import is_empty, is_not_empty
@@ -16,7 +17,8 @@ class FormSubmission(object):
         self._cleaned_data = form_answers
         if form_model.is_entity_registration_form():
             short_code_field = form_model.entity_questions[0].code
-        else: short_code_field = form_model.entity_questions[0].code if form_model.entity_questions else ''
+        else:
+            short_code_field = form_model.entity_questions[0].code if form_model.entity_questions else ''
         entity_short_code = self.get_answer_for(short_code_field)
         self.short_code = entity_short_code.lower() if entity_short_code is not None else None
         entity_types = self.get_entity_type(form_model)
@@ -84,7 +86,6 @@ class FormSubmission(object):
     def create_entity(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
-
         return entity.create_entity(dbm=dbm, entity_type=self.entity_type,
                                     location=location_hierarchy,
                                     short_code=self.short_code,
@@ -155,6 +156,17 @@ class GlobalRegistrationFormSubmission(FormSubmission):
             data_record_doc['void'] = True
             dbm.database.save(data_record_doc)
 
+    def create_entity(self, dbm):
+        location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
+            self.cleaned_data)
+        is_contact = self._cleaned_data.pop('is_contact', False)
+        return entity.create_contact(dbm=dbm, entity_type=self.entity_type,
+                                     location=location_hierarchy,
+                                     short_code=self.short_code,
+                                     geometry=processed_geometry,
+                                     is_contact=is_contact)
+
+
 
 class EntityRegistrationFormSubmission(FormSubmission):
     def __init__(self, form_model, answers, errors, location_tree=None):
@@ -173,7 +185,7 @@ class FormSubmissionFactory(object):
     def get_form_submission(self, form_model, answers, errors=None, location_tree=None):
         if not form_model.is_entity_registration_form():
             return DataFormSubmission(form_model, answers, errors)
-        elif form_model.is_global_registration_form(): #Registering/Editing datasender
+        elif form_model.is_global_registration_form():  # Registering/Editing datasender
             return GlobalRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)
-        else: #Registering/Editing subjects
+        else:  # Registering/Editing subjects
             return EntityRegistrationFormSubmission(form_model, answers, errors, location_tree=location_tree)

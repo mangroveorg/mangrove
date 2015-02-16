@@ -2,7 +2,6 @@
 
 import copy
 from datetime import datetime
-from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes
 from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound

@@ -1,17 +1,21 @@
 from collections import OrderedDict
 import copy
 import re
-
+import xmldict
+import xmltodict
+import xml.etree.ElementTree as ET
 from mangrove.datastore.cache_manager import get_cache_manager
+from mangrove.datastore.entity import get_all_entities
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
+from xml.sax.saxutils import escape
 
 
 ARPT_SHORT_CODE = "dummy"
@@ -194,13 +198,68 @@ class FormModel(DataObject):
         """
         self._doc.name = value
 
+    def _get_entity_questions(self, form_fields):
+        ef = []
+        for field in form_fields:
+            if isinstance(field, UniqueIdField):
+                ef.append(field)
+            elif isinstance(field, FieldSet):
+                ef.extend(self._get_entity_questions(field.fields))
+        return ef
     @property
     def entity_questions(self):
-        ef = []
-        for f in self._form_fields:
-            if isinstance(f, UniqueIdField):
-                ef.append(f)
-        return ef
+        return self._get_entity_questions(self._form_fields)
+
+    def _get_parent_node(self, root_node, field_code):
+        field = self.get_field_by_code(field_code)
+        if field.parent_field_code:
+            parent_node = self._get_parent_node(root_node, field.parent_field_code)
+            return self.get_field_node(parent_node, field.code, field.fieldset_type)
+        return self.get_field_node(root_node, field.code, field.fieldset_type)
+
+    def get_field_node(self, root_node, field_code, type='select1'):
+        if type == 'repeat':
+            repeats_group_node = self._get_node(root_node, field_code, 'group')
+            return repeats_group_node._children[1]
+        else:
+            return self._get_node(root_node, field_code, type)
+
+    def _get_node(self, root_node, field_code, type='select1'):
+        for child in root_node:
+            if child.tag.endswith(type) and child.attrib['ref'].endswith(field_code):
+                return child
+
+    def _get_choice_elements(self, options):
+        choice_elements = []
+        for option in options:
+            node = ET.Element('{http://www.w3.org/2002/xforms}item')
+            name = ET.Element('{http://www.w3.org/2002/xforms}label')
+            name.text = option[1] + ' ('+option[0]+')'
+            node.append(name)
+            label = ET.Element('{http://www.w3.org/2002/xforms}value')
+            label.text = option[0]
+            node.append(label)
+            choice_elements.append(node)
+        return choice_elements
+
+    def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
+        if uniqueid_ui_field.parent_field_code:
+            parent_node = self._get_parent_node(root_node, uniqueid_ui_field.parent_field_code)
+            node = self._get_node(parent_node, uniqueid_ui_field.code)
+        else:
+            node = self._get_node(root_node, uniqueid_ui_field.code)
+        node.remove(node._children[1]) #removing the placeholder option
+        choice_elements = self._get_choice_elements(uniqueid_ui_field.options)
+        for element in choice_elements:
+            node.append(element)
+
+    def xform_with_unique_ids_substituted(self):
+        root_node = ET.fromstring(self.xform)
+        html_body_node = root_node._children[1]
+        for entity_question in self.entity_questions:
+            uniqueid_ui_field = UniqueIdUIField(entity_question, self._dbm)
+            self._update_xform_with_unique_id_choices(html_body_node, uniqueid_ui_field)
+        return ET.tostring(root_node)
 
     @property
     def is_media_type_fields_present(self):
@@ -213,12 +272,20 @@ class FormModel(DataObject):
         else:
             self._doc.is_media_type_fields_present = False
 
+    def is_part_of_repeat_field(self, field):
+        if field.parent_field_code:
+            parent_field = self.get_field_by_code(field.parent_field_code)
+            if self.is_part_of_repeat_field(parent_field):
+                return True
+            return parent_field.is_field_set and not parent_field.is_group()
+        return False
+
     @property
     def xform(self):
         return self._doc.xform
 
     def update_xform_with_questionnaire_name(self, questionnaire_name):
-        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % questionnaire_name, self.xform)
+        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % escape(questionnaire_name), self.xform)
 
     @xform.setter
     def xform(self, value):

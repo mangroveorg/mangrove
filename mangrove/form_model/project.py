@@ -215,7 +215,7 @@ def get_entity_type_fields(manager, form_code='reg'):
 def get_json_field_infos(fields):
     fields_names, labels, codes = [], [], []
     for field in fields:
-        if field['name'] != 'entity_type':
+        if field['name'] not in ['entity_type', 'is_data_sender']:
             fields_names.append(field['name'])
             labels.append(field['label'])
             codes.append(field['code'])

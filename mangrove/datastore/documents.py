@@ -130,17 +130,17 @@ class ContactDocument(DocumentBase):
     gr_id = TextField()
     short_code = TextField()
     data = DictField()
-    is_contact = BooleanField()
+    is_data_sender = BooleanField()
 
     def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None,
-                 is_contact=None):
+                 is_data_sender=None):
         DocumentBase.__init__(self, id=id, document_type='Contact')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
         self._geometry = geometry
         self._centroid = centroid
         self._gr_id = gr_id
         self.short_code = short_code
-        self.is_contact = is_contact
+        self.is_data_sender = is_data_sender
 
     @property
     def entity_type(self):

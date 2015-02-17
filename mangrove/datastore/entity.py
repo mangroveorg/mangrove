@@ -40,7 +40,7 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     return e
 
 
-def create_contact(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None, is_contact=False):
+def create_contact(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None, is_datasender=True):
     """
     Initialize and save an entity to the database. Return the entity
     created unless the short code used is not unique or this entity
@@ -56,7 +56,7 @@ def create_contact(dbm, entity_type, short_code, location=None, aggregation_path
         raise DataObjectAlreadyExists(entity_type[0].capitalize(), "Unique ID Number", short_code,
                                       existing_name=entity_name)
     e = Contact(dbm, entity_type=entity_type, location=location,
-               aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry, is_contact=is_contact)
+               aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry, is_datasender=is_datasender)
     #e.save()
     return e
 
@@ -479,7 +479,7 @@ class Contact(DataObject):
 
 
     def __init__(self, dbm, entity_type=None, location=None, aggregation_paths=None,
-                 geometry=None, centroid=None, gr_id=None, id=None, short_code=None, is_contact=False):
+                 geometry=None, centroid=None, gr_id=None, id=None, short_code=None, is_datasender=True):
         """
         Construct a new entity.
 
@@ -510,7 +510,7 @@ class Contact(DataObject):
 
         # Not made from existing doc, so create a new one
         self._create_new_entity_doc(aggregation_paths, centroid, entity_type, geometry, gr_id, id, location, short_code,
-                                    is_contact)
+                                    is_datasender)
 
     @property
     def aggregation_paths(self):
@@ -746,7 +746,7 @@ class Contact(DataObject):
         return self._dbm.load_all_rows_in_view(u'entity_data', key=self.id)
 
     def _create_new_entity_doc(self, aggregation_paths, centroid, entity_type, geometry, gr_id, id, location,
-                               short_code, is_contact):
+                               short_code, is_data_sender):
         doc = ContactDocument(id)
         self._set_document(doc)
         # add aggregation paths
@@ -763,7 +763,7 @@ class Contact(DataObject):
             doc.gr_id = gr_id
         if short_code is not None:
             doc.short_code = short_code
-        doc.is_contact = is_contact
+        doc.is_data_sender = is_data_sender
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
             for name in aggregation_paths.keys():

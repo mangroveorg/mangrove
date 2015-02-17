@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import copy
 import re
+import unicodedata
 import xmldict
 import xmltodict
 import xml.etree.ElementTree as ET
@@ -285,7 +286,8 @@ class FormModel(DataObject):
         return self._doc.xform
 
     def update_xform_with_questionnaire_name(self, questionnaire_name):
-        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % escape(questionnaire_name), self.xform)
+        # Escape <, > and & and convert accented characters to equivalent non-accented characters
+        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % unicodedata.normalize('NFD', escape(questionnaire_name)).encode('ascii', 'ignore'), self.xform)
 
     @xform.setter
     def xform(self, value):

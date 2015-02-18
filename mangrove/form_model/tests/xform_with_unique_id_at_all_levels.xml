@@ -1,0 +1,117 @@
+<?xml version="1.0"?><html:html xmlns="http://www.w3.org/2002/xforms" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns2="http://openrosa.org/javarosa">
+  <html:head>
+    <html:title>xform_test</html:title>
+    <model>
+      <instance>
+        <tmpFGvRwx id="tmpFGvRwx">
+          <my_unique />
+          <my_group>
+            <grouprepeat ns2:template="">
+              <unique_in_grouprepeat />
+            </grouprepeat>
+          </my_group>
+          <repeat_out ns2:template="">
+            <unique_in_repeat />
+          </repeat_out>
+          <myrepeat ns2:template="">
+            <repeat_group>
+              <unique_in_repeatgroup />
+            </repeat_group>
+          </myrepeat>
+          <group_out>
+            <unique_in_group />
+          </group_out>
+          <parent_group>
+            <groupgroup>
+              <unique_in_groupgroup />
+            </groupgroup>
+          </parent_group>
+          <meta>
+            <instanceID />
+          </meta>
+        <form_code>001</form_code></tmpFGvRwx>
+      </instance>
+      <bind nodeset="/tmpFGvRwx/my_unique" type="select1" />
+      <bind nodeset="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat" type="select1" />
+      <bind nodeset="/tmpFGvRwx/repeat_out/unique_in_repeat" type="select1" />
+      <bind nodeset="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup" type="select1" />
+      <bind nodeset="/tmpFGvRwx/group_out/unique_in_group" type="select1" />
+      <bind nodeset="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup" type="select1" />
+      <bind calculate="concat('uuid:', uuid())" nodeset="/tmpFGvRwx/meta/instanceID" readonly="true()" type="string" />
+    <bind nodeset="/tmpFGvRwx/form_code" type="string" /></model>
+  </html:head>
+  <html:body>
+    <select1 ref="/tmpFGvRwx/my_unique">
+      <label>mu_uni</label>
+      <item>
+        <label>placeholder</label>
+        <value>my_unique</value>
+      </item>
+    </select1>
+    <group ref="/tmpFGvRwx/my_group">
+      <label>my_group</label>
+      <group ref="/tmpFGvRwx/my_group/grouprepeat">
+        <label>grouprepeat</label>
+        <repeat nodeset="/tmpFGvRwx/my_group/grouprepeat">
+          <select1 ref="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat">
+            <label>unique_in_grouprepeat</label>
+            <item>
+              <label>placeholder</label>
+              <value>unique_in_grouprepeat</value>
+            </item>
+          </select1>
+        </repeat>
+      </group>
+    </group>
+    <group ref="/tmpFGvRwx/repeat_out">
+      <label>repeat_out</label>
+      <repeat nodeset="/tmpFGvRwx/repeat_out">
+        <select1 ref="/tmpFGvRwx/repeat_out/unique_in_repeat">
+          <label>unique_in_repeat</label>
+          <item>
+            <label>placeholder</label>
+            <value>unique_in_repeat</value>
+          </item>
+        </select1>
+      </repeat>
+    </group>
+    <group ref="/tmpFGvRwx/myrepeat">
+      <label>myrepeat</label>
+      <repeat nodeset="/tmpFGvRwx/myrepeat">
+        <group ref="/tmpFGvRwx/myrepeat/repeat_group">
+          <label>repeat_group</label>
+          <select1 ref="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup">
+            <label>unique_in_repeatgroup</label>
+            <item>
+              <label>placeholder</label>
+              <value>unique_in_repeatgroup</value>
+            </item>
+          </select1>
+        </group>
+      </repeat>
+    </group>
+    <group ref="/tmpFGvRwx/group_out">
+      <label>group_out</label>
+      <select1 ref="/tmpFGvRwx/group_out/unique_in_group">
+        <label>unique_in_group</label>
+        <item>
+          <label>placeholder</label>
+          <value>unique_in_group</value>
+        </item>
+      </select1>
+    </group>
+    <group ref="/tmpFGvRwx/parent_group">
+      <label>parent_group</label>
+      <group ref="/tmpFGvRwx/parent_group/groupgroup">
+        <label>groupgroup</label>
+        <select1 ref="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup">
+          <label>unique_in_groupgroup</label>
+          <item>
+            <label>placeholder</label>
+            <value>unique_in_groupgroup</value>
+          </item>
+        </select1>
+      </group>
+    </group>
+  </html:body>
+</html:html>

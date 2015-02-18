@@ -1,4 +1,4 @@
-from mangrove.datastore.entity import create_entity
+from mangrove.datastore.entity import create_entity, create_contact
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  NumberNotRegisteredException
 from mangrove.form_model.form_model import MOBILE_NUMBER_FIELD, NAME_FIELD
@@ -11,7 +11,7 @@ class TestReporter(MangroveTestCase):
     @classmethod
     def register(cls, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
     #    manager = get_db_manager()
-        e = create_entity(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
+        e = create_contact(manager, entity_type=entity_type, location=location, aggregation_paths=aggregation_paths,
             short_code=short_code)
         e.add_data(data=data)
         return e

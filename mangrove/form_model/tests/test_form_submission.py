@@ -4,7 +4,7 @@ from mangrove.datastore.documents import EntityDocument
 from mock import Mock, patch, MagicMock
 from mangrove.form_model.form_model import GLOBAL_REGISTRATION_FORM_ENTITY_TYPE
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, Contact
 from mangrove.form_model.field import TextField, DateField, UniqueIdField, ShortCodeField
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.form_submission import FormSubmissionFactory
@@ -42,8 +42,8 @@ class TestFormSubmission(unittest.TestCase):
     def test_should_create_global_form_submission_location_tree(self):
         form_model = self._construct_global_registration_form()
         submission = OrderedDict({"s": "1", "t": "Reporter", "l": "pune", "m": "1212121212"})
-        with patch('mangrove.form_model.form_submission.FormSubmission.create_entity') as create_entity:
-            entity_mock = Mock(spec=Entity)
+        with patch('mangrove.form_model.form_submission.GlobalRegistrationFormSubmission.create_entity') as create_entity:
+            entity_mock = Mock(spec=Contact)
             entity_mock.add_data.return_value = 1
             create_entity.return_value = entity_mock
 

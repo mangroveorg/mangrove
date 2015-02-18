@@ -13,7 +13,7 @@ from mangrove.bootstrap import initializer
 from mangrove.bootstrap.views import view_js
 from mangrove.datastore.database import get_db_manager, _delete_db_and_remove_db_manager
 from mangrove.datastore.documents import DataRecordDocument
-from mangrove.datastore.entity import get_by_short_code, create_entity
+from mangrove.datastore.entity import get_by_short_code, create_entity, create_contact
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException,\
  DataObjectNotFound, FormModelDoesNotExistsException
 from mangrove.form_model.field import TextField, IntegerField, SelectField, ShortCodeField
@@ -73,7 +73,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             submission=dict(submission_id="1"))
 
         cls.reporter_id = "rep" + str(int(random.random()*10000))
-        cls.reporter = create_entity(cls.dbm, entity_type=["reporter"],
+        cls.reporter = create_contact(cls.dbm, entity_type=["reporter"],
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.reporter_id,
         )
         cls.reporter.save()

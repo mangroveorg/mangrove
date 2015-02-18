@@ -2,7 +2,7 @@
 import datetime
 import unittest
 from pytz import UTC
-from mangrove.datastore.entity import void_entity
+from mangrove.datastore.entity import void_entity, create_contact
 from mangrove.contrib.registration import GLOBAL_REGISTRATION_FORM_CODE
 from mangrove.utils.test_utils.database_utils import create_dbmanager_for_ut, delete_and_create_form_model, safe_define_type, ut_reporter_id, safe_delete_reporter_by_phone
 from mangrove.datastore.entity import create_entity
@@ -72,7 +72,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         self.assertTrue('m' in errors)
 
     def test_should_return_error_if_mobile_number_has_hyphens_from_excel_file(self):
-        reporter1 = create_entity(self.manager, [REPORTER], ut_reporter_id())
+        reporter1 = create_contact(self.manager, [REPORTER], ut_reporter_id())
         reporter1.add_data(data=[("mobile_number", "266123321435")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))
@@ -81,7 +81,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         self.assertTrue('m' in errors)
 
     def test_should_return_error_if_mobile_number_comes_as_floating_point_number_from_excel_file(self):
-        reporter1 = create_entity(self.manager, [REPORTER], ut_reporter_id())
+        reporter1 = create_contact(self.manager, [REPORTER], ut_reporter_id())
         reporter1.add_data(data=[("mobile_number", "266123321435"), ("name", "aname")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))

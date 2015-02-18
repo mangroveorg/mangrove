@@ -29,7 +29,7 @@ def construct_global_registration_form(manager):
 
     question2 = TextField(name=NAME_FIELD, code=NAME_FIELD_CODE, label="What is the subject's name?",
                           defaultValue="some default value" ,
-                          instruction="Enter a subject name", constraints=[TextLengthConstraint(max=80)], required=True)
+                          instruction="Enter a subject name", constraints=[TextLengthConstraint(max=80)], required=False)
     question3 = ShortCodeField(name=SHORT_CODE_FIELD, code=SHORT_CODE, label="What is the subject's Unique ID Number",
                           defaultValue="some default value" ,
                           instruction="Enter a id, or allow us to generate it",
@@ -48,6 +48,5 @@ def construct_global_registration_form(manager):
     question8 = BooleanField(name=IS_DATASENDER_FIELD_CODE, code=IS_DATASENDER_FIELD_CODE, label="Am I a data sender", defaultValue=True, required=False)
     form_model = EntityFormModel(manager, name=GLOBAL_REGISTRATION_FORM_CODE, form_code=REGISTRATION_FORM_CODE, fields=[
         question1, question2, question3, question4, question5, question6, question7, question8], is_registration_model=True, entity_type=["registration"],
-        validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator(),
-                    AtLeastOneLocationFieldMustBeAnsweredValidator()])
+        validators=[MandatoryValidator(), MobileNumberValidationsForReporterRegistrationValidator()])
     return form_model

@@ -130,7 +130,7 @@ class ContactDocument(DocumentBase):
     gr_id = TextField()
     short_code = TextField()
     data = DictField()
-    is_data_sender = BooleanField()
+    # is_data_sender = BooleanField()
 
     def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None,
                  is_data_sender=None):
@@ -140,7 +140,7 @@ class ContactDocument(DocumentBase):
         self._centroid = centroid
         self._gr_id = gr_id
         self.short_code = short_code
-        self.is_data_sender = is_data_sender
+        # self.is_data_sender = is_data_sender
 
     @property
     def entity_type(self):

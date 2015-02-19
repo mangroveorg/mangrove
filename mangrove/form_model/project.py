@@ -198,6 +198,25 @@ class Project(FormModel):
     def is_open_survey(self, value):
         self._doc.is_open_survey = value
 
+    def has_attachment(self):
+        try: # find a better way to check attachement exisits
+            attachment = self.get_attachments('questionnaire.xls')
+            return True, attachment, '.xls'
+        except LookupError:
+            try:
+                attachment = self.get_attachments('questionnaire.xlsx')
+                return True, attachment, '.xlsx'
+            except LookupError:
+                return False, None, None
+
+
+    def update_attachments(self, attachments, attachment_name):
+        extension = self.has_attachment()[2]
+        self.delete_attachment(self._doc, "questionnaire%s" % extension)
+        self.add_attachments(attachments, attachment_name)
+    
+
+
 
 def load_data_senders(manager, short_codes):
     form_model = get_form_model_by_code(manager, 'reg')

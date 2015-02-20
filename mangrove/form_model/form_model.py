@@ -110,7 +110,7 @@ def _header_fields(fields, key_attribute, header_dict, parent_field_name=None):
 
 def get_field_by_attribute_value(form_model, key_attribute, attribute_label):
     # ex: field1.name='first_name' field1.code='q1'
-    #    field2.name='location' field2.code='q3'
+    # field2.name='location' field2.code='q3'
     #    and both field1 and field2 are form_model fields,
     #    get_field_by_attribute_value(form_model,'name','location') will give back field2
     for field in form_model.fields:
@@ -207,6 +207,7 @@ class FormModel(DataObject):
             elif isinstance(field, FieldSet):
                 ef.extend(self._get_entity_questions(field.fields))
         return ef
+
     @property
     def entity_questions(self):
         return self._get_entity_questions(self._form_fields)
@@ -235,7 +236,7 @@ class FormModel(DataObject):
         for option in options:
             node = ET.Element('{http://www.w3.org/2002/xforms}item')
             name = ET.Element('{http://www.w3.org/2002/xforms}label')
-            name.text = option[1] + ' ('+option[0]+')'
+            name.text = option[1] + ' (' + option[0] + ')'
             node.append(name)
             label = ET.Element('{http://www.w3.org/2002/xforms}value')
             label.text = option[0]
@@ -249,7 +250,7 @@ class FormModel(DataObject):
             node = self._get_node(parent_node, uniqueid_ui_field.code)
         else:
             node = self._get_node(root_node, uniqueid_ui_field.code)
-        node.remove(node._children[1]) #removing the placeholder option
+        node.remove(node._children[1])  # removing the placeholder option
         choice_elements = self._get_choice_elements(uniqueid_ui_field.options)
         for element in choice_elements:
             node.append(element)
@@ -287,7 +288,8 @@ class FormModel(DataObject):
 
     def update_xform_with_questionnaire_name(self, questionnaire_name):
         # Escape <, > and & and convert accented characters to equivalent non-accented characters
-        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % unicodedata.normalize('NFD', escape(questionnaire_name)).encode('ascii', 'ignore'), self.xform)
+        self.xform = re.sub(r"<html:title>.+</html:", "<html:title>%s</html:" % unicodedata.normalize('NFD', escape(
+            unicode(questionnaire_name))).encode('ascii', 'ignore'), self.xform)
 
     @xform.setter
     def xform(self, value):
@@ -341,7 +343,7 @@ class FormModel(DataObject):
             if isinstance(field, FieldSet):
                 media_fields_from_field_set = self._get_media_fields(field.fields)
                 if media_fields_from_field_set:
-                        media_fields.extend(media_fields_from_field_set)
+                    media_fields.extend(media_fields_from_field_set)
         return media_fields
 
     @property
@@ -633,6 +635,7 @@ class FormModel(DataObject):
     @property
     def is_open_survey(self):
         return self._doc.get('is_open_survey', False)
+
 
 class EntityFormModel(FormModel):
     __document_class__ = EntityFormModelDocument

@@ -73,7 +73,7 @@ class TestShouldSaveSMSSubmission(unittest.TestCase):
             submission=dict(submission_id="1"))
 
         cls.reporter_id = "rep" + str(int(random.random()*10000))
-        cls.reporter = create_contact(cls.dbm, entity_type=["reporter"],
+        cls.reporter = create_contact(cls.dbm, contact_type=["reporter"],
             location=["India", "Pune"], aggregation_paths=None, short_code=cls.reporter_id,
         )
         cls.reporter.save()

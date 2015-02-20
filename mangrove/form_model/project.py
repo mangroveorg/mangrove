@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
-from mangrove.datastore.entity import Entity, _from_row_to_entity
+from mangrove.datastore.entity import _from_row_to_entity, Contact
 from mangrove.errors.MangroveException import DataObjectAlreadyExists
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel
@@ -88,7 +88,7 @@ class Project(FormModel):
     def get_associated_datasenders(self, dbm):
         keys = [([REPORTER], short_code) for short_code in self.data_senders]
         rows = dbm.view.by_short_codes(reduce=False, include_docs=True, keys=keys)
-        return [Entity.new_from_doc(dbm, Entity.__document_class__.wrap(row.get('doc'))) for row in rows]
+        return [Contact.new_from_doc(dbm, Contact.__document_class__.wrap(row.get('doc'))) for row in rows]
 
     def _get_data_senders_ids_who_made_submission_for(self, dbm, deadline_date, frequency_period):
         if frequency_period == 'month':

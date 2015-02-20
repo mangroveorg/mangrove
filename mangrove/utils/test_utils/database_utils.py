@@ -50,14 +50,3 @@ def safe_delete_reporter_by_phone(manager, mobile_number):
             user.delete()
     except NumberNotRegisteredException:
         pass
-
-def delete_and_create_entity_instance(manager, ENTITY_TYPE, location, short_code):
-    try:
-        entity = get_by_short_code(dbm=manager, short_code=short_code,entity_type=ENTITY_TYPE)
-        entity.delete()
-    except DataObjectNotFound:
-        pass
-
-    e = Entity(manager, entity_type=ENTITY_TYPE, location=location, short_code=short_code)
-    id1 = e.save()
-    return e, id1

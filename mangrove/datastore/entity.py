@@ -40,22 +40,22 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     return e
 
 
-def create_contact(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None, is_datasender=True):
+def create_contact(dbm, contact_type, short_code, location=None, aggregation_paths=None, geometry=None, is_datasender=True):
     """
     Initialize and save an entity to the database. Return the entity
     created unless the short code used is not unique or this entity
     type has not been defined yet.
     """
     assert is_string(short_code) and not is_empty(short_code)
-    assert type(entity_type) is list and not is_empty(entity_type)
-    if not entity_type_already_defined(dbm, entity_type):
-        raise EntityTypeDoesNotExistsException(entity_type)
-    existing = _check_if_entity_exists(dbm, entity_type, short_code, return_entity=True)
+    assert type(contact_type) is list and not is_empty(contact_type)
+    if not entity_type_already_defined(dbm, contact_type):
+        raise EntityTypeDoesNotExistsException(contact_type)
+    existing = _check_if_entity_exists(dbm, contact_type, short_code, return_entity=True)
     if existing:
         entity_name = existing.data.get('name', {'value': ''}).get('value')
-        raise DataObjectAlreadyExists(entity_type[0].capitalize(), "Unique ID Number", short_code,
+        raise DataObjectAlreadyExists(contact_type[0].capitalize(), "Unique ID Number", short_code,
                                       existing_name=entity_name)
-    e = Contact(dbm, entity_type=entity_type, location=location,
+    e = Contact(dbm, entity_type=contact_type, location=location,
                aggregation_paths=aggregation_paths, short_code=short_code, geometry=geometry, is_datasender=is_datasender)
     #e.save()
     return e

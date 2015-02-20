@@ -230,9 +230,9 @@ class TestSurveyResponseEventBuilder(TestCase):
         survey_response = Mock(spec=SurveyResponse)
         type(survey_response).owner_uid = PropertyMock(return_value='data_sender_uid')
         type(survey_response).values = PropertyMock(return_value={})
-        with patch("mangrove.feeds.enriched_survey_response.Entity.get") as get_entity:
+        with patch("mangrove.feeds.enriched_survey_response.Contact.get") as get_datasender:
             data_sender = Mock(spec=Entity)
-            get_entity.return_value = data_sender
+            get_datasender.return_value = data_sender
             type(data_sender).data = PropertyMock(
                 return_value={"name": {"value": "data sender name"}, "mobile_number": {"value": "+39882773662"}})
             type(data_sender).short_code = PropertyMock(return_value="rep2423")
@@ -247,15 +247,15 @@ class TestSurveyResponseEventBuilder(TestCase):
             self.assertEquals(datasender_dict.get('mobile_number'), '+39882773662')
             self.assertEquals(datasender_dict.get('question_code'), '')
             self.assertFalse(datasender_dict.get('deleted'))
-            get_entity.assert_called_once_with(self.dbm, 'data_sender_uid')
+            get_datasender.assert_called_once_with(self.dbm, 'data_sender_uid')
 
     def test_feed_datasender_is_none_when_migrating_survey_response_with_document_for_owner_id_not_found(self):
         survey_response = Mock(spec=SurveyResponse)
         type(survey_response).owner_uid = PropertyMock(return_value='data_sender_uid')
         type(survey_response).values = PropertyMock(return_value={})
         builder = EnrichedSurveyResponseBuilder(self.dbm, survey_response, self.form_model, {})
-        with patch("mangrove.feeds.enriched_survey_response.Entity.get") as get_entity:
-            get_entity.side_effect = DataObjectNotFound(Entity.__name__, 'id', None)
+        with patch("mangrove.feeds.enriched_survey_response.Contact.get") as get_datasender:
+            get_datasender.side_effect = DataObjectNotFound(Entity.__name__, 'id', None)
             data_sender = builder._data_sender()
             self.assertIsNone(data_sender['id'])
             self.assertIsNone(data_sender['last_name'])

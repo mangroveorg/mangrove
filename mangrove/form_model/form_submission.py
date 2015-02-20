@@ -163,7 +163,7 @@ class GlobalRegistrationFormSubmission(FormSubmission):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
         is_datasender = self._cleaned_data.pop('is_data_sender', True)
-        return entity.create_contact(dbm=dbm, entity_type=self.entity_type,
+        return entity.create_contact(dbm=dbm, contact_type=self.entity_type,
                                      location=location_hierarchy,
                                      short_code=self.short_code,
                                      geometry=processed_geometry,

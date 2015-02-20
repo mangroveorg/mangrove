@@ -9,9 +9,8 @@ from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 
 class TestReporter(MangroveTestCase):
     @classmethod
-    def register(cls, manager, entity_type, data, location, source, aggregation_paths=None, short_code=None):
-    #    manager = get_db_manager()
-        e = create_contact(manager, contact_type=entity_type, location=location, aggregation_paths=aggregation_paths,
+    def register(cls, manager, data, location, source, aggregation_paths=None, short_code=None):
+        e = create_contact(manager, location=location, aggregation_paths=aggregation_paths,
             short_code=short_code)
         e.add_data(data=data)
         return e
@@ -20,23 +19,23 @@ class TestReporter(MangroveTestCase):
         MangroveTestCase.setUp(self)
         define_type(self.manager, ["reporter"])
         #Register Reporter
-        self.first_reporter = self.register(self.manager, entity_type=["reporter"],
+        self.first_reporter = self.register(self.manager,
             data=[(MOBILE_NUMBER_FIELD, "1234567890"),
                   (NAME_FIELD, "A")],
             location=[],
             source="sms", short_code="REP1")
-        self.register(self.manager, entity_type=["reporter"],
+        self.register(self.manager,
             data=[(MOBILE_NUMBER_FIELD, "8888567890"),
                   (NAME_FIELD, "B")],
             location=[],
             source="sms", short_code="rep5")
-        self.register(self.manager, entity_type=["reporter"],
+        self.register(self.manager,
             data=[(MOBILE_NUMBER_FIELD, "1234567890"),
                   (NAME_FIELD, "B")],
             location=[],
             source="sms", short_code="REP2")
 
-        self.register(self.manager, entity_type=["reporter"],
+        self.register(self.manager,
             data=[(MOBILE_NUMBER_FIELD, "1234567891"),
                   (NAME_FIELD, "C")],
             location=[],

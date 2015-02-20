@@ -292,7 +292,6 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 def register_datasender(dbm):
     define_type(dbm, ["reporter"])
     TestReporter.register(dbm,
-                          entity_type=REPORTER_ENTITY_TYPE,
                           data=[(MOBILE_NUMBER_FIELD, "1234567890"),
                                 (NAME_FIELD, "B")],
                           location=None,

@@ -2,7 +2,6 @@
 
 import copy
 from datetime import datetime
-from collections import defaultdict
 from documents import EntityDocument, DataRecordDocument, attributes, ContactDocument
 from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
@@ -40,14 +39,14 @@ def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths
     return e
 
 
-def create_contact(dbm, contact_type, short_code, location=None, aggregation_paths=None, geometry=None, is_datasender=True):
+def create_contact(dbm, short_code, location=None, aggregation_paths=None, geometry=None, is_datasender=True):
     """
     Initialize and save an entity to the database. Return the entity
     created unless the short code used is not unique or this entity
     type has not been defined yet.
     """
+    contact_type = ["reporter"]
     assert is_string(short_code) and not is_empty(short_code)
-    assert type(contact_type) is list and not is_empty(contact_type)
     if not entity_type_already_defined(dbm, contact_type):
         raise EntityTypeDoesNotExistsException(contact_type)
     existing = _check_if_entity_exists(dbm, contact_type, short_code, return_entity=True)

@@ -32,7 +32,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         reporter_id = ut_reporter_id()
         mobile_number = "99992"
         safe_delete_reporter_by_phone(self.manager, mobile_number)
-        reporter1 = create_entity(self.manager, [REPORTER], reporter_id)
+        reporter1 = create_contact(self.manager, reporter_id)
 
         reporter1.add_data(data=[("mobile_number", ("%s" % mobile_number)), ("name", "aname")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
@@ -54,7 +54,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
     def test_should_not_return_error_dict_if_reporter_with_mobile_number_deleted(self):
         values = dict(t='reporter', m='99991', s='rep_test2', l='test_location', g='1 1', n='Test Reporter')
         id = ut_reporter_id()
-        reporter1 = create_entity(self.manager, [REPORTER], id)
+        reporter1 = create_contact(self.manager, id)
         reporter1.add_data(data=[("mobile_number", "99991"), ("name", "aname")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))
@@ -72,7 +72,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         self.assertTrue('m' in errors)
 
     def test_should_return_error_if_mobile_number_has_hyphens_from_excel_file(self):
-        reporter1 = create_contact(self.manager, [REPORTER], ut_reporter_id())
+        reporter1 = create_contact(self.manager, ut_reporter_id())
         reporter1.add_data(data=[("mobile_number", "266123321435")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))
@@ -81,7 +81,7 @@ class TestMobileNumberMandatoryValidationsForReporterRegistrationValidatorIntegr
         self.assertTrue('m' in errors)
 
     def test_should_return_error_if_mobile_number_comes_as_floating_point_number_from_excel_file(self):
-        reporter1 = create_contact(self.manager, [REPORTER], ut_reporter_id())
+        reporter1 = create_contact(self.manager, ut_reporter_id())
         reporter1.add_data(data=[("mobile_number", "266123321435"), ("name", "aname")],
             event_time=datetime.datetime(2010, 02, 01, tzinfo=UTC),
             submission=dict(submission_id='1', form_code='reg'))

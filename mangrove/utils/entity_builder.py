@@ -44,5 +44,5 @@ class EntityBuilder(object):
         except DataObjectNotFound:
             pass
         if entity_type == [REPORTER]:
-            return create_contact(manager, entity_type, short_code, location, aggregation_paths, geometry)
+            return create_contact(manager, short_code, location, aggregation_paths, geometry)
         return create_entity(manager, entity_type, short_code, location, aggregation_paths, geometry)

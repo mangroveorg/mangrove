@@ -130,10 +130,9 @@ class ContactDocument(DocumentBase):
     gr_id = TextField()
     short_code = TextField()
     data = DictField()
-    # is_data_sender = BooleanField()
+    groups = ListField(TextField())
 
-    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None,
-                 is_data_sender=None):
+    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None):
         DocumentBase.__init__(self, id=id, document_type='Contact')
         self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
         self._geometry = geometry
@@ -164,6 +163,8 @@ class ContactDocument(DocumentBase):
     def location(self, loc):
         self.aggregation_paths[attributes.GEO_PATH] = loc
 
+    def add_group(self, group_name):
+        self.groups.append(group_name)
 
 class DataRecordDocument(DocumentBase):
     """

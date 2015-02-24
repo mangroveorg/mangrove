@@ -762,7 +762,11 @@ class Contact(DataObject):
             doc.gr_id = gr_id
         if short_code is not None:
             doc.short_code = short_code
-        doc.is_data_sender = is_data_sender
+        if is_data_sender:
+            doc.groups = ['datasender']
+        else:
+            doc.groups = ['contact']
+
         if aggregation_paths is not None:
             reserved_names = (attributes.TYPE_PATH, attributes.GEO_PATH)
             for name in aggregation_paths.keys():

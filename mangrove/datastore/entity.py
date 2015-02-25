@@ -550,6 +550,10 @@ class Contact(DataObject):
         return u'' if p is None else u'.'.join(p)
 
     @property
+    def groups(self):
+        list(self._doc.groups)
+
+    @property
     def location_string(self):
         """
         An Entity's location is a list of strings. Return this

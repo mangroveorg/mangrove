@@ -551,7 +551,15 @@ class Contact(DataObject):
 
     @property
     def groups(self):
-        list(self._doc.groups)
+        return list(self._doc.groups)
+
+    @property
+    def is_contact(self):
+        return 'contact' in self.groups
+
+    @property
+    def email(self):
+        return self._doc.email
 
     @property
     def location_string(self):
@@ -783,6 +791,12 @@ class Contact(DataObject):
         self._doc.geometry = geometry
 
 
+    def change_status_to_datasender(self):
+        if 'contact' in self._doc.groups:
+            self._doc.groups.remove('contact')
+            self._doc.add_group('datasender')
+
+
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument
 
@@ -858,7 +872,7 @@ def _get_all_entities(dbm, limit=None):
         kwargs['limit'] = limit
 
     rows = dbm.view.by_short_codes(**kwargs)
-    return [_from_row_to_entity(dbm, row) for row in rows]
+    return [from_row_to_entity(dbm, row) for row in rows]
 
 
 def _get_all_entities_of_type(dbm, entity_type, limit=None):
@@ -872,7 +886,7 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None):
         kwargs['limit'] = limit
 
     rows = dbm.view.by_short_codes(**kwargs)
-    return [_from_row_to_entity(dbm, row) for row in rows]
+    return [from_row_to_entity(dbm, row) for row in rows]
 
 
 def get_all_entities_include_voided(dbm, entity_type):
@@ -881,10 +895,10 @@ def get_all_entities_include_voided(dbm, entity_type):
     rows = dbm.database.iterview('entity_by_short_code/entity_by_short_code', 1000, reduce=False, include_docs=True,
                                  startkey=startkey, endkey=endkey)
     for row in rows:
-        yield _from_row_to_entity(dbm, row)
+        yield from_row_to_entity(dbm, row)
 
 
-def _from_row_to_entity(dbm, row):
+def from_row_to_entity(dbm, row):
     return Entity.new_from_doc(dbm=dbm, doc=Entity.__document_class__.wrap(row.get('doc')))
 
 

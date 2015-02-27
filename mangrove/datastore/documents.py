@@ -148,6 +148,12 @@ class ContactDocument(DocumentBase):
         else:
             return None
 
+    @property
+    def email(self):
+        if self.data.get('email'):
+            return self.data['email']['value']
+        return None
+
     @entity_type.setter
     def entity_type(self, typ):
         self.aggregation_paths[attributes.TYPE_PATH] = typ

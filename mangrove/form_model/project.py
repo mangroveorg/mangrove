@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
-from mangrove.datastore.entity import _from_row_to_entity, Contact
+from mangrove.datastore.entity import from_row_to_entity, Contact
 from mangrove.errors.MangroveException import DataObjectAlreadyExists
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel
@@ -155,20 +155,14 @@ class Project(FormModel):
         attribute_list = [item[0] for item in (self._doc.items())]
         for key in value_dict:
             if key in attribute_list:
-                # if key == 'name':
-                # setattr(self._doc, key, value_dict.get(key))
-                # else:
                 setattr(self._doc, key, value_dict.get(key))
 
     def set_void(self, void=True):
         self._doc.void = void
 
     def delete_datasender(self, dbm, entity_id):
-        # from datawinners.search.datasender_index import update_datasender_index_by_id
-
         self.data_senders.remove(entity_id)
         self.save(process_post_update=False)
-        # update_datasender_index_by_id(entity_id, dbm)
 
     def _remove_duplicate_datasenders(self, data_senders_list):
         datasenders_already_linked_to_questionnaire = []
@@ -187,8 +181,6 @@ class Project(FormModel):
         if data_senders_list:
             self.data_senders.extend(data_senders_list)
             self.save(process_post_update=False)
-            # for data_senders_code in data_senders_list:
-            #     update_datasender_index_by_id(data_senders_code, dbm)
 
     @property
     def is_open_survey(self):
@@ -204,7 +196,7 @@ def load_data_senders(manager, short_codes):
     fields, labels, codes = get_entity_type_fields(manager)
     keys = [([REPORTER], short_code) for short_code in short_codes]
     rows = manager.view.by_short_codes(reduce=False, include_docs=True, keys=keys)
-    data = [tabulate_data(_from_row_to_entity(manager, row), form_model, codes) for row in rows]
+    data = [tabulate_data(from_row_to_entity(manager, row), form_model, codes) for row in rows]
     return data, fields, labels
 
 def get_entity_type_fields(manager, form_code='reg'):

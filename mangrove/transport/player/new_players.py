@@ -57,6 +57,13 @@ class SMSPlayerV2(object):
             if response is not None:
                 return response
 
+    def _get_reporter_name(self, reporter_entity):
+        if reporter_entity.value(NAME_FIELD):
+            reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+        else:
+            reporter_entity_names = None
+        return reporter_entity_names
+
     def add_survey_response(self, request, logger=None, additional_feed_dictionary=None,
                             translation_processor=None):
         form_code, values, extra_elements = self._parse(request.message)
@@ -71,7 +78,7 @@ class SMSPlayerV2(object):
 
         try:
             reporter_entity = reporters.find_reporter_entity(self.dbm, request.transport.source)
-            reporter_entity_names = [{NAME_FIELD: reporter_entity.value(NAME_FIELD)}]
+            reporter_entity_names = self._get_reporter_name(reporter_entity)
             reporter_short_code = reporter_entity.short_code
         except NumberNotRegisteredException:
             reporter_short_code = None

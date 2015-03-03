@@ -32,6 +32,8 @@ def create_question_from(dictionary, dbm):
     parent_field_code = dictionary.get("parent_field_code")
     if type == field_attributes.TEXT_FIELD:
         return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code)
+    if type == field_attributes.BOOLEAN_FIELD:
+        return _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code)
     if type == field_attributes.TIME:
         return _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code)
     if type == field_attributes.DATE_TIME:
@@ -93,6 +95,15 @@ def _get_text_field(code, dictionary, label, name, instruction, required, parent
     field = TextField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required,
                       parent_field_code=parent_field_code, is_calculated=dictionary.get('is_calculated'))
+    return field
+
+
+def _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code):
+    constraints, constraints_json = [], dictionary.get("constraints")
+    if constraints_json is not None:
+        constraints = constraints_factory(constraints_json)
+    field = BooleanField(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
+                         required=required, parent_field_code=parent_field_code)
     return field
 
 
@@ -204,6 +215,7 @@ class field_attributes(object):
     INSTRUCTION = "instruction"
     INTEGER_FIELD = "integer"
     TEXT_FIELD = "text"
+    BOOLEAN_FIELD = "boolean"
     SHORT_CODE_FIELD = "short_code"
     TELEPHONE_NUMBER_FIELD = "telephone_number"
     SELECT_FIELD = 'select1'
@@ -520,6 +532,28 @@ class TextField(Field):
         return value
 
 
+class BooleanField(Field):
+    DEFAULT_VALUE = "defaultValue"
+    CONSTRAINTS = "constraints"
+
+    def __init__(self, name, code, label, constraints=None, defaultValue=False, instruction=None,
+                 required=True, parent_field_code=None):
+        if not constraints:
+            constraints = []
+        assert isinstance(constraints, list)
+        Field.__init__(self, type=field_attributes.BOOLEAN_FIELD, name=name, code=code,
+                       label=label, instruction=instruction, constraints=constraints, required=required,
+                       parent_field_code=parent_field_code)
+        self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
+
+    def validate(self, value):
+        super(BooleanField, self).validate(value)
+        try:
+            return value == 'True'
+        except ValueError:
+            return False
+
+
 class UniqueIdField(Field):
     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
                  required=True, parent_field_code=None, xform_field_reference=None):
@@ -535,7 +569,7 @@ class UniqueIdField(Field):
         super(UniqueIdField, self).validate(value)
         return value.lower()
 
-    @property  #TODO:Remove
+    @property  # TODO:Remove
     def is_entity_field(self):
         return True
 

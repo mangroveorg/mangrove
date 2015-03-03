@@ -3,10 +3,10 @@ import datetime
 from pytz import UTC
 from mangrove.datastore.entity import Entity, create_entity, get_by_short_code
 from mangrove.datastore.entity_type import define_type
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, DataObjectNotFound
 from mangrove.form_model.field import TextField, IntegerField, SelectField, UniqueIdField
 from mangrove.form_model.form_model import FormModel, get_form_model_by_code
-from mangrove.utils.test_utils.database_utils import safe_define_type, uniq, delete_and_create_entity_instance
+from mangrove.utils.test_utils.database_utils import safe_define_type, uniq
 
 
 class TestData(object):
@@ -234,3 +234,13 @@ class TestData(object):
                               submission=dict(submission_id='3', form_code='CL1'))
 
 
+def delete_and_create_entity_instance(manager, ENTITY_TYPE, location, short_code):
+    try:
+        entity = get_by_short_code(dbm=manager, short_code=short_code,entity_type=ENTITY_TYPE)
+        entity.delete()
+    except DataObjectNotFound:
+        pass
+
+    e = Entity(manager, entity_type=ENTITY_TYPE, location=location, short_code=short_code)
+    id1 = e.save()
+    return e, id1

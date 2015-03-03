@@ -5,7 +5,7 @@ from mock import Mock, patch, PropertyMock, MagicMock
 from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField, UniqueIdField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
-from mangrove.datastore.entity import Entity
+from mangrove.datastore.entity import Entity, Contact
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import  OrderSMSParser
@@ -19,9 +19,10 @@ from mangrove.transport.player.new_players import SMSPlayerV2
 class TestSMSPlayer(TestCase):
 
     def _mock_reporter(self):
-        self.reporter_mock = Mock(spec=Entity)
+        self.reporter_mock = MagicMock(spec=Contact)
         self.reporter_name = "1234"
         self.reporter_mock.value.return_value = self.reporter_name
+        self.reporter_mock.short_code = "short_code"
         self.reporter_module.find_reporter_entity.return_value = self.reporter_mock
 
 
@@ -129,7 +130,9 @@ class TestSMSPlayer(TestCase):
         entity_question_field = Mock()
         entity_question_field.code = 'q1'
         self.form_model_mock.entity_questions = [entity_question_field]
+
         response = self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
+
         self.assertEqual(response.errors, {})
         self.assertTrue(response.success)
 
@@ -155,8 +158,27 @@ class TestSMSPlayer(TestCase):
                 #mock_get_form_model_by_code.return_value = mock_form_model
                 save_survey.return_value = Mock(spec=Response)
                 self.sms_player.add_survey_response(request)
-                save_survey.assert_called_once('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
-                    'sms',
-                    sms_message)
+                save_survey.assert_called_once_with('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
+                                                    self.transport, "short_code",additional_feed_dictionary=None,
+                                                    translation_processor=None)
 
+    def test_should_save_survey_for_a_reporter_with_no_name(self):
+        self.loc_tree.get_location_hierarchy.return_value = None
+        sms_message = "questionnaire_code question1_answer question2_answer"
+        request = Request(transportInfo=self.transport, message=sms_message)
+        contact = MagicMock(Contact)
+        contact.value.return_value = None
+        contact.short_code = "short_code"
+
+        self.reporter_module.find_reporter_entity.return_value = contact
+        with patch(
+            'mangrove.transport.player.new_players.SurveyResponseService') as SurveyResponseServiceMock:
+                instance_mock = Mock()
+                SurveyResponseServiceMock.return_value = instance_mock
+
+                self.sms_player.add_survey_response(request)
+
+                instance_mock.save_survey.assert_called_with('questionnaire_code', {'id': 'question1_answer'}, None,
+                    self.transport, "short_code", additional_feed_dictionary=None,
+                                   translation_processor=None)
 

@@ -1,7 +1,8 @@
 from string import lower
 import traceback
+
 from mangrove.datastore.documents import EnrichedSurveyResponseDocument
-from mangrove.datastore.entity import by_short_code, Entity, get_by_short_code_include_voided
+from mangrove.datastore.entity import by_short_code, Contact
 from mangrove.errors.MangroveException import DataObjectNotFound
 from mangrove.form_model.field import DateField, SelectField, UniqueIdField
 
@@ -59,10 +60,9 @@ class EnrichedSurveyResponseBuilder(object):
     def _update_feed_with_latest_info(self, enriched_survey_response):
         enriched_survey_response.update(self.feed_document())
 
-
     def _data_sender(self):
         try:
-            data_sender = Entity.get(self.dbm, self.survey_response.owner_uid)
+            data_sender = Contact.get(self.dbm, self.survey_response.owner_uid)
             #todo Do we need to store datasender question code information in enriched survey response?
             return self._get_data_sender_info_dict(data_sender, '')
         except:

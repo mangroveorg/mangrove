@@ -1,4 +1,3 @@
-
 import logging
 
 from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
@@ -46,6 +45,7 @@ class TZAwareDateTimeField(DateTimeField):
             value = datetime.datetime.combine(value, datetime.time(0))
         return py_datetime_to_js_datestring(value)
 
+
 class DocumentBase(Document):
     created = TZAwareDateTimeField()
     modified = TZAwareDateTimeField()
@@ -60,11 +60,11 @@ class DocumentBase(Document):
         self.document_type = document_type
         self.void = False
 
-    def post_update(self, dbm,pre_save_object):
-        if hasattr(self.__class__ , 'registered_functions'):
+    def post_update(self, dbm, pre_save_object):
+        if hasattr(self.__class__, 'registered_functions'):
             for callback in self.__class__.registered_functions:
                 try:
-                    callback(self, dbm,pre_save_object) if pre_save_object else callback(self,dbm)
+                    callback(self, dbm, pre_save_object) if pre_save_object else callback(self, dbm)
                 except Exception as e:
                     logging.error(e.message)
                     raise
@@ -118,6 +118,59 @@ class EntityDocument(DocumentBase):
     def location(self, loc):
         self.aggregation_paths[attributes.GEO_PATH] = loc
 
+class ContactDocument(DocumentBase):
+    """
+    The couch entity document. It abstracts out the couch related functionality and inherits from the Document class
+    of couchdb-python.
+    A schema for the entity is enforced here.
+    """
+    aggregation_paths = DictField()
+    geometry = DictField()
+    centroid = ListField(FloatField())
+    gr_id = TextField()
+    short_code = TextField()
+    data = DictField()
+    groups = ListField(TextField())
+
+    def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None):
+        DocumentBase.__init__(self, id=id, document_type='Contact')
+        self.aggregation_paths = (aggregation_paths if aggregation_paths is not None else {})
+        self._geometry = geometry
+        self._centroid = centroid
+        self._gr_id = gr_id
+        self.short_code = short_code
+        # self.is_data_sender = is_data_sender
+
+    @property
+    def entity_type(self):
+        if attributes.TYPE_PATH in self.aggregation_paths:
+            return self.aggregation_paths[attributes.TYPE_PATH]
+        else:
+            return None
+
+    @property
+    def email(self):
+        if self.data.get('email'):
+            return self.data['email']['value']
+        return None
+
+    @entity_type.setter
+    def entity_type(self, typ):
+        self.aggregation_paths[attributes.TYPE_PATH] = typ
+
+    @property
+    def location(self):
+        if attributes.GEO_PATH in self.aggregation_paths:
+            return self.aggregation_paths[attributes.GEO_PATH]
+        else:
+            return None
+
+    @location.setter
+    def location(self, loc):
+        self.aggregation_paths[attributes.GEO_PATH] = loc
+
+    def add_group(self, group_name):
+        self.groups.append(group_name)
 
 class DataRecordDocument(DocumentBase):
     """
@@ -145,10 +198,11 @@ class DataRecordDocument(DocumentBase):
         if submission:
             self.submission = submission
 
+
 class FormModelDocument(DocumentBase):
     metadata = DictField()
     name = TextField()
-    #type = TextField()
+    # type = TextField()
     label = TextField()
     form_code = TextField()
     is_registration_model = BooleanField(default=False)
@@ -174,11 +228,13 @@ class FormModelDocument(DocumentBase):
     def set_label(self, label):
         self.label = label
 
+
 class EntityFormModelDocument(FormModelDocument):
     entity_type = ListField(TextField())
 
     def __init__(self, id=None):
         super(EntityFormModelDocument, self).__init__(id)
+
 
 class ProjectDocument(FormModelDocument):
     goals = TextField()
@@ -201,6 +257,7 @@ class ProjectDocument(FormModelDocument):
             self['is_open_survey'] = True
         elif self.is_open_survey:
             del self['is_open_survey']
+
 
 class SurveyResponseDocument(DocumentBase):
     """
@@ -266,7 +323,7 @@ class EnrichedSurveyResponseDocument(DocumentBase):
     status = TextField()
     error_message = TextField()
     data_sender = DictField()
-    #additional_detail can be empty, for example we will not have the project info when the submission is made via SMS or Xform
+    # additional_detail can be empty, for example we will not have the project info when the submission is made via SMS or Xform
     additional_detail = DictField()
 
     def __init__(self, survey_response_id=None, survey_response_modified_time=None, channel=None, form_code=None,
@@ -311,8 +368,10 @@ class AggregationTreeDocument(DocumentBase):
         if root is None:
             self.root = {}
 
+
 HARD_DELETE = 'hard-delete'
 SOFT_DELETE = 'soft-delete'
+
 
 class EntityActionDocument(DocumentBase):
     """

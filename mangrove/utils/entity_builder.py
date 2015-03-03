@@ -1,6 +1,8 @@
-from mangrove.datastore.entity import create_entity, get_by_short_code
+from mangrove.datastore.entity import create_entity, get_by_short_code, create_contact
 from mangrove.datastore.entity_type import entity_type_already_defined, define_type
 from mangrove.errors.MangroveException import DataObjectNotFound
+from mangrove.form_model.form_model import REPORTER
+
 
 class EntityBuilder(object):
     def __init__(self, manager, entity_type, short_code):
@@ -41,4 +43,6 @@ class EntityBuilder(object):
             entity.delete()
         except DataObjectNotFound:
             pass
+        if entity_type == [REPORTER]:
+            return create_contact(manager, short_code, location, aggregation_paths, geometry)
         return create_entity(manager, entity_type, short_code, location, aggregation_paths, geometry)

@@ -5,7 +5,7 @@
 
 from mangrove.bootstrap import initializer
 from mangrove.datastore.documents import  DataRecordDocument
-from mangrove.datastore.entity import get_by_short_code, create_entity
+from mangrove.datastore.entity import get_by_short_code, create_entity, contact_by_short_code
 from mangrove.datastore.entity_type import define_type
 from mangrove.errors.MangroveException import  DataObjectAlreadyExists, EntityTypeDoesNotExistsException
 
@@ -78,31 +78,31 @@ class TestWEBSubmission(MangroveTestCase):
 
 
     def test_should_register_new_entity_and_generate_short_code_if_not_given(self):
-        text = {'form_code':'reg', 't': 'dog', 'n': 'Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
+        text = {'form_code':'reg', 't': 'reporter', 'n': 'Diégo–Suarez', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd': 'This is a Clinic in Diégo–Suarez', 'm': '87654325'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "dog1"
+        expected_short_code = "rep1"
         self.assertEqual(response.short_code, expected_short_code)
-        a = get_by_short_code(self.manager, expected_short_code, ["dog"])
+        a = contact_by_short_code(self.manager, expected_short_code)
         self.assertEqual(a.short_code, expected_short_code)
 
-        text = {'form_code':'reg', 's':'bud', 'n':'buddy', 't': 'dog', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd':'its a dog!', 'm': '45557'}
+        text = {'form_code':'reg', 's':'bud', 'n':'buddy', 't': 'reporter', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd':'its a dog!', 'm': '45557'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
         expected_short_code = "bud"
         self.assertEqual(response.short_code, expected_short_code)
-        a = get_by_short_code(self.manager, "bud", ["dog"])
+        a = contact_by_short_code(self.manager, "bud")
         self.assertEqual(a.short_code, "bud")
 
-        text = {'form_code':'reg', 'n':'buddy2', 't': 'dog', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd':'its another dog!', 'm': '745557'}
+        text = {'form_code':'reg', 'n':'buddy2', 't': 'reporter', 'l': 'Diégo–Suarez', 'g': '-12.35  49.3', 'd':'its another dog!', 'm': '745557'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = "dog3"
+        expected_short_code = "rep3"
         self.assertEqual(response.short_code, expected_short_code)
-        b = get_by_short_code(self.manager, expected_short_code, ["dog"])
+        b = contact_by_short_code(self.manager, expected_short_code)
         self.assertEqual(b.short_code, expected_short_code)
 
     def test_should_return_error_for_registration_having_invalid_geo_data(self):
@@ -155,11 +155,6 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertFalse(response.success)
         self.assertTrue(MOBILE_NUMBER_FIELD_CODE in response.errors)
 
-    def test_should_throw_error_if_entityType_doesnt_exist(self):
-        with self.assertRaises(EntityTypeDoesNotExistsException):
-            text = {'form_code':'reg', 'n':'buddy', 's':'dog3', 't': 'cat', 'g':'80 80', 'd':'Its another dog', 'm':'123456'}
-            self.send_request_to_web_player(text)
-
     def test_entity_instance_is_case_insensitive(self):
         with self.assertRaises(DataObjectAlreadyExists):
             text = {'form_code':'clinic', 'EID':'CLI1', 'NAME': 'CLINIC-MADA', 'ARV': '50', 'COL': ['b']}
@@ -179,33 +174,33 @@ class TestWEBSubmission(MangroveTestCase):
         self.assertIsNone(response.errors.get('m'))
 
     def test_should_register_entity_with_geo_code(self):
-        text = {'form_code':'reg', 'n':'Diégo–Suarez', 't': 'dog', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
+        text = {'form_code':'reg', 'n':'Diégo–Suarez', 't':'reporter', 'g':'-12.35 49.3', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = 'dog1'
+        expected_short_code = 'rep1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
+        dog = contact_by_short_code(self.manager, expected_short_code)
         self.assertEqual([-12.35, 49.3], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_if_only_location_provided(self):
-        text = {'form_code':'reg', 'n':'Dog in AMPIZARANTANY', 't': 'dog', 'l':'AMPIZARANTANY', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
+        text = {'form_code':'reg', 'n':'Dog in AMPIZARANTANY', 't': 'reporter', 'l':'AMPIZARANTANY', 'd':'This is a dog in Diégo–Suarez','m':'786780'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = 'dog1'
+        expected_short_code = 'rep1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
+        dog = contact_by_short_code(self.manager, expected_short_code)
         self.assertEqual([-12, 60], dog.geometry.get("coordinates"))
 
     def test_should_register_entity_with_geocode_and_location_provided(self):
-        text = {'form_code':'reg', 'n':'Dog in AMPIZARANTANY', 't': 'dog', 'l':'AMPIZARANTANY', 'g':'10 10','d':'This is a dog in Diégo–Suarez','m':'786780'}
+        text = {'form_code':'reg', 'n':'Dog in AMPIZARANTANY', 't': 'reporter', 'l':'AMPIZARANTANY', 'g':'10 10','d':'This is a dog in Diégo–Suarez','m':'786780'}
         response = self.send_request_to_web_player(text)
         self.assertTrue(response.success)
         self.assertIsNotNone(response.datarecord_id)
-        expected_short_code = 'dog1'
+        expected_short_code = 'rep1'
         self.assertEqual(response.short_code, expected_short_code)
-        dog = get_by_short_code(self.manager, expected_short_code, ["dog"])
+        dog = contact_by_short_code(self.manager, expected_short_code)
         self.assertEqual([10, 10], dog.geometry.get("coordinates"))
         self.assertEqual([u'arantany'], dog.location_path)
 

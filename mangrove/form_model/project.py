@@ -201,11 +201,11 @@ class Project(FormModel):
     def has_attachment(self):
         try: # find a better way to check attachement exisits
             attachment = self.get_attachments('questionnaire.xls')
-            return True, attachment, '.xls'
+            return True, attachment, 'xls'
         except LookupError:
             try:
                 attachment = self.get_attachments('questionnaire.xlsx')
-                return True, attachment, '.xlsx'
+                return True, attachment, 'xlsx'
             except LookupError:
                 return False, None, None
 

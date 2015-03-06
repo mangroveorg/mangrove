@@ -1,10 +1,10 @@
 
 from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
-from mangrove.datastore.entity import void_entity
+from mangrove.datastore.entity import void_entity, void_contact
 from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE, SHORT_CODE
 from mangrove.form_model.form_submission import FormSubmissionFactory
 from mangrove.transport.contract.response import Response
-from mangrove.utils.types import is_empty
+from mangrove.utils.types import is_empty, is_string
 from mangrove.transport.contract.response import create_response_from_form_submission
 
 class CreateEntityHandler(object):
@@ -39,7 +39,12 @@ class DeleteHandler(object):
         short_code = cleaned_data[SHORT_CODE]
         entity_type = cleaned_data[ENTITY_TYPE_FIELD_CODE]
         if is_empty(errors):
-            void_entity(self.dbm, entity_type, short_code)
+
+            if entity_type[0] == 'reporter':
+                void_contact(self.dbm, short_code)
+            else:
+                void_entity(self.dbm, entity_type, short_code)
+
         return Response(reporter_names,  None, is_empty(errors), errors, None, short_code, cleaned_data,
             False, entity_type, form_model.form_code)
 

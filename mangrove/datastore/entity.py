@@ -17,6 +17,10 @@ def void_entity(dbm, entity_type, short_code):
     entity = get_by_short_code(dbm, short_code, entity_type)
     entity.void()
 
+def void_contact(dbm, short_code):
+    entity = contact_by_short_code(dbm, short_code)
+    entity.void()
+
 
 def create_entity(dbm, entity_type, short_code, location=None, aggregation_paths=None, geometry=None):
     """

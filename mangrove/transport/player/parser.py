@@ -246,13 +246,6 @@ class CsvParser(object):
         return csv_data.splitlines()
 
 
-def _get_worksheet(all_sheets):
-    work_sheet = all_sheets[0]
-    return all_sheets[1] if work_sheet.name == 'codes' else work_sheet
-
-def _get_code_sheet(all_sheets):
-    work_sheet = all_sheets[0]
-    return work_sheet if work_sheet.name == 'codes' else all_sheets[1]
 
 
 class XlsParser(object):
@@ -260,7 +253,7 @@ class XlsParser(object):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
         all_sheets = workbook.sheets()
-        worksheet = _get_worksheet(all_sheets)
+        worksheet = self._get_worksheet(all_sheets)
         header_found = False
         header = None
         parsed_data = []
@@ -280,6 +273,14 @@ class XlsParser(object):
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
         return parsed_data
+
+    def _get_worksheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return all_sheets[1] if work_sheet.name == 'codes' else work_sheet
+
+    def _get_code_sheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return work_sheet if work_sheet.name == 'codes' else all_sheets[1]
 
     def _remove_trailing_empty_header_field(self, field_header):
         for field in field_header[::-1]:
@@ -308,7 +309,7 @@ class XlsxParser(XlsParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        worksheet = _get_worksheet(workbook.worksheets())
+        worksheet = self._get_worksheet(workbook.worksheets)
         parsedData = []
         for row in worksheet.iter_rows():
             row_values = [self._get_value(x.value) for x in row]
@@ -320,15 +321,21 @@ class XlsxParser(XlsParser):
         if value is not None:
             return value
         return ''
+    def _get_worksheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return all_sheets[1] if work_sheet.title == 'codes' else work_sheet
 
+    def _get_code_sheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return work_sheet if work_sheet.title == 'codes' else all_sheets[1]
 
 class XlsOrderedParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
         all_sheets = workbook.sheets()
-        worksheet = _get_worksheet(all_sheets)
-        codes_sheet = _get_code_sheet(all_sheets)
+        worksheet = self._get_worksheet(all_sheets)
+        codes_sheet = self._get_code_sheet(all_sheets)
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
         form_code = header[0]
@@ -436,8 +443,8 @@ class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
-        worksheet = _get_worksheet(workbook.sheets())
-        codes_sheet = _get_code_sheet(workbook.sheets())
+        worksheet = self._get_worksheet(workbook.sheets())
+        codes_sheet = self._get_code_sheet(workbook.sheets())
         parsed_data = []
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
@@ -464,8 +471,8 @@ class XlsxDataSenderParser(XlsxParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        worksheet = _get_worksheet(workbook.worksheets())
-        codes_sheet = _get_code_sheet(workbook.worksheets())
+        codes_sheet = workbook.get_sheet_by_name('codes')
+        worksheet = self._get_worksheet(workbook.worksheets)
 
         rows = []
         for cs in codes_sheet.iter_rows():

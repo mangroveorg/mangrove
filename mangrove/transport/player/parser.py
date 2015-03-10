@@ -308,8 +308,7 @@ class XlsxParser(XlsParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        sheet_name = workbook.get_sheet_names()[0]
-        worksheet = workbook.get_sheet_by_name(name=sheet_name)
+        worksheet = _get_worksheet(workbook.worksheets())
         parsedData = []
         for row in worksheet.iter_rows():
             row_values = [self._get_value(x.value) for x in row]
@@ -437,9 +436,9 @@ class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
-        worksheet = workbook.sheets()[0]
-        codes_sheet = workbook.sheets()[1]
-        parsedData = []
+        worksheet = _get_worksheet(workbook.sheets())
+        codes_sheet = _get_code_sheet(workbook.sheets())
+        parsed_data = []
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
 
@@ -453,10 +452,10 @@ class XlsDatasenderParser(XlsParser):
             row = self._clean(row)
             values = dict(zip(header, row))
             values.update({"t": "reporter"})
-            parsedData.append((form_code, values))
+            parsed_data.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
-        return parsedData
+        return parsed_data
 
 class XlsxDataSenderParser(XlsxParser):
 
@@ -465,10 +464,8 @@ class XlsxDataSenderParser(XlsxParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        sheet_name = workbook.get_sheet_names()[0]
-        code = workbook.get_sheet_names()[1]
-        worksheet = workbook.get_sheet_by_name(name=sheet_name)
-        codes_sheet = workbook.get_sheet_by_name(name=code)
+        worksheet = _get_worksheet(workbook.worksheets())
+        codes_sheet = _get_code_sheet(workbook.worksheets())
 
         rows = []
         for cs in codes_sheet.iter_rows():

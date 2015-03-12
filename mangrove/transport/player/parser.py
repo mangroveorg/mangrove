@@ -481,7 +481,7 @@ class XlsxDataSenderParser(XlsxParser):
         parsed_data = []
         form_code = REGISTRATION_FORM_CODE
         header = header[1:]
-        for row in worksheet.iter_rows():
+        for row in worksheet.iter_rows(row_offset=1):
             row_values = [self._get_value(x.value) for x in row]
             values = dict(zip(header, row_values))
             values.update({"t": "reporter"})

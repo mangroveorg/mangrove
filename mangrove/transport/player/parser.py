@@ -246,14 +246,17 @@ class CsvParser(object):
         return csv_data.splitlines()
 
 
+
+
 class XlsParser(object):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
-        worksheet = workbook.sheets()[0]
+        all_sheets = workbook.sheets()
+        worksheet = self._get_worksheet(all_sheets)
         header_found = False
         header = None
-        parsedData = []
+        parsed_data = []
         for row_num in range(worksheet.nrows):
             row = worksheet.row_values(row_num)
 
@@ -266,10 +269,18 @@ class XlsParser(object):
             row = self._clean(row)
             row_dict = dict(zip(header, row))
             form_code, values = (row_dict.pop(header[0]).lower(), row_dict)
-            parsedData.append((form_code, values))
+            parsed_data.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
-        return parsedData
+        return parsed_data
+
+    def _get_worksheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return all_sheets[1] if work_sheet.name == 'codes' else work_sheet
+
+    def _get_code_sheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return work_sheet if work_sheet.name == 'codes' else all_sheets[1]
 
     def _remove_trailing_empty_header_field(self, field_header):
         for field in field_header[::-1]:
@@ -298,8 +309,7 @@ class XlsxParser(XlsParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        sheet_name = workbook.get_sheet_names()[0]
-        worksheet = workbook.get_sheet_by_name(name=sheet_name)
+        worksheet = self._get_worksheet(workbook.worksheets)
         parsedData = []
         for row in worksheet.iter_rows():
             row_values = [self._get_value(x.value) for x in row]
@@ -311,27 +321,34 @@ class XlsxParser(XlsParser):
         if value is not None:
             return value
         return ''
+    def _get_worksheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return all_sheets[1] if work_sheet.title == 'codes' else work_sheet
 
+    def _get_code_sheet(self, all_sheets):
+        work_sheet = all_sheets[0]
+        return work_sheet if work_sheet.title == 'codes' else all_sheets[1]
 
 class XlsOrderedParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
-        worksheet = workbook.sheets()[0]
-        codes_sheet = workbook.sheets()[1]
-        parsedData = []
+        all_sheets = workbook.sheets()
+        worksheet = self._get_worksheet(all_sheets)
+        codes_sheet = self._get_code_sheet(all_sheets)
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
         form_code = header[0]
         header = header[1:]
+        parsed_data = []
         for row_num in range(1, worksheet.nrows):
             row = worksheet.row_values(row_num)
             row = self._clean(row)
             values = OrderedDict(zip(header, row))
-            parsedData.append((form_code, values))
+            parsed_data.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
-        return parsedData
+        return parsed_data
 
 
 class XFormParser(object):
@@ -426,9 +443,9 @@ class XlsDatasenderParser(XlsParser):
     def parse(self, xls_contents):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
-        worksheet = workbook.sheets()[0]
-        codes_sheet = workbook.sheets()[1]
-        parsedData = []
+        worksheet = self._get_worksheet(workbook.sheets())
+        codes_sheet = self._get_code_sheet(workbook.sheets())
+        parsed_data = []
         row = codes_sheet.row_values(0)
         header, header_found = self._is_header_row(row)
 
@@ -442,10 +459,10 @@ class XlsDatasenderParser(XlsParser):
             row = self._clean(row)
             values = dict(zip(header, row))
             values.update({"t": "reporter"})
-            parsedData.append((form_code, values))
+            parsed_data.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
-        return parsedData
+        return parsed_data
 
 class XlsxDataSenderParser(XlsxParser):
 
@@ -454,24 +471,22 @@ class XlsxDataSenderParser(XlsxParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        sheet_name = workbook.get_sheet_names()[0]
-        code = workbook.get_sheet_names()[1]
-        worksheet = workbook.get_sheet_by_name(name=sheet_name)
-        codes_sheet  = workbook.get_sheet_by_name(name=code)
+        codes_sheet = workbook.get_sheet_by_name('codes')
+        worksheet = self._get_worksheet(workbook.worksheets)
 
-        #rows = codes_sheet.rows[0] #row_values(0)
+        rows = []
         for cs in codes_sheet.iter_rows():
             rows = [self._get_value(x.value) for x in cs]
         header, header_found = self._is_header_row(rows)
-        parsedData = []
+        parsed_data = []
         form_code = REGISTRATION_FORM_CODE
         header = header[1:]
-        for row in worksheet.iter_rows():
+        for row in worksheet.iter_rows(row_offset=1):
             row_values = [self._get_value(x.value) for x in row]
             values = dict(zip(header, row_values))
             values.update({"t": "reporter"})
-            parsedData.append((form_code, values))
+            parsed_data.append((form_code, values))
         if not header_found:
             raise XlsParserInvalidHeaderFormatException()
-        return parsedData
+        return parsed_data
 

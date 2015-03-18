@@ -319,7 +319,7 @@ class XlsxParser(XlsParser):
     
     def _get_value(self, value):
         if value is not None:
-            return value
+            return unicode(value)
         return ''
     def _get_worksheet(self, all_sheets):
         work_sheet = all_sheets[0]

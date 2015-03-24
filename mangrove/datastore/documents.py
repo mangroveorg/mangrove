@@ -131,6 +131,7 @@ class ContactDocument(DocumentBase):
     short_code = TextField()
     data = DictField()
     groups = ListField(TextField())
+    custom_groups = ListField(TextField())
 
     def __init__(self, id=None, aggregation_paths=None, geometry=None, centroid=None, gr_id=None, short_code=None):
         DocumentBase.__init__(self, id=id, document_type='Contact')
@@ -139,7 +140,6 @@ class ContactDocument(DocumentBase):
         self._centroid = centroid
         self._gr_id = gr_id
         self.short_code = short_code
-        # self.is_data_sender = is_data_sender
 
     @property
     def entity_type(self):
@@ -171,6 +171,14 @@ class ContactDocument(DocumentBase):
 
     def add_group(self, group_name):
         self.groups.append(group_name)
+
+    def add_custom_group(self, group_name):
+        if group_name not in self.custom_groups:
+            self.custom_groups.append(group_name)
+
+    def remove_custom_group(self, group_name):
+        self.custom_groups.remove(group_name)
+
 
 class DataRecordDocument(DocumentBase):
     """

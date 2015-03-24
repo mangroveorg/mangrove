@@ -388,3 +388,9 @@ class EntityActionDocument(DocumentBase):
         self.short_code = short_code
         self.action = action
 
+
+class GroupDocument(DocumentBase):
+    name = TextField()
+
+    def __init__(self):
+        DocumentBase.__init__(self, document_type='group')

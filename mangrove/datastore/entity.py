@@ -800,6 +800,12 @@ class Contact(DataObject):
             self._doc.groups.remove('contact')
             self._doc.add_group('datasender')
 
+    def add_custom_group(self, group_name):
+        self._doc.add_custom_group(group_name)
+
+    def remove_custom_group(self, group_name):
+        self._doc.remove_custom_group(group_name)
+
 
 class DataRecord(DataObject):
     __document_class__ = DataRecordDocument

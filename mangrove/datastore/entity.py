@@ -558,6 +558,10 @@ class Contact(DataObject):
         return list(self._doc.groups)
 
     @property
+    def custom_groups(self):
+        return list(self._doc.custom_groups)
+
+    @property
     def is_contact(self):
         return 'contact' in self.groups
 

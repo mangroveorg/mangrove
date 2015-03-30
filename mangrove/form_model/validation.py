@@ -26,7 +26,7 @@ class ConstraintAttributes(object):
 
 
 class NumericRangeConstraint(object):
-    def __init__(self, min=None, max=None, dict=None):
+    def __init__(self, min=None, max=None, dict=None, regex=None):
         self.min = min
         self.max = max
         if dict is not None:
@@ -160,6 +160,9 @@ class RegexConstraint(object):
             return text
         raise RegexMismatchException(self._pattern)
 
+    def xform_constraint(self):
+        return "'regex(,. " + self._pattern + ")'"
+
     @property
     def pattern(self):
         return self._pattern
@@ -176,6 +179,10 @@ class ShortCodeRegexConstraint(object):
         if re.match(self._pattern, text):
             return text.lower()
         raise ShortCodeRegexMismatchException(self._pattern)
+
+    def xform_constraint(self):
+        return "'regex(., " + self._pattern + ")'"
+
 
     @property
     def pattern(self):

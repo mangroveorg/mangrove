@@ -178,3 +178,12 @@ class XFormPlayerV2(object):
             media_submission_service.create_media_details_document(
                 existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
             self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
+
+    def add_subject_response(self, request, reporter_id, logger=None):
+        # questionnaire_form = SubjectRegistrationForm(form_model, data=request.POST,
+        #                                              country=get_organization_country(request))
+        # if not questionnaire_form.is_valid():
+        #     form_context = _make_form_context(questionnaire_form, entity_type, disable_link_class, hide_link_class,
+        #                                       form_model.form_code, get_organization_telephone_number(request),
+        #                                       form_model.fields, web_view=True)
+        pass

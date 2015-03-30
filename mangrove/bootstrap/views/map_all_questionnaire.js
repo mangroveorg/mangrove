@@ -1,5 +1,5 @@
 function(doc) {
-    if (doc.document_type == 'FormModel') {
-        emit(doc._id, doc);
-    }
+   if (doc.document_type == 'FormModel' && !doc.void && doc.form_code != 'reg' && doc.form_code != 'delete'){
+                emit([doc.created,doc.name], doc);
+   }
 }

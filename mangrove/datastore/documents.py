@@ -177,7 +177,8 @@ class ContactDocument(DocumentBase):
             self.custom_groups.append(group_name)
 
     def remove_custom_group(self, group_name):
-        self.custom_groups.remove(group_name)
+        if group_name in self.custom_groups:
+            self.custom_groups.remove(group_name)
 
 
 class DataRecordDocument(DocumentBase):

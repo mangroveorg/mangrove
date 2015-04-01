@@ -82,13 +82,6 @@ class TestFormModel(unittest.TestCase):
         self.assertTrue(len(errors) == 0)
         self.assertEqual(cleaned_answers, expected_result)
 
-    def test_should_ignore_field_validation_if_the_answer_blank(self):
-        answers = {"id": "1", "q1": "Asif Momin", "q2": ""}
-        expected_result = OrderedDict([('Q1', 'Asif Momin'), ('ID', '1')])
-        cleaned_answers, errors = self.form_model.validate_submission(answers)
-        self.assertTrue(len(errors) == 0)
-        self.assertEqual(cleaned_answers, expected_result)
-
     def test_should_validate_for_valid_text_value(self):
         answers = {"ID": "1", "Q1": "Asif Momin"}
         cleaned_answers, errors = self.form_model.validate_submission(answers)
@@ -107,7 +100,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
-        expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1')])
+        expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1'), ('Q4', '')])
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))

@@ -817,6 +817,10 @@ class GeoCodeField(Field):
 
     def validate(self, lat_long_string):
         Field.validate(self, lat_long_string)
+
+        if not lat_long_string:
+            return None
+
         lat_long = lat_long_string.replace(",", " ")
         lat_long = re.sub(' +', ' ', lat_long).split(" ")
         if len(lat_long) != 2:

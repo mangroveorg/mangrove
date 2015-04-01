@@ -180,10 +180,6 @@ class XFormPlayerV2(object):
             self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
 
     def add_subject_response(self, request, reporter_id, logger=None):
-        # questionnaire_form = SubjectRegistrationForm(form_model, data=request.POST,
-        #                                              country=get_organization_country(request))
-        # if not questionnaire_form.is_valid():
-        #     form_context = _make_form_context(questionnaire_form, entity_type, disable_link_class, hide_link_class,
-        #                                       form_model.form_code, get_organization_telephone_number(request),
-        #                                       form_model.fields, web_view=True)
+        assert request is not None
+
         pass

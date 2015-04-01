@@ -161,7 +161,7 @@ class RegexConstraint(object):
         raise RegexMismatchException(self._pattern)
 
     def xform_constraint(self):
-        return "'regex(,. " + self._pattern + ")'"
+        return "regex(.," "'"+self._pattern + "'"")"
 
     @property
     def pattern(self):
@@ -181,7 +181,7 @@ class ShortCodeRegexConstraint(object):
         raise ShortCodeRegexMismatchException(self._pattern)
 
     def xform_constraint(self):
-        return "'regex(., " + self._pattern + ")'"
+        return "regex(.," "'"+self._pattern + "'"")"
 
 
     @property

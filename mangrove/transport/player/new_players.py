@@ -3,13 +3,17 @@ import os
 from tempfile import NamedTemporaryFile
 
 from PIL import Image
+from mangrove.datastore.entity import contact_by_short_code
 from mangrove.form_model.form_model import NAME_FIELD
+from mangrove.transport.player.handler import handler_factory
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
+from mangrove.transport.player.tests.test_base_player import get_location_hierarchy
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
-from mangrove.errors.MangroveException import NumberNotRegisteredException
+from mangrove.errors.MangroveException import NumberNotRegisteredException, MangroveException
+from mangrove.transport.work_flow import RegistrationWorkFlow
 
 
 class WebPlayerV2(object):
@@ -179,7 +183,18 @@ class XFormPlayerV2(object):
                 existing_media_attachments[existing_attachment_name]['length'] * -1.0, existing_attachment_name)
             self.dbm.delete_attachment(survey_response_document, existing_attachment_name)
 
-    def add_subject_response(self, request, reporter_id, logger=None):
-        assert request is not None
+    def add_subject(self, form_model, values, location_tree):
+        reporter_id = values.get('eid')
+        contact = contact_by_short_code(self.dbm, reporter_id)
+        return self._submit_subject(form_model, values, [{NAME_FIELD: contact.name}], location_tree)
 
-        pass
+    def _submit_subject(self, form_model, values, reporter_names, location_tree):
+        try:
+            values = RegistrationWorkFlow(self.dbm, form_model, location_tree).process(values)
+            form_model.bind(values)
+            cleaned_data, errors = form_model.validate_submission(values=values)
+            handler = handler_factory(self.dbm, form_model)
+            response = handler.handle(form_model, cleaned_data, errors,  reporter_names, location_tree)
+            return response
+        except MangroveException:
+            raise

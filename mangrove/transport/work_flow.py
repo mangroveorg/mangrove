@@ -8,10 +8,6 @@ from mangrove.form_model.form_model import ENTITY_TYPE_FIELD_CODE
 from mangrove.form_model.location import Location
 from mangrove.utils.types import is_empty, is_not_empty
 
-class GeneralWorkFlow(object):
-    def process(self, values):
-        return values
-
 
 class ActivityReportWorkFlow(object):
     def __init__(self, form_model, reporter_entity):

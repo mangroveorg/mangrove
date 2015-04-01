@@ -7,11 +7,10 @@ from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import NAME_FIELD
-from mangrove.transport.contract.response import Response
 from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
-from mangrove.transport.work_flow import ActivityReportWorkFlow, RegistrationWorkFlow, GeneralWorkFlow
+from mangrove.transport.work_flow import RegistrationWorkFlow
 from mangrove.transport.player.handler import handler_factory
 
 
@@ -43,7 +42,6 @@ class SMSPlayer(Player):
 
     def _process(self, values, form_code, reporter_entity):
         form_model = get_form_model_by_code(self.dbm, form_code)
-        values = GeneralWorkFlow().process(values)
         if form_model.is_entity_registration_form():
             values = RegistrationWorkFlow(self.dbm, form_model, self.location_tree).process(values)
         return form_model, values

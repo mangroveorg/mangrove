@@ -3,18 +3,17 @@ import os
 from tempfile import NamedTemporaryFile
 
 from PIL import Image
+
 from mangrove.datastore.entity import contact_by_short_code
 from mangrove.form_model.form_model import NAME_FIELD
-from mangrove.transport.player.handler import handler_factory
+from mangrove.transport import TransportInfo
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
-from mangrove.transport.player.tests.test_base_player import get_location_hierarchy
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
 from mangrove.transport.services.identification_number_service import IdentificationNumberService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MangroveException
-from mangrove.transport.work_flow import RegistrationWorkFlow
 
 
 class WebPlayerV2(object):
@@ -191,3 +190,21 @@ class XFormPlayerV2(object):
         response = service.save_identification_number(form_model.form_code, [{NAME_FIELD: contact.name}], reporter_id, values, location_tree)
         return response
 
+
+class SubmitApiPlayer(object):
+
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def submit(self, submission, reporter_id):
+        try:
+            form_code, values, extra_data = SMSParserFactory().getSMSParser(submission, self.dbm).parse(submission)
+            reporter_entity = contact_by_short_code(self.dbm, reporter_id)
+            reporter_entity_names = [{'name': reporter_entity.value('name')}]
+
+            service = SurveyResponseService(self.dbm)
+            transport_info = TransportInfo(transport='api', source=reporter_id, destination='')
+            response =  service.save_survey(form_code, values, reporter_entity_names, transport_info, reporter_id)
+        except MangroveException as e:
+            return False, e.message
+        return response.success, 'submitted successfully'

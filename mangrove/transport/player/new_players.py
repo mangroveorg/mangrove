@@ -3,11 +3,12 @@ import os
 from tempfile import NamedTemporaryFile
 
 from PIL import Image
+
 from mangrove.datastore.entity import contact_by_short_code
 from mangrove.form_model.form_model import NAME_FIELD
+from mangrove.transport import TransportInfo
 from mangrove.transport.player.handler import handler_factory
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
-from mangrove.transport.player.tests.test_base_player import get_location_hierarchy
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
@@ -198,3 +199,21 @@ class XFormPlayerV2(object):
             return response
         except MangroveException:
             raise
+
+class SubmitApiPlayer(object):
+
+    def __init__(self, dbm):
+        self.dbm = dbm
+
+    def submit(self, submission, reporter_id):
+        try:
+            form_code, values, extra_data = SMSParserFactory().getSMSParser(submission, self.dbm).parse(submission)
+            reporter_entity = contact_by_short_code(self.dbm, reporter_id)
+            reporter_entity_names = [{'name': reporter_entity.value('name')}]
+
+            service = SurveyResponseService(self.dbm)
+            transport_info = TransportInfo(transport='api', source=reporter_id, destination='')
+            response =  service.save_survey(form_code, values, reporter_entity_names, transport_info, reporter_id)
+        except MangroveException as e:
+            return False, e.message
+        return response.success, 'submitted successfully'

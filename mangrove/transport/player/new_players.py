@@ -5,11 +5,12 @@ from tempfile import NamedTemporaryFile
 from PIL import Image
 
 from mangrove.datastore.entity import contact_by_short_code
-from mangrove.form_model.form_model import NAME_FIELD
+from mangrove.form_model.form_model import NAME_FIELD, EntityFormModel, get_form_model_by_code
 from mangrove.transport import TransportInfo
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
+from mangrove.transport.services.identification_number_service import IdentificationNumberService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MangroveException
@@ -188,15 +189,28 @@ class SubmitApiPlayer(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def submit(self, submission, reporter_id):
+    def _create_survey_response(self, form_code, reporter_entity_names, reporter_id, values):
+        service = SurveyResponseService(self.dbm)
+        transport_info = TransportInfo(transport='api', source=reporter_id, destination='')
+        response = service.save_survey(form_code, values, reporter_entity_names, transport_info, reporter_id)
+        return response
+
+    def submit(self, submission, reporter_id, location_tree):
         try:
             form_code, values, extra_data = SMSParserFactory().getSMSParser(submission, self.dbm).parse(submission)
+            form_model = get_form_model_by_code(self.dbm, form_code)
+
             reporter_entity = contact_by_short_code(self.dbm, reporter_id)
             reporter_entity_names = [{'name': reporter_entity.value('name')}]
-
-            service = SurveyResponseService(self.dbm)
-            transport_info = TransportInfo(transport='api', source=reporter_id, destination='')
-            response =  service.save_survey(form_code, values, reporter_entity_names, transport_info, reporter_id)
+            if isinstance(form_model, EntityFormModel):
+                response = self._create_identification_number(form_code, reporter_entity_names, reporter_id, values, location_tree)
+            else:
+                response = self._create_survey_response(form_code, reporter_entity_names, reporter_id, values)
         except MangroveException as e:
             return False, e.message
         return response.success, 'submitted successfully'
+
+    def _create_identification_number(self,form_code, reporter_entity_names, reporter_id, values, location_tree):
+        service = IdentificationNumberService(self.dbm)
+        response = service.save_identification_number(form_code, reporter_entity_names, reporter_id, values, location_tree)
+        return response

@@ -10,6 +10,7 @@ from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormP
 from mangrove.transport.player.tests.test_base_player import get_location_hierarchy
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
+from mangrove.transport.services.identification_number_service import IdentificationNumberService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MangroveException
@@ -186,15 +187,7 @@ class XFormPlayerV2(object):
     def add_subject(self, form_model, values, location_tree):
         reporter_id = values.get('eid')
         contact = contact_by_short_code(self.dbm, reporter_id)
-        return self._submit_subject(form_model, values, [{NAME_FIELD: contact.name}], location_tree)
+        service = IdentificationNumberService(self.dbm)
+        response = service.save_identification_number(form_model.form_code, [{NAME_FIELD: contact.name}], reporter_id, values, location_tree)
+        return response
 
-    def _submit_subject(self, form_model, values, reporter_names, location_tree):
-        try:
-            values = RegistrationWorkFlow(self.dbm, form_model, location_tree).process(values)
-            form_model.bind(values)
-            cleaned_data, errors = form_model.validate_submission(values=values)
-            handler = handler_factory(self.dbm, form_model)
-            response = handler.handle(form_model, cleaned_data, errors,  reporter_names, location_tree)
-            return response
-        except MangroveException:
-            raise

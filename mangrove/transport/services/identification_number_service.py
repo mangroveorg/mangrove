@@ -1,4 +1,3 @@
-
 from mangrove.errors.MangroveException import MangroveException
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.transport.player.handler import handler_factory

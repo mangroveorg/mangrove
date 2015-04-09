@@ -595,6 +595,10 @@ class Contact(DataObject):
         return self._doc.short_code
 
     @property
+    def name(self):
+        return self._doc.name
+
+    @property
     def data(self):
         return self._doc.data
 

@@ -88,6 +88,11 @@ class MultipleSubmissionsForSameCodeException(MangroveException):
     def __init__(self, field_code):
         MangroveException.__init__(self, (u"Multiple responses for question code %s") % (field_code, ), (field_code,))
 
+class MobileNumberMandatoryException(MangroveException):
+    def __init__(self):
+        MangroveException.__init__(self, "Answer for question 'Mobile Number' is required")
+
+
 
 class EntityTypeDoesNotExistsException(MangroveException):
     def __init__(self, entity_type):

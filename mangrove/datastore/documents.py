@@ -179,8 +179,9 @@ class ContactDocument(DocumentBase):
         self.groups.append(group_name)
 
     def add_custom_group(self, group_name):
-        if not hasattr(self._data, "custom_groups"):
-            self.custom_groups = []
+        if not 'custom_groups' in self._data:
+            self._data['custom_groups'] = []
+
         if group_name not in self.custom_groups:
             self.custom_groups.append(group_name)
 

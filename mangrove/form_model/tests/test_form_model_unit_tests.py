@@ -100,7 +100,7 @@ class TestFormModel(unittest.TestCase):
 
     def test_should_strip_whitespaces(self):
         answers = {"id": "1", "q1": "   My Name", "q2": "  40 ", "q3": "a     ", "q4": "    "}
-        expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1'), ('Q4', '')])
+        expected_cleaned_data = OrderedDict([('Q1', 'My Name'), ('Q3', ['RED']), ('Q2', 40.0), ('ID', '1')])
         cleaned_answers, errors = self.form_model.validate_submission(answers)
         self.assertTrue(len(errors) == 0)
         self.assertEqual(0, len(errors))

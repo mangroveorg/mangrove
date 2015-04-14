@@ -586,7 +586,8 @@ class FormModel(DataObject):
                 if hasattr(validator, 'exception'):
                     self._validation_exception.extend(getattr(validator, 'exception'))
                 errors.update(validator_error)
-        # values = self._remove_empty_values(values)
+        if not self.is_entity_registration_form():
+            values = self._remove_empty_values(values)
         values = self._remove_unknown_fields(values)
         for key in values:
             field = self.get_field_by_code(key)

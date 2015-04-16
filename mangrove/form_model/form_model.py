@@ -588,6 +588,8 @@ class FormModel(DataObject):
                 errors.update(validator_error)
         if not self.is_entity_registration_form():
             values = self._remove_empty_values(values)
+        if errors:
+            return cleaned_values, errors
         values = self._remove_unknown_fields(values)
         for key in values:
             field = self.get_field_by_code(key)

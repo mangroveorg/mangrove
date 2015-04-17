@@ -588,8 +588,7 @@ class FormModel(DataObject):
                 errors.update(validator_error)
         if not self.is_entity_registration_form():
             values = self._remove_empty_values(values)
-        if errors:
-            return cleaned_values, errors
+
         values = self._remove_unknown_fields(values)
         for key in values:
             field = self.get_field_by_code(key)
@@ -597,7 +596,7 @@ class FormModel(DataObject):
             if is_valid:
                 cleaned_values[field.code] = result
             else:
-                errors[field.code] = result
+                errors[field.code] = result if not errors.get(field.code) else errors[field.code]
         return cleaned_values, errors
 
     def _case_insensitive_lookup(self, values, code):

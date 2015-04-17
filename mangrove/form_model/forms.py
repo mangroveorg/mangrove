@@ -11,15 +11,16 @@ class EditSurveyResponseForm(object):
 
         self.dbm = dbm
         self.form_model = form_model
+        self._cleaned_data, self.errors = form_model.validate_submission(values=form_answers)
         self.form_model.bind(form_answers)
-        self._cleaned_data, self.errors = form_model.validate_submission(values=form_model.bound_values())
+
         self.is_valid = (self.errors is None or len(self.errors) == 0)
 
         self.entity_type = form_model.entity_type
 
         self.survey_response = survey_response
         self.survey_response.set_form(form_model)
-        self.survey_response.set_answers(form_model.bound_values())
+        self.survey_response.set_answers(form_answers)
 
     @property
     def unique_id_question_code(self):

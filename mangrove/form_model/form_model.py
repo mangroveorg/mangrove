@@ -112,7 +112,7 @@ def _header_fields(fields, key_attribute, header_dict, parent_field_name=None):
 def get_field_by_attribute_value(form_model, key_attribute, attribute_label):
     # ex: field1.name='first_name' field1.code='q1'
     # field2.name='location' field2.code='q3'
-    #    and both field1 and field2 are form_model fields,
+    # and both field1 and field2 are form_model fields,
     #    get_field_by_attribute_value(form_model,'name','location') will give back field2
     for field in form_model.fields:
         if field.__getattribute__(key_attribute) == attribute_label:
@@ -133,6 +133,11 @@ def get_form_model_by_entity_type(dbm, entity_type):
 def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_code if form_model else None
+
+QUESTION_NAME_INVALID_answer_tuple = [('imei', u'Error: could not determine deviceID'),
+                                              ('deviceid', u'Error: could not determine deviceID'),
+                                              ('phonenumber', u'no phonenumber property in enketo'),
+                                              ('subscriberid', u'no subscriberid property in enketo')]
 
 
 class FormModel(DataObject):
@@ -570,6 +575,11 @@ class FormModel(DataObject):
     def _remove_empty_values(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
+    def _remove_invalid_meta_answers(self, answers):
+        for question_code, invalid_answer in QUESTION_NAME_INVALID_answer_tuple:
+            if answers.get(question_code) == invalid_answer:
+                answers.pop(question_code)
+
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
 
@@ -586,8 +596,11 @@ class FormModel(DataObject):
                 if hasattr(validator, 'exception'):
                     self._validation_exception.extend(getattr(validator, 'exception'))
                 errors.update(validator_error)
+
         if not self.is_entity_registration_form():
+            self._remove_invalid_meta_answers(values)
             values = self._remove_empty_values(values)
+
         if errors:
             return cleaned_values, errors
         values = self._remove_unknown_fields(values)

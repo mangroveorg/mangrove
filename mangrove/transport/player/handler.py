@@ -11,7 +11,7 @@ class CreateEntityHandler(object):
     def __init__(self, dbm):
         self.dbm = dbm
 
-    def handle(self, form_model, cleaned_data, errors, reporter_names = [], location_tree=None):
+    def handle(self, form_model, cleaned_data, errors, reporter_names=[], location_tree=None):
         form_submission = FormSubmissionFactory().get_form_submission(form_model, cleaned_data, errors,
             location_tree=location_tree)
         if form_submission.is_valid:

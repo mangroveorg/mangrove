@@ -107,3 +107,12 @@ class TestXFormParser(TestCase):
             mock_get_form_model.return_value = mock_form_model
 
             self.assertEquals(self.parser.parse(submission_data), ('055', expected_values))
+
+
+    def test_should_strip_out_milliseconds_and_timezone(self):
+
+        stripped_date_string = self.parser._parse_date_time('2015-01-13T21:45:00.000+06:30')
+        self.assertEqual(stripped_date_string, '13.01.2015 21:45:00')
+
+        stripped_date_string = self.parser._parse_date_time('2015-01-13T21:45:00.335+06:30')
+        self.assertEqual(stripped_date_string, '13.01.2015 21:45:00')

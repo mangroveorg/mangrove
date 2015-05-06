@@ -2,6 +2,7 @@ import re
 
 from coverage.html import escape
 from jinja2 import Environment, PackageLoader
+import unicodedata
 
 from mangrove.form_model.field import field_attributes, SelectField, UniqueIdField, UniqueIdUIField
 from mangrove.form_model.form_model import FormModel
@@ -36,11 +37,13 @@ def list_all_forms(form_tuples, xform_base_url):
 
 def xform_for(dbm, form_id, reporter_id):
     questionnaire = FormModel.get(dbm, form_id)
+
     xform = questionnaire.xform
     if xform:
         xform_cleaned = re.sub(r"\s+", " ", re.sub(r"\n", "", questionnaire.xform_with_unique_ids_substituted()))
         #so that in the smartphone repeat questions have atleast one group pre added
-        return re.sub('ns2:template=""',"",xform_cleaned)
+        xform_cleaned = re.sub(r"<html:title>.*</html:title>", r"<html:title>"+ questionnaire.name +"</html:title>", xform_cleaned)
+        return re.sub('ns2:template=""', "", xform_cleaned)
 
     _escape_special_characters(questionnaire)
     ui_fields = []

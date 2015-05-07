@@ -137,8 +137,7 @@ def get_form_code_by_entity_type(dbm, entity_type):
 QUESTION_NAME_INVALID_answer_tuple = [('imei', u'Error: could not determine deviceID'),
                                               ('deviceid', u'Error: could not determine deviceID'),
                                               ('phonenumber', u'no phonenumber property in enketo'),
-                                              ('subscriberid', u'no subscriberid property in enketo')]
-
+                                             ('subscriberid', u'no subscriberid property in enketo')]
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
@@ -579,6 +578,7 @@ class FormModel(DataObject):
         for question_code, invalid_answer in QUESTION_NAME_INVALID_answer_tuple:
             if answers.get(question_code) == invalid_answer:
                 answers.pop(question_code)
+                answers.pop(question_code+"1")
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])

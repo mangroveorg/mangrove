@@ -9,10 +9,11 @@ import xlrd
 import xmltodict
 
 from mangrove.errors.MangroveException import MultipleSubmissionsForSameCodeException, SMSParserInvalidFormatException, \
-    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException
+    CSVParserInvalidHeaderFormatException, XlsParserInvalidHeaderFormatException, FormModelDoesNotExistsException
 from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, FieldSet, PhotoField, VideoField, AudioField, \
     TimeField, DateTimeField, MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
+# from mangrove.transport.player.player import SMSPlayer
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 from openpyxl import load_workbook
@@ -52,14 +53,31 @@ class SMSParser(object):
         tokens.remove(tokens[0])
         return form_code
 
+    def get_form_code_and_tokens(self, token):
+        form_code = token[0].lower()
+        try:
+            form_model = get_form_model_by_code(self.dbm, form_code)
+            token.remove(token[0])
+        except FormModelDoesNotExistsException:
+            form_code = "poll"
+            token = " ".join(token)
+        return form_code, [token]
+
     def parse(self, message):
         pass
 
     def form_code(self, message):
         pass
 
+    def select_form_model(self, form_code):
+        try:
+            form_model = get_form_model_by_code(self.dbm, form_code)
+        except FormModelDoesNotExistsException:
+            form_model = get_form_model_by_code(self.dbm, "poll")
+        return form_model
+
     def get_question_codes(self, form_code):
-        form_model = get_form_model_by_code(self.dbm, form_code)
+        form_model = self.select_form_model(form_code)
         question_codes = []
         form_fields = form_model.fields
         for aField in form_fields:
@@ -157,8 +175,7 @@ class OrderSMSParser(SMSParser):
         message = self.clean(message)
         self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS, message)
         tokens = message.split()
-        form_code = self.pop_form_code(tokens)
-        return form_code, tokens
+        return self.get_form_code_and_tokens(tokens)
 
 
 class WebParser(object):

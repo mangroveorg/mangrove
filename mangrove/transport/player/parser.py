@@ -60,8 +60,8 @@ class SMSParser(object):
             token.remove(token[0])
         except FormModelDoesNotExistsException:
             form_code = "poll"
-            token = " ".join(token)
-        return form_code, [token]
+            token = [" ".join(token)]
+        return form_code, token
 
     def parse(self, message):
         pass

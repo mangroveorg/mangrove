@@ -247,6 +247,20 @@ def tabulate_data(entity, form_model, field_codes):
     data['cols'] = [stringified_dict[field_code] for field_code in field_codes]
     return data
 
+
+def get_empty_data(form_model, field_codes):
+    data = {'id': '', 'short_code': ''}
+
+    dict = OrderedDict()
+    for field in form_model.fields:
+        dict[field.code] = ''
+
+    stringified_dict = form_model.stringify(dict)
+
+    data['cols'] = [stringified_dict[field_code] for field_code in field_codes]
+    return data
+
+
 def _get_field_value(key, entity):
     value = entity.value(key)
     if key == 'geo_code':

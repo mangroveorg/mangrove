@@ -134,7 +134,7 @@ def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_code if form_model else None
 
-QUESTION_NAME_INVALID_answer_tuple = [('imei', u'Error: could not determine deviceID'),
+QUESTION_NAME_INVALID_ANSWER_TUPLE = [('imei', u'Error: could not determine deviceID'),
                                               ('deviceid', u'Error: could not determine deviceID'),
                                               ('phonenumber', u'no phonenumber property in enketo'),
                                              ('subscriberid', u'no subscriberid property in enketo')]
@@ -575,10 +575,11 @@ class FormModel(DataObject):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
     def _remove_invalid_meta_answers(self, answers):
-        for question_code, invalid_answer in QUESTION_NAME_INVALID_answer_tuple:
+        for question_code, invalid_answer in QUESTION_NAME_INVALID_ANSWER_TUPLE:
             if answers.get(question_code) == invalid_answer:
                 answers.pop(question_code)
-                answers.pop(question_code+"1")
+                duplicate_code = question_code + "1"  # codes like imei1 etc comes from smart-phone
+                answers.pop(duplicate_code, None)
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])

@@ -187,5 +187,5 @@ class XFormPlayerV2(object):
         reporter_id = values.get('eid')
         contact = contact_by_short_code(self.dbm, reporter_id)
         service = IdentificationNumberService(self.dbm)
-        response = service.save_identification_number(form_model.form_code, [{NAME_FIELD: contact.name}], reporter_id, values, location_tree)
+        response = service.save_identification_number(form_model.form_code, values, location_tree)
         return response

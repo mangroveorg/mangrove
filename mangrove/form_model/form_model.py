@@ -583,7 +583,7 @@ class FormModel(DataObject):
                     self._remove_invalid_meta_answers(repeat_answer)
 
             elif answer in QUESTION_NAME_INVALID_ANSWERS:
-                answers.pop(code)
+                answers[code] = ''
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])

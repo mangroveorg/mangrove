@@ -576,14 +576,21 @@ class FormModel(DataObject):
     def _remove_empty_values(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
-    def _remove_invalid_meta_answers(self, answers):
+    def remove_invalid_meta_answers(self, answers):
+        final_values = {}
         for code, answer in answers.iteritems():
             if isinstance(answer, list):
+                repeat_answers = []
                 for repeat_answer in answer:
-                    self._remove_invalid_meta_answers(repeat_answer)
+                    repeat_answers.append(self.remove_invalid_meta_answers(repeat_answer))
+                final_values[code] = repeat_answers
 
             elif answer in QUESTION_NAME_INVALID_ANSWERS:
-                answers[code] = ''
+                final_values[code] = ''
+                # answers[code] = ''
+            else:
+                final_values[code] = answer
+        return final_values
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
@@ -603,8 +610,8 @@ class FormModel(DataObject):
                 errors.update(validator_error)
 
         if not self.is_entity_registration_form():
-            self._remove_invalid_meta_answers(values)
             values = self._remove_empty_values(values)
+            values = self.remove_invalid_meta_answers(values)
 
         values = self._remove_unknown_fields(values)
         for key in values:

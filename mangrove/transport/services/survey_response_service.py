@@ -26,7 +26,7 @@ class SurveyResponseService(object):
 
         #TODO : validate_submission should use form_model's bound values
         cleaned_data, errors = form_model.validate_submission(values=values)
-        form_model.bind(values)
+        form_model.bind(form_model.remove_invalid_meta_answers(values))
 
         if reporter_id is not None:
             survey_response = self.create_survey_response_from_known_datasender(transport_info, form_model,

@@ -159,7 +159,7 @@ class TestSMSPlayer(TestCase):
                 save_survey.return_value = Mock(spec=Response)
                 self.sms_player.add_survey_response(request)
                 save_survey.assert_called_once_with('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
-                                                    self.transport, "short_code",additional_feed_dictionary=None,
+                                                    self.transport, "short_code", additional_feed_dictionary=None,
                                                     translation_processor=None)
 
     def test_should_save_survey_for_a_reporter_with_no_name(self):

@@ -18,16 +18,17 @@ default_reminder_and_deadline = {"deadline_type": "Following", "should_send_remi
 class Project(FormModel):
     __document_class__ = ProjectDocument
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name):
+    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
         doc = ProjectDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
+        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
-    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None,
+    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False,
                  language='en', fields=[]):
         FormModel.__init__(self, dbm=dbm, form_code=form_code, is_registration_model=False,
                            label="", language=language, name=name, fields=fields)
@@ -36,6 +37,7 @@ class Project(FormModel):
             self._doc.devices = devices
             self._doc.sender_group = sender_group
             self._doc.reminder_and_deadline = default_reminder_and_deadline
+            self._doc.is_poll = is_poll
 
     @classmethod
     def from_form_model(cls, form_model):

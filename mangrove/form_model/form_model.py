@@ -148,17 +148,18 @@ class FormModel(DataObject):
         form_model._old_doc = copy.deepcopy(form_model._doc)
         return form_model
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name):
+    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
         doc = FormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
+        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None,
-                 language="en", is_registration_model=False, validators=None,
+                 language="en", is_registration_model=False, validators=None, is_poll=False,
                  enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
@@ -184,7 +185,7 @@ class FormModel(DataObject):
         self._validate_fields(fields)
         self._form_fields = fields
 
-        self._set_doc(form_code, is_registration_model, label, language, name)
+        self._set_doc(form_code, is_registration_model, label, language, name, is_poll)
 
     @property
     def name(self):
@@ -192,6 +193,13 @@ class FormModel(DataObject):
         Returns the name of the FormModel
         """
         return self._doc.name
+
+    @property
+    def is_poll(self):
+        """
+        Returns the name of the FormModel
+        """
+        return self._doc.is_poll
 
     @property
     def id(self):
@@ -272,6 +280,7 @@ class FormModel(DataObject):
     def is_media_type_fields_present(self):
         is_media = self._doc.is_media_type_fields_present
         return False if is_media is None else is_media
+
 
     def update_media_field_flag(self):
         if self.media_fields:
@@ -690,13 +699,14 @@ class EntityFormModel(FormModel):
     def get_short_code(self, values):
         return self._case_insensitive_lookup(values, self.entity_questions[0].code)
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name):
+    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
         doc = EntityFormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
+        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
     def get_entity_name_question_code(self):

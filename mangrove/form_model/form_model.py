@@ -138,6 +138,7 @@ def get_form_code_by_entity_type(dbm, entity_type):
 QUESTION_NAME_INVALID_ANSWERS = [u'Error: could not determine deviceID',
                                  u'Error: could not determine deviceID',
                                  u'no phonenumber property in enketo',
+                                 u'no simserial property in enketo',
                                  u'no subscriberid property in enketo']
 
 

@@ -3,18 +3,17 @@ import os
 from tempfile import NamedTemporaryFile
 
 from PIL import Image
+
 from mangrove.datastore.entity import contact_by_short_code
-from mangrove.form_model.form_model import NAME_FIELD
-from mangrove.transport.player.handler import handler_factory
+from mangrove.form_model.form_model import NAME_FIELD, EntityFormModel, get_form_model_by_code
+from mangrove.transport import TransportInfo
 from mangrove.transport.player.parser import WebParser, SMSParserFactory, XFormParser
-from mangrove.transport.player.tests.test_base_player import get_location_hierarchy
 from mangrove.transport.repository.survey_responses import get_survey_response_document
 from mangrove.transport.services.MediaSubmissionService import MediaSubmissionService
 from mangrove.transport.services.identification_number_service import IdentificationNumberService
 from mangrove.transport.services.survey_response_service import SurveyResponseService
 from mangrove.transport.repository import reporters
 from mangrove.errors.MangroveException import NumberNotRegisteredException, MangroveException
-from mangrove.transport.work_flow import RegistrationWorkFlow
 
 
 class WebPlayerV2(object):
@@ -190,4 +189,3 @@ class XFormPlayerV2(object):
         service = IdentificationNumberService(self.dbm)
         response = service.save_identification_number(form_model.form_code, [{NAME_FIELD: contact.name}], reporter_id, values, location_tree)
         return response
-

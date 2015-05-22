@@ -28,7 +28,7 @@ class Project(FormModel):
         doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
-    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False,
+    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False, end_date=None, active=None,
                  language='en', fields=[]):
         FormModel.__init__(self, dbm=dbm, form_code=form_code, is_registration_model=False,
                            label="", language=language, name=name, fields=fields)
@@ -38,6 +38,8 @@ class Project(FormModel):
             self._doc.sender_group = sender_group
             self._doc.reminder_and_deadline = default_reminder_and_deadline
             self._doc.is_poll = is_poll
+            self._doc.end_date = end_date
+            self._doc.active = active
 
     @classmethod
     def from_form_model(cls, form_model):
@@ -50,6 +52,22 @@ class Project(FormModel):
     @property
     def goals(self):
         return self._doc.goals
+
+    @property
+    def is_poll(self):
+        return self._doc.is_poll
+
+    @property
+    def end_date(self):
+        return self._doc.end_date
+
+    @property
+    def active(self, active):
+        self._doc.active = active
+
+    @active.setter
+    def active(self, active):
+        self._doc.active = active
 
     @data_senders.setter
     def data_senders(self, value):

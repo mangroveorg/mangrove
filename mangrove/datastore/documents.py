@@ -262,6 +262,9 @@ class ProjectDocument(FormModelDocument):
     reminder_and_deadline = DictField()
     data_senders = ListField(TextField())
     is_outgoing_sms_replies_enabled = BooleanField()
+    is_poll = BooleanField()
+    active = TextField()
+    end_date = TZAwareDateTimeField()
 
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)

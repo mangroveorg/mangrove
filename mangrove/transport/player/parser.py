@@ -14,6 +14,7 @@ from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, Fie
     TimeField, DateTimeField, MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
 # from mangrove.transport.player.player import SMSPlayer
+from mangrove.form_model.project import get_active_form_model
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 from openpyxl import load_workbook
@@ -59,7 +60,7 @@ class SMSParser(object):
             form_model = get_form_model_by_code(self.dbm, form_code)
             token.remove(token[0])
         except FormModelDoesNotExistsException:
-            form_code = "poll"
+            form_model = get_active_form_model(self.dbm)
             token = [" ".join(token)]
         return form_code, token
 
@@ -73,7 +74,7 @@ class SMSParser(object):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
         except FormModelDoesNotExistsException:
-            form_model = get_form_model_by_code(self.dbm, "poll")
+            form_model = get_active_form_model(self.dbm)
         return form_model
 
     def get_question_codes(self, form_code):
@@ -173,7 +174,10 @@ class OrderSMSParser(SMSParser):
 
     def form_code(self, message):
         message = self.clean(message)
-        self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS, message)
+        try:
+            self.validate_format(self.MESSAGE_PREFIX_FOR_ORDERED_SMS, message)
+        except SMSParserInvalidFormatException:
+            pass
         tokens = message.split()
         return self.get_form_code_and_tokens(tokens)
 

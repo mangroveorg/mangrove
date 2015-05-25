@@ -4,7 +4,7 @@ from datetime import timedelta
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
 from mangrove.datastore.entity import from_row_to_entity, Contact
-from mangrove.errors.MangroveException import DataObjectAlreadyExists
+from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModelDoesNotExistsException
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
@@ -62,8 +62,8 @@ class Project(FormModel):
         return self._doc.end_date
 
     @property
-    def active(self, active):
-        self._doc.active = active
+    def active(self):
+        return self._doc.active
 
     @active.setter
     def active(self, active):
@@ -287,3 +287,12 @@ def _get_field_default_value(key, entity):
     if key == 'short_code':
         return entity.short_code
     return None
+
+def get_active_form_model(dbm):
+    projects = dbm.load_all_rows_in_view("all_projects")
+    for project_row in projects:
+        project_doc = ProjectDocument.wrap(project_row.get('value'))
+        project = Project.new_from_doc(dbm, project_doc)
+        if project.active == "active":
+            return project
+    raise FormModelDoesNotExistsException

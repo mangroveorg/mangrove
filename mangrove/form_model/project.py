@@ -58,6 +58,11 @@ class Project(FormModel):
         return self._doc.is_poll
 
     @property
+    def modified(self):
+        return self._doc.modified
+
+
+    @property
     def end_date(self):
         return self._doc.end_date
 
@@ -296,3 +301,12 @@ def get_active_form_model(dbm, form_code):
         if project.active == "active":
             return project
     raise FormModelDoesNotExistsException(form_code)
+
+def is_active_form_model(dbm):
+    projects = dbm.load_all_rows_in_view("all_projects")
+    for project_row in projects:
+        project_doc = ProjectDocument.wrap(project_row.get('value'))
+        project = Project.new_from_doc(dbm, project_doc)
+        if project.active == "active":
+            return True
+    return False

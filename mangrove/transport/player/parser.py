@@ -60,7 +60,7 @@ class SMSParser(object):
             form_model = get_form_model_by_code(self.dbm, form_code)
             token.remove(token[0])
         except FormModelDoesNotExistsException:
-            form_model = get_active_form_model(self.dbm)
+            form_model = get_active_form_model(self.dbm, form_code)
             token = [" ".join(token)]
         return form_code, token
 
@@ -74,7 +74,7 @@ class SMSParser(object):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
         except FormModelDoesNotExistsException:
-            form_model = get_active_form_model(self.dbm)
+            form_model = get_active_form_model(self.dbm, form_code)
         return form_model
 
     def get_question_codes(self, form_code):

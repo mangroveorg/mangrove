@@ -25,7 +25,7 @@ class SurveyResponseService(object):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
         except FormModelDoesNotExistsException:
-            form_model = get_active_form_model(self.dbm)
+            form_model = get_active_form_model(self.dbm, form_code)
 
         #TODO : validate_submission should use form_model's bound values
         cleaned_data, errors = form_model.validate_submission(values=values)

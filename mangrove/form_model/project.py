@@ -288,11 +288,11 @@ def _get_field_default_value(key, entity):
         return entity.short_code
     return None
 
-def get_active_form_model(dbm):
+def get_active_form_model(dbm, form_code):
     projects = dbm.load_all_rows_in_view("all_projects")
     for project_row in projects:
         project_doc = ProjectDocument.wrap(project_row.get('value'))
         project = Project.new_from_doc(dbm, project_doc)
         if project.active == "active":
             return project
-    raise FormModelDoesNotExistsException
+    raise FormModelDoesNotExistsException(form_code)

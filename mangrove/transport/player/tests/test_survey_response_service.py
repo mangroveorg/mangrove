@@ -9,7 +9,7 @@ from mangrove.datastore.documents import EntityDocument
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import DataRecord, Entity, get_by_short_code_include_voided
 from mangrove.datastore.tests.test_data import TestData
-from mangrove.errors.MangroveException import MangroveException
+from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import FormModel, MOBILE_NUMBER_FIELD, NAME_FIELD
 from mangrove.transport.contract.request import Request
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -245,11 +245,12 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
     def test_exception_is_raised_for_invalid_short_code_submissions(self):
         survey_response_service = SurveyResponseService(self.manager)
-
-        values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
-        transport_info = TransportInfo('web', 'src', 'dest')
-        request = Request(values, transport_info)
-        self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info, '')
+        with patch('mangrove.transport.services.survey_response_service.get_active_form_model') as mock_get_active_form_model:
+            mock_get_active_form_model.side_effect = FormModelDoesNotExistsException("form_code")
+            values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
+            transport_info = TransportInfo('web', 'src', 'dest')
+            request = Request(values, transport_info)
+            self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info, '')
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)

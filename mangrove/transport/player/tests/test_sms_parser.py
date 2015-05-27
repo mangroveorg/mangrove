@@ -8,7 +8,6 @@ from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import SMSParser
-@SkipTest
 class TestSMSParser(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)

@@ -1,12 +1,14 @@
 import unittest
+from django.utils.unittest.case import SkipTest
 from mock import Mock, patch
+from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException, SMSParserWrongNumberOfAnswersException
 from mangrove.transport.player.parser import OrderSMSParser, SMSParser
-
+@SkipTest
 class TestOrderSMSParser(unittest.TestCase):
     def setUp(self):
-        self.dbm = Mock()
+        self.dbm = Mock(spec=DatabaseManager)
         self.sms_parser = OrderSMSParser(self.dbm)
 
     def _mock_get_question_codes_from_couchdb(self, question_code,is_registration_form=True):

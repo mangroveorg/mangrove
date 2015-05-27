@@ -1,14 +1,14 @@
 #vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 
-from unittest import TestCase
+from unittest import TestCase, SkipTest
 from mangrove.errors.MangroveException import SMSParserInvalidFormatException
 from mangrove.transport.player.parser import KeyBasedSMSParser
 from mock import Mock, patch
 from mangrove.datastore.database import DatabaseManager
 from mangrove.form_model.form_model import FormModel
 from mangrove.transport.player.parser import SMSParser
-
+@SkipTest
 class TestSMSParser(TestCase):
     def setUp(self):
         self.dbm = Mock(spec=DatabaseManager)

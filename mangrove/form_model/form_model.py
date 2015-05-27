@@ -134,10 +134,13 @@ def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_code if form_model else None
 
-QUESTION_NAME_INVALID_answer_tuple = [('imei', u'Error: could not determine deviceID'),
-                                              ('deviceid', u'Error: could not determine deviceID'),
-                                              ('phonenumber', u'no phonenumber property in enketo'),
-                                             ('subscriberid', u'no subscriberid property in enketo')]
+
+QUESTION_NAME_INVALID_ANSWERS = [u'Error: could not determine deviceID',
+                                 u'Error: could not determine deviceID',
+                                 u'no phonenumber property in enketo',
+                                 u'no simserial property in enketo',
+                                 u'no subscriberid property in enketo']
+
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
@@ -583,11 +586,21 @@ class FormModel(DataObject):
     def _remove_empty_values(self, answers):
         return OrderedDict([(k, v) for k, v in answers.items() if not is_empty(v)])
 
-    def _remove_invalid_meta_answers(self, answers):
-        for question_code, invalid_answer in QUESTION_NAME_INVALID_answer_tuple:
-            if answers.get(question_code) == invalid_answer:
-                answers.pop(question_code)
-                answers.pop(question_code+"1")
+    def remove_invalid_meta_answers(self, answers):
+        final_values = {}
+        for code, answer in answers.iteritems():
+            if isinstance(answer, list):
+                repeat_answers = []
+                for repeat_answer in answer:
+                    repeat_answers.append(self.remove_invalid_meta_answers(repeat_answer))
+                final_values[code] = repeat_answers
+
+            elif answer in QUESTION_NAME_INVALID_ANSWERS:
+                final_values[code] = ''
+                # answers[code] = ''
+            else:
+                final_values[code] = answer
+        return final_values
 
     def _remove_unknown_fields(self, answers):
         key_value_items = OrderedDict([(k, v) for k, v in answers.items() if self.get_field_by_code(k) is not None])
@@ -607,8 +620,8 @@ class FormModel(DataObject):
                 errors.update(validator_error)
 
         if not self.is_entity_registration_form():
-            self._remove_invalid_meta_answers(values)
             values = self._remove_empty_values(values)
+            values = self.remove_invalid_meta_answers(values)
 
         values = self._remove_unknown_fields(values)
         for key in values:

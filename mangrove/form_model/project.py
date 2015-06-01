@@ -308,5 +308,5 @@ def is_active_form_model(dbm):
         project_doc = ProjectDocument.wrap(project_row.get('value'))
         project = Project.new_from_doc(dbm, project_doc)
         if project.active == "active":
-            return True
-    return False
+            return True, project.id, project.name
+    return False, "", ""

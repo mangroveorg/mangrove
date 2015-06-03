@@ -70,6 +70,10 @@ class Project(FormModel):
     def active(self):
         return self._doc.active
 
+    @end_date.setter
+    def end_date(self, end_date):
+        self._doc.end_date = end_date
+
     @active.setter
     def active(self, active):
         self._doc.active = active

@@ -306,7 +306,7 @@ def get_active_form_model(dbm, form_code):
             return project
     raise FormModelDoesNotExistsException(form_code)
 
-def is_active_form_model(dbm):
+def get_active_form_model_name_and_id(dbm):
     projects = dbm.load_all_rows_in_view("all_projects")
     for project_row in projects:
         project_doc = ProjectDocument.wrap(project_row.get('value'))

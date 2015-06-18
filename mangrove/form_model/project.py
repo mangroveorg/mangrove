@@ -55,7 +55,8 @@ class Project(FormModel):
 
     @property
     def is_poll(self):
-        return self._doc.is_poll
+        is_poll = self._doc.is_poll
+        return False if is_poll is None else is_poll
 
     @property
     def modified(self):
@@ -64,11 +65,13 @@ class Project(FormModel):
 
     @property
     def end_date(self):
-        return self._doc.end_date
+        end_date = self._doc.end_date
+        return False if end_date is None else end_date
 
     @property
     def active(self):
-        return self._doc.active
+        active = self._doc.active
+        return False if active is None else active
 
     @end_date.setter
     def end_date(self, end_date):

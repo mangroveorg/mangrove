@@ -228,7 +228,6 @@ class FormModelDocument(DocumentBase):
     validators = ListField(DictField())
     snapshots = DictField()
     xform = TextField()
-    is_poll = BooleanField(default=False)
     is_media_type_fields_present = BooleanField(default=False)
 
     def __init__(self, id=None):

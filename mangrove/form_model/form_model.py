@@ -49,13 +49,18 @@ FORM_MODEL_EXPIRY_TIME_IN_SEC = 2 * 60 * 60
 ENTITY_DELETION_FORM_CODE = "delete"
 
 
-def get_form_model_by_code(dbm, code):
+def get_form_model_document(code, dbm):
     cache_manger = get_cache_manager()
     key_as_str = get_form_model_cache_key(code, dbm)
     row_value = cache_manger.get(key_as_str)
     if row_value is None:
         row_value = _load_questionnaire(code, dbm)
         cache_manger.set(key_as_str, row_value, time=FORM_MODEL_EXPIRY_TIME_IN_SEC)
+    return row_value
+
+
+def get_form_model_by_code(dbm, code):
+    row_value = get_form_model_document(code, dbm)
 
     if row_value.get('is_registration_model') or row_value.get('form_code') == ENTITY_DELETION_FORM_CODE:
         return EntityFormModel.new_from_doc(dbm, EntityFormModelDocument.wrap(row_value))
@@ -151,18 +156,17 @@ class FormModel(DataObject):
         form_model._old_doc = copy.deepcopy(form_model._doc)
         return form_model
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
+    def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = FormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
-        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
     def __init__(self, dbm, name=None, label=None, form_code=None, fields=None,
-                 language="en", is_registration_model=False, validators=None, is_poll=False,
+                 language="en", is_registration_model=False, validators=None,
                  enforce_unique_labels=True):
         if not validators: validators = [MandatoryValidator()]
         assert isinstance(dbm, DatabaseManager)
@@ -188,7 +192,7 @@ class FormModel(DataObject):
         self._validate_fields(fields)
         self._form_fields = fields
 
-        self._set_doc(form_code, is_registration_model, label, language, name, is_poll)
+        self._set_doc(form_code, is_registration_model, label, language, name)
 
     @property
     def name(self):
@@ -197,12 +201,6 @@ class FormModel(DataObject):
         """
         return self._doc.name
 
-    @property
-    def is_poll(self):
-        """
-        Returns the name of the FormModel
-        """
-        return self._doc.is_poll
 
     @property
     def id(self):
@@ -712,14 +710,13 @@ class EntityFormModel(FormModel):
     def get_short_code(self, values):
         return self._case_insensitive_lookup(values, self.entity_questions[0].code)
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
+    def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = EntityFormModelDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
-        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
     def get_entity_name_question_code(self):

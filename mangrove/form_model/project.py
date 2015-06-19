@@ -6,8 +6,13 @@ from mangrove.datastore.documents import ProjectDocument
 from mangrove.datastore.entity import from_row_to_entity, Contact
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModelDoesNotExistsException
 from mangrove.form_model.deadline import Deadline, Month, Week
-from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel
+from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel, get_form_model_document
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
+
+def get_project_by_code(dbm, code):
+    row_value = get_form_model_document(code, dbm)
+
+    return Project.new_from_doc(dbm, ProjectDocument.wrap(row_value))
 
 
 default_reminder_and_deadline = {"deadline_type": "Following", "should_send_reminder_to_all_ds": False,
@@ -18,14 +23,13 @@ default_reminder_and_deadline = {"deadline_type": "Following", "should_send_remi
 class Project(FormModel):
     __document_class__ = ProjectDocument
 
-    def _set_doc(self, form_code, is_registration_model, label, language, name, is_poll):
+    def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = ProjectDocument()
         doc.name = name
         doc.set_label(label)
         doc.form_code = form_code
         doc.active_languages = [language]
         doc.is_registration_model = is_registration_model
-        doc.is_poll = is_poll
         DataObject._set_document(self, doc)
 
     def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False, end_date=None, active=None,

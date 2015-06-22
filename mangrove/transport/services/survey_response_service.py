@@ -24,7 +24,6 @@ class SurveyResponseService(object):
                     additional_feed_dictionary=None, translation_processor=None):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
-            check_if_form_code_is_poll(self, form_model)
         except FormModelDoesNotExistsException:
             form_model = get_active_form_model(self.dbm, form_code)
 

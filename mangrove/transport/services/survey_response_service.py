@@ -6,7 +6,7 @@ from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import get_form_model_by_code, FormModel
-from mangrove.form_model.project import Project, get_active_form_model
+from mangrove.form_model.project import Project, get_active_form_model, check_if_form_code_is_poll
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.repository.survey_responses import SurveyResponse
@@ -24,6 +24,7 @@ class SurveyResponseService(object):
                     additional_feed_dictionary=None, translation_processor=None):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
+            check_if_form_code_is_poll(self, form_model)
         except FormModelDoesNotExistsException:
             form_model = get_active_form_model(self.dbm, form_code)
 

@@ -14,7 +14,7 @@ from mangrove.form_model.field import GeoCodeField, DateField, IntegerField, Fie
     TimeField, DateTimeField, MediaField
 from mangrove.form_model.form_model import get_form_model_by_code
 # from mangrove.transport.player.player import SMSPlayer
-from mangrove.form_model.project import get_active_form_model
+from mangrove.form_model.project import get_active_form_model, check_if_form_code_is_poll
 from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 from openpyxl import load_workbook
@@ -58,6 +58,7 @@ class SMSParser(object):
         form_code = token[0].lower()
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
+            check_if_form_code_is_poll(self, form_model)
             token.remove(token[0])
         except FormModelDoesNotExistsException:
             form_model = get_active_form_model(self.dbm, form_code)
@@ -73,6 +74,7 @@ class SMSParser(object):
     def select_form_model(self, form_code):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
+            check_if_form_code_is_poll(self, form_model)
         except FormModelDoesNotExistsException:
             form_model = get_active_form_model(self.dbm, form_code)
         return form_model

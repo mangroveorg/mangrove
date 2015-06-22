@@ -7,7 +7,7 @@ from mangrove.contrib.deletion import ENTITY_DELETION_FORM_CODE
 from mangrove.form_model.form_model import get_form_model_by_code
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import NAME_FIELD
-from mangrove.form_model.project import get_active_form_model
+from mangrove.form_model.project import get_active_form_model, check_if_form_code_is_poll
 from mangrove.transport.repository import reporters
 from mangrove.transport.player.new_players import SMSPlayerV2
 from mangrove.transport.player.parser import WebParser, SMSParserFactory
@@ -64,6 +64,7 @@ class SMSPlayer(Player):
     def select_form_model(self, form_code):
         try:
             form_model = get_form_model_by_code(self.dbm, form_code)
+            check_if_form_code_is_poll(self, form_model)
         except FormModelDoesNotExistsException:
             form_model = get_active_form_model(self.dbm, form_code)
         return form_model

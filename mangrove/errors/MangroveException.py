@@ -39,6 +39,12 @@ class FormModelDoesNotExistsException(MangroveException):
         MangroveException.__init__(self, error_message, (questionnaire_code, ))
 
 
+class ProjectPollCodeDoesNotExistsException(MangroveException):
+    def __init__(self, questionnaire_code):
+        error_message = u"The questionnaire with code %s does not exist." % questionnaire_code if questionnaire_code else "The questionnaire does not exist."
+        MangroveException.__init__(self, error_message, (questionnaire_code, ))
+
+
 class FieldDoesNotExistsException(MangroveException):
     def __init__(self, field_code):
         MangroveException.__init__(self, u"The field with code %s does not exist." % field_code, (field_code, ))

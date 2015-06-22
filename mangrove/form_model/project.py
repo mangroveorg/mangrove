@@ -4,7 +4,8 @@ from datetime import timedelta
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import ProjectDocument
 from mangrove.datastore.entity import from_row_to_entity, Contact
-from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModelDoesNotExistsException
+from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModelDoesNotExistsException, \
+    ProjectPollCodeDoesNotExistsException
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel, get_form_model_document
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
@@ -312,6 +313,12 @@ def get_active_form_model(dbm, form_code):
         if project.active == "active":
             return project
     raise FormModelDoesNotExistsException(form_code)
+
+def check_if_form_code_is_poll(self, form_model):
+        if form_model:
+            project = get_project_by_code(self.dbm, form_model.form_code)
+            if project.is_poll:
+                raise ProjectPollCodeDoesNotExistsException(project.form_code)
 
 def get_active_form_model_name_and_id(dbm):
     projects = dbm.load_all_rows_in_view("all_projects")

@@ -6,7 +6,8 @@ from mangrove.form_model.field import HierarchyField, GeoCodeField, TextField, U
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity, Contact
-from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
+from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException, \
+    ProjectPollCodeDoesNotExistsException
 from mangrove.form_model.form_model import FormModel
 from mangrove.form_model.project import Project
 from mangrove.transport.player.parser import  OrderSMSParser
@@ -193,4 +194,25 @@ class TestSMSPlayer(TestCase):
                     instance_mock.save_survey.assert_called_with('questionnaire_code', {'id': 'question1_answer'}, None,
                         self.transport, "short_code", additional_feed_dictionary=None,
                                        translation_processor=None)
+
+
+    def test_should_raise_exception_for_poll_questionnaire(self):
+        self.loc_tree.get_location_hierarchy.return_value = None
+        sms_message = "questionnaire_code question1_answer question2_answer"
+        request = Request(transportInfo=self.transport, message=sms_message)
+        contact = MagicMock(Contact)
+        contact.value.return_value = None
+        contact.short_code = "short_code"
+        project = MagicMock(spec=Project)
+        project.is_poll = True
+        self.reporter_module.find_reporter_entity.return_value = contact
+        with patch(
+            'mangrove.transport.player.new_players.SurveyResponseService') as SurveyResponseServiceMock:
+            with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    instance_mock = Mock()
+                    SurveyResponseServiceMock.return_value = instance_mock
+                    get_project_by_code.return_value = project
+
+                    self.assertRaises(ProjectPollCodeDoesNotExistsException, self.sms_player.add_survey_response, request)
 

@@ -8,6 +8,7 @@ from mangrove.datastore.database import DatabaseManager
 from mangrove.datastore.entity import Entity, Contact
 from mangrove.errors.MangroveException import  NumberNotRegisteredException, SMSParserInvalidFormatException, MultipleSubmissionsForSameCodeException
 from mangrove.form_model.form_model import FormModel
+from mangrove.form_model.project import Project
 from mangrove.transport.player.parser import  OrderSMSParser
 from mangrove.transport.contract.request import Request
 from mangrove.transport.contract.transport_info import TransportInfo
@@ -153,14 +154,16 @@ class TestSMSPlayer(TestCase):
         request = Request(transportInfo=self.transport, message=sms_message)
         with patch(
             'mangrove.transport.services.survey_response_service.SurveyResponseService.save_survey') as save_survey:
-            #with patch('mangrove.transport.player.new_players.get_form_model_by_code') as mock_get_form_model_by_code:
-                mock_form_model = Mock(spec=FormModel)
-                #mock_get_form_model_by_code.return_value = mock_form_model
-                save_survey.return_value = Mock(spec=Response)
-                self.sms_player.add_survey_response(request)
-                save_survey.assert_called_once_with('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
-                                                    self.transport, "short_code", additional_feed_dictionary=None,
-                                                    translation_processor=None)
+            with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    mock_form_model = Mock(spec=FormModel)
+                    get_project_by_code.return_value = []
+                    #mock_get_form_model_by_code.return_value = mock_form_model
+                    save_survey.return_value = Mock(spec=Response)
+                    self.sms_player.add_survey_response(request)
+                    save_survey.assert_called_once_with('questionnaire_code', {'id': 'question1_answer'}, [{'name': '1234'}],
+                                                        self.transport, "short_code", additional_feed_dictionary=None,
+                                                        translation_processor=None)
 
     def test_should_save_survey_for_a_reporter_with_no_name(self):
         self.loc_tree.get_location_hierarchy.return_value = None

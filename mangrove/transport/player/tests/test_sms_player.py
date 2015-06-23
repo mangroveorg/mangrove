@@ -102,12 +102,14 @@ class TestSMSPlayer(TestCase):
         sms_player = SMSPlayerV2(self.dbm, post_sms_processors)
         with patch("inspect.getargspec") as get_arg_spec_mock:
             with patch('mangrove.transport.player.new_players.SurveyResponseService.save_survey') as save_survey:
-                get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
+                with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                 with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
 
-                sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
+                    sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
 
-                save_survey.assert_called_once('some_form_code', {'id': '1'}, [{'name': '1234'}], 'sms', message)
-                post_sms_processor_mock.process.assert_called_once_with('some_form_code', {'id': '1'}, [])
+                    save_survey.assert_called_once('some_form_code', {'id': '1'}, [{'name': '1234'}], 'sms', message)
+                    post_sms_processor_mock.process.assert_called_once_with('some_form_code', {'id': '1'}, [])
 
     def test_should_call_parser_post_processor_and_return_if_there_is_response_from_post_processor(self):
         parser_mock = Mock(spec=OrderSMSParser)
@@ -120,9 +122,11 @@ class TestSMSPlayer(TestCase):
 
         sms_player = SMSPlayerV2(self.dbm, post_sms_parser_processors=[post_sms_processor_mock])
         with patch("inspect.getargspec") as get_arg_spec_mock:
-            get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
-            response = sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
-            self.assertEqual(expected_response, response)
+            with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    get_arg_spec_mock.return_value = (['self', 'form_code', 'submission_values', 'extra_elements'], )
+                    response = sms_player.add_survey_response(Request(message=message, transportInfo=self.transport))
+                    self.assertEqual(expected_response, response)
 
 
     def test_should_allow_submission_by_unregistered_reporter_for_open_datasender_questionnaire(self):
@@ -131,21 +135,24 @@ class TestSMSPlayer(TestCase):
         entity_question_field = Mock()
         entity_question_field.code = 'q1'
         self.form_model_mock.entity_questions = [entity_question_field]
+        with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    response = self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
 
-        response = self.sms_player.add_survey_response(Request(message=self.message, transportInfo=self.transport))
-
-        self.assertEqual(response.errors, {})
-        self.assertTrue(response.success)
+                    self.assertEqual(response.errors, {})
+                    self.assertTrue(response.success)
 
 
 
     def test_should_not_parse_if_two_question_codes(self):
         transport = TransportInfo(transport="sms", source="1234", destination="5678")
-        with self.assertRaises(MultipleSubmissionsForSameCodeException):
-            self.sms_player.add_survey_response(
-                Request(message="cli001 .na tester1 .na tester2", transportInfo=transport))
+        with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    with self.assertRaises(MultipleSubmissionsForSameCodeException):
+                        self.sms_player.add_survey_response(
+                            Request(message="cli001 .na tester1 .na tester2", transportInfo=transport))
 
-        self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
+                        self.assertEqual(0, self.form_model_mock.validate_submission.call_count)
 
 
     def test_should_accept_ordered_sms_message(self):
@@ -176,12 +183,14 @@ class TestSMSPlayer(TestCase):
         self.reporter_module.find_reporter_entity.return_value = contact
         with patch(
             'mangrove.transport.player.new_players.SurveyResponseService') as SurveyResponseServiceMock:
-                instance_mock = Mock()
-                SurveyResponseServiceMock.return_value = instance_mock
+            with patch('mangrove.form_model.project.get_project_by_code') as get_project_by_code:
+                with patch('mangrove.form_model.project.check_if_form_code_is_poll') as mock_check_if_form_code_is_poll:
+                    instance_mock = Mock()
+                    SurveyResponseServiceMock.return_value = instance_mock
 
-                self.sms_player.add_survey_response(request)
+                    self.sms_player.add_survey_response(request)
 
-                instance_mock.save_survey.assert_called_with('questionnaire_code', {'id': 'question1_answer'}, None,
-                    self.transport, "short_code", additional_feed_dictionary=None,
-                                   translation_processor=None)
+                    instance_mock.save_survey.assert_called_with('questionnaire_code', {'id': 'question1_answer'}, None,
+                        self.transport, "short_code", additional_feed_dictionary=None,
+                                       translation_processor=None)
 

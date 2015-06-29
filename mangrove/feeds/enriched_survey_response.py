@@ -8,7 +8,8 @@ from mangrove.form_model.field import DateField, SelectField, UniqueIdField
 
 
 class EnrichedSurveyResponseBuilder(object):
-    def __init__(self, dbm, survey_response, form_model, additional_details, logger=None):
+    def __init__(self, dbm, survey_response, form_model, additional_details, logger=None, ds_mobile_number=''):
+        self.ds_mobile_number = ds_mobile_number
         self.dbm = dbm
         self.additional_details = additional_details
         self.survey_response = survey_response
@@ -66,10 +67,9 @@ class EnrichedSurveyResponseBuilder(object):
             #todo Do we need to store datasender question code information in enriched survey response?
             return self._get_data_sender_info_dict(data_sender, '')
         except:
-            #This will only happen during migration when introducing the feeds feature
             return {'id': None,
                     'last_name': None,
-                    'mobile_number': None,
+                    'mobile_number': self.ds_mobile_number,
                     'question_code': None,
                     'deleted': None
             }

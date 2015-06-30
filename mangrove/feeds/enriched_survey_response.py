@@ -67,7 +67,7 @@ class EnrichedSurveyResponseBuilder(object):
             #todo Do we need to store datasender question code information in enriched survey response?
             return self._get_data_sender_info_dict(data_sender, '')
         except:
-            return {'id': None,
+            return {'id': self.ds_mobile_number,
                     'last_name': None,
                     'mobile_number': self.ds_mobile_number,
                     'question_code': None,

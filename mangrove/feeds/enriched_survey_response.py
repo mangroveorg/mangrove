@@ -8,7 +8,7 @@ from mangrove.form_model.field import DateField, SelectField, UniqueIdField
 
 
 class EnrichedSurveyResponseBuilder(object):
-    def __init__(self, dbm, survey_response, form_model, additional_details, logger=None, ds_mobile_number=''):
+    def __init__(self, dbm, survey_response, form_model, additional_details, logger=None, ds_mobile_number=None):
         self.ds_mobile_number = ds_mobile_number
         self.dbm = dbm
         self.additional_details = additional_details

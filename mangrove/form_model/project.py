@@ -75,8 +75,7 @@ class Project(FormModel):
 
     @property
     def active(self):
-        active = self._doc.active
-        return False if active is None else active
+        return True if self._doc.active == 'active' else False
 
     @end_date.setter
     def end_date(self, end_date):
@@ -310,7 +309,7 @@ def get_active_form_model(dbm, form_code):
     for project_row in projects:
         project_doc = ProjectDocument.wrap(project_row.get('value'))
         project = Project.new_from_doc(dbm, project_doc)
-        if project.active == "active":
+        if project.active:
             return project
     raise FormModelDoesNotExistsException(form_code)
 
@@ -325,6 +324,6 @@ def get_active_form_model_name_and_id(dbm):
     for project_row in projects:
         project_doc = ProjectDocument.wrap(project_row.get('value'))
         project = Project.new_from_doc(dbm, project_doc)
-        if project.active == "active":
+        if project.active:
             return True, project.id, project.name
     return False, "", ""

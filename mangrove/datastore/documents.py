@@ -264,6 +264,11 @@ class ProjectDocument(FormModelDocument):
     is_poll = BooleanField()
     active = TextField()
     end_date = TZAwareDateTimeField()
+    creator = TextField()
+    users = ListField(TextField())
+    users_as_datasender = ListField(TextField())
+
+
 
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)

@@ -460,7 +460,7 @@ class XFormParser(object):
     def _parse_date_time(self, value):
         # 2015-01-13T21:45:00.000+06:30
         # Remove timezone and milli seconds.
-        date_time_without_milliseconds = re.compile("\.\d{3}\+" ).split(value)[0]
+        date_time_without_milliseconds = value[:19]
         return datetime.strptime(date_time_without_milliseconds, '%Y-%m-%dT%H:%M:%S').strftime('%d.%m.%Y %H:%M:%S')
 
 class XlsDatasenderParser(XlsParser):

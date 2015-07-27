@@ -116,3 +116,6 @@ class TestXFormParser(TestCase):
 
         stripped_date_string = self.parser._parse_date_time('2015-01-13T21:45:00.335+06:30')
         self.assertEqual(stripped_date_string, '13.01.2015 21:45:00')
+
+        stripped_date_string = self.parser._parse_date_time('2015-01-13T21:45:00.335-06:30')
+        self.assertEqual(stripped_date_string, '13.01.2015 21:45:00')

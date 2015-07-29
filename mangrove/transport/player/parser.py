@@ -398,6 +398,7 @@ class XFormParser(object):
         return time_string.split(":00.000")[0] if time_string else time_string
 
     def _format_field(self, field, values):
+        # TODO: convert to dictionairy
         code = field.code
         if not values.get(code):
             return

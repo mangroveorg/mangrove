@@ -314,11 +314,11 @@ def get_active_form_model(dbm, form_code):
             return project
     raise FormModelDoesNotExistsException(form_code)
 
-def check_if_form_code_is_poll(self, form_model):
-        if form_model:
-            project = get_project_by_code(self.dbm, form_model.form_code)
-            if project and project.is_poll is True:
-                    raise ProjectPollCodeDoesNotExistsException(project.form_code)
+def check_if_form_model_is_poll(self, form_model):
+    if form_model:
+        project = get_project_by_code(self.dbm, form_model.form_code)
+        if project and project.is_poll is True:
+                raise ProjectPollCodeDoesNotExistsException(project.form_code)
 
 def get_active_form_model_name_and_id(dbm):
     projects = dbm.load_all_rows_in_view("all_projects")

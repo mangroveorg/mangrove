@@ -1,12 +1,12 @@
-from copy import copy
 import traceback
+
 from mangrove.datastore.entity import by_short_code
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
 from mangrove.form_model.forms import EditSurveyResponseForm
 from mangrove.form_model.form_submission import DataFormSubmission
 from mangrove.errors.MangroveException import MangroveException, FormModelDoesNotExistsException
 from mangrove.form_model.form_model import get_form_model_by_code, FormModel
-from mangrove.form_model.project import Project, get_active_form_model, check_if_form_code_is_poll
+from mangrove.form_model.project import Project, get_active_form_model
 from mangrove.transport.contract.response import Response
 from mangrove.transport.repository.reporters import REPORTER_ENTITY_TYPE
 from mangrove.transport.repository.survey_responses import SurveyResponse

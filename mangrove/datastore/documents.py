@@ -1,6 +1,6 @@
 import logging
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, IntegerField
 import datetime
 import calendar
 from uuid import uuid1
@@ -264,11 +264,6 @@ class ProjectDocument(FormModelDocument):
     is_poll = BooleanField()
     active = TextField()
     end_date = TZAwareDateTimeField()
-    creator = TextField()
-    users = ListField(TextField())
-    users_as_datasender = ListField(TextField())
-
-
 
     def __init__(self, id=None):
         super(ProjectDocument, self).__init__(id)
@@ -420,3 +415,11 @@ class GroupDocument(DocumentBase):
 
     def __init__(self):
         DocumentBase.__init__(self, document_type='group')
+
+class UserPermissionDocument(DocumentBase):
+    user_id = IntegerField()
+    project_ids = ListField(TextField())
+
+    def __init__(self):
+        DocumentBase.__init__(self, document_type='UserPermission')
+    

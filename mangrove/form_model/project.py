@@ -34,7 +34,7 @@ class Project(FormModel):
         DataObject._set_document(self, doc)
 
     def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False, end_date=None, active=None,
-                 language='en', creator=None, users=None, users_as_datasender=None, fields=[]):
+                 language='en', fields=[]):
         FormModel.__init__(self, dbm=dbm, form_code=form_code, is_registration_model=False,
                            label="", language=language, name=name, fields=fields)
         if self._doc:
@@ -45,9 +45,6 @@ class Project(FormModel):
             self._doc.is_poll = is_poll
             self._doc.end_date = end_date
             self._doc.active = active
-            self._doc.creator = creator
-            self._doc.users = users
-            self._doc.users_as_datasender = users_as_datasender
 
     @classmethod
     def from_form_model(cls, form_model):
@@ -78,47 +75,9 @@ class Project(FormModel):
 
     @property
     def active(self):
-        return True if self._doc.active == 'active' else False
+        active = self._doc.active
+        return False if active is None else active
 
-    @property
-    def creator(self):
-        return self._doc.creator
-
-    @property
-    def users(self):
-        return self._doc.users
-
-    @property
-    def users_as_datasender(self):
-        return self._doc.users_as_datasender
-
-    @users.setter
-    def users(self, value):
-        self._doc.users = value
-
-    def add_users(self, users_list):
-        new_users_list = self.users.extend(users_list)[:]
-        self.users = list(set(new_users_list))
-
-    def delete_users(self, users_list):
-        for user_id in users_list:
-                if user_id in self.users:
-                    user_id.remove(user_id)
-
-    @users_as_datasender.setter
-    def users_as_datasender(self, value):
-        self._doc.users_as_datasender = value
-
-    def add_users_as_datasender(self, users_list):
-        new_users_list = self.users_as_datasender.extend(users_list)[:]
-        self.users_as_datasender = list(set(new_users_list))
-
-    def delete_user_as_datasender(self, users_list):
-        for user_id in users_list:
-            if user_id in self.users_as_datasender:
-                user_id.remove(user_id)
-
-        
     @end_date.setter
     def end_date(self, end_date):
         self._doc.end_date = end_date

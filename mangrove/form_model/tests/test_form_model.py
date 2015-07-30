@@ -10,7 +10,6 @@ from mangrove.datastore.documents import FormModelDocument
 from mangrove.form_model.field import TextField, IntegerField, SelectField, DateField, UniqueIdField, ShortCodeField
 from mangrove.errors.MangroveException import QuestionCodeAlreadyExistsException, EntityQuestionAlreadyExistsException, DataObjectAlreadyExists, QuestionAlreadyExistsException
 from mangrove.form_model.form_model import FormModel
-from mangrove.form_model.project import Project
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
 from mangrove.utils.form_model_builder import FormModelBuilder
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
@@ -335,17 +334,3 @@ class FormModelTest(MangroveTestCase):
         self.assertFalse(form_model.is_open_survey)
         document['is_open_survey'] = True
         self.assertTrue(form_model.is_open_survey)
-
-    def test_should_check_roles_fields(self):
-        document = self.get_form_model_doc()
-        form_model = FormModel.new_from_doc(self.manager, document)
-        project = Project.from_form_model(form_model)
-        self.assertEqual(project.creator, None)
-        document['creator'] = 'rep276'
-        self.assertEqual(project.creator, "rep276")
-        self.assertEqual(project.users, [] )
-        document['users'] = [1, 2, 3]
-        self.assertEqual(project.users, [1,2,3])
-        self.assertEqual(project.users_as_datasender, [])
-        document['users'] = [4, 8, 9]
-        self.assertEqual(project.users, [4, 8, 9])

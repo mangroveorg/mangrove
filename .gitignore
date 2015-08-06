@@ -6,3 +6,6 @@ dist
 xunit.xml
 build/
 
+/.settings
+/.project
+/.pydevproject

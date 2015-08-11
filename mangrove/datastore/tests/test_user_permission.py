@@ -34,6 +34,6 @@ class UserPermissionTest(MangroveTestCase):
         user_permission.save()
 
         questionnaires = get_questionnaires_for_user(1, self.manager)
-        self.assertEquals(questionnaires[0]['_id'], form_model_id,
-                          'Unable to fetch correct questionnaire')
+        self.assertEqual(questionnaires[0]['_id'], form_model_id)
+        self.assertEqual(questionnaires[0].get('is_project_manager'), True)
 

@@ -8,13 +8,22 @@ def get_user_permission(user_id, dbm):
         return None
     return UserPermission.new_from_doc(dbm, UserPermissionDocument.wrap(rows[0]['doc']))
 
+def _decorate_questionnaire_for_user(result):
+    questionnaire = result.get('doc')
+    questionnaire.update({'is_project_manager':True})
+    return questionnaire
 
-def get_questionnaires_for_user(user_id, dbm):
+def get_questionnaires_for_user(user_id, dbm, **values):
     rows = dbm.load_all_rows_in_view('all_questionnaire_by_user_permission',
-                                     key=user_id, include_docs=True)
-    questionnaires = [row['doc'] for row in rows]
+                                     key=user_id, include_docs=True, **values)
+    questionnaires = [_decorate_questionnaire_for_user(row) for row in rows]
     return questionnaires
 
+def grant_user_permission_for(user_id, questionnaire_id, manager):
+    user_permission = get_user_permission(user_id=user_id, dbm=manager)
+    if user_permission is not None:
+        user_permission.project_ids.append(questionnaire_id)
+        user_permission.save()
 
 class UserPermission(DataObject):
     __document_class__ = UserPermissionDocument

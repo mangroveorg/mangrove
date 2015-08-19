@@ -16,7 +16,7 @@ def _decorate_questionnaire_for_user(result):
 def get_questionnaires_for_user(user_id, dbm, **values):
     rows = dbm.load_all_rows_in_view('all_questionnaire_by_user_permission',
                                      key=user_id, include_docs=True, **values)
-    questionnaires = [_decorate_questionnaire_for_user(row) for row in rows]
+    questionnaires = [_decorate_questionnaire_for_user(row) for row in rows if not row.get('doc').get('void',False)]
     return questionnaires
 
 def grant_user_permission_for(user_id, questionnaire_id, manager):

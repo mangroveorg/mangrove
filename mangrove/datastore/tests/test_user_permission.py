@@ -37,3 +37,17 @@ class UserPermissionTest(MangroveTestCase):
         self.assertEqual(questionnaires[0]['_id'], form_model_id)
         self.assertEqual(questionnaires[0].get('is_project_manager'), True)
 
+    def test_should_get_questionnaires_for_user_excluding_deleted_questionnaires(self):
+        entity_type = []
+        question3 = IntegerField(name="Father's age", code="Q2", label="What is your Father's Age",
+                                 constraints=[NumericRangeConstraint(min=15, max=120)])
+        form_model = FormModel(self.manager, name='New survey', label='Survey122',
+            form_code='S122', fields=[question3], is_registration_model=False)
+        form_model.void(True)
+        form_model_id = form_model.save()
+        user_permission = UserPermission(self.manager, 1, [form_model_id])
+        user_permission.save()
+
+        questionnaires = get_questionnaires_for_user(1, self.manager)
+        self.assertEqual(len(questionnaires), 0)
+        

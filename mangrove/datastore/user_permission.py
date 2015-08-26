@@ -34,7 +34,12 @@ def update_user_permission(manager, user_id, project_ids=[]):
     user_permission.set_project_ids(project_ids)
     user_permission.save()
 
-
+def has_permission(manager, user_id, project_id):
+    rows = manager.load_all_rows_in_view('user_permission', key=user_id)
+    if not len(rows):
+        return False
+    return project_id in rows[0]['value'].get('project_ids')
+    
 class UserPermission(DataObject):
     __document_class__ = UserPermissionDocument
 

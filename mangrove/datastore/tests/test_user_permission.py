@@ -1,6 +1,6 @@
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
 from mangrove.datastore.user_permission import UserPermission,\
-    get_user_permission,get_questionnaires_for_user, update_user_permission
+    get_user_permission,get_questionnaires_for_user, update_user_permission, has_permission
 from mangrove.form_model.field import IntegerField
 from mangrove.form_model.validation import NumericRangeConstraint
 from mangrove.utils.form_model_builder import FormModelBuilder
@@ -61,6 +61,14 @@ class UserPermissionTest(MangroveTestCase):
         questionnaires = get_questionnaires_for_user(1, self.manager)
         self.assertEqual(questionnaires[0]['_id'], form_model_id)
         self.assertEqual(questionnaires[0].get('is_project_manager'), True)
+    
+    def test_should_check_user_has_permission(self):
+        form_model_id = self._create_sample_questionnaire()
+        user_permission = UserPermission(self.manager, 1, [form_model_id])
+        user_permission.save()
+        self.assertTrue(has_permission(self.manager, 1 , form_model_id))
+        self.assertFalse(has_permission(self.manager, 1 , 'some_other_project'))
+            
 
     def _create_sample_questionnaire(self):
         entity_type = []

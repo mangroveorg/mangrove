@@ -198,8 +198,9 @@ class Project(FormModel):
         self._doc.void = void
 
     def delete_datasender(self, dbm, entity_id):
-        self.data_senders.remove(entity_id)
-        self.save(process_post_update=False)
+        if entity_id in self.data_senders:
+            self.data_senders.remove(entity_id)
+            self.save(process_post_update=False)
 
     def _remove_duplicate_datasenders(self, data_senders_list):
         datasenders_already_linked_to_questionnaire = []

@@ -76,7 +76,7 @@ class Project(FormModel):
     @property
     def active(self):
         active = self._doc.active
-        return False if active is None else active
+        return False if active is None else active == 'active'
 
     @end_date.setter
     def end_date(self, end_date):

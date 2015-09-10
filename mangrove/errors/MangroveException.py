@@ -68,6 +68,10 @@ class QuestionAlreadyExistsException(MangroveException):
     pass
 
 
+class QuestionnaireAlreadyExistsException(MangroveException):
+    pass
+
+
 class QuestionCodeAlreadyExistsException(MangroveException):
     pass
 

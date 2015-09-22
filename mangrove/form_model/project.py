@@ -9,6 +9,8 @@ from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModel
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel, get_form_model_document
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
+from mangrove.datastore.user_preference import UserQuestionnairePreference, UserQuestionnairePreferenceDocument
+from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
 
 def get_project_by_code(dbm, code):
     row_value = get_form_model_document(code, dbm)
@@ -246,6 +248,28 @@ class Project(FormModel):
         self.add_attachments(attachments, attachment_name)
 
 
+    def get_user_preference(self, user_id=None, type='analysis_fields'):
+        rows = self._dbm.load_all_rows_in_view('user_questionnaire_preference',
+                                     key=[user_id, self._doc.id], include_docs=True)
+        if len(rows):
+            return UserQuestionnairePreference.new_from_doc(self._dbm,
+                                                     UserQuestionnairePreferenceDocument.wrap(rows[0]['doc']))
+
+        preference = UserQuestionnairePreference(self._dbm, user_id, project_id=self._doc.id)
+        preference.__setattr__(type, translate_fields_to_preference(self._dbm, self._doc.json_fields))
+        preference.save()
+        return preference
+
+def translate_fields_to_preference(dbm, fields, prefix=False):
+    preference = []
+    for field in fields:
+        if field.get('type') in ['unique_id']:
+            id_number_fields = get_form_model_fields_by_entity_type(dbm, [field.get('unique_id_type')])
+            preference.extend(translate_fields_to_preference(dbm, id_number_fields, field.get('code')))
+        else:
+            id = field.get('code') if not prefix else u"%s_%s" % (prefix,field.get('code'))
+            preference.append({'visibility':True, 'id': id})
+    return preference
 
 def load_data_senders(manager, short_codes):
     form_model = get_form_model_by_code(manager, 'reg')

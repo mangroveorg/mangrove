@@ -137,7 +137,7 @@ def get_form_model_by_entity_type(dbm, entity_type):
 
 def get_form_model_fields_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
-    return form_model._doc.json_fields
+    return form_model.form_fields
 
 def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)

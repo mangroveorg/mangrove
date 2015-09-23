@@ -248,17 +248,22 @@ class Project(FormModel):
         self.add_attachments(attachments, attachment_name)
 
 
-    def get_user_preference(self, user_id=None, type='analysis_fields'):
-        rows = self._dbm.load_all_rows_in_view('user_questionnaire_preference',
-                                     key=[user_id, self._doc.id], include_docs=True)
-        if len(rows):
-            return UserQuestionnairePreference.new_from_doc(self._dbm,
-                                                     UserQuestionnairePreferenceDocument.wrap(rows[0]['doc']))
+def get_user_questionnaire_preference(dbm, user_id, project_id, type='analysis_fields'):
+    rows = dbm.load_all_rows_in_view('user_questionnaire_preference',
+                                 key=[user_id, project_id], include_docs=True)
+    if len(rows):
+        return UserQuestionnairePreference.new_from_doc(dbm,
+                                                 UserQuestionnairePreferenceDocument.wrap(rows[0]['doc']))
 
-        preference = UserQuestionnairePreference(self._dbm, user_id, project_id=self._doc.id)
-        preference.__setattr__(type, translate_fields_to_preference(self._dbm, self._doc.json_fields))
-        preference.save()
-        return preference
+    preference = UserQuestionnairePreference(dbm, user_id, project_id=project_id)
+    project = Project.get(dbm, project_id)
+    
+    datasender_form_model = get_form_model_by_code(dbm, 'reg')
+    analysis_fields = translate_fields_to_preference(dbm, datasender_form_model.form_fields, 'ds')
+    analysis_fields.extend(translate_fields_to_preference(dbm, project.form_fields))
+    preference.__setattr__(type, analysis_fields)
+    preference.save()
+    return preference
 
 def translate_fields_to_preference(dbm, fields, prefix=False):
     preference = []

@@ -1,13 +1,16 @@
 from mangrove.utils.test_utils.mangrove_test_case import MangroveTestCase
-from mangrove.form_model.project import Project, get_entity_type_fields
+from mangrove.form_model.project import Project, get_entity_type_fields, get_user_questionnaire_preference
 from mangrove.form_model.field import UniqueIdField, TextField, IntegerField, SelectField
 from mangrove.form_model.validation import TextLengthConstraint, RegexConstraint, NumericRangeConstraint
 from mangrove.form_model.form_model import EntityFormModel
 from mock import Mock, patch
+from mangrove.contrib.registration import construct_global_registration_form
 
 class ProjectTest(MangroveTestCase):
     def setUp(self):
         MangroveTestCase.setUp(self)
+        registration_form = construct_global_registration_form(self.manager)
+        registration_form.save()
         self._create_project()
 
     def tearDown(self):
@@ -49,8 +52,16 @@ class ProjectTest(MangroveTestCase):
 
     def test_should_return_preference(self):
         self.check_uniqueness_patch.start()
-        preference = self.project.get_user_preference(1)
-        expected = [{'id': u'ID_code', 'visibility': True},
+        preference = get_user_questionnaire_preference(self.manager, 1, self.project_id)
+        expected = [{'id': u'ds_t', 'visibility': True},
+                {'id': u'ds_n', 'visibility': True},
+                {'id': u'ds_s', 'visibility': True},
+                {'id': u'ds_l', 'visibility': True},
+                {'id': u'ds_g', 'visibility': True},
+                {'id': u'ds_m', 'visibility': True},
+                {'id': u'ds_email', 'visibility': True},
+                {'id': u'ds_is_data_sender', 'visibility': True},
+                {'id': u'ID_code', 'visibility': True},
                 {'id': 'Q1', 'visibility': True},
                 {'id': 'Q2', 'visibility': True},
                 {'id': 'Q3', 'visibility': True},

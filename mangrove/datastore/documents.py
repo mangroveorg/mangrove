@@ -426,7 +426,6 @@ class UserPermissionDocument(DocumentBase):
 
 class UserQuestionnairePreferenceDocument(DocumentBase):
     user_id = IntegerField()
-    preference = DictField()
     project_id = TextField()
     analysis_fields = ListField(DictField())
 

@@ -27,6 +27,7 @@ field_types = {
     field_attributes.LOCATION_FIELD: 'geopoint',
     field_attributes.TEXT_FIELD: 'string',
     field_attributes.INTEGER_FIELD: 'decimal',
+    field_attributes.UNIQUE_ID_FIELD: 'select1',
 }
 
 

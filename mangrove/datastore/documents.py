@@ -427,7 +427,7 @@ class UserPermissionDocument(DocumentBase):
 class UserQuestionnairePreferenceDocument(DocumentBase):
     user_id = IntegerField()
     project_id = TextField()
-    analysis_fields = ListField(DictField())
+    analysis_fields = DictField()
 
     def __init__(self):
         DocumentBase.__init__(self, document_type='UserQuestionnairePreference')

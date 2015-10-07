@@ -4,21 +4,32 @@ from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
 
 def get_analysis_field_preferences(manager, user_id, project):
     preferences = []
-    rows = manager.load_all_rows_in_view('user_questionnaire_preference', key=[user_id, project.id])
-    user_questionnaire_preference = UserQuestionnairePreference(manager, user_id, project.id)
-    if len(rows):
-        user_questionnaire_preference = UserQuestionnairePreference.new_from_doc(manager,
-                                             UserQuestionnairePreferenceDocument.wrap(rows[0]['doc']))
+    user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in project.form_fields]
     preferences.insert(0, _get_datasender_preferences(user_questionnaire_preference))
     return preferences
-    
-def _convert_field_to_preference(manager, field, user_questionnaire_preference, project_id, key=None):
-    data = project_id+'_'+field.get('code') if not key else key
+
+def save_analysis_field_preferences(manager, user_id, project, preferences):
+    user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
+    if user_questionnaire_preference is None:
+        user_questionnaire_preference = UserQuestionnairePreference(manager, user_id, project.id)
+    user_questionnaire_preference.analysis_fields = preferences
+    user_questionnaire_preference.save()
+
+def get_user_questionnaire_preference(manager, user_id, project_id):
+    rows = manager.load_all_rows_in_view('user_questionnaire_preference', key=[user_id, project_id])
+    user_questionnaire_preference = None
+    if len(rows):
+        user_questionnaire_preference = UserQuestionnairePreference.new_from_doc(manager,
+                                             UserQuestionnairePreferenceDocument.wrap(rows[0]['value']))
+    return user_questionnaire_preference    
+
+def _convert_field_to_preference(manager, field, preferences, project_id, key=None):
+    data = project_id+'_'+field.get('code') if not key else key +'.'+field.get('name')
     analysis_field_preference={
                                "data":data,
                                "title":field.get('label'),
-                               "visibility":_detect_visibility(user_questionnaire_preference, data)
+                               "visibility":_detect_visibility(preferences, data)
                                }
 
     if field.get('type') in ['unique_id']:
@@ -26,21 +37,24 @@ def _convert_field_to_preference(manager, field, user_questionnaire_preference, 
         id_number_fields = get_form_model_fields_by_entity_type(manager, [field.get('unique_id_type')])
         analysis_field_preference["children"] = [_convert_field_to_preference(
                                                                               manager, child_field, 
-                                                                              user_questionnaire_preference, 
+                                                                              preferences, 
                                                                               project_id, key) 
                                                  for child_field in id_number_fields]
         
     return analysis_field_preference
 
-def _detect_visibility(user_questionnaire_preference, data):
-    return True
+def _detect_visibility(preferences, data):
+    if preferences is None:
+        return True #Default behaviour - should be based on data, rules
+    return preferences.analysis_fields.get(data,False)
 
-def _get_datasender_preferences(user_questionnaire_preference):
+
+def _get_datasender_preferences(preferences):
     data = "datasender"
     analysis_field_preference={
                                "data":data,
                                "title":"Datasender",
-                               "visibility":_detect_visibility(user_questionnaire_preference, data)
+                               "visibility":_detect_visibility(preferences, data)
                                }
     children = []
     datasender_columns = {'datasender.name': 'Datasender Name',
@@ -53,7 +67,7 @@ def _get_datasender_preferences(user_questionnaire_preference):
         children.append({
                          "data":column_id,
                          "title":column_title,
-                         "visibility":_detect_visibility(user_questionnaire_preference, column_id)
+                         "visibility":_detect_visibility(preferences, column_id)
                          })
     analysis_field_preference["children"] = children
     return analysis_field_preference
@@ -62,7 +76,7 @@ def _get_datasender_preferences(user_questionnaire_preference):
 class UserQuestionnairePreference(DataObject):
     __document_class__ = UserQuestionnairePreferenceDocument
 
-    def __init__(self, dbm, user_id, project_id, **kwargs):
+    def __init__(self, dbm, user_id=None, project_id=None, **kwargs):
         super(UserQuestionnairePreference, self).__init__(dbm)
         doc = UserQuestionnairePreferenceDocument()
         doc.user_id = user_id

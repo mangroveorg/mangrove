@@ -3,6 +3,11 @@ from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
 
 def get_analysis_field_preferences(manager, user_id, project):
+    '''
+    Provides hierrachial view of user preferences, questionnaire fields
+    with sub questionnaires. It combines the preferences stored in db with display information.
+    Useful for merging user specific preference data with questionnaire specific display info.
+    '''
     preferences = []
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in project.form_fields]
@@ -29,7 +34,7 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
     analysis_field_preference={
                                "data":data,
                                "title":field.get('label'),
-                               "visibility":_detect_visibility(preferences, data)
+                               "visibility":detect_visibility(preferences, data)
                                }
 
     if field.get('type') in ['unique_id']:
@@ -43,7 +48,7 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         
     return analysis_field_preference
 
-def _detect_visibility(preferences, data):
+def detect_visibility(preferences, data):
     if preferences is None:
         return True #Default behaviour - should be based on data, rules
     return preferences.analysis_fields.get(data,False)
@@ -54,7 +59,7 @@ def _get_datasender_preferences(preferences):
     analysis_field_preference={
                                "data":data,
                                "title":"Datasender",
-                               "visibility":_detect_visibility(preferences, data)
+                               "visibility":detect_visibility(preferences, data)
                                }
     children = []
     datasender_columns = {'datasender.name': 'Datasender Name',
@@ -67,7 +72,7 @@ def _get_datasender_preferences(preferences):
         children.append({
                          "data":column_id,
                          "title":column_title,
-                         "visibility":_detect_visibility(preferences, column_id)
+                         "visibility":detect_visibility(preferences, column_id)
                          })
     analysis_field_preference["children"] = children
     return analysis_field_preference

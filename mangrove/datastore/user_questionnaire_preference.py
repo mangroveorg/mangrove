@@ -1,6 +1,21 @@
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
+import re
+
+'''
+    Visibility rules are applied from top to bottom.
+    First match takes precedence.
+'''
+VISIBILITY_RULES = {
+                    "datasender.mobile_number":False,
+                    "datasender.email":False,
+                    "datasender.groups":False,
+                    "datasender.location":False,
+                    ".*_details\.q2":True,
+                    ".*_details\.q6":True,
+                    ".*_details\..*":False,
+                    }
 
 def get_analysis_field_preferences(manager, user_id, project):
     '''
@@ -48,9 +63,13 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         
     return analysis_field_preference
 
-def detect_visibility(preferences, data):
+def detect_visibility(preferences, data):  
     if preferences is None:
-        return True #Default behaviour - should be based on data, rules
+        for key in VISIBILITY_RULES:
+            if re.match(key,data):
+                return VISIBILITY_RULES.get(key)
+
+        return VISIBILITY_RULES.get(data, True)
     return preferences.analysis_fields.get(data,False)
 
 

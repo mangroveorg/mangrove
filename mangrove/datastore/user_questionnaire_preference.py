@@ -63,15 +63,16 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         
     return analysis_field_preference
 
-def detect_visibility(preferences, data):  
+def detect_visibility(preferences, data): 
     if preferences is None:
         for key in VISIBILITY_RULES:
             if re.match(key,data):
                 return VISIBILITY_RULES.get(key)
-
-        return VISIBILITY_RULES.get(data, True)
-    return preferences.analysis_fields.get(data,False)
-
+        return True
+    
+    visibility = preferences.analysis_fields.get(data,False)
+    visibility_flag = visibility[0] if isinstance(visibility,list) else visibility
+    return visibility_flag
 
 def _get_datasender_preferences(preferences):
     data = "datasender"
@@ -82,8 +83,8 @@ def _get_datasender_preferences(preferences):
                                }
     children = []
     datasender_columns = {'datasender.name': 'Datasender Name',
-                          'datasender.mobile_number': 'Datasender Mobile Number',
                           'datasender.id': 'Datasender ID Number',
+                          'datasender.mobile_number': 'Datasender Mobile Number',
                           'datasender.email': 'Datasender Email',
                           'datasender.groups': 'Datasender Groups',
                           'datasender.location': 'Datasender Location'}

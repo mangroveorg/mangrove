@@ -27,6 +27,11 @@ def get_analysis_field_preferences(manager, user_id, project):
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in project.form_fields]
     preferences.insert(0, _get_datasender_preferences(user_questionnaire_preference))
+    preferences.insert(1, {
+                           "data":"date",
+                           "title":'Submission Date',
+                           "visibility":detect_visibility(user_questionnaire_preference, 'date')
+                           })
     return preferences
 
 def save_analysis_field_preferences(manager, user_id, project, preferences):
@@ -87,7 +92,8 @@ def _get_datasender_preferences(preferences):
                           'datasender.mobile_number': 'Datasender Mobile Number',
                           'datasender.email': 'Datasender Email',
                           'datasender.groups': 'Datasender Groups',
-                          'datasender.location': 'Datasender Location'}
+                          'datasender.location': 'Datasender Location',
+                          }
     for column_id, column_title in datasender_columns.iteritems():
         children.append({
                          "data":column_id,

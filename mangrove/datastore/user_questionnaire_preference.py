@@ -30,7 +30,7 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
     return user_questionnaire_preference    
 
 def _convert_field_to_preference(manager, field, preferences, project_id, key=None):
-    data = project_id+'_'+field.get('code') if not key else key +'.'+field.get('name')
+    data = project_id+'_'+field.get('code') if not key else key +'.'+field.get('code')
     analysis_field_preference={
                                "data":data,
                                "title":field.get('label'),

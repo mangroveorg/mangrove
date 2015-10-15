@@ -2,6 +2,7 @@ from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
 import re
+from collections import OrderedDict
 
 '''
     Visibility rules are applied from top to bottom.
@@ -26,12 +27,12 @@ def get_analysis_field_preferences(manager, user_id, project):
     preferences = []
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in project.form_fields]
-    preferences.insert(0, _get_datasender_preferences(user_questionnaire_preference))
-    preferences.insert(1, {
+    preferences.insert(0, {
                            "data":"date",
                            "title":'Submission Date',
                            "visibility":detect_visibility(user_questionnaire_preference, 'date')
                            })
+    preferences.insert(1, _get_datasender_preferences(user_questionnaire_preference))
     return preferences
 
 def save_analysis_field_preferences(manager, user_id, project, preferences):
@@ -87,13 +88,14 @@ def _get_datasender_preferences(preferences):
                                "visibility":detect_visibility(preferences, data)
                                }
     children = []
-    datasender_columns = {'datasender.name': 'Datasender Name',
-                          'datasender.id': 'Datasender ID Number',
-                          'datasender.mobile_number': 'Datasender Mobile Number',
-                          'datasender.email': 'Datasender Email',
-                          'datasender.groups': 'Datasender Groups',
-                          'datasender.location': 'Datasender Location',
-                          }
+    datasender_columns = OrderedDict()
+    datasender_columns['datasender.name']='Data Sender Name'
+    datasender_columns['datasender.id']='Data Sender ID Number'
+    datasender_columns['datasender.mobile_number']='Data Sender Mobile Number'
+    datasender_columns['datasender.email']='Data Sender Email'
+    datasender_columns['datasender.groups']='Data Sender Groups'
+    datasender_columns['datasender.location']='Data Sender Location'
+
     for column_id, column_title in datasender_columns.iteritems():
         children.append({
                          "data":column_id,

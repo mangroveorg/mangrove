@@ -1,3 +1,4 @@
+from django.utils.translation import ugettext
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
@@ -9,14 +10,14 @@ from collections import OrderedDict
     First match takes precedence.
 '''
 VISIBILITY_RULES = {
-                    "datasender.mobile_number":False,
-                    "datasender.email":False,
-                    "datasender.groups":False,
-                    "datasender.location":False,
-                    ".*_details\.q2":True,
-                    ".*_details\.q6":True,
-                    ".*_details\..*":False,
-                    }
+    "datasender.mobile_number": False,
+    "datasender.email": False,
+    "datasender.location": False,
+    ".*_details\.q2": True,
+    ".*_details\.q6": True,
+    ".*_details\..*": False,
+}
+
 
 def get_analysis_field_preferences(manager, user_id, project):
     '''
@@ -26,14 +27,16 @@ def get_analysis_field_preferences(manager, user_id, project):
     '''
     preferences = []
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
-    preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in project.form_fields]
+    preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in
+                   project.form_fields]
     preferences.insert(0, {
-                           "data":"date",
-                           "title":'Submission Date',
-                           "visibility":detect_visibility(user_questionnaire_preference, 'date')
-                           })
+        "data": "date",
+        "title": 'Submission Date',
+        "visibility": detect_visibility(user_questionnaire_preference, 'date')
+    })
     preferences.insert(1, _get_datasender_preferences(user_questionnaire_preference))
     return preferences
+
 
 def save_analysis_field_preferences(manager, user_id, project, preferences):
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
@@ -42,70 +45,74 @@ def save_analysis_field_preferences(manager, user_id, project, preferences):
     user_questionnaire_preference.analysis_fields = preferences
     user_questionnaire_preference.save()
 
+
 def get_user_questionnaire_preference(manager, user_id, project_id):
     rows = manager.load_all_rows_in_view('user_questionnaire_preference', key=[user_id, project_id])
     user_questionnaire_preference = None
     if len(rows):
         user_questionnaire_preference = UserQuestionnairePreference.new_from_doc(manager,
-                                             UserQuestionnairePreferenceDocument.wrap(rows[0]['value']))
-    return user_questionnaire_preference    
+                                                                                 UserQuestionnairePreferenceDocument.wrap(
+                                                                                     rows[0]['value']))
+    return user_questionnaire_preference
+
 
 def _convert_field_to_preference(manager, field, preferences, project_id, key=None):
-    data = project_id+'_'+field.get('code') if not key else key +'.'+field.get('code')
-    analysis_field_preference={
-                               "data":data,
-                               "title":field.get('label'),
-                               "visibility":detect_visibility(preferences, data)
-                               }
+    data = project_id + '_' + field.get('code') if not key else key + '.' + field.get('code')
+    analysis_field_preference = {
+        "data": data,
+        "title": field.get('label'),
+        "visibility": detect_visibility(preferences, data)
+    }
 
     if field.get('type') in ['unique_id']:
         key = data + "_details"
         id_number_fields = get_form_model_fields_by_entity_type(manager, [field.get('unique_id_type')])
         analysis_field_preference["children"] = [_convert_field_to_preference(
-                                                                              manager, child_field, 
-                                                                              preferences, 
-                                                                              project_id, key) 
+            manager, child_field,
+            preferences,
+            project_id, key)
                                                  for child_field in id_number_fields]
-        
+
     return analysis_field_preference
 
-def detect_visibility(preferences, data): 
+
+def detect_visibility(preferences, data):
     if preferences is None:
         for key in VISIBILITY_RULES:
-            if re.match(key,data):
+            if re.match(key, data):
                 return VISIBILITY_RULES.get(key)
         return True
-    
-    visibility = preferences.analysis_fields.get(data,False)
-    visibility_flag = visibility[0] if isinstance(visibility,list) else visibility
+
+    visibility = preferences.analysis_fields.get(data, False)
+    visibility_flag = visibility[0] if isinstance(visibility, list) else visibility
     return visibility_flag
+
 
 def _get_datasender_preferences(preferences):
     data = "datasender"
-    analysis_field_preference={
-                               "data":data,
-                               "title":"Datasender",
-                               "visibility":detect_visibility(preferences, data)
-                               }
+    analysis_field_preference = {
+        "data": data,
+        "title": ugettext("Data Sender"),
+        "visibility": detect_visibility(preferences, data)
+    }
     children = []
     datasender_columns = OrderedDict()
-    datasender_columns['datasender.name']='Data Sender Name'
-    datasender_columns['datasender.id']='Data Sender ID Number'
-    datasender_columns['datasender.mobile_number']='Data Sender Mobile Number'
-    datasender_columns['datasender.email']='Data Sender Email'
-    datasender_columns['datasender.groups']='Data Sender Groups'
-    datasender_columns['datasender.location']='Data Sender Location'
+    datasender_columns['datasender.name'] = ugettext('Data Sender Name')
+    datasender_columns['datasender.id'] = ugettext('Data Sender ID Number')
+    datasender_columns['datasender.mobile_number'] = ugettext('Data Sender Mobile Number')
+    datasender_columns['datasender.email'] = ugettext('Data Sender Email')
+    datasender_columns['datasender.location'] = ugettext('Data Sender Location')
 
     for column_id, column_title in datasender_columns.iteritems():
         children.append({
-                         "data":column_id,
-                         "title":column_title,
-                         "visibility":detect_visibility(preferences, column_id)
-                         })
+            "data": column_id,
+            "title": column_title,
+            "visibility": detect_visibility(preferences, column_id)
+        })
     analysis_field_preference["children"] = children
     return analysis_field_preference
 
-            
+
 class UserQuestionnairePreference(DataObject):
     __document_class__ = UserQuestionnairePreferenceDocument
 
@@ -136,4 +143,3 @@ class UserQuestionnairePreference(DataObject):
         for field in getattr(self, preference):
             if field.get('id') in fields:
                 field['visibility'] = visibility
-

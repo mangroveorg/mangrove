@@ -13,6 +13,7 @@ VISIBILITY_RULES = {
     "datasender.mobile_number": False,
     "datasender.email": False,
     "datasender.location": False,
+    "datasender.geo_code":False,
     ".*_details\.q2": True,
     ".*_details\.q6": True,
     ".*_details\..*": False,
@@ -102,6 +103,7 @@ def _get_datasender_preferences(preferences):
     datasender_columns['datasender.mobile_number'] = ugettext('Data Sender Mobile Number')
     datasender_columns['datasender.email'] = ugettext('Data Sender Email')
     datasender_columns['datasender.location'] = ugettext('Data Sender Location')
+    datasender_columns['datasender.geo_code'] = ugettext('Data Sender GPS Coordinates')
 
     for column_id, column_title in datasender_columns.iteritems():
         children.append({

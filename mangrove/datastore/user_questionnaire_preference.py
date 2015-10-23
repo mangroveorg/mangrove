@@ -39,6 +39,14 @@ def get_analysis_field_preferences(manager, user_id, project):
     return preferences
 
 
+preference_dict = {'analysis': get_analysis_field_preferences}
+
+def get_preferences(manager, user_id, project, submission_type):
+    get_preference_method = preference_dict.get(submission_type)
+    if get_preference_method:
+        return get_preference_method(manager, user_id, project)
+    return None
+
 def save_analysis_field_preferences(manager, user_id, project, preferences):
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     if user_questionnaire_preference is None:

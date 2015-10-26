@@ -1,4 +1,3 @@
-from django.utils.translation import ugettext
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
@@ -20,7 +19,7 @@ VISIBILITY_RULES = {
 }
 
 
-def get_analysis_field_preferences(manager, user_id, project):
+def get_analysis_field_preferences(manager, user_id, project, display_messages):
     '''
     Provides hierrachial view of user preferences, questionnaire fields
     with sub questionnaires. It combines the preferences stored in db with display information.
@@ -32,10 +31,10 @@ def get_analysis_field_preferences(manager, user_id, project):
                    project.form_fields]
     preferences.insert(0, {
         "data": "date",
-        "title": 'Submission Date',
+        "title": display_messages('Submission Date'),
         "visibility": detect_visibility(user_questionnaire_preference, 'date')
     })
-    preferences.insert(1, _get_datasender_preferences(user_questionnaire_preference))
+    preferences.insert(1, _get_datasender_preferences(user_questionnaire_preference, display_messages))
     return preferences
 
 
@@ -97,21 +96,21 @@ def detect_visibility(preferences, data):
     return visibility_flag
 
 
-def _get_datasender_preferences(preferences):
+def _get_datasender_preferences(preferences, display_messages):
     data = "datasender"
     analysis_field_preference = {
         "data": data,
-        "title": ugettext("Data Sender"),
+        "title": display_messages("Data Sender"),
         "visibility": detect_visibility(preferences, data)
     }
     children = []
     datasender_columns = OrderedDict()
-    datasender_columns['datasender.name'] = ugettext('Data Sender Name')
-    datasender_columns['datasender.id'] = ugettext('Data Sender ID Number')
-    datasender_columns['datasender.mobile_number'] = ugettext('Data Sender Mobile Number')
-    datasender_columns['datasender.email'] = ugettext('Data Sender Email')
-    datasender_columns['datasender.location'] = ugettext('Data Sender Location')
-    datasender_columns['datasender.geo_code'] = ugettext('Data Sender GPS Coordinates')
+    datasender_columns['datasender.name'] = display_messages('Data Sender Name')
+    datasender_columns['datasender.id'] = display_messages('Data Sender ID Number')
+    datasender_columns['datasender.mobile_number'] = display_messages('Data Sender Mobile Number')
+    datasender_columns['datasender.email'] = display_messages('Data Sender Email')
+    datasender_columns['datasender.location'] = display_messages('Data Sender Location')
+    datasender_columns['datasender.geo_code'] = display_messages('Data Sender GPS Coordinates')
 
     for column_id, column_title in datasender_columns.iteritems():
         children.append({

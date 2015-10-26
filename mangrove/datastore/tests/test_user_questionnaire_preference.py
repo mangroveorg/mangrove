@@ -50,8 +50,12 @@ class UserQuestionnairePreferenceTest(MangroveTestCase):
         
     def test_should_get_user_questionnaire_preference(self):
         project = self._create_project()
-        preferences = get_analysis_field_preferences(self.manager, 1, project)
+        preferences = get_analysis_field_preferences(self.manager, 1, project, self.display_messages_helper)
         self.assertEqual(len(preferences), 7)
+    
+    def display_messages_helper(self,label):
+        #In actual application, this will return i18n translated messages
+        return label
         
     def _create_project(self):
         registration_form = construct_global_registration_form(self.manager)

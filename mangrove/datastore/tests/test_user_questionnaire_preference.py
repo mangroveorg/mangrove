@@ -51,7 +51,7 @@ class UserQuestionnairePreferenceTest(MangroveTestCase):
     def test_should_get_user_questionnaire_preference(self):
         project = self._create_project()
         preferences = get_analysis_field_preferences(self.manager, 1, project)
-        self.assertEqual(len(preferences), 5)
+        self.assertEqual(len(preferences), 7)
         
     def _create_project(self):
         registration_form = construct_global_registration_form(self.manager)

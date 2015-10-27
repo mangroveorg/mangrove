@@ -40,10 +40,10 @@ def get_analysis_field_preferences(manager, user_id, project, display_messages):
 
 preference_dict = {'analysis': get_analysis_field_preferences}
 
-def get_preferences(manager, user_id, project, submission_type):
+def get_preferences(manager, user_id, project, submission_type, *args):
     get_preference_method = preference_dict.get(submission_type)
     if get_preference_method:
-        return get_preference_method(manager, user_id, project)
+        return get_preference_method(manager, user_id, project, *args)
     return None
 
 def save_analysis_field_preferences(manager, user_id, project, preferences):

@@ -106,7 +106,7 @@ def _get_datasender_preferences(preferences, display_messages):
     children = []
     datasender_columns = OrderedDict()
     datasender_columns['datasender.name'] = display_messages('Data Sender Name')
-    datasender_columns['datasender.id'] = display_messages('Data Sender ID Number')
+    datasender_columns['datasender.id'] = display_messages('Data Sender Id')
     datasender_columns['datasender.mobile_number'] = display_messages('Data Sender Mobile Number')
     datasender_columns['datasender.email'] = display_messages('Data Sender Email')
     datasender_columns['datasender.location'] = display_messages('Data Sender Location')

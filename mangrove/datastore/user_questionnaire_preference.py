@@ -13,9 +13,11 @@ VISIBILITY_RULES = {
     "datasender.email": False,
     "datasender.location": False,
     "datasender.geo_code":False,
+    ".*_details$": False,
     ".*_details\.q2": True,
     ".*_details\.q6": True,
     ".*_details\..*": False,
+    "datasender$": False,
 }
 
 
@@ -66,6 +68,9 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
 
 def _convert_field_to_preference(manager, field, preferences, project_id, key=None):
     data = project_id + '_' + field.get('code') if not key else key + '.' + field.get('code')
+    if field.get('type') in ['unique_id']:
+        data += '_details'
+    
     analysis_field_preference = {
         "data": data,
         "title": field.get('label'),
@@ -73,12 +78,11 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
     }
 
     if field.get('type') in ['unique_id']:
-        key = data + "_details"
         id_number_fields = get_form_model_fields_by_entity_type(manager, [field.get('unique_id_type')])
         analysis_field_preference["children"] = [_convert_field_to_preference(
             manager, child_field,
             preferences,
-            project_id, key)
+            project_id, data)
                                                  for child_field in id_number_fields]
 
     return analysis_field_preference

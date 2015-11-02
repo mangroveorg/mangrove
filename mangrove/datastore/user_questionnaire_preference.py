@@ -30,7 +30,7 @@ def get_analysis_field_preferences(manager, user_id, project, display_messages):
     preferences = []
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
     preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in
-                   project.form_fields]
+                   project.fields]
     preferences.insert(0, {
         "data": "date",
         "title": display_messages('Submission Date'),
@@ -66,24 +66,36 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
     return user_questionnaire_preference
 
 
-def _convert_field_to_preference(manager, field, preferences, project_id, key=None):
-    data = project_id + '_' + field.get('code') if not key else key + '.' + field.get('code')
-    if field.get('type') in ['unique_id']:
+def _convert_field_to_preference(manager, field, preferences, project_id, key=None, is_group_child=False):
+    if is_group_child:
+        key = key+'-'+field.code
+    elif key:
+        key = key + '.' + field.code
+
+    data = project_id + '_' + field.code if not key else key
+    if field.is_entity_field:
         data += '_details'
     
     analysis_field_preference = {
         "data": data,
-        "title": field.get('label'),
+        "title": field.label,
         "visibility": detect_visibility(preferences, data)
     }
 
-    if field.get('type') in ['unique_id']:
-        id_number_fields = get_form_model_fields_by_entity_type(manager, [field.get('unique_id_type')])
+    if field.is_entity_field:
+        id_number_fields = get_form_model_fields_by_entity_type(manager, [field.unique_id_type])
         analysis_field_preference["children"] = [_convert_field_to_preference(
             manager, child_field,
             preferences,
             project_id, data)
                                                  for child_field in id_number_fields]
+
+    if field.is_group():
+        analysis_field_preference["children"] = [_convert_field_to_preference(
+            manager, child_field,
+            preferences,
+            project_id, data, is_group_child=True) for child_field in field.fields]
+
 
     return analysis_field_preference
 

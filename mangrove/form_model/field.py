@@ -301,6 +301,9 @@ class Field(object):
     @property
     def is_field_set(self):
         return False
+    
+    def is_group(self):
+        return False
 
     def _to_json(self):
         dict = self._dict.copy()

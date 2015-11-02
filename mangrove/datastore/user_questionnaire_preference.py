@@ -1,6 +1,6 @@
 from mangrove.datastore.database import DataObject
 from mangrove.datastore.documents import UserQuestionnairePreferenceDocument
-from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
+from mangrove.form_model.form_model import get_form_model_by_entity_type
 import re
 from collections import OrderedDict
 
@@ -73,7 +73,7 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         key = key + '.' + field.code
 
     data = project_id + '_' + field.code if not key else key
-    if field.is_entity_field:
+    if field.type in ['unique_id']:
         data += '_details'
     
     analysis_field_preference = {
@@ -82,8 +82,8 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         "visibility": detect_visibility(preferences, data)
     }
 
-    if field.is_entity_field:
-        id_number_fields = get_form_model_fields_by_entity_type(manager, [field.unique_id_type])
+    if field.type in ['unique_id']:
+        id_number_fields = get_form_model_by_entity_type(manager, [field.unique_id_type]).fields
         analysis_field_preference["children"] = [_convert_field_to_preference(
             manager, child_field,
             preferences,

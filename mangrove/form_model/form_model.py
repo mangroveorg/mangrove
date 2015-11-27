@@ -30,6 +30,8 @@ LOCATION_TYPE_FIELD_CODE = "l"
 GEO_CODE = "g"
 GEO_CODE_FIELD_NAME = "geo_code"
 
+FIRSTNAME_FIELD = "firstname"
+FIRSTNAME_FIELD_CODE = "f"
 NAME_FIELD = "name"
 FORM_MODEL_ID = "form_model_id"
 FORM_CODE = "form_code"

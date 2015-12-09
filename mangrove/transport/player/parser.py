@@ -19,6 +19,7 @@ from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 from openpyxl import load_workbook
 import StringIO
+from datawinners.entity.entity_exceptions import CodeSheetMissingException, LessNumberOfSheetsException
 
 
 
@@ -302,8 +303,10 @@ class XlsParser(object):
         return all_sheets[1] if work_sheet.name == 'codes' else work_sheet
 
     def _get_code_sheet(self, all_sheets):
-        work_sheet = all_sheets[0]
-        return work_sheet if work_sheet.name == 'codes' else all_sheets[1]
+        code_sheets = [work_sheet for work_sheet in all_sheets if work_sheet.name == 'codes' and len(work_sheet._cell_values)]
+        if len(code_sheets):
+            return code_sheets[0]
+        raise CodeSheetMissingException()
 
     def _remove_trailing_empty_header_field(self, field_header):
         for field in field_header[::-1]:
@@ -357,22 +360,27 @@ class XlsOrderedParser(XlsParser):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
         all_sheets = workbook.sheets()
-        worksheet = self._get_worksheet(all_sheets)
-        codes_sheet = self._get_code_sheet(all_sheets)
-        row = codes_sheet.row_values(0)
-        header, header_found = self._is_header_row(row)
-        form_code = header[0]
-        header = header[1:]
-        parsed_data = []
-        for row_num in range(1, worksheet.nrows):
-            row = worksheet.row_values(row_num)
-            row = self._clean(row)
-            values = OrderedDict(zip(header, row))
-            parsed_data.append((form_code, values))
-        if not header_found:
-            raise XlsParserInvalidHeaderFormatException()
-        return parsed_data
+        is_code_sheet_exist = False
+        if len(all_sheets) == 1:
+            raise LessNumberOfSheetsException()
+        elif len(all_sheets)>1:
+            codes_sheet = self._get_code_sheet(all_sheets)
+            worksheet = self._get_worksheet(all_sheets)
+            row = codes_sheet.row_values(0)
+            header, header_found = self._is_header_row(row)
+            form_code = header[0]
+            header = header[1:]
+            parsed_data = []
+            for row_num in range(1, worksheet.nrows):
+                row = worksheet.row_values(row_num)
+                row = self._clean(row)
+                values = OrderedDict(zip(header, row))
+                parsed_data.append((form_code, values))
+            if not header_found:
+                raise XlsParserInvalidHeaderFormatException()
+            return parsed_data
 
+            
 
 class XFormParser(object):
     def __init__(self, dbm):

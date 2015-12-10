@@ -19,7 +19,7 @@ from mangrove.utils.types import is_empty, is_string
 from mangrove.contrib.registration import REGISTRATION_FORM_CODE
 from openpyxl import load_workbook
 import StringIO
-from datawinners.entity.entity_exceptions import CodeSheetMissingException, LessNumberOfSheetsException
+from mangrove.errors.MangroveException import CodeSheetMissingException
 
 
 
@@ -360,9 +360,8 @@ class XlsOrderedParser(XlsParser):
         assert xls_contents is not None
         workbook = xlrd.open_workbook(file_contents=xls_contents)
         all_sheets = workbook.sheets()
-        is_code_sheet_exist = False
         if len(all_sheets) == 1:
-            raise LessNumberOfSheetsException()
+            raise CodeSheetMissingException()
         elif len(all_sheets)>1:
             codes_sheet = self._get_code_sheet(all_sheets)
             worksheet = self._get_worksheet(all_sheets)

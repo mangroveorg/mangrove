@@ -320,3 +320,7 @@ class ExceedSMSLimitException(MangroveException):
 class DatasenderIsNotLinkedException(MangroveException):
     def __init__(self, dsname, dsid):
         MangroveException.__init__(self, u"Error. You are not authorized to submit data for this Questionnaire. Please contact your supervisor.", (dsname, dsid))
+
+class CodeSheetMissingException(MangroveException):
+    def __init__(self, message="The template you are using is not correct, please use DataWinners template and try again"):
+        MangroveException.__init__(self,message)

@@ -270,7 +270,11 @@ class FormModel(DataObject):
             node = self._get_node(parent_node, uniqueid_ui_field.code)
         else:
             node = self._get_node(root_node, uniqueid_ui_field.code)
-        node.remove(node._children[1])  # removing the placeholder option
+
+        for child_node in node._children:
+            if 'item' in child_node.tag:
+                node.remove(child_node)  # removing the placeholder option
+
         choice_elements = self._get_choice_elements(uniqueid_ui_field.options)
         for element in choice_elements:
             node.append(element)

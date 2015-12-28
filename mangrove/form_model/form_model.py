@@ -280,6 +280,7 @@ class FormModel(DataObject):
             node.append(element)
 
     def xform_with_unique_ids_substituted(self):
+        ET.register_namespace('', 'http://www.w3.org/2002/xforms')
         root_node = ET.fromstring(self.xform)
         html_body_node = root_node._children[1]
         for entity_question in self.entity_questions:

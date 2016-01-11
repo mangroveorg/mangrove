@@ -1,93 +1,93 @@
-<html:html xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.w3.org/2002/xforms" xmlns:ns2="http://openrosa.org/javarosa">
+<html:html xmlns="http://www.w3.org/2002/xforms" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns2="http://openrosa.org/javarosa">
   <html:head>
     <html:title>xform_test</html:title>
-    <ns1:model>
-      <ns1:instance>
-        <ns1:tmpFGvRwx id="tmpFGvRwx">
-          <ns1:my_unique />
-          <ns1:my_group>
-            <ns1:grouprepeat ns2:template="">
-              <ns1:unique_in_grouprepeat />
-            </ns1:grouprepeat>
-          </ns1:my_group>
-          <ns1:repeat_out ns2:template="">
-            <ns1:unique_in_repeat />
-          </ns1:repeat_out>
-          <ns1:myrepeat ns2:template="">
-            <ns1:repeat_group>
-              <ns1:unique_in_repeatgroup />
-            </ns1:repeat_group>
-          </ns1:myrepeat>
-          <ns1:group_out>
-            <ns1:unique_in_group />
-          </ns1:group_out>
-          <ns1:parent_group>
-            <ns1:groupgroup>
-              <ns1:unique_in_groupgroup />
-            </ns1:groupgroup>
-          </ns1:parent_group>
-          <ns1:meta>
-            <ns1:instanceID />
-          </ns1:meta>
-        <ns1:form_code>001</ns1:form_code></ns1:tmpFGvRwx>
-      </ns1:instance>
-      <ns1:bind nodeset="/tmpFGvRwx/my_unique" type="select1" />
-      <ns1:bind nodeset="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat" type="select1" />
-      <ns1:bind nodeset="/tmpFGvRwx/repeat_out/unique_in_repeat" type="select1" />
-      <ns1:bind nodeset="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup" type="select1" />
-      <ns1:bind nodeset="/tmpFGvRwx/group_out/unique_in_group" type="select1" />
-      <ns1:bind nodeset="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup" type="select1" />
-      <ns1:bind calculate="concat('uuid:', uuid())" nodeset="/tmpFGvRwx/meta/instanceID" readonly="true()" type="string" />
-    <ns1:bind nodeset="/tmpFGvRwx/form_code" type="string" /></ns1:model>
+    <model>
+      <instance>
+        <tmpFGvRwx id="tmpFGvRwx">
+          <my_unique />
+          <my_group>
+            <grouprepeat ns2:template="">
+              <unique_in_grouprepeat />
+            </grouprepeat>
+          </my_group>
+          <repeat_out ns2:template="">
+            <unique_in_repeat />
+          </repeat_out>
+          <myrepeat ns2:template="">
+            <repeat_group>
+              <unique_in_repeatgroup />
+            </repeat_group>
+          </myrepeat>
+          <group_out>
+            <unique_in_group />
+          </group_out>
+          <parent_group>
+            <groupgroup>
+              <unique_in_groupgroup />
+            </groupgroup>
+          </parent_group>
+          <meta>
+            <instanceID />
+          </meta>
+        <form_code>001</form_code></tmpFGvRwx>
+      </instance>
+      <bind nodeset="/tmpFGvRwx/my_unique" type="select1" />
+      <bind nodeset="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat" type="select1" />
+      <bind nodeset="/tmpFGvRwx/repeat_out/unique_in_repeat" type="select1" />
+      <bind nodeset="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup" type="select1" />
+      <bind nodeset="/tmpFGvRwx/group_out/unique_in_group" type="select1" />
+      <bind nodeset="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup" type="select1" />
+      <bind calculate="concat('uuid:', uuid())" nodeset="/tmpFGvRwx/meta/instanceID" readonly="true()" type="string" />
+    <bind nodeset="/tmpFGvRwx/form_code" type="string" /></model>
   </html:head>
   <html:body>
-    <ns1:select1 ref="/tmpFGvRwx/my_unique">
-      <ns1:label>mu_uni</ns1:label>
-      <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-    <ns1:group ref="/tmpFGvRwx/my_group">
-      <ns1:label>my_group</ns1:label>
-      <ns1:group ref="/tmpFGvRwx/my_group/grouprepeat">
-        <ns1:label>grouprepeat</ns1:label>
-        <ns1:repeat nodeset="/tmpFGvRwx/my_group/grouprepeat">
-          <ns1:select1 ref="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat">
-            <ns1:label>unique_in_grouprepeat</ns1:label>
-            <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-        </ns1:repeat>
-      </ns1:group>
-    </ns1:group>
-    <ns1:group ref="/tmpFGvRwx/repeat_out">
-      <ns1:label>repeat_out</ns1:label>
-      <ns1:repeat nodeset="/tmpFGvRwx/repeat_out">
-        <ns1:select1 ref="/tmpFGvRwx/repeat_out/unique_in_repeat">
-          <ns1:label>unique_in_repeat</ns1:label>
-          <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-      </ns1:repeat>
-    </ns1:group>
-    <ns1:group ref="/tmpFGvRwx/myrepeat">
-      <ns1:label>myrepeat</ns1:label>
-      <ns1:repeat nodeset="/tmpFGvRwx/myrepeat">
-        <ns1:group ref="/tmpFGvRwx/myrepeat/repeat_group">
-          <ns1:label>repeat_group</ns1:label>
-          <ns1:select1 ref="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup">
-            <ns1:label>unique_in_repeatgroup</ns1:label>
-            <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-        </ns1:group>
-      </ns1:repeat>
-    </ns1:group>
-    <ns1:group ref="/tmpFGvRwx/group_out">
-      <ns1:label>group_out</ns1:label>
-      <ns1:select1 ref="/tmpFGvRwx/group_out/unique_in_group">
-        <ns1:label>unique_in_group</ns1:label>
-        <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-    </ns1:group>
-    <ns1:group ref="/tmpFGvRwx/parent_group">
-      <ns1:label>parent_group</ns1:label>
-      <ns1:group ref="/tmpFGvRwx/parent_group/groupgroup">
-        <ns1:label>groupgroup</ns1:label>
-        <ns1:select1 ref="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup">
-          <ns1:label>unique_in_groupgroup</ns1:label>
-          <ns1:item><ns1:label>nameOfEntity1 (shortCode1)</ns1:label><ns1:value>shortCode1</ns1:value></ns1:item><ns1:item><ns1:label>nameOfEntity2 (shortCode2)</ns1:label><ns1:value>shortCode2</ns1:value></ns1:item></ns1:select1>
-      </ns1:group>
-    </ns1:group>
+    <select1 ref="/tmpFGvRwx/my_unique">
+      <label>mu_uni</label>
+      <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+    <group ref="/tmpFGvRwx/my_group">
+      <label>my_group</label>
+      <group ref="/tmpFGvRwx/my_group/grouprepeat">
+        <label>grouprepeat</label>
+        <repeat nodeset="/tmpFGvRwx/my_group/grouprepeat">
+          <select1 ref="/tmpFGvRwx/my_group/grouprepeat/unique_in_grouprepeat">
+            <label>unique_in_grouprepeat</label>
+            <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+        </repeat>
+      </group>
+    </group>
+    <group ref="/tmpFGvRwx/repeat_out">
+      <label>repeat_out</label>
+      <repeat nodeset="/tmpFGvRwx/repeat_out">
+        <select1 ref="/tmpFGvRwx/repeat_out/unique_in_repeat">
+          <label>unique_in_repeat</label>
+          <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+      </repeat>
+    </group>
+    <group ref="/tmpFGvRwx/myrepeat">
+      <label>myrepeat</label>
+      <repeat nodeset="/tmpFGvRwx/myrepeat">
+        <group ref="/tmpFGvRwx/myrepeat/repeat_group">
+          <label>repeat_group</label>
+          <select1 ref="/tmpFGvRwx/myrepeat/repeat_group/unique_in_repeatgroup">
+            <label>unique_in_repeatgroup</label>
+            <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+        </group>
+      </repeat>
+    </group>
+    <group ref="/tmpFGvRwx/group_out">
+      <label>group_out</label>
+      <select1 ref="/tmpFGvRwx/group_out/unique_in_group">
+        <label>unique_in_group</label>
+        <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+    </group>
+    <group ref="/tmpFGvRwx/parent_group">
+      <label>parent_group</label>
+      <group ref="/tmpFGvRwx/parent_group/groupgroup">
+        <label>groupgroup</label>
+        <select1 ref="/tmpFGvRwx/parent_group/groupgroup/unique_in_groupgroup">
+          <label>unique_in_groupgroup</label>
+          <item><label>nameOfEntity1 (shortCode1)</label><value>shortCode1</value></item><item><label>nameOfEntity2 (shortCode2)</label><value>shortCode2</value></item></select1>
+      </group>
+    </group>
   </html:body>
 </html:html>

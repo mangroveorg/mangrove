@@ -352,8 +352,10 @@ class XlsxParser(XlsParser):
         return all_sheets[1] if work_sheet.title == 'codes' else work_sheet
 
     def _get_code_sheet(self, all_sheets):
-        work_sheet = all_sheets[0]
-        return work_sheet if work_sheet.title == 'codes' else all_sheets[1]
+        code_sheets = [work_sheet for work_sheet in all_sheets if work_sheet.title == 'codes' and work_sheet.max_column>1]
+        if len(code_sheets):
+            return code_sheets[0]
+        raise CodeSheetMissingException()
 
 class XlsOrderedParser(XlsParser):
     def parse(self, xls_contents):
@@ -502,22 +504,25 @@ class XlsxDataSenderParser(XlsxParser):
         xlsx_file = StringIO.StringIO(file_contents)
 
         workbook = load_workbook(xlsx_file, use_iterators = True)
-        codes_sheet = workbook.get_sheet_by_name('codes')
-        worksheet = self._get_worksheet(workbook.worksheets)
-
-        rows = []
-        for cs in codes_sheet.iter_rows():
-            rows = [self._get_value(x.value) for x in cs]
-        header, header_found = self._is_header_row(rows)
-        parsed_data = []
-        form_code = REGISTRATION_FORM_CODE
-        header = header[1:]
-        for row in worksheet.iter_rows(row_offset=1):
-            row_values = [self._get_value(x.value) for x in row]
-            values = dict(zip(header, row_values))
-            values.update({"t": "reporter"})
-            parsed_data.append((form_code, values))
-        if not header_found:
-            raise XlsParserInvalidHeaderFormatException()
-        return parsed_data
+        all_sheets = workbook.worksheets
+        if len(all_sheets) == 1:
+            raise CodeSheetMissingException()
+        elif len(all_sheets)>1:
+            codes_sheet = self._get_code_sheet(all_sheets)
+            worksheet = self._get_worksheet(workbook.worksheets)
+            rows = []
+            for cs in codes_sheet.iter_rows():
+                rows = [self._get_value(x.value) for x in cs]
+            header, header_found = self._is_header_row(rows)
+            parsed_data = []
+            form_code = REGISTRATION_FORM_CODE
+            header = header[1:]
+            for row in worksheet.iter_rows(row_offset=1):
+                row_values = [self._get_value(x.value) for x in row]
+                values = dict(zip(header, row_values))
+                values.update({"t": "reporter"})
+                parsed_data.append((form_code, values))
+            if not header_found:
+                raise XlsParserInvalidHeaderFormatException()
+            return parsed_data
 

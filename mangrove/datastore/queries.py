@@ -15,6 +15,10 @@ def get_non_voided_entity_count_for_type(dbm, entity_type):
     rows = dbm.view.count_non_voided_entities_by_type(key=entity_type)
     return rows[0][u"value"] if len(rows) else 0
 
+def get_all_by_type(dbm, entity_type):
+    rows = dbm.view.by_type(key=entity_type,include_docs=True)
+    return [row['doc'] for row in rows]
+
 def get_all_reporters(dbm):
     """
     Return a list of all entities with this type.

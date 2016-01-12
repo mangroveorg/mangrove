@@ -256,8 +256,9 @@ def load_data_senders(manager, short_codes):
     data = [tabulate_data(from_row_to_entity(manager, row), form_model, codes) for row in rows]
     return data, fields, labels
 
-def get_entity_type_fields(manager, form_code='reg'):
-    form_model=get_form_model_by_code(manager, form_code)
+def get_entity_type_fields(manager, form_code='reg', form_model=None):
+    if form_model is None:
+        form_model=get_form_model_by_code(manager, form_code)
     json_fields = form_model._doc["json_fields"]
     return get_json_field_infos(json_fields)
 

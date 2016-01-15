@@ -155,6 +155,7 @@ QUESTION_NAME_INVALID_ANSWERS = [u'Error: could not determine deviceID',
 
 class FormModel(DataObject):
     __document_class__ = FormModelDocument
+    old_form_code = None
 
     @classmethod
     def new_from_doc(cls, dbm, doc):
@@ -393,9 +394,12 @@ class FormModel(DataObject):
 
         super(FormModel, self).delete()
 
-    def _delete_form_model_from_cache(self):
+    def _delete_form_model_from_cache(self, old_form_code=None):
         cache_manger = get_cache_manager()
-        cache_key = get_form_model_cache_key(self.form_code, self._dbm)
+        form_code_to_clear = self.form_code
+        if old_form_code:
+            form_code_to_clear = self.old_form_code
+        cache_key = get_form_model_cache_key(form_code_to_clear, self._dbm)
         cache_manger.delete(cache_key)
 
     def void(self, void=True):
@@ -404,6 +408,8 @@ class FormModel(DataObject):
 
     def save(self, process_post_update=True):
         # convert fields and validators to json fields before save
+        if self.old_form_code:
+            self._delete_form_model_from_cache(self.old_form_code)
         self.check_if_form_model_unique()
         return self.update_doc_and_save(process_post_update)
 

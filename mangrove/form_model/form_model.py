@@ -717,6 +717,12 @@ class EntityFormModel(FormModel):
         return GLOBAL_REGISTRATION_FORM_ENTITY_TYPE in self.entity_type
 
     @property
+    def base_entity_questions(self):
+        return self._get_entity_questions(self._form_fields)
+
+    # entity_questions property is wrongly used to fetch ShortCodeField.
+    # This deviates from From model. Need to be cleaned up.
+    @property
     def entity_questions(self):
         eq = []
         for f in self._form_fields:

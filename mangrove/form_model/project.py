@@ -277,16 +277,16 @@ def tabulate_data(entity, form_model, field_codes):
     dict = OrderedDict()
     for field in form_model.fields:
         if field.name in entity.data:
-            dict[field.code] = _get_field_value(field.name, entity)
+            dict[field.code] = get_field_value(field.name, entity)
         else:
-            dict[field.code] = _get_field_default_value(field.name, entity)
+            dict[field.code] = get_field_default_value(field.name, entity)
 
     stringified_dict = form_model.stringify(dict)
 
     data['cols'] = [stringified_dict[field_code] for field_code in field_codes]
     return data
 
-def _get_field_value(key, entity):
+def get_field_value(key, entity):
     value = entity.value(key)
     if key == 'geo_code':
         if value is None:
@@ -298,7 +298,7 @@ def _get_field_value(key, entity):
     return value
 
 
-def _get_field_default_value(key, entity):
+def get_field_default_value(key, entity):
     if key == 'geo_code':
         return entity.geometry.get('coordinates')
     if key == 'location':

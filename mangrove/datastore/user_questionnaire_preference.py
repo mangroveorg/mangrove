@@ -29,7 +29,7 @@ def get_analysis_field_preferences(manager, user_id, project, display_messages):
     '''
     preferences = []
     user_questionnaire_preference = get_user_questionnaire_preference(manager, user_id, project.id)
-    preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id) for field in
+    preferences = [_convert_field_to_preference(manager, field, user_questionnaire_preference, project.id, parent_field_types=[]) for field in
                    project.fields]
     preferences.insert(0, {
         "data": "date",
@@ -66,7 +66,7 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
     return user_questionnaire_preference
 
 
-def _convert_field_to_preference(manager, field, preferences, project_id, key=None, is_group_child=False):
+def _convert_field_to_preference(manager, field, preferences, project_id, key=None, is_group_child=False, parent_field_types=[]):
     if is_group_child:
         key = key+'-'+field.code
     elif key:
@@ -83,11 +83,14 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
     }
 
     if field.type in ['unique_id']:
+        if field.unique_id_type in parent_field_types:
+            return None #Prevent cyclic Linked ID Nr
+        parent_field_types.append(field.unique_id_type)
         id_number_fields = get_form_model_by_entity_type(manager, [field.unique_id_type]).fields
         analysis_field_preference["children"] = [_convert_field_to_preference(
             manager, child_field,
             preferences,
-            project_id, data)
+            project_id, data, parent_field_types=parent_field_types)
                                                  for child_field in id_number_fields]
 
     if field.is_group():
@@ -96,7 +99,9 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
             preferences,
             project_id, data, is_group_child=True) for child_field in field.fields]
 
-
+    if analysis_field_preference.get("children"):
+        analysis_field_preference["children"] = [child for child in analysis_field_preference["children"] if child is not None]
+    
     return analysis_field_preference
 
 

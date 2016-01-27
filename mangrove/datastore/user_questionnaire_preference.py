@@ -7,18 +7,19 @@ from collections import OrderedDict
 '''
     Visibility rules are applied from top to bottom.
     First match takes precedence.
+    Order of these rules are important
 '''
-VISIBILITY_RULES = {
-    "datasender.mobile_number": False,
-    "datasender.email": False,
-    "datasender.location": False,
-    "datasender.geo_code":False,
-    ".*_details$": False,
-    ".*_details\.q2": True,
-    ".*_details\.q6": True,
-    ".*_details\..*": False,
-    "datasender$": False,
-}
+VISIBILITY_RULES = OrderedDict()
+VISIBILITY_RULES["datasender.mobile_number"] = False
+VISIBILITY_RULES["datasender.email"] = False
+VISIBILITY_RULES["datasender.location"] = False
+VISIBILITY_RULES["datasender.geo_code"] = False
+VISIBILITY_RULES[".*_details$"] = False
+VISIBILITY_RULES["[\w-]*_details\.q2$"] = True
+VISIBILITY_RULES["[\w-]*_details\.q6$"] = True
+VISIBILITY_RULES["[\w-]*_details\.q6$"] = True
+VISIBILITY_RULES[".*_details\..*"] = False
+VISIBILITY_RULES["datasender$"] = False
 
 
 def get_analysis_field_preferences(manager, user_id, project, display_messages):

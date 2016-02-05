@@ -69,7 +69,7 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
 
 def _convert_field_to_preference(manager, field, preferences, project_id, key=None, is_group_child=False, parent_field_types=[]):
     if is_group_child:
-        key = key+'-'+field.code
+        key = project_id + '_' + field.parent_field_code + '-' + field.code
     elif key:
         key = key + '.' + field.code
 

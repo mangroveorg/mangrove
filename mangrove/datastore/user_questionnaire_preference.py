@@ -17,7 +17,6 @@ VISIBILITY_RULES["datasender.geo_code"] = False
 VISIBILITY_RULES[".*_details$"] = False
 VISIBILITY_RULES["[\w-]*_details\.q2$"] = True
 VISIBILITY_RULES["[\w-]*_details\.q6$"] = True
-VISIBILITY_RULES["[\w-]*_details\.q6$"] = True
 VISIBILITY_RULES[".*_details\..*"] = False
 VISIBILITY_RULES["datasender$"] = False
 
@@ -108,14 +107,17 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
 
 def detect_visibility(preferences, data):
     if preferences is None:
-        for key in VISIBILITY_RULES:
-            if re.match(key, data):
-                return VISIBILITY_RULES.get(key)
-        return True
+        return _apply_visibility_rules(data)
 
-    visibility = preferences.analysis_fields.get(data, False)
-    visibility_flag = visibility[0] if isinstance(visibility, list) else visibility
-    return visibility_flag
+    visibility = preferences.analysis_fields.get(data)
+    return _apply_visibility_rules(data) if visibility is None else visibility
+
+
+def _apply_visibility_rules(data):
+    for key in VISIBILITY_RULES:
+        if re.match(key, data):
+            return VISIBILITY_RULES.get(key)
+    return True
 
 
 def _get_datasender_preferences(preferences, display_messages):

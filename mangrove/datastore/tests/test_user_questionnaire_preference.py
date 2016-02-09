@@ -7,6 +7,7 @@ from mangrove.form_model.form_model import EntityFormModel
 from mock import Mock, patch
 from mangrove.contrib.registration import construct_global_registration_form
 from mangrove.datastore.user_questionnaire_preference import get_analysis_field_preferences
+from mangrove.datastore.user_questionnaire_preference import detect_visibility
 
 class UserQuestionnairePreferenceTest(MangroveTestCase):
 
@@ -18,6 +19,27 @@ class UserQuestionnairePreferenceTest(MangroveTestCase):
         preference.analysis_fields = {'id':'Eid', 'visibility':True}
         doc_id = preference.save()
         self.assertIsNotNone(doc_id)
+
+    def test_should_use_visibility_rules_when_no_preference_exists(self):
+        self.assertTrue(detect_visibility(None, "guid-idnr_details.q2"))
+        self.assertFalse(detect_visibility(None, "guid-idnr_details.q5"))
+        self.assertTrue(detect_visibility(None, "blah"))
+
+    def test_should_use_visibility_rules_when_preference_exists_but_not_for_a_given_field(self):
+        preference = UserQuestionnairePreference(self.manager, 1, 'project_id')
+        preference.analysis_fields = {'guid-idnr_details.q2' : True}
+        self.assertFalse(detect_visibility(preference, "guid-idnr_details.q5"))
+        self.assertTrue(detect_visibility(preference, "guid-idnr_details.q6"))
+        preference.analysis_fields = {'guid-idnr_details.q2' : False}
+        self.assertTrue(detect_visibility(preference, "guid-idnr_details.q6"))
+        self.assertTrue(detect_visibility(preference, "blah"))
+
+    def test_should_use_user_preference(self):
+        preference = UserQuestionnairePreference(self.manager, 1, 'project_id')
+        preference.analysis_fields = {'guid-idnr_details.q3' : True}
+        self.assertTrue(detect_visibility(preference, "guid-idnr_details.q3"))
+        preference.analysis_fields = {'guid-idnr_details.q3' : False}
+        self.assertFalse(detect_visibility(preference, "guid-idnr_details.q3"))
 
     def test_should_return_analysis_fields(self):
         analysis_fields = [{'id':'Eid', 'visibility':True}]

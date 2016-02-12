@@ -97,7 +97,7 @@ def _convert_field_to_preference(manager, field, preferences, project_id, key=No
         analysis_field_preference["children"] = [_convert_field_to_preference(
             manager, child_field,
             preferences,
-            project_id, data, is_group_child=True) for child_field in field.fields]
+            project_id, data, is_group_child=True, parent_field_types=parent_field_types) for child_field in field.fields]
 
     if analysis_field_preference.get("children"):
         analysis_field_preference["children"] = [child for child in analysis_field_preference["children"] if child is not None]

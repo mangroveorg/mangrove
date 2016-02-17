@@ -14,6 +14,7 @@ VISIBILITY_RULES["datasender.mobile_number"] = False
 VISIBILITY_RULES["datasender.email"] = False
 VISIBILITY_RULES["datasender.location"] = False
 VISIBILITY_RULES["datasender.geo_code"] = False
+VISIBILITY_RULES[".*_details(.*_details)+.*$"] = False
 VISIBILITY_RULES[".*_details\.q2$"] = True
 VISIBILITY_RULES[".*_details\.q6$"] = True
 VISIBILITY_RULES[".*_details\..*"] = False

@@ -16,6 +16,7 @@ from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, S
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
+from mangrove.form_model.xform import Xform
 from xml.sax.saxutils import escape
 
 
@@ -160,8 +161,17 @@ class FormModel(DataObject):
     @classmethod
     def new_from_doc(cls, dbm, doc):
         form_model = super(FormModel, cls).new_from_doc(dbm, doc)
+        if form_model.xform:
+            form_model.xform_model = Xform(form_model.xform)
         form_model._old_doc = copy.deepcopy(form_model._doc)
         return form_model
+
+    @classmethod
+    def get(cls, dbm, id, get_or_create=False):
+        do = super(FormModel, cls).get(dbm, id, get_or_create)
+        if do.xform:
+            do.xform_model = Xform(do.xform)
+        return do
 
     def _set_doc(self, form_code, is_registration_model, label, language, name):
         doc = FormModelDocument()
@@ -183,6 +193,7 @@ class FormModel(DataObject):
         # assert type is None or is_not_empty(type)
 
         DataObject.__init__(self, dbm)
+        self.xform_model = None
         self._old_doc = None
 
         self._snapshots = {}
@@ -237,20 +248,14 @@ class FormModel(DataObject):
         field = self.get_field_by_code(field_code)
         if field.parent_field_code:
             parent_node = self._get_parent_node(root_node, field.parent_field_code)
-            return self.get_field_node(parent_node, field.code, field.fieldset_type)
-        return self.get_field_node(root_node, field.code, field.fieldset_type)
+            return self._get_field_node(parent_node, field.code, field.fieldset_type)
+        return self._get_field_node(root_node, field.code, field.fieldset_type)
 
-    def get_field_node(self, root_node, field_code, type='select1'):
+    def _get_field_node(self, root_node, field_code, type='select1'):
+        node = self.xform_model.get_node(root_node, field_code)
         if type == 'repeat':
-            repeats_group_node = self._get_node(root_node, field_code, 'group')
-            return repeats_group_node._children[1]
-        else:
-            return self._get_node(root_node, field_code, type)
-
-    def _get_node(self, root_node, field_code, type='select1'):
-        for child in root_node:
-            if child.tag.endswith(type) and child.attrib['ref'].endswith(field_code):
-                return child
+            return node._children[1]
+        return node
 
     def _get_choice_elements(self, options):
         choice_elements = []
@@ -268,9 +273,9 @@ class FormModel(DataObject):
     def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
         if uniqueid_ui_field.parent_field_code:
             parent_node = self._get_parent_node(root_node, uniqueid_ui_field.parent_field_code)
-            node = self._get_node(parent_node, uniqueid_ui_field.code)
+            node = self.xform_model.get_node(parent_node, uniqueid_ui_field.code)
         else:
-            node = self._get_node(root_node, uniqueid_ui_field.code)
+            node = self.xform_model.get_node(root_node, uniqueid_ui_field.code)
 
         for child_node in node._children:
             if 'item' in child_node.tag:
@@ -281,13 +286,10 @@ class FormModel(DataObject):
             node.append(element)
 
     def xform_with_unique_ids_substituted(self):
-        ET.register_namespace('', 'http://www.w3.org/2002/xforms')
-        root_node = ET.fromstring(self.xform)
-        html_body_node = root_node._children[1]
         for entity_question in self.entity_questions:
             uniqueid_ui_field = UniqueIdUIField(entity_question, self._dbm)
-            self._update_xform_with_unique_id_choices(html_body_node, uniqueid_ui_field)
-        return ET.tostring(root_node)
+            self._update_xform_with_unique_id_choices(self.xform_model.get_body_node(), uniqueid_ui_field)
+        return ET.tostring(self.xform_model.root_node)
 
     @property
     def is_media_type_fields_present(self):

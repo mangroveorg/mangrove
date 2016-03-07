@@ -285,6 +285,21 @@ class Field(object):
     def instruction(self):
         return self._dict.get('instruction')
 
+    @property
+    def hint(self):
+        return self._dict.get('hint')
+
+    @hint.setter
+    def hint(self, hint):
+        self._dict['hint'] = hint
+
+    @property
+    def constraint_message(self):
+        return self._dict.get('constraint_message')
+
+    @constraint_message.setter
+    def constraint_message(self, constraint_message):
+        self._dict['constraint_message'] = constraint_message
 
     @property
     def parent_field_code(self):

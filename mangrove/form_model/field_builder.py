@@ -11,33 +11,38 @@ class QuestionBuilder(object):
 
     def create_question(self, post_dict, code):
         if post_dict["type"] == "text":
-            return self._create_text_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_text_question(post_dict, code), post_dict)
         if post_dict["type"] == "time":
-            return self._create_time_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_time_question(post_dict, code), post_dict)
         if post_dict["type"] == "datetime":
-            return self._create_date_time_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_date_time_question(post_dict, code), post_dict)
         if post_dict["type"] == "integer":
-            return self._create_integer_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_integer_question(post_dict, code), post_dict)
         if post_dict["type"] == "geocode":
-            return self._create_geo_code_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_geo_code_question(post_dict, code), post_dict)
         if post_dict["type"] == "select":
-            return self._create_select_question(post_dict, False, code)
+            return self._update_hint_and_constraint_message(self._create_select_question(post_dict, False, code), post_dict)
         if post_dict["type"] == "date":
-            return self._create_date_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_date_question(post_dict, code), post_dict)
         if post_dict["type"] == "select1":
-            return self._create_select_question(post_dict, True, code)
+            return self._update_hint_and_constraint_message(self._create_select_question(post_dict, True, code), post_dict)
         if post_dict["type"] == "telephone_number":
-            return self._create_telephone_number_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_telephone_number_question(post_dict, code), post_dict)
         if post_dict["type"] == "list":
-            return self._create_location_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_location_question(post_dict, code), post_dict)
         if post_dict["type"] == "unique_id":
-            return self._create_unique_id_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_unique_id_question(post_dict, code), post_dict)
         if post_dict["type"] == "short_code":
-            return self._create_short_code_field(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_short_code_field(post_dict, code), post_dict)
         if post_dict["type"] == "field_set":
             return self._create_field_set_question(post_dict, code)
         if post_dict["type"] == "photo" or post_dict["type"] == "video" or post_dict["type"] == "audio":
-            return self._create_media_question(post_dict, code)
+            return self._update_hint_and_constraint_message(self._create_media_question(post_dict, code), post_dict)
+
+    def _update_hint_and_constraint_message(self, field, post_dict):
+        field.hint = post_dict["hint"]
+        field.constraint_message = post_dict["constraint_message"]
+        return field
 
     def _create_field_set_question(self, post_dict, code):
 

@@ -1,24 +1,25 @@
-from collections import OrderedDict
 import copy
 import re
 import unicodedata
-import xmldict
-import xmltodict
 import xml.etree.ElementTree as ET
-from mangrove.datastore.cache_manager import get_cache_manager
-from mangrove.datastore.entity import get_all_entities
-from mangrove.form_model.validator_factory import validator_factory
-from mangrove.datastore.database import DatabaseManager, DataObject
-from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
-from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
-    DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
-from mangrove.form_model.validators import MandatoryValidator
-from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
-from mangrove.form_model import field
-from mangrove.form_model.xform import Xform
+from collections import OrderedDict
 from xml.sax.saxutils import escape
 
+import xmldict
+import xmltodict
+from mangrove.datastore.cache_manager import get_cache_manager
+from mangrove.datastore.database import DatabaseManager, DataObject
+from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
+from mangrove.datastore.entity import get_all_entities
+from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
+    DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
+from mangrove.form_model import field
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
+from mangrove.form_model.validator_factory import validator_factory
+from mangrove.form_model.validators import MandatoryValidator
+from mangrove.form_model.xform import Xform
+from mangrove.form_model.xform import get_node
+from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 
 ARPT_SHORT_CODE = "dummy"
 
@@ -252,7 +253,7 @@ class FormModel(DataObject):
         return self._get_field_node(root_node, field.code, field.fieldset_type)
 
     def _get_field_node(self, root_node, field_code, type='select1'):
-        node = self.xform_model.get_node(root_node, field_code)
+        node = get_node(root_node, field_code)
         if type == 'repeat':
             return node._children[1]
         return node
@@ -273,9 +274,9 @@ class FormModel(DataObject):
     def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
         if uniqueid_ui_field.parent_field_code:
             parent_node = self._get_parent_node(root_node, uniqueid_ui_field.parent_field_code)
-            node = self.xform_model.get_node(parent_node, uniqueid_ui_field.code)
+            node = get_node(parent_node, uniqueid_ui_field.code)
         else:
-            node = self.xform_model.get_node(root_node, uniqueid_ui_field.code)
+            node = get_node(root_node, uniqueid_ui_field.code)
 
         for child_node in node._children:
             if 'item' in child_node.tag:

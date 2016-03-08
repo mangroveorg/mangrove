@@ -9,6 +9,9 @@ class Xform(object):
     def get_body_node(self):
         return self.root_node._children[1]
 
+    def bind_node(self, node):
+        return _child_node_given_attr(_child_node(_child_node(self.root_node, 'head'), 'model'), 'bind', 'nodeset', node.attrib['ref'])
+
     def equals(self, another_xform):
         another_xform_str = ET.tostring(another_xform.root_node)\
             .replace(_instance_node(another_xform.root_node), _instance_node(self.root_node))
@@ -26,6 +29,10 @@ def get_node(node, field_code):
             return child
 
 
+def add_attrib(node, key, value):
+    node.attrib[key] = value
+
+
 def add_child(node, tag, value):
     elem = ET.Element(tag)
     elem.text = value
@@ -39,4 +46,10 @@ def _instance_node(node):
 def _child_node(node, tag):
     for child in node:
         if child.tag.endswith(tag):
+            return child
+
+
+def _child_node_given_attr(node, tag, key, value):
+    for child in node:
+        if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
             return child

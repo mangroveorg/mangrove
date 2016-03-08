@@ -40,8 +40,8 @@ class QuestionBuilder(object):
             return self._update_hint_and_constraint_message(self._create_media_question(post_dict, code), post_dict)
 
     def _update_hint_and_constraint_message(self, field, post_dict):
-        field.hint = post_dict["hint"]
-        field.constraint_message = post_dict["constraint_message"]
+        field.hint = post_dict.get("hint")
+        field.constraint_message = post_dict.get("constraint_message")
         return field
 
     def _create_field_set_question(self, post_dict, code):

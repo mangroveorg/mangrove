@@ -26,6 +26,12 @@ def get_node(node, field_code):
             return child
 
 
+def add_child(node, tag, value):
+    elem = ET.Element(tag)
+    elem.text = value
+    node._children.append(elem)
+
+
 def _instance_node(node):
     return _child_node(_child_node(_child_node(node, 'head'), 'model'), 'instance')._children[0].attrib['id']
 

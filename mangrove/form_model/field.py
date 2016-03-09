@@ -31,36 +31,42 @@ def create_question_from(dictionary, dbm):
     unique_id_type = dictionary.get("unique_id_type")
     parent_field_code = dictionary.get("parent_field_code")
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_text_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     if type == field_attributes.BOOLEAN_FIELD:
-        return _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     if type == field_attributes.TIME:
-        return _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_time_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     if type == field_attributes.DATE_TIME:
-        return _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_date_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.LOCATION_FIELD:
-        return _get_geo_code_field(code, instruction, label, name, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_geo_code_field(code, instruction, label, name, required, parent_field_code), dictionary)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_list_field(name, code, label, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.SHORT_CODE_FIELD:
-        return _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code), dictionary)
     elif type == field_attributes.UNIQUE_ID_FIELD:
-        return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required,
-                                    parent_field_code)
+        return _update_hint_and_constraint_message(_get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required,
+                                    parent_field_code), dictionary)
     elif type == field_attributes.FIELD_SET:
         return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code)
     elif type == field_attributes.PHOTO or type == field_attributes.VIDEO or type == field_attributes.AUDIO:
-        return _get_media_field(type, code, label, name, instruction, required, parent_field_code)
+        return _update_hint_and_constraint_message(_get_media_field(type, code, label, name, instruction, required, parent_field_code), dictionary)
 
     return None
+
+
+def _update_hint_and_constraint_message(field, dictionary):
+    field.hint = dictionary.get("hint")
+    field.constraint_message = dictionary.get("constraint_message")
+    return field
 
 
 def _get_media_class(type):

@@ -30,7 +30,10 @@ def get_node(node, field_code):
 
 
 def add_attrib(node, key, value):
-    node.attrib[[k for k in node.attrib.keys() if k.endswith(key)][0]] = value
+    attr_key = [k for k in node.attrib.keys() if k.endswith(key)]
+    if attr_key:
+        key = attr_key[0]
+    node.attrib[key] = value
 
 
 def add_child(node, tag, value):

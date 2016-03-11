@@ -13,11 +13,11 @@ class Xform(object):
     def _model_node(self):
         return _child_node(_child_node(self.root_node, 'head'), 'model')
 
-    def _instance_id(self):
-        return _instance_node().attrib['id']
+    def _instance_id(self, root_node=None):
+        return self._instance_node(root_node).attrib['id']
 
-    def _instance_node(self):
-        return _child_node(_child_node(_child_node(self.root_node, 'head'), 'model'), 'instance')._children[0]
+    def _instance_node(self, root_node=None):
+        return _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
 
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
@@ -27,15 +27,19 @@ class Xform(object):
         remove_node(self._model_node(), bind_node)
 
     def remove_instance_node(self, parent_node, node):
+        parent_instance_node = self._instance_node()
+        if parent_node != self.get_body_node():
+            parent_node_name = parent_node.attrib['ref'].split('/')[-1]
+            parent_instance_node = itertools.ifilter(lambda child: child.tag.endswith(parent_node_name), self._instance_node().iter()).next()
+
         node_name = node.attrib['ref'].split('/')[-1]
-        parent_node_name = parent_node.attrib['ref'].split('/')[-1]
         node_to_be_removed = itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_node().iter())
-        parent_node = itertools.ifilter(lambda child: child.tag.endswith(parent_node_name), self._instance_node().iter())
-        parent_node.next().remove(node_to_be_removed.next())
+
+        parent_instance_node.remove(node_to_be_removed.next())
 
     def equals(self, another_xform):
         another_xform_str = ET.tostring(another_xform.root_node)\
-            .replace(_instance_id(another_xform.root_node), _instance_id(self.root_node))
+            .replace(self._instance_id(another_xform.root_node), self._instance_id())
         return ET.tostring(self.root_node) == another_xform_str
 
 

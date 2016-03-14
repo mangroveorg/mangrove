@@ -14,10 +14,17 @@ class Xform(object):
         return _child_node(_child_node(self.root_node, 'head'), 'model')
 
     def _instance_id(self, root_node=None):
-        return self._instance_node(root_node).attrib['id']
+        return self._instance_root_node(root_node).attrib['id']
 
-    def _instance_node(self, root_node=None):
+    def _instance_root_node(self, root_node=None):
         return _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
+
+    def _instance_node(self, node):
+        instance_node = self._instance_root_node()
+        if node != self.get_body_node():
+            node_name = node.attrib['ref'].split('/')[-1]
+            instance_node = itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
+        return instance_node
 
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
@@ -26,16 +33,14 @@ class Xform(object):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)
 
+    def add_bind_node(self, bind_node):
+        add_node(self._model_node(), bind_node)
+
     def remove_instance_node(self, parent_node, node):
-        parent_instance_node = self._instance_node()
-        if parent_node != self.get_body_node():
-            parent_node_name = parent_node.attrib['ref'].split('/')[-1]
-            parent_instance_node = itertools.ifilter(lambda child: child.tag.endswith(parent_node_name), self._instance_node().iter()).next()
+        self._instance_node(parent_node).remove(self._instance_node(node))
 
-        node_name = node.attrib['ref'].split('/')[-1]
-        node_to_be_removed = itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_node().iter())
-
-        parent_instance_node.remove(node_to_be_removed.next())
+    def add_instance_node(self, parent_node, instance_node):
+        self._instance_node(parent_node).append(instance_node)
 
     def equals(self, another_xform):
         another_xform_str = ET.tostring(another_xform.root_node)\
@@ -52,6 +57,10 @@ def get_node(node, field_code):
 
         if 'ref' in child.attrib and child.attrib['ref'].endswith(field_code):
             return child
+
+
+def add_node(parent_node, node):
+    parent_node._children.append(node)
 
 
 def remove_node(parent_node, node):

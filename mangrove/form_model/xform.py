@@ -29,6 +29,10 @@ class Xform(object):
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
 
+    def instance_node(self, node):
+        node_name = node.attrib['ref'].split('/')[-1]
+        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
+
     def remove_bind_node(self, node):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)
@@ -73,6 +77,9 @@ def add_attrib(node, key, value):
         key = attr_key[0]
     node.attrib[key] = value
 
+def remove_attrib(node, key):
+    if node.attrib[key]:
+        del node.attrib[key]
 
 def add_child(node, tag, value):
     elem = ET.Element(tag)

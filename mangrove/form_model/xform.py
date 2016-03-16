@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import ElementTree
+from xml.dom import minidom
 import itertools
 
 class Xform(object):
@@ -19,7 +21,7 @@ class Xform(object):
     def _instance_root_node(self, root_node=None):
         return _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
 
-    def _instance_node(self, node):
+    def instance_node(self, node):
         instance_node = self._instance_root_node()
         if node != self.get_body_node():
             node_name = node.attrib['ref'].split('/')[-1]
@@ -29,10 +31,6 @@ class Xform(object):
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
 
-    def instance_node(self, node):
-        node_name = node.attrib['ref'].split('/')[-1]
-        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
-
     def remove_bind_node(self, node):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)
@@ -41,15 +39,40 @@ class Xform(object):
         add_node(self._model_node(), bind_node)
 
     def remove_instance_node(self, parent_node, node):
-        self._instance_node(parent_node).remove(self._instance_node(node))
+        self.instance_node(parent_node).remove(self.instance_node(node))
 
     def add_instance_node(self, parent_node, instance_node):
-        self._instance_node(parent_node).append(instance_node)
+        self.instance_node(parent_node).append(instance_node)
+
+    def sort(self):
+        self._sort(self._instance_root_node(), lambda node: node.tag)
+        self._sort(self.get_body_node(), lambda node: node.attrib.get('ref'))
+        self._sort(self._model_node(), lambda node: node.attrib.get('nodeset'))
+
+    def _sort(self, node, key):
+        node._children = sorted(node._children, key=key)
+        for child in node._children:
+            self._sort(child, key)
+
+    def change_instance_id(self, another_xform):
+        xform_str = ET.tostring(self.root_node).replace(self._instance_id(), self._instance_id(another_xform.root_node))
+        self.root_node = ET.fromstring(xform_str)
+
+    def _to_string(self, root_node=None):
+        data = []
+
+        class dummy:
+            def write(self, str):
+                str = str.strip(' \t\n\r')
+                data.append(str)
+        file = dummy()
+
+        ElementTree(root_node or self.root_node).write(file)
+
+        return "".join(data)
 
     def equals(self, another_xform):
-        another_xform_str = ET.tostring(another_xform.root_node)\
-            .replace(self._instance_id(another_xform.root_node), self._instance_id())
-        return ET.tostring(self.root_node) == another_xform_str
+        return self._to_string() == self._to_string(another_xform.root_node)
 
 
 def get_node(node, field_code):
@@ -77,9 +100,11 @@ def add_attrib(node, key, value):
         key = attr_key[0]
     node.attrib[key] = value
 
+
 def remove_attrib(node, key):
     if node.attrib[key]:
         del node.attrib[key]
+
 
 def add_child(node, tag, value):
     elem = ET.Element(tag)

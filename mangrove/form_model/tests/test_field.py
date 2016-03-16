@@ -25,10 +25,14 @@ class TestField(unittest.TestCase):
             "name": "field1_Name",
             "instruction": "Answer is word or phrase",
             "code": "Q1",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "constraints": [("length", {"min": 1, "max": 20})],
             "type": "text",
             "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
                           defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)], instruction="Answer is word or phrase")
@@ -43,10 +47,14 @@ class TestField(unittest.TestCase):
             "label": "What is your location",
             "name": "loc",
             "instruction": "Answer is list",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "code": "Q1",
             "type": "list",
             "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = HierarchyField(name="loc", code="Q1", label="What is your location", instruction="Answer is list")
         actual_json = field._to_json()
@@ -64,7 +72,11 @@ class TestField(unittest.TestCase):
             "type": "integer",
             'parent_field_code': None,
             "required": True,
-            "instruction": "test_instruction"
+            "instruction": "test_instruction",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
                              instruction="test_instruction")
@@ -80,10 +92,14 @@ class TestField(unittest.TestCase):
             "label": "What is your age",
             "name": new_name,
             "code": "Q2",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "integer",
             "required": True,
-            "instruction": instruction
+            "instruction": instruction,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = Field(type="integer", name="oldName", code="Q2", label="What is your age",
                       instruction=instruction)
@@ -97,10 +113,14 @@ class TestField(unittest.TestCase):
             "label": "What is your age",
             "name": "name",
             "code": "Q2",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "integer",
             "required": True,
-            "instruction": new_instruction
+            "instruction": new_instruction,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = Field(type="integer", name="name", code="Q2", label="What is your age",
                       instruction="instruction")
@@ -114,10 +134,14 @@ class TestField(unittest.TestCase):
             "name": "Age",
             "code": "Q2",
             "constraints": [('range', {"min": 15, "max": 120})],
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "integer",
             "required": True,
-            "instruction": "test_instruction"
+            "instruction": "test_instruction",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
                              constraints=[NumericRangeConstraint(min=15, max=120)],
@@ -132,10 +156,14 @@ class TestField(unittest.TestCase):
             "choices": [{"text": "RED", "val": 'a'}, {"text": "YELLOW", "val": 'b'},
                         {"text": 'green', "val": 'c'}],
             "code": "Q3",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "select1",
             "required": True,
-            "instruction": None
+            "instruction": None,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green', 'c')])
@@ -152,10 +180,14 @@ class TestField(unittest.TestCase):
             "choices": [{"text": "RED", "val": 'a'}, {"text": "YELLOW", "val": 'b'},
                         {"text": 'green', 'val':'green'}],
             "code": "Q3",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "select",
             "required": True,
-            "instruction": "test_instruction"
+            "instruction": "test_instruction",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green')], single_select_flag=False,
@@ -181,7 +213,11 @@ class TestField(unittest.TestCase):
             'parent_field_code': None,
             "constraints": [("length", {"max": 20}), ("short_code", "^[a-zA-Z0-9]+$")],
             "required": False,
-            "instruction": "test_instruction"
+            "instruction": "test_instruction",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = ShortCodeField(name="field1_Name", code="Q1", label="What is your name",
                           instruction="test_instruction")
@@ -515,12 +551,16 @@ class TestField(unittest.TestCase):
         expected_json = {
             "choices": [{"text": "Lake"}, {"text": "Dam"}],
             "name": "type",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "type": "select1",
             "code": "T",
             "label": "What type?",
             "required": True,
             "instruction": "test",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
 
         }
         field = SelectField(name="type", code="T", label="What type?",
@@ -536,9 +576,13 @@ class TestField(unittest.TestCase):
             "name": "field1_Loc",
             "code": "Q1",
             "type": "geocode",
-            'parent_field_code': None,
+            "parent_field_code": None,
             "required": True,
-            "instruction": "test_instruction"
+            "instruction": "test_instruction",
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?",
                              instruction="test_instruction", )
@@ -573,23 +617,60 @@ class TestField(unittest.TestCase):
 
     def test_should_convert_field_without_constraints_to_json(self):
         field = TextField(name="Test", code="AA", label="test")
-        expected_json = {"code": "AA", "name": "Test", "defaultValue": "", "instruction": None, "label": "test", 'parent_field_code': None
-            ,"type": "text", "required": True}
+        expected_json = {
+            "code": "AA",
+            "name": "Test",
+            "defaultValue": "",
+            "instruction": None,
+            "label": "test",
+            "parent_field_code": None,
+            "type": "text",
+            "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
+        }
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_convert_field_with_constraints_to_json(self):
         constraints = [TextLengthConstraint(min=10, max=12), RegexConstraint("^[A-Za-z0-9]+$")]
         field = TextField(name="test", code='MC', label='question', constraints=constraints)
-        expected_json = {"code": "MC", "name": "test", "defaultValue": "", "instruction": None,
-                         "label": "question","type": "text", 'parent_field_code': None,
-                         "length": {'max': 12, 'min': 10}, "regex": "^[A-Za-z0-9]+$", "required": True}
+        expected_json = {
+            "code": "MC",
+            "name": "test",
+            "defaultValue": "",
+            "instruction": None,
+            "label": "question",
+            "type": "text",
+            'parent_field_code': None,
+            "length": {'max': 12, 'min': 10},
+            "regex": "^[A-Za-z0-9]+$",
+            "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
+        }
 
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_convert_field_with_apostrophe_to_json(self):
         field = TextField(name="Test's", code="AA", label="test")
-        expected_json = {"code": "AA", "name": "Test\'s", "defaultValue": "", "instruction": None, 'parent_field_code': None,
-                         "label": "test", "type": "text", "required": True}
+        expected_json = {
+            "code": "AA",
+            "name": "Test\'s",
+            "defaultValue": "",
+            "instruction": None,
+            "parent_field_code": None,
+            "label": "test",
+            "type": "text",
+            "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
+        }
         self.assertEqual(expected_json, field_to_json(field))
 
     def test_should_create_text_field_with_multiple_constraints(self):
@@ -624,8 +705,12 @@ class TestField(unittest.TestCase):
             "type": "telephone_number",
             "instruction": "",
             "constraints": [('length', {'max': 15}), ('regex', '^[0-9]+$')],
-            'defaultValue': '',
-            "required": True
+            "defaultValue": '',
+            "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         self.assertEqual(expected_json, field._to_json())
 
@@ -720,8 +805,11 @@ class TestField(unittest.TestCase):
             'parent_field_code': None,
             "type": "date",
             "date_format": "%m.%d.%Y",
-            
             "required": True,
+            "appearance": None,
+            "constraint_message": None,
+            "default": None,
+            "hint": None
         }
         self.assertEqual(expected_json, field._to_json())
 

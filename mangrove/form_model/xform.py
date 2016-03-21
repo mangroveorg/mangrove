@@ -87,11 +87,19 @@ def get_node(node, field_code):
 
 
 def add_node(parent_node, node):
-    parent_node._children.append(node)
+    repeat_node = _child_node(parent_node, 'repeat')
+    if repeat_node is not None:
+        repeat_node._children.append(node)
+    else:
+        parent_node._children.append(node)
 
 
 def remove_node(parent_node, node):
-    parent_node._children.remove(node)
+    repeat_node = _child_node(parent_node, 'repeat')
+    if repeat_node is not None:
+        repeat_node._children.remove(node)
+    else:
+        parent_node._children.remove(node)
 
 
 def add_attrib(node, key, value):

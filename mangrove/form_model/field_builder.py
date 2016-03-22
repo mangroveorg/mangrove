@@ -51,7 +51,8 @@ class QuestionBuilder(object):
                         hint=post_dict.get('hint'),
                         constraint_message=post_dict.get('constraint_message'),
                         appearance=post_dict.get('appearance'),
-                        default=post_dict.get('default'))
+                        default=post_dict.get('default'),
+                        xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _get_name(self, post_dict):
@@ -81,7 +82,8 @@ class QuestionBuilder(object):
                          hint=post_dict.get('hint'),
                          constraint_message=post_dict.get('constraint_message'),
                          appearance=post_dict.get('appearance'),
-                         default=post_dict.get('default'))
+                         default=post_dict.get('default'),
+                         xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_time_question(self, post_dict, code):
         return TimeField(name=self._get_name(post_dict),
@@ -91,9 +93,10 @@ class QuestionBuilder(object):
                          required=post_dict.get("required"),
                          parent_field_code=post_dict.get('parent_field_code'),
                          hint=post_dict.get('hint'),
-                        constraint_message=post_dict.get('constraint_message'),
-                        appearance=post_dict.get('appearance'),
-                         default=post_dict.get('default'))
+                         constraint_message=post_dict.get('constraint_message'),
+                         appearance=post_dict.get('appearance'),
+                         default=post_dict.get('default'),
+                         xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_date_time_question(self, post_dict, code):
         return DateTimeField(name=self._get_name(post_dict),
@@ -105,7 +108,8 @@ class QuestionBuilder(object):
                              hint=post_dict.get('hint'),
                              constraint_message=post_dict.get('constraint_message'),
                              appearance=post_dict.get('appearance'),
-                             default=post_dict.get('default'))
+                             default=post_dict.get('default'),
+                             xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_integer_question(self, post_dict, code):
         max_range_from_post = post_dict.get("range_max")
@@ -118,7 +122,8 @@ class QuestionBuilder(object):
                             required=post_dict.get("required"), parent_field_code=post_dict.get('parent_field_code'),
                             hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                             appearance=post_dict.get('appearance'),
-                            default=post_dict.get('default'))
+                            default=post_dict.get('default'),
+                            xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _create_date_question(self, post_dict, code):
@@ -128,7 +133,8 @@ class QuestionBuilder(object):
                          required=post_dict.get("required"), parent_field_code=post_dict.get('parent_field_code'),
                          hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                          appearance=post_dict.get('appearance'),
-                         default=post_dict.get('default'))
+                         default=post_dict.get('default'),
+                         xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _create_geo_code_question(self, post_dict, code):
@@ -137,7 +143,8 @@ class QuestionBuilder(object):
                             parent_field_code=post_dict.get('parent_field_code'),
                             hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                             appearance=post_dict.get('appearance'),
-                            default=post_dict.get('default'))
+                            default=post_dict.get('default'),
+                            xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _create_select_question(self, post_dict, single_select_flag, code):
@@ -148,7 +155,8 @@ class QuestionBuilder(object):
                            parent_field_code=post_dict.get('parent_field_code'), has_other=post_dict.get('has_other'),
                            hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                            appearance=post_dict.get('appearance'),
-                           default=post_dict.get('default'))
+                           default=post_dict.get('default'),
+                           xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _create_telephone_number_question(self, post_dict, code):
@@ -159,7 +167,8 @@ class QuestionBuilder(object):
                                     parent_field_code=post_dict.get('parent_field_code'),
                                     hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                                     appearance=post_dict.get('appearance'),
-                                    default=post_dict.get('default'))
+                                    default=post_dict.get('default'),
+                                    xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_constraints_for_mobile_number(s_create_short_code_fieldelf):
         mobile_number_length = TextLengthConstraint(max=15)
@@ -174,7 +183,8 @@ class QuestionBuilder(object):
                               hint=post_dict.get('hint'),
                               constraint_message=post_dict.get('constraint_message'),
                               appearance=post_dict.get('appearance'),
-                              default=post_dict.get('default'))
+                              default=post_dict.get('default'),
+                              xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_media_question(self, post_dict, code):
         media_class = self.type_media_dict[post_dict['type']]
@@ -184,7 +194,8 @@ class QuestionBuilder(object):
                            hint=post_dict.get('hint'),
                            constraint_message=post_dict.get('constraint_message'),
                            appearance=post_dict.get('appearance'),
-                           default=post_dict.get('default'))
+                           default=post_dict.get('default'),
+                           xform_constraint=post_dict.get('xform_constraint'))
 
 
     def _get_unique_id_type(self, post_dict):
@@ -198,7 +209,8 @@ class QuestionBuilder(object):
                              parent_field_code=post_dict.get('parent_field_code'),
                              hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                              appearance=post_dict.get('appearance'),
-                             default=post_dict.get('default'))
+                             default=post_dict.get('default'),
+                             xform_constraint=post_dict.get('xform_constraint'))
 
     def _create_short_code_field(self, post_dict, code):
         return ShortCodeField(name=self._get_name(post_dict), code=code,
@@ -207,4 +219,5 @@ class QuestionBuilder(object):
                               parent_field_code=post_dict.get('parent_field_code'),
                               hint=post_dict.get('hint'), constraint_message=post_dict.get('constraint_message'),
                               appearance=post_dict.get('appearance'),
-                              default=post_dict.get('default'))
+                              default=post_dict.get('default'),
+                              xform_constraint=post_dict.get('xform_constraint'))

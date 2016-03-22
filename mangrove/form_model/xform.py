@@ -2,6 +2,8 @@ import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ElementTree
 from xml.dom import minidom
 import itertools
+import collections
+import re
 
 class Xform(object):
 
@@ -48,11 +50,17 @@ class Xform(object):
         self._sort(self._instance_root_node(), lambda node: node.tag)
         self._sort(self.get_body_node(), lambda node: node.attrib.get('ref'))
         self._sort(self._model_node(), lambda node: node.attrib.get('nodeset'))
+        self._sort_attrib(_child_nodes(self._model_node(), 'bind'))
 
     def _sort(self, node, key):
         node._children = sorted(node._children, key=key)
         for child in node._children:
             self._sort(child, key)
+
+    def _sort_attrib(self, nodes):
+        for node in nodes:
+            node.attrib = dict([(re.sub('\{http://[^ ]*\}','', key), value) for key, value in node.attrib.items()])
+            node.attrib = collections.OrderedDict([(x, y) for x, y in sorted(node.attrib.items(), key=lambda t: t[0])])
 
     def change_instance_id(self, another_xform):
         xform_str = ET.tostring(self.root_node).replace(self._instance_id(), self._instance_id(another_xform.root_node))
@@ -72,7 +80,7 @@ class Xform(object):
         return "".join(data)
 
     def equals(self, another_xform):
-        return self._to_string() == self._to_string(another_xform.root_node)
+        return re.sub('ns[0-9]:','',self._to_string()) == re.sub('ns[0-9]:','',self._to_string(another_xform.root_node))
 
 
 def get_node(node, field_code):
@@ -103,15 +111,21 @@ def remove_node(parent_node, node):
 
 
 def add_attrib(node, key, value):
-    attr_key = [k for k in node.attrib.keys() if k.endswith(key)]
+    attr_key = _find_key_endswith(key, node.attrib)
     if attr_key:
         key = attr_key[0]
     node.attrib[key] = value
 
 
 def remove_attrib(node, key):
-    if node.attrib[key]:
-        del node.attrib[key]
+    attr_key = _find_key_endswith(key, node.attrib)
+    if attr_key:
+        del node.attrib[attr_key[0]]
+
+
+def _find_key_endswith(key, attrib):
+    attr_key = [k for k in attrib.keys() if k.endswith(key)]
+    return attr_key
 
 
 def add_child(node, tag, value):
@@ -124,6 +138,14 @@ def _child_node(node, tag):
     for child in node:
         if child.tag.endswith(tag):
             return child
+
+
+def _child_nodes(node, tag):
+    child_nodes = []
+    for child in node:
+        if child.tag.endswith(tag):
+            child_nodes.append(child)
+    return child_nodes
 
 
 def _child_node_given_attr(node, tag, key, value):

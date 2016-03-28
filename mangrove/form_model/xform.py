@@ -33,6 +33,9 @@ class Xform(object):
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
 
+    def get_bind_node_by_name(self, name):
+        return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', name)
+
     def remove_bind_node(self, node):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)

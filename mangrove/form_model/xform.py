@@ -155,3 +155,8 @@ def _child_node_given_attr(node, tag, key, value):
     for child in node:
         if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
             return child
+
+def replace_node_name_with_xpath(value, xform):
+    form_code = re.search('\$\{(.*?)\}', value).group(1)
+    value_xpath = xform.get_bind_node_by_name(form_code).attrib['nodeset']
+    return re.sub(r'(\$\{)(.*?)(\})', " " + value_xpath + " ", value)

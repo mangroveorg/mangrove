@@ -35,36 +35,37 @@ def create_question_from(dictionary, dbm):
     appearance = dictionary.get('appearance')
     default = dictionary.get('default')
     xform_constraint = dictionary.get('xform_constraint')
+    relevant = dictionary.get('relevant')
 
     if type == field_attributes.TEXT_FIELD:
-        return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     if type == field_attributes.BOOLEAN_FIELD:
-        return _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     if type == field_attributes.TIME:
-        return _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     if type == field_attributes.DATE_TIME:
-        return _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.INTEGER_FIELD:
-        return _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.DATE_FIELD:
-        return _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.LOCATION_FIELD:
-        return _get_geo_code_field(code, instruction, label, name, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_geo_code_field(code, instruction, label, name, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
-        return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.LIST_FIELD:
-        return _get_list_field(name, code, label, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_list_field(name, code, label, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
-        return _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.SHORT_CODE_FIELD:
-        return _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.UNIQUE_ID_FIELD:
         return _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required,
-                                    parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+                                    parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.FIELD_SET:
-        return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.PHOTO or type == field_attributes.VIDEO or type == field_attributes.AUDIO:
-        return _get_media_field(type, code, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint)
+        return _get_media_field(type, code, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant)
 
     return None
 
@@ -73,15 +74,15 @@ def _get_media_class(type):
     return type_media_dict[type]
 
 
-def _get_media_field(type, code, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_media_field(type, code, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     MediaClass = _get_media_class(type)
     field = MediaClass(name=name, code=code, label=label, instruction=instruction,
                        required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message,
-                       appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_field_set_field(code, dictionary, label, name, instruction, required, dbm, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
@@ -91,124 +92,124 @@ def _get_field_set_field(code, dictionary, label, name, instruction, required, d
     repeat_question_fields = [create_question_from(f, dbm) for f in sub_fields]
     field = FieldSet(name=name, code=code, label=label, instruction=instruction, required=required,
                      field_set=repeat_question_fields, fieldset_type=fieldset_type, parent_field_code=parent_field_code,
-                     hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                     hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_text_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = TextField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required,
                       parent_field_code=parent_field_code, is_calculated=dictionary.get('is_calculated'),
-                      hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                      hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_boolean_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = BooleanField(name=name, code=code, label=label, constraints=constraints, instruction=instruction,
                          required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message,
-                         appearance=appearance, default=default, xform_constraint=xform_constraint)
+                         appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = TimeField(name=name, code=code, label=label,
                       constraints=constraints, instruction=instruction, required=required,
-                      parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                      parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_date_time_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = DateTimeField(name=name, code=code, label=label,
                           constraints=constraints, instruction=instruction, required=required,
-                          parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                          parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_short_code_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
     field = ShortCodeField(name=name, code=code, label=label,
                            constraints=constraints, instruction=instruction, required=required,
-                           parent_field_code=parent_field_code, hint=hint, appearance=appearance, constraint_message=constraint_message, default=default, xform_constraint=xform_constraint)
+                           parent_field_code=parent_field_code, hint=hint, appearance=appearance, constraint_message=constraint_message, default=default, xform_constraint=xform_constraint, relevant=relevant)
     return field
 
 
-def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     return UniqueIdField(unique_id_type=unique_id_type, name=name, code=code,
                          label=dictionary.get("label"),
                          instruction=dictionary.get("instruction"), parent_field_code=parent_field_code,
-                         xform_field_reference=dictionary.get("xform_field_reference"), hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                         xform_field_reference=dictionary.get("xform_field_reference"), hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
 
-def _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraints_json = [], dictionary.get("constraints")
     if constraints_json is not None:
         constraints = constraints_factory(constraints_json)
 
     field = TelephoneNumberField(name=name, code=code, label=label, constraints=constraints,
                                  instruction=instruction, required=required, parent_field_code=parent_field_code,
-                                 hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                                 hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return field
 
 
-def _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_integer_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     constraints, constraint_list = [], dictionary.get('constraints')
     if constraint_list is not None:
         constraints = constraints_factory(constraint_list)
 
     integer_field = IntegerField(name=name, code=code, label=label, instruction=instruction,
                                  constraints=constraints, required=required, parent_field_code=parent_field_code,
-                                 hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                                 hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return integer_field
 
 
-def _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_date_field(code, dictionary, label, name, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     date_format = dictionary.get("date_format")
 
     date_field = DateField(name=name, code=code, label=label, date_format=date_format,
                            instruction=instruction, required=required, parent_field_code=parent_field_code,
-                           hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                           hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return date_field
 
 
-def _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     choices = dictionary.get("choices")
     single_select = True if type == field_attributes.SELECT_FIELD else False
 
     field = SelectField(name=name, code=code, label=label, options=choices, single_select_flag=single_select,
                         instruction=instruction, required=required, parent_field_code=parent_field_code,
-                        has_other=dictionary.get("has_other"), hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                        has_other=dictionary.get("has_other"), hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return field
 
 
-def _get_list_field(name, code, label, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_list_field(name, code, label, instruction, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     field = HierarchyField(name, code, label, instruction=instruction, required=required,
-                           parent_field_code=parent_field_code, hint=hint, appearance=appearance, constraint_message=constraint_message, default=default, xform_constraint=xform_constraint)
+                           parent_field_code=parent_field_code, hint=hint, appearance=appearance, constraint_message=constraint_message, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return field
 
 
-def _get_geo_code_field(code, instruction, label, name, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint):
+def _get_geo_code_field(code, instruction, label, name, required, parent_field_code, hint, constraint_message, appearance, default, xform_constraint, relevant):
     field = GeoCodeField(name=name, code=code, label=label, instruction=instruction,
                          required=required, parent_field_code=parent_field_code,
-                         hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                         hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     return field
 
@@ -250,12 +251,13 @@ class field_attributes(object):
 
 class Field(object):
     def __init__(self, type="", name="", code="", label='', instruction='',
-                 constraints=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 constraints=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         self._dict = {}
         self._dict = {'name': name, 'type': type, 'code': code, 'instruction': instruction,
                       'label': label, 'required': required, 'parent_field_code': parent_field_code,
-                      'hint': hint, 'constraint_message': constraint_message, 'appearance': appearance, 'default': default, 'xform_constraint': xform_constraint }
+                      'hint': hint, 'constraint_message': constraint_message, 'appearance': appearance, 'default': default, 'xform_constraint': xform_constraint,
+                      'relevant': relevant}
         self.constraints = constraints
         self.errors = []
         self.value = None
@@ -318,6 +320,10 @@ class Field(object):
     @property
     def xform_constraint(self):
         return self._dict.get('xform_constraint')
+
+    @property
+    def relevant(self):
+        return self._dict.get('relevant')
 
     @property
     def parent_field_code(self):
@@ -387,11 +393,11 @@ class Field(object):
 
 class IntegerField(Field):
     def __init__(self, name, code, label, instruction=None,
-                 constraints=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 constraints=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         Field.__init__(self, type=field_attributes.INTEGER_FIELD, name=name, code=code,
                        label=label, instruction=instruction, constraints=constraints, required=required,
-                       parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default,xform_constraint=xform_constraint)
+                       parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default,xform_constraint=xform_constraint, relevant=relevant)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -449,10 +455,10 @@ class DateField(Field):
                               "dd.MM.yyyy HH:mm:ss": "dd.MM.yyyy HH:mm:ss"}
 
     def __init__(self, name, code, label, date_format, instruction=None,
-                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         Field.__init__(self, type=field_attributes.DATE_FIELD, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self._dict[self.DATE_FORMAT] = date_format
 
     def validate(self, value):
@@ -514,13 +520,13 @@ class TextField(Field):
     CONSTRAINTS = "constraints"
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
-                 required=True, parent_field_code=None, is_calculated=False, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, is_calculated=False, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
                        label=label, instruction=instruction, constraints=constraints, required=required,
                        parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if is_calculated:
             self.is_calculated = True
@@ -575,13 +581,13 @@ class BooleanField(Field):
     CONSTRAINTS = "constraints"
 
     def __init__(self, name, code, label, constraints=None, defaultValue=False, instruction=None,
-                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints:
             constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.BOOLEAN_FIELD, name=name, code=code,
                        label=label, instruction=instruction, constraints=constraints, required=required,
-                       parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
 
     def validate(self, value):
@@ -594,13 +600,13 @@ class BooleanField(Field):
 
 class UniqueIdField(Field):
     def __init__(self, unique_id_type, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True, parent_field_code=None, xform_field_reference=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, xform_field_reference=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.UNIQUE_ID_FIELD, name=name, code=code, label=label,
                        instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self.unique_id_type = unique_id_type
         self.xform_field_reference = xform_field_reference
 
@@ -631,7 +637,7 @@ class UniqueIdUIField(UniqueIdField):
     def __init__(self, field, dbm):
         super(UniqueIdUIField, self).__init__(unique_id_type=field.unique_id_type, name=field.name, code=field.code,
                                               label=field.label, instruction=field.instruction,
-                                              constraints=field.constraints, parent_field_code=field.parent_field_code, hint=field.hint, constraint_message=field.constraint_message, appearance=field.appearance, default=field.default, xform_constraint=field.xform_constraint)
+                                              constraints=field.constraints, parent_field_code=field.parent_field_code, hint=field.hint, constraint_message=field.constraint_message, appearance=field.appearance, default=field.default, xform_constraint=field.xform_constraint, relevant=relevant)
         self.dbm = dbm
 
     @property
@@ -652,13 +658,13 @@ class UniqueIdUIField(UniqueIdField):
 
 class TelephoneNumberField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
                            defaultValue=defaultValue,
                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message,
-                           appearance=appearance, default=default, xform_constraint=xform_constraint)
+                           appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self._dict['type'] = field_attributes.TELEPHONE_NUMBER_FIELD
 
     def _clean(self, value):
@@ -671,14 +677,14 @@ class TelephoneNumberField(TextField):
 
 class ShortCodeField(TextField):
     def __init__(self, name, code, label, constraints=None, defaultValue=None, instruction=None,
-                 required=False, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=False, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints:
             constraints = [TextLengthConstraint(max=20), ShortCodeRegexConstraint("^[a-zA-Z0-9]+$")]
         assert isinstance(constraints, list)
         TextField.__init__(self, name=name, code=code, label=label, instruction=instruction, constraints=constraints,
                            defaultValue=defaultValue,
                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message,
-                           appearance=appearance, default=default, xform_constraint=xform_constraint)
+                           appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self._dict['type'] = field_attributes.SHORT_CODE_FIELD
 
 
@@ -696,10 +702,10 @@ class ShortCodeField(TextField):
 
 class HierarchyField(Field):
     def __init__(self, name, code, label, instruction=None,
-                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         Field.__init__(self, type=field_attributes.LIST_FIELD, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     def validate(self, value):
         Field.validate(self, value)
@@ -719,13 +725,13 @@ class SelectField(Field):
     OPTIONS = "choices"
 
     def __init__(self, name, code, label, options, instruction=None,
-                 single_select_flag=True, required=True, parent_field_code=None, has_other=False, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 single_select_flag=True, required=True, parent_field_code=None, has_other=False, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
         Field.__init__(self, type=type, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self._dict[self.OPTIONS] = []
         valid_choices = self._dict[self.OPTIONS]
         if has_other:
@@ -854,10 +860,10 @@ class SelectField(Field):
 class GeoCodeField(Field):
     type = field_attributes.LOCATION_FIELD
 
-    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         Field.__init__(self, type=field_attributes.LOCATION_FIELD, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     def validate(self, lat_long_string):
         Field.validate(self, lat_long_string)
@@ -897,45 +903,45 @@ class GeoCodeField(Field):
 
 class MediaField(Field):
     def __init__(self, type, name, code, label, instruction=None, required=True,
-                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         Field.__init__(self, type=type, name=name, code=code, label=label, instruction=instruction,
                        constraints=[], required=required, parent_field_code=parent_field_code, hint=hint,
-                       constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     def formatted_field_values_for_excel(self, value):
         return value
 
 
 class PhotoField(MediaField):
-    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         MediaField.__init__(self, type=field_attributes.PHOTO, name=name, code=code, label=label,
                             instruction=instruction,
                             required=required, parent_field_code=parent_field_code,
-                            hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                            hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
 
 class VideoField(MediaField):
-    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         MediaField.__init__(self, type=field_attributes.VIDEO, name=name, code=code, label=label,
                             instruction=instruction,
-                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
 
 class AudioField(MediaField):
-    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         MediaField.__init__(self, type=field_attributes.AUDIO, name=name, code=code, label=label,
                             instruction=instruction,
-                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                            required=required, parent_field_code=parent_field_code, hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
 
 class FieldSet(Field):
     FIELDSET_TYPE = 'fieldset_type'
 
     def __init__(self, name, code, label, instruction=None, required=True, field_set=[], fieldset_type='group',
-                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         Field.__init__(self, type=field_attributes.FIELD_SET, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
         self.fields = self._dict['fields'] = field_set
         self._dict[self.FIELDSET_TYPE] = fieldset_type
 
@@ -992,12 +998,12 @@ class FieldSet(Field):
 
 class TimeField(Field):
     def __init__(self, name, code, label, constraints=None, instruction=None, required=True,
-                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type='time', name=name, code=code, label=label, instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default, xform_constraint=xform_constraint, relevant=relevant)
 
     @property
     def date_format(self):
@@ -1009,12 +1015,12 @@ class TimeField(Field):
 
 class DateTimeField(Field):
     def __init__(self, name, code, label, constraints=None, instruction=None, required=True,
-                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None):
+                 parent_field_code=None, hint=None, constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type='datetime', name=name, code=code, label=label, instruction=instruction,
                        constraints=constraints, required=required, parent_field_code=parent_field_code,
-                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default,xform_constraint=xform_constraint)
+                       hint=hint, constraint_message=constraint_message, appearance=appearance, default=default,xform_constraint=xform_constraint, relevant=relevant)
 
     @property
     def date_format(self):

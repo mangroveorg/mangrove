@@ -12,7 +12,8 @@ from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField, \
+    SelectOneExternalField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
@@ -229,9 +230,22 @@ class FormModel(DataObject):
                 ef.extend(self._get_entity_questions(field.fields))
         return ef
 
+    def _get_external_choice_questions(self, form_fields):
+        ef = []
+        for field in form_fields:
+            if isinstance(field, SelectOneExternalField):
+                ef.append(field)
+            elif isinstance(field, FieldSet):
+                ef.extend(self._get_external_choice_questions(field.fields))
+        return ef
+
     @property
     def entity_questions(self):
         return self._get_entity_questions(self._form_fields)
+
+    @property
+    def external_choice_questions(self):
+        return self._get_external_choice_questions(self._form_fields)
 
     def _get_parent_node(self, root_node, field_code):
         field = self.get_field_by_code(field_code)
@@ -265,6 +279,14 @@ class FormModel(DataObject):
             choice_elements.append(node)
         return choice_elements
 
+    def _update_xform_with_select_external_question(self, root_node, external_choice_question):
+        if external_choice_question.parent_field_code:
+            parent_node = self._get_parent_node(root_node, external_choice_question.parent_field_code)
+            node = self._get_node(parent_node, external_choice_question.code, type='input')
+        else:
+            node = self._get_node(root_node, external_choice_question.code, type='input')
+
+
     def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
         if uniqueid_ui_field.parent_field_code:
             parent_node = self._get_parent_node(root_node, uniqueid_ui_field.parent_field_code)
@@ -287,6 +309,14 @@ class FormModel(DataObject):
         for entity_question in self.entity_questions:
             uniqueid_ui_field = UniqueIdUIField(entity_question, self._dbm)
             self._update_xform_with_unique_id_choices(html_body_node, uniqueid_ui_field)
+        return ET.tostring(root_node)
+
+    def xform_with_external_choice_expanded(self, xform_string):
+        ET.register_namespace('', 'http://www.w3.org/2002/xforms')
+        root_node = ET.fromstring(xform_string)
+        html_body_node = root_node._children[1]
+        for external_choice_question in self.external_choice_questions:
+            self._update_xform_with_select_external_question(html_body_node, external_choice_question)
         return ET.tostring(root_node)
 
     @property

@@ -241,6 +241,17 @@ class Project(FormModel):
             except LookupError:
                 return False, None, None
 
+    def has_external_itemset(self):
+        try: # find a better way to check attachement exisits
+            attachment = self.get_attachments('itemsets.csv')
+            return True, attachment, 'csv'
+        except LookupError:
+            try:
+                attachment = self.get_attachments('itemsets.csv')
+                return True, attachment, 'csv'
+            except LookupError:
+                return False, None, None
+
 
     def update_attachments(self, attachments, attachment_name):
         extension = self.has_attachment()[2]

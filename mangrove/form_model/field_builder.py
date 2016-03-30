@@ -1,6 +1,6 @@
 from mangrove.form_model.field import IntegerField, TextField, DateField, SelectField, GeoCodeField, \
     TelephoneNumberField, HierarchyField, UniqueIdField, ShortCodeField, FieldSet, PhotoField, VideoField, AudioField, \
-    TimeField, DateTimeField
+    TimeField, DateTimeField, SelectOneExternalField
 from mangrove.form_model.form_model import LOCATION_TYPE_FIELD_NAME
 from mangrove.form_model.validation import NumericRangeConstraint, TextLengthConstraint, RegexConstraint
 from mangrove.utils.types import is_empty
@@ -38,6 +38,8 @@ class QuestionBuilder(object):
             return self._create_field_set_question(post_dict, code)
         if post_dict["type"] == "photo" or post_dict["type"] == "video" or post_dict["type"] == "audio":
             return self._create_media_question(post_dict, code)
+        if post_dict["type"] == "select one external":
+            return self._create_select_external_question(post_dict, code)
 
     def _create_field_set_question(self, post_dict, code):
 
@@ -48,7 +50,6 @@ class QuestionBuilder(object):
                         field_set=sub_form_fields,
                         fieldset_type=post_dict.get("fieldset_type"),
                         parent_field_code=post_dict.get('parent_field_code'))
-
 
     def _get_name(self, post_dict):
         name = post_dict.get("name")
@@ -101,19 +102,16 @@ class QuestionBuilder(object):
                             constraints=[range], instruction=post_dict.get("instruction"),
                             required=post_dict.get("required"), parent_field_code=post_dict.get('parent_field_code'))
 
-
     def _create_date_question(self, post_dict, code):
         return DateField(name=self._get_name(post_dict), code=code, label=post_dict["title"],
                          date_format=post_dict.get('date_format'),
                          instruction=post_dict.get("instruction"),
                          required=post_dict.get("required"), parent_field_code=post_dict.get('parent_field_code'))
 
-
     def _create_geo_code_question(self, post_dict, code):
         return GeoCodeField(name=self._get_name(post_dict), code=code, label=post_dict["title"],
                             instruction=post_dict.get("instruction"), required=post_dict.get("required"),
                             parent_field_code=post_dict.get('parent_field_code'))
-
 
     def _create_select_question(self, post_dict, single_select_flag, code):
         options = [(choice['value'].get("text"), choice['value'].get("val").lower()) for choice in post_dict["choices"]]
@@ -122,6 +120,11 @@ class QuestionBuilder(object):
                            instruction=post_dict.get("instruction"), required=post_dict.get("required"),
                            parent_field_code=post_dict.get('parent_field_code'), has_other=post_dict.get('has_other'))
 
+    def _create_select_external_question(self, post_dict, code):
+        return SelectOneExternalField(name=self._get_name(post_dict), code=code, label=post_dict["title"],
+                                      instruction=post_dict.get("instruction"), required=post_dict.get("required"),
+                                      parent_field_code=post_dict.get('parent_field_code'),
+                                      query=post_dict.get('query'))
 
     def _create_telephone_number_question(self, post_dict, code):
         return TelephoneNumberField(name=self._get_name(post_dict), code=code,
@@ -146,7 +149,6 @@ class QuestionBuilder(object):
         return media_class(name=self._get_name(post_dict), code=code,
                            label=post_dict["title"], instruction=post_dict.get("instruction"),
                            required=post_dict.get("required"), parent_field_code=post_dict.get('parent_field_code'))
-
 
     def _get_unique_id_type(self, post_dict):
         return post_dict["uniqueIdType"].strip().lower()

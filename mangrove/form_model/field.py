@@ -46,6 +46,8 @@ def create_question_from(dictionary, dbm):
         return _get_geo_code_field(code, instruction, label, name, required, parent_field_code)
     elif type == field_attributes.SELECT_FIELD or type == field_attributes.MULTISELECT_FIELD:
         return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code)
+    elif type == field_attributes.SELECT_ONE_EXTERNAL_FIELD:
+        return _get_select_one_external_field(code, dictionary, label, name, type, instruction, required, parent_field_code)
     elif type == field_attributes.LIST_FIELD:
         return _get_list_field(name, code, label, instruction, required, parent_field_code)
     elif type == field_attributes.TELEPHONE_NUMBER_FIELD:
@@ -185,6 +187,16 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
 
     return field
 
+def _get_select_one_external_field(code, dictionary, label, name, type, instruction, required, parent_field_code):
+    query = dictionary.get("query")
+
+    field = SelectOneExternalField(name=name, code=code, label=label,
+                                      instruction=instruction, required=required,
+                                      parent_field_code=parent_field_code,
+                                      query=query)
+
+    return field
+
 
 def _get_list_field(name, code, label, instruction, required, parent_field_code):
     field = HierarchyField(name, code, label, instruction=instruction, required=required,
@@ -233,6 +245,7 @@ class field_attributes(object):
     AUDIO = "audio"
     TIME = "time"
     DATE_TIME = "datetime"
+    SELECT_ONE_EXTERNAL_FIELD = "select_one_external"
 
 
 class Field(object):
@@ -285,7 +298,6 @@ class Field(object):
     def instruction(self):
         return self._dict.get('instruction')
 
-
     @property
     def parent_field_code(self):
         return self._dict.get('parent_field_code')
@@ -301,7 +313,7 @@ class Field(object):
     @property
     def is_field_set(self):
         return False
-    
+
     def is_group(self):
         return False
 
@@ -490,7 +502,6 @@ class TextField(Field):
         if is_calculated:
             self.is_calculated = True
 
-
     @property
     def is_calculated(self):
         return self._dict.get("is_calculated", False)
@@ -513,7 +524,6 @@ class TextField(Field):
             raise AnswerTooLongException(self._dict[field_attributes.FIELD_CODE], value, valueTooLongError.args[1])
         except VdtValueTooShortError as valueTooShortError:
             raise AnswerTooShortException(self._dict[field_attributes.FIELD_CODE], value, valueTooShortError.args[1])
-
 
     def get_constraint_text(self):
         if not is_empty(self.constraints):
@@ -576,7 +586,6 @@ class UniqueIdField(Field):
     def is_entity_field(self):
         return True
 
-
     def _to_json(self):
         dict = super(UniqueIdField, self)._to_json()
         dict['unique_id_type'] = self.unique_id_type
@@ -584,7 +593,7 @@ class UniqueIdField(Field):
         return dict
 
     def stringify(self):
-        return unicode("%s(%s)" % (unicode(self.unique_id_type.capitalize()), self.convert_to_unicode() ))
+        return unicode("%s(%s)" % (unicode(self.unique_id_type.capitalize()), self.convert_to_unicode()))
 
     def set_value(self, value):
         if value:
@@ -608,10 +617,25 @@ class UniqueIdUIField(UniqueIdField):
         enketo_options = []
         for value in self.options:
             temp_dict = OrderedDict()
-            temp_dict['label'] = value[1]+' ('+value[0]+')'
+            temp_dict['label'] = value[1] + ' (' + value[0] + ')'
             temp_dict['value'] = value[0]
             enketo_options.append(temp_dict)
         return enketo_options
+
+
+class SelectOneExternalField(Field):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, query=None):
+        type = field_attributes.SELECT_ONE_EXTERNAL_FIELD
+        Field.__init__(self, type=type, name=name, code=code,
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
+
+    def validate(self, value):
+        Field.validate(self, value)
+        return self.constraint.validate(answer=value)
+
+    def _to_json_view(self):
+        dict = self._dict.copy()
+        return dict
 
 
 class TelephoneNumberField(TextField):
@@ -642,7 +666,6 @@ class ShortCodeField(TextField):
                            defaultValue=defaultValue,
                            required=required, parent_field_code=parent_field_code)
         self._dict['type'] = field_attributes.SHORT_CODE_FIELD
-
 
     def _clean(self, value):
         return value.lower() if value else None
@@ -750,7 +773,6 @@ class SelectField(Field):
                 return opt_text
         return default
 
-
     def get_option_value_list(self, question_value):
 
         # if isinstance(question_value, list) and question_value[0] == 'other':
@@ -787,7 +809,6 @@ class SelectField(Field):
             responses = re.findall(r'[1-9]?[a-zA-Z]', question_value)
 
         return responses
-
 
     def formatted_field_values_for_excel(self, value):
         if value is None: return []
@@ -921,7 +942,6 @@ class FieldSet(Field):
                 list.append(dict)
         super(FieldSet, self).set_value(list)
 
-
     @property
     def fieldset_type(self):
         return self._dict.get(self.FIELDSET_TYPE)
@@ -978,8 +998,5 @@ class DateTimeField(Field):
     def is_monthly_format(self):
         return False
 
-
     def formatted_field_values_for_excel(self, value):
         return value
-
-

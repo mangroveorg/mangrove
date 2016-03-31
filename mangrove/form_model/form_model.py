@@ -2,23 +2,21 @@ from collections import OrderedDict
 import copy
 import re
 import unicodedata
-import xmldict
-import xmltodict
 import xml.etree.ElementTree as ET
+from xml.sax.saxutils import escape
+
+from mangrove.form_model.xform import Xform, get_node, add_node, remove_attrib
 from mangrove.datastore.cache_manager import get_cache_manager
-from mangrove.datastore.entity import get_all_entities
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField, \
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, MediaField, UniqueIdUIField, \
     SelectOneExternalField
 from mangrove.form_model.validators import MandatoryValidator
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 from mangrove.form_model import field
-from xml.sax.saxutils import escape
-
 
 ARPT_SHORT_CODE = "dummy"
 
@@ -279,13 +277,28 @@ class FormModel(DataObject):
             choice_elements.append(node)
         return choice_elements
 
-    def _update_xform_with_select_external_question(self, root_node, external_choice_question):
+    def _update_xform_with_select_external_question(self, xform, external_choice_question):
         if external_choice_question.parent_field_code:
-            parent_node = self._get_parent_node(root_node, external_choice_question.parent_field_code)
-            node = self._get_node(parent_node, external_choice_question.code, type='input')
+            parent_node = self._get_parent_node(xform.get_body_node(), external_choice_question.parent_field_code)
+            xform_node = get_node(parent_node, external_choice_question.code)
         else:
-            node = self._get_node(root_node, external_choice_question.code, type='input')
+            xform_node = get_node(xform.root_node, external_choice_question.code)
 
+        query_string = xform_node.attrib['query']
+        id = re.search("(instance\('(.+?)('\)))", query_string).group(2)
+        instance_node = ET.Element("instance", {"id": id, "src": "jr://file-csv/itemsets.csv"})
+        model_node = xform._model_node()
+        add_node(model_node, instance_node)
+        xform_bind_node = xform.bind_node(xform_node)
+        xform_bind_node.attrib['type'] = 'select1'
+        itemset_node = ET.Element("itemset", {"nodeset": query_string})
+        value_node = ET.Element("value", {"ref": "name"})
+        label_node = ET.Element("label", {"ref": "label"})
+        add_node(itemset_node, value_node)
+        add_node(itemset_node, label_node)
+        add_node(xform_node, itemset_node)
+        remove_attrib(xform_node, "query")
+        xform_node.tag = re.sub('input', 'select1', xform_node.tag)
 
     def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
         if uniqueid_ui_field.parent_field_code:
@@ -302,6 +315,10 @@ class FormModel(DataObject):
         for element in choice_elements:
             node.append(element)
 
+    def do_enrich_xform(self):
+        xform_str_unique_id_substituted = self.xform_with_unique_ids_substituted()
+        return self.xform_with_external_choice_expanded(xform_str_unique_id_substituted)
+
     def xform_with_unique_ids_substituted(self):
         ET.register_namespace('', 'http://www.w3.org/2002/xforms')
         root_node = ET.fromstring(self.xform)
@@ -312,12 +329,10 @@ class FormModel(DataObject):
         return ET.tostring(root_node)
 
     def xform_with_external_choice_expanded(self, xform_string):
-        ET.register_namespace('', 'http://www.w3.org/2002/xforms')
-        root_node = ET.fromstring(xform_string)
-        html_body_node = root_node._children[1]
+        xform = Xform(xform_string)
         for external_choice_question in self.external_choice_questions:
-            self._update_xform_with_select_external_question(html_body_node, external_choice_question)
-        return ET.tostring(root_node)
+            self._update_xform_with_select_external_question(xform, external_choice_question)
+        return ET.tostring(xform.root_node)
 
     @property
     def is_media_type_fields_present(self):

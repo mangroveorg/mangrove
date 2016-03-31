@@ -246,11 +246,7 @@ class Project(FormModel):
             attachment = self.get_attachments('itemsets.csv')
             return True, attachment, 'csv'
         except LookupError:
-            try:
-                attachment = self.get_attachments('itemsets.csv')
-                return True, attachment, 'csv'
-            except LookupError:
-                return False, None, None
+            return False, None, None
 
 
     def update_attachments(self, attachments, attachment_name):

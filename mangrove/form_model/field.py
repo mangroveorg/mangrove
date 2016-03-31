@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import csv
 import re
 import abc
 
@@ -632,6 +633,15 @@ class SelectOneExternalField(Field):
     def validate(self, value):
         Field.validate(self, value)
         return self.constraint.validate(answer=value)
+
+    def get_option_value_list(self, question_value, itemset_data):
+        lines = re.sub('"', '', itemset_data).split('\n')
+        header = lines[0].split(',')
+        for line in lines[1:]:
+            row = dict(zip(header, line.split(',')))
+            if unicode(row['name']) == question_value:
+                return row['label']
+        return question_value
 
     def _to_json_view(self):
         dict = self._dict.copy()

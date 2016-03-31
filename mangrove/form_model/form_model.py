@@ -282,7 +282,7 @@ class FormModel(DataObject):
             parent_node = self._get_parent_node(xform.get_body_node(), external_choice_question.parent_field_code)
             xform_node = get_node(parent_node, external_choice_question.code)
         else:
-            xform_node = get_node(xform.root_node, external_choice_question.code)
+            xform_node = get_node(xform.get_body_node(), external_choice_question.code)
 
         query_string = xform_node.attrib['query']
         id = re.search("(instance\('(.+?)('\)))", query_string).group(2)

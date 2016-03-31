@@ -63,7 +63,7 @@ def xform_for(dbm, form_id, reporter_id):
                            field_types=field_types, default_template=env.get_template('text_field.xml'))
 
 
-def itemset_for(dbm, form_id, reporter_id):
+def itemset_for(dbm, form_id):
     questionnaire = FormModel.get(dbm, form_id)
 
     xform = questionnaire.xform

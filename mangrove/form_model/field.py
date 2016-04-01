@@ -630,10 +630,6 @@ class SelectOneExternalField(Field):
         Field.__init__(self, type=type, name=name, code=code,
                        label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
 
-    def validate(self, value):
-        Field.validate(self, value)
-        return self.constraint.validate(answer=value)
-
     def get_option_value_list(self, question_value, itemset_data):
         lines = re.sub('"', '', itemset_data).split('\n')
         header = lines[0].split(',')

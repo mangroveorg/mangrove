@@ -9,8 +9,10 @@ from mangrove.errors.MangroveException import DataObjectAlreadyExists, FormModel
 from mangrove.form_model.deadline import Deadline, Month, Week
 from mangrove.form_model.form_model import REPORTER, get_form_model_by_code, FormModel, get_form_model_document
 from mangrove.transport.repository.reporters import get_reporters_who_submitted_data_for_frequency_period
-from mangrove.datastore.user_questionnaire_preference import UserQuestionnairePreference, UserQuestionnairePreferenceDocument
+from mangrove.datastore.user_questionnaire_preference import UserQuestionnairePreference, \
+    UserQuestionnairePreferenceDocument
 from mangrove.form_model.form_model import get_form_model_fields_by_entity_type
+
 
 def get_project_by_code(dbm, code):
     row_value = get_form_model_document(code, dbm)
@@ -35,7 +37,8 @@ class Project(FormModel):
         doc.is_registration_model = is_registration_model
         DataObject._set_document(self, doc)
 
-    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False, end_date=None, active=None,
+    def __init__(self, dbm, form_code=None, name=None, goals="", devices=None, sender_group=None, is_poll=False,
+                 end_date=None, active=None,
                  language='en', fields=[]):
         FormModel.__init__(self, dbm=dbm, form_code=form_code, is_registration_model=False,
                            label="", language=language, name=name, fields=fields)
@@ -68,7 +71,6 @@ class Project(FormModel):
     @property
     def modified(self):
         return self._doc.modified
-
 
     @property
     def end_date(self):
@@ -135,12 +137,14 @@ class Project(FormModel):
         else:
             start_date, end_date = deadline_date - timedelta(days=3), deadline_date + timedelta(days=3)
         form_model_id = self.id
-        data_senders_with_submission = get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id, start_date,
+        data_senders_with_submission = get_reporters_who_submitted_data_for_frequency_period(dbm, form_model_id,
+                                                                                             start_date,
                                                                                              end_date)
         return [datasender.short_code for datasender in data_senders_with_submission]
 
     def get_data_senders_without_submissions_for(self, deadline_date, dbm, frequency_period):
-        data_sender_ids_with_submission = self._get_data_senders_ids_who_made_submission_for(dbm, deadline_date, frequency_period)
+        data_sender_ids_with_submission = self._get_data_senders_ids_who_made_submission_for(dbm, deadline_date,
+                                                                                             frequency_period)
         my_data_senders = self.get_data_senders(dbm)
         data_senders_without_submission = [data_sender for data_sender in my_data_senders if
                                            data_sender['short_code'] not in data_sender_ids_with_submission]
@@ -231,7 +235,7 @@ class Project(FormModel):
         self._doc.is_open_survey = value
 
     def has_attachment(self):
-        try: # find a better way to check attachement exisits
+        try:  # find a better way to check attachement exisits
             attachment = self.get_attachments('questionnaire.xls')
             return True, attachment, 'xls'
         except LookupError:
@@ -242,17 +246,25 @@ class Project(FormModel):
                 return False, None, None
 
     def has_external_itemset(self):
-        try: # find a better way to check attachement exisits
+        try:  # find a better way to check attachement exisits
             attachment = self.get_attachments('itemsets.csv')
             return True, attachment, 'csv'
         except LookupError:
             return False, None, None
 
-
     def update_attachments(self, attachments, attachment_name):
         extension = self.has_attachment()[2]
         self.delete_attachment(self._doc, "questionnaire%s" % extension)
         self.add_attachments(attachments, attachment_name)
+
+    def update_external_itemset(self, itemset):
+        if len(self.external_choice_questions) == 0 and self.has_external_itemset():
+            self.delete_attachment(self._doc, "itemsets.csv")
+        if itemset and self.has_external_itemset():
+            self.delete_attachment(self._doc, "itemsets.csv")
+            self.add_attachments(itemset, "itemsets.csv")
+        elif itemset:
+            self.add_attachments(itemset, "itemsets.csv")
 
 
 def load_data_senders(manager, short_codes):
@@ -263,11 +275,13 @@ def load_data_senders(manager, short_codes):
     data = [tabulate_data(from_row_to_entity(manager, row), form_model, codes) for row in rows]
     return data, fields, labels
 
+
 def get_entity_type_fields(manager, form_code='reg', form_model=None):
     if form_model is None:
-        form_model=get_form_model_by_code(manager, form_code)
+        form_model = get_form_model_by_code(manager, form_code)
     json_fields = form_model._doc["json_fields"]
     return get_json_field_infos(json_fields)
+
 
 def get_json_field_infos(fields):
     fields_names, labels, codes = [], [], []
@@ -277,6 +291,7 @@ def get_json_field_infos(fields):
             labels.append(field['label'])
             codes.append(field['code'])
     return fields_names, labels, codes
+
 
 def tabulate_data(entity, form_model, field_codes):
     data = {'id': entity.id, 'short_code': entity.short_code}
@@ -292,6 +307,7 @@ def tabulate_data(entity, form_model, field_codes):
 
     data['cols'] = [stringified_dict[field_code] for field_code in field_codes]
     return data
+
 
 def get_field_value(key, entity):
     value = entity.value(key)
@@ -314,6 +330,7 @@ def get_field_default_value(key, entity):
         return entity.short_code
     return None
 
+
 def get_active_form_model(dbm, form_code):
     projects = dbm.load_all_rows_in_view("all_projects")
     for project_row in projects:
@@ -323,11 +340,13 @@ def get_active_form_model(dbm, form_code):
             return project
     raise FormModelDoesNotExistsException(form_code)
 
+
 def check_if_form_code_is_poll(self, form_model):
-        if form_model:
-            project = get_project_by_code(self.dbm, form_model.form_code)
-            if project and project.is_poll is True:
-                    raise ProjectPollCodeDoesNotExistsException(project.form_code)
+    if form_model:
+        project = get_project_by_code(self.dbm, form_model.form_code)
+        if project and project.is_poll is True:
+            raise ProjectPollCodeDoesNotExistsException(project.form_code)
+
 
 def get_active_form_model_name_and_id(dbm):
     projects = dbm.load_all_rows_in_view("all_projects")

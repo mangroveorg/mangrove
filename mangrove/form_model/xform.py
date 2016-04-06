@@ -54,7 +54,7 @@ class Xform(object):
         self._sort(self._instance_root_node(), lambda node: node.tag)
         self._sort(self.get_body_node(), lambda node: node.attrib.get('ref'))
         self._sort(self._model_node(), lambda node: node.attrib.get('nodeset'))
-        self._sort_attrib(_child_nodes(self._model_node(), 'bind'))
+        self._sort_attrib(child_nodes(self._model_node(), 'bind'))
 
     def _sort(self, node, key):
         node._children = sorted(node._children, key=key)
@@ -129,24 +129,14 @@ def remove_attrib(node, key):
         del node.attrib[attr_key[0]]
 
 
-def _find_key_endswith(key, attrib):
-    attr_key = [k for k in attrib.keys() if k.endswith(key)]
-    return attr_key
-
-
 def add_child(node, tag, value):
     elem = ET.Element(tag)
     elem.text = value
     node._children.append(elem)
+    return elem
 
 
-def _child_node(node, tag):
-    for child in node:
-        if child.tag.endswith(tag):
-            return child
-
-
-def _child_nodes(node, tag):
+def child_nodes(node, tag):
     child_nodes = []
     for child in node:
         if child.tag.endswith(tag):
@@ -154,13 +144,33 @@ def _child_nodes(node, tag):
     return child_nodes
 
 
-def _child_node_given_attr(node, tag, key, value):
-    for child in node:
-        if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
-            return child
+def node_has_child(node, child_tag, child_value):
+    return _child_node(node, child_tag) is not None and _child_node(node, child_tag).text == child_value
+
+
+def update_node(node, child_tag, child_value):
+    if _child_node(node, child_tag) is not None:
+        _child_node(node, child_tag).text = child_value
+
 
 
 def replace_node_name_with_xpath(value, xform):
     form_code = re.search('\$\{(.*?)\}', value).group(1)
     value_xpath = xform.get_bind_node_by_name(form_code).attrib['nodeset']
     return re.sub(r'(\$\{)(.*?)(\})', " " + value_xpath + " ", value)
+
+
+def _find_key_endswith(key, attrib):
+    attr_key = [k for k in attrib.keys() if k.endswith(key)]
+    return attr_key
+
+
+def _child_node(node, tag):
+    for child in node:
+        if child.tag.endswith(tag):
+            return child
+
+def _child_node_given_attr(node, tag, key, value):
+    for child in node:
+        if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
+            return child

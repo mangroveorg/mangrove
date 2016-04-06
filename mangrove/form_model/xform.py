@@ -1,12 +1,11 @@
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ElementTree
-from xml.dom import minidom
 import itertools
 import collections
 import re
 
-class Xform(object):
 
+class Xform(object):
     def __init__(self, xform):
         ET.register_namespace('', 'http://www.w3.org/2002/xforms')
         self.root_node = ET.fromstring(xform)
@@ -21,13 +20,15 @@ class Xform(object):
         return self._instance_root_node(root_node).attrib['id']
 
     def _instance_root_node(self, root_node=None):
-        return _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
+        return \
+        _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
 
     def instance_node(self, node):
         instance_node = self._instance_root_node()
         if node != self.get_body_node():
             node_name = node.attrib['ref'].split('/')[-1]
-            instance_node = itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
+            instance_node = itertools.ifilter(lambda child: child.tag.endswith(node_name),
+                                              self._instance_root_node().iter()).next()
         return instance_node
 
     def bind_node(self, node):
@@ -62,7 +63,7 @@ class Xform(object):
 
     def _sort_attrib(self, nodes):
         for node in nodes:
-            node.attrib = dict([(re.sub('\{http://[^ ]*\}','', key), value) for key, value in node.attrib.items()])
+            node.attrib = dict([(re.sub('\{http://[^ ]*\}', '', key), value) for key, value in node.attrib.items()])
             node.attrib = collections.OrderedDict([(x, y) for x, y in sorted(node.attrib.items(), key=lambda t: t[0])])
 
     def change_instance_id(self, another_xform):
@@ -76,6 +77,7 @@ class Xform(object):
             def write(self, str):
                 str = str.strip(' \t\n\r')
                 data.append(str)
+
         file = dummy()
 
         ElementTree(root_node or self.root_node).write(file)
@@ -83,7 +85,8 @@ class Xform(object):
         return "".join(data)
 
     def equals(self, another_xform):
-        return re.sub('ns[0-9]:','',self._to_string()) == re.sub('ns[0-9]:','',self._to_string(another_xform.root_node))
+        return re.sub('ns[0-9]:', '', self._to_string()) == re.sub('ns[0-9]:', '',
+                                                                   self._to_string(another_xform.root_node))
 
 
 def get_node(node, field_code):
@@ -155,6 +158,7 @@ def _child_node_given_attr(node, tag, key, value):
     for child in node:
         if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
             return child
+
 
 def replace_node_name_with_xpath(value, xform):
     form_code = re.search('\$\{(.*?)\}', value).group(1)

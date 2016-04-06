@@ -5,20 +5,17 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from xml.sax.saxutils import escape
 
-import xmldict
-import xmltodict
 from mangrove.datastore.cache_manager import get_cache_manager
 from mangrove.datastore.database import DatabaseManager, DataObject
 from mangrove.datastore.documents import FormModelDocument, EntityFormModelDocument
-from mangrove.datastore.entity import get_all_entities
 from mangrove.errors.MangroveException import FormModelDoesNotExistsException, QuestionCodeAlreadyExistsException, \
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
 from mangrove.form_model import field
-from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, SelectField, MediaField, UniqueIdUIField
+from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, MediaField, UniqueIdUIField, \
+    SelectOneExternalField
 from mangrove.form_model.validator_factory import validator_factory
+from mangrove.form_model.xform import Xform, get_node, add_node, remove_attrib
 from mangrove.form_model.validators import MandatoryValidator
-from mangrove.form_model.xform import Xform
-from mangrove.form_model.xform import get_node
 from mangrove.utils.types import is_sequence, is_string, is_empty, is_not_empty
 
 ARPT_SHORT_CODE = "dummy"
@@ -143,6 +140,7 @@ def get_form_model_fields_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_fields
 
+
 def get_form_code_by_entity_type(dbm, entity_type):
     form_model = get_form_model_by_entity_type(dbm, entity_type)
     return form_model.form_code if form_model else None
@@ -220,7 +218,6 @@ class FormModel(DataObject):
         """
         return self._doc.name
 
-
     @property
     def id(self):
         return self._doc.id
@@ -241,9 +238,22 @@ class FormModel(DataObject):
                 ef.extend(self._get_entity_questions(field.fields))
         return ef
 
+    def _get_external_choice_questions(self, form_fields):
+        ef = []
+        for field in form_fields:
+            if isinstance(field, SelectOneExternalField):
+                ef.append(field)
+            elif isinstance(field, FieldSet):
+                ef.extend(self._get_external_choice_questions(field.fields))
+        return ef
+
     @property
     def entity_questions(self):
         return self._get_entity_questions(self._form_fields)
+
+    @property
+    def external_choice_questions(self):
+        return self._get_external_choice_questions(self._form_fields)
 
     def _get_parent_node(self, root_node, field_code):
         field = self.get_field_by_code(field_code)
@@ -271,6 +281,29 @@ class FormModel(DataObject):
             choice_elements.append(node)
         return choice_elements
 
+    def _update_xform_with_select_external_question(self, xform, external_choice_question):
+        if external_choice_question.parent_field_code:
+            parent_node = self._get_parent_node(xform.get_body_node(), external_choice_question.parent_field_code)
+            xform_node = get_node(parent_node, external_choice_question.code)
+        else:
+            xform_node = get_node(xform.get_body_node(), external_choice_question.code)
+
+        query_string = xform_node.attrib['query']
+        id = re.search("(instance\('(.+?)('\)))", query_string).group(2)
+        instance_node = ET.Element("instance", {"id": id, "src": "jr://file-csv/itemsets.csv"})
+        model_node = xform._model_node()
+        add_node(model_node, instance_node)
+        xform_bind_node = xform.bind_node(xform_node)
+        xform_bind_node.attrib['type'] = 'select1'
+        itemset_node = ET.Element("itemset", {"nodeset": query_string})
+        value_node = ET.Element("value", {"ref": "name"})
+        label_node = ET.Element("label", {"ref": "label"})
+        add_node(itemset_node, value_node)
+        add_node(itemset_node, label_node)
+        add_node(xform_node, itemset_node)
+        remove_attrib(xform_node, "query")
+        xform_node.tag = re.sub('input', 'select1', xform_node.tag)
+
     def _update_xform_with_unique_id_choices(self, root_node, uniqueid_ui_field):
         if uniqueid_ui_field.parent_field_code:
             parent_node = self._get_parent_node(root_node, uniqueid_ui_field.parent_field_code)
@@ -286,17 +319,26 @@ class FormModel(DataObject):
         for element in choice_elements:
             node.append(element)
 
+    def do_enrich_xform(self):
+        xform_str_unique_id_substituted = self.xform_with_unique_ids_substituted()
+        return self.xform_with_external_choice_expanded(xform_str_unique_id_substituted)
+
     def xform_with_unique_ids_substituted(self):
         for entity_question in self.entity_questions:
             uniqueid_ui_field = UniqueIdUIField(entity_question, self._dbm)
             self._update_xform_with_unique_id_choices(self.xform_model.get_body_node(), uniqueid_ui_field)
         return ET.tostring(self.xform_model.root_node)
 
+    def xform_with_external_choice_expanded(self, xform_string):
+        xform = Xform(xform_string)
+        for external_choice_question in self.external_choice_questions:
+            self._update_xform_with_select_external_question(xform, external_choice_question)
+        return ET.tostring(xform.root_node)
+
     @property
     def is_media_type_fields_present(self):
         is_media = self._doc.is_media_type_fields_present
         return False if is_media is None else is_media
-
 
     def update_media_field_flag(self):
         if self.media_fields:
@@ -510,7 +552,6 @@ class FormModel(DataObject):
     @property
     def form_fields(self):
         return self._doc["json_fields"]
-
 
     def field_names(self):
         return [field['name'] for field in self._doc["json_fields"]]

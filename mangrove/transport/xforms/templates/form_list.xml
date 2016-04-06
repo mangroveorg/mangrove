@@ -1,11 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
     {% if form_tuples %}
-        {% for form_name, form_id in form_tuples %}
+        {% for form_name, form_id, hasExternalItemset in form_tuples %}
             <xform>
                 <formID>{{ form_name }}</formID>
                 <name>{{ form_name }}</name>
                 <downloadUrl>{{ xform_base_url }}/{{ form_id }}</downloadUrl>
+                {% if hasExternalItemset %}
+                    <externalItemsetUrl>{{ xform_base_url }}/itemset/{{ form_id }}</externalItemsetUrl>
+                {% endif %}
             </xform>
         {% endfor %}
     {% endif %}

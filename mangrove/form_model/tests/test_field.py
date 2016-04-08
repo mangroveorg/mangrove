@@ -32,7 +32,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = TextField(name="field1_Name", code="Q1", label="What is your name",
                           defaultValue="some default value", constraints=[TextLengthConstraint(1, 20)], instruction="Answer is word or phrase")
@@ -54,7 +56,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = HierarchyField(name="loc", code="Q1", label="What is your location", instruction="Answer is list")
         actual_json = field._to_json()
@@ -76,7 +80,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
                              instruction="test_instruction")
@@ -99,7 +105,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = Field(type="integer", name="oldName", code="Q2", label="What is your age",
                       instruction=instruction)
@@ -120,7 +128,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = Field(type="integer", name="name", code="Q2", label="What is your age",
                       instruction="instruction")
@@ -141,7 +151,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = IntegerField(name="Age", code="Q2", label="What is your age",
                              constraints=[NumericRangeConstraint(min=15, max=120)],
@@ -163,7 +175,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green', 'c')])
@@ -187,7 +201,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green')], single_select_flag=False,
@@ -217,7 +233,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = ShortCodeField(name="field1_Name", code="Q1", label="What is your name",
                           instruction="test_instruction")
@@ -560,7 +578,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
 
         }
         field = SelectField(name="type", code="T", label="What type?",
@@ -582,7 +602,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         field = GeoCodeField(name="field1_Loc", code="Q1", label="Where do you stay?",
                              instruction="test_instruction", )
@@ -629,7 +651,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         self.assertEqual(expected_json, field_to_json(field))
 
@@ -650,7 +674,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
 
         self.assertEqual(expected_json, field_to_json(field))
@@ -669,7 +695,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         self.assertEqual(expected_json, field_to_json(field))
 
@@ -710,7 +738,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         self.assertEqual(expected_json, field._to_json())
 
@@ -809,7 +839,9 @@ class TestField(unittest.TestCase):
             "appearance": None,
             "constraint_message": None,
             "default": None,
-            "hint": None
+            "hint": None,
+            "xform_constraint": None,
+            "relevant": None
         }
         self.assertEqual(expected_json, field._to_json())
 

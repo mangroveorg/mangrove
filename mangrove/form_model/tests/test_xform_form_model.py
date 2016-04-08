@@ -1,5 +1,6 @@
 import os
 from unittest import TestCase
+from mangrove.form_model.xform import Xform
 
 from mock import Mock, patch
 
@@ -79,6 +80,7 @@ class TestXformFormModel(TestCase):
         entities = [entity1, entity2]
         with patch('mangrove.form_model.field.get_all_entities') as get_entities:
             get_entities.return_value = entities
+            self.questionnaire.xform_model = Xform(self.questionnaire.xform)
             actual_xform = self.questionnaire.xform_with_unique_ids_substituted()
             expected_xform = open(os.path.join(os.path.dirname(__file__), "xform_with_choices_substituted.xml"), 'r').read()
             self.assertEqual(actual_xform, expected_xform)

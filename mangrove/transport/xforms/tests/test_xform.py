@@ -13,7 +13,7 @@ class TestXform(unittest.TestCase):
         self.checker = LXMLOutputChecker()
 
     def test_should_return_list_of_required_forms(self):
-        form_tuples = [("name", "id"), ("name2", "id2")]
+        form_tuples = [("name", "id", False), ("name2", "id2", False)]
         base_url = "baseURL"
         self.assertEqual(list_all_forms(form_tuples, base_url),
             unicode(expected_response_for_get_all_forms))

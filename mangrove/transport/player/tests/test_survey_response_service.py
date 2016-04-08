@@ -3,6 +3,7 @@ from unittest import TestCase
 from mock import Mock, patch, PropertyMock, MagicMock
 from mangrove.datastore.entity_type import define_type
 from mangrove.feeds.enriched_survey_response import EnrichedSurveyResponseBuilder
+from mangrove.form_model.project import Project
 from mangrove.form_model.validation import NumericRangeConstraint
 from mangrove.form_model.field import TextField, IntegerField, UniqueIdField
 from mangrove.datastore.documents import EntityDocument
@@ -33,14 +34,15 @@ class TestSurveyResponseService(TestCase):
         self.survey_response_service = SurveyResponseService(self.dbm)
 
     def form_model(self):
-        question1 = UniqueIdField(unique_id_type='clinic',name="entity_question", code="q1", label="What is associated entity",
-                              )
+        question1 = UniqueIdField(unique_id_type='clinic', name="entity_question", code="q1",
+                                  label="What is associated entity",
+                                  )
         question2 = IntegerField(name="question1_Name", code="q2", label="What is your name",
                                  constraints=[NumericRangeConstraint(min=10, max=100)])
         return FormModel(self.dbm, name="aids", label="Aids form_model",
                          form_code="aids", fields=[question1, question2])
 
-    #TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
+    # TODO : Need to add validations for incompatible data types -> eg. string for number. This validation is hadled outside the service for now.
     def test_edit_survey_response_when_fields_constraints_are_not_satisfied(self):
         survey_response = Mock(spec=SurveyResponse)
         with patch('mangrove.transport.services.survey_response_service.by_short_code') as get_reporter:
@@ -68,6 +70,7 @@ class TestSurveyResponseService(TestCase):
     def test_survey_response_event_created_when_survey_response_created(self):
         manager = Mock(spec=DatabaseManager)
         feed_manager = Mock(spec=DatabaseManager)
+        project = Mock(spec=Project)
         survey_response_service = SurveyResponseService(manager, feeds_dbm=feed_manager)
 
         values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
@@ -82,28 +85,31 @@ class TestSurveyResponseService(TestCase):
                     with patch(
                             'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
                         with patch("mangrove.form_model.form_submission.DataRecordDocument") as DataRecordDocumentMock:
-                            get_reporter.return_value = Mock(spec=Entity)
-                            builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
-                            entity_mock = MagicMock(spec=Entity)
-                            entity_mock._doc = EntityDocument()
-                            by_short_code.return_value = entity_mock
-                            mock_form_model = MagicMock(spec=FormModel)
-                            mock_form_model._dbm = manager
-                            mock_form_model._doc = MagicMock()
-                            mock_form_model._data = {}
-                            mock_form_model.validate_submission.return_value = OrderedDict(values), OrderedDict('')
-                            mock_form_model.is_entity_registration_form.return_value = False
-                            mock_form_model.entity_questions = []
-                            mock_form_model.entity_type = 'sometype'
-                            get_form_model_by_code.return_value = mock_form_model
-                            survey_response_service.save_survey('CL1', values, [], transport_info,'',
-                                                                additional_dictionary)
-                            self.assertEquals(1, feed_manager._save_document.call_count)
-
+                            with patch('mangrove.transport.services.survey_response_service.Project.from_form_model') as from_form_model:
+                                get_reporter.return_value = Mock(spec=Entity)
+                                builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
+                                entity_mock = MagicMock(spec=Entity)
+                                entity_mock._doc = EntityDocument()
+                                by_short_code.return_value = entity_mock
+                                mock_form_model = MagicMock(spec=FormModel)
+                                mock_form_model._dbm = manager
+                                mock_form_model._doc = MagicMock()
+                                mock_form_model._data = {}
+                                mock_form_model.validate_submission.return_value = OrderedDict(values), OrderedDict('')
+                                mock_form_model.is_entity_registration_form.return_value = False
+                                mock_form_model.entity_questions = []
+                                mock_form_model.entity_type = 'sometype'
+                                get_form_model_by_code.return_value = mock_form_model
+                                from_form_model.return_value = project
+                                project.data_senders = []
+                                survey_response_service.save_survey('CL1', values, [], transport_info, '',
+                                                                    additional_dictionary)
+                                self.assertEquals(1, feed_manager._save_document.call_count)
 
     def test_feeds_created_if_subject_not_found_for_a_submission(self):
         manager = Mock(spec=DatabaseManager)
         feed_manager = Mock(spec=DatabaseManager)
+        project = Mock(spec=Project)
         values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
@@ -120,32 +126,35 @@ class TestSurveyResponseService(TestCase):
                             'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
                         with patch(
                                 'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
-                            get_reporter.return_value = Mock(spec=Entity)
-                            builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
-                            instance_mock = data_form_submission.return_value
-                            type(instance_mock).is_valid = PropertyMock(return_value=True)
-                            type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
-                            instance_mock.save.side_effect = MangroveException("subject not found")
+                            with patch('mangrove.transport.services.survey_response_service.Project.from_form_model') as from_form_model:
+                                get_reporter.return_value = Mock(spec=Entity)
+                                builder.return_value = Mock(spec=EnrichedSurveyResponseBuilder)
+                                instance_mock = data_form_submission.return_value
+                                type(instance_mock).is_valid = PropertyMock(return_value=True)
+                                type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
+                                instance_mock.save.side_effect = MangroveException("subject not found")
+                                from_form_model.return_value = project
+                                project.data_senders = []
 
-                            by_short_code.return_value = Mock(spec=Entity)
-                            mock_form_model = MagicMock(spec=FormModel)
-                            mock_form_model._dbm = manager
-                            mock_form_model._doc = MagicMock()
-                            mock_form_model._data = {}
-                            mock_form_model.validate_submission.return_value = values, ""
-                            get_form_model_by_code.return_value = mock_form_model
+                                by_short_code.return_value = Mock(spec=Entity)
+                                mock_form_model = MagicMock(spec=FormModel)
+                                mock_form_model._dbm = manager
+                                mock_form_model._doc = MagicMock()
+                                mock_form_model._data = {}
+                                mock_form_model.validate_submission.return_value = values, ""
+                                get_form_model_by_code.return_value = mock_form_model
 
-                            try:
-                                survey_response_service.save_survey('CL1', values, [], transport_info, '',
-                                                                    additional_dictionary)
-                                self.fail('the subject not found exception should be propagated')
-                            except MangroveException:
-                                feed_manager._save_document.assert_called_once()
-
+                                try:
+                                    survey_response_service.save_survey('CL1', values, [], transport_info, '',
+                                                                        additional_dictionary)
+                                    self.fail('the subject not found exception should be propagated')
+                                except MangroveException:
+                                    feed_manager._save_document.assert_called_once()
 
     def test_response_has_no_error_when_feed_creation_fails(self):
         manager = Mock(spec=DatabaseManager)
         feed_manager = Mock(spec=DatabaseManager)
+        project = Mock(spec=Project)
         values = {'ID': 'short_code', 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
         transport_info = TransportInfo('web', 'src', 'dest')
         request = Request(values, transport_info)
@@ -162,25 +171,28 @@ class TestSurveyResponseService(TestCase):
                             'mangrove.transport.services.survey_response_service.DataFormSubmission') as data_form_submission:
                         with patch(
                                 'mangrove.transport.services.survey_response_service.EnrichedSurveyResponseBuilder')as builder:
-                            get_reporter.return_value = Mock(spec=Entity)
-                            builder.feed_document.side_effect = Exception('Some error')
-                            builder.return_value = builder
-                            instance_mock = data_form_submission.return_value
-                            type(instance_mock).is_valid = PropertyMock(return_value=True)
-                            type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
-                            type(instance_mock).errors = PropertyMock(return_value='')
+                            with patch('mangrove.transport.services.survey_response_service.Project.from_form_model') as from_form_model:
+                                get_reporter.return_value = Mock(spec=Entity)
+                                builder.feed_document.side_effect = Exception('Some error')
+                                builder.return_value = builder
+                                instance_mock = data_form_submission.return_value
+                                type(instance_mock).is_valid = PropertyMock(return_value=True)
+                                type(instance_mock).data_record_id = PropertyMock(return_value='sdsddsd')
+                                type(instance_mock).errors = PropertyMock(return_value='')
 
-                            by_short_code.return_value = Mock(spec=Entity)
-                            mock_form_model = MagicMock(spec=FormModel)
-                            mock_form_model._dbm = manager
-                            mock_form_model._doc = MagicMock()
-                            mock_form_model._data = {}
-                            mock_form_model.validate_submission.return_value = values, ""
-                            get_form_model_by_code.return_value = mock_form_model
-                            response = survey_response_service.save_survey('CL1', values, [], transport_info, '',
-                                                                           additional_dictionary)
-                            self.assertFalse(response.errors)
-                            self.assertTrue(response.feed_error_message)
+                                by_short_code.return_value = Mock(spec=Entity)
+                                mock_form_model = MagicMock(spec=FormModel)
+                                mock_form_model._dbm = manager
+                                mock_form_model._doc = MagicMock()
+                                mock_form_model._data = {}
+                                mock_form_model.validate_submission.return_value = values, ""
+                                get_form_model_by_code.return_value = mock_form_model
+                                from_form_model.return_value = project
+                                project.data_senders = []
+                                response = survey_response_service.save_survey('CL1', values, [], transport_info, '',
+                                                                               additional_dictionary)
+                                self.assertFalse(response.errors)
+                                self.assertTrue(response.feed_error_message)
 
 
 class TestSurveyResponseServiceIT(MangroveTestCase):
@@ -245,12 +257,14 @@ class TestSurveyResponseServiceIT(MangroveTestCase):
 
     def test_exception_is_raised_for_invalid_short_code_submissions(self):
         survey_response_service = SurveyResponseService(self.manager)
-        with patch('mangrove.transport.services.survey_response_service.get_active_form_model') as mock_get_active_form_model:
+        with patch(
+                'mangrove.transport.services.survey_response_service.get_active_form_model') as mock_get_active_form_model:
             mock_get_active_form_model.side_effect = FormModelDoesNotExistsException("form_code")
             values = {'ID': "invalid", 'Q1': 'name', 'Q2': '80', 'Q3': 'a'}
             transport_info = TransportInfo('web', 'src', 'dest')
             request = Request(values, transport_info)
-            self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info, '')
+            self.assertRaises(MangroveException, survey_response_service.save_survey, 'CL1', values, [], transport_info,
+                              '')
 
     def test_survey_response_is_edited_and_new_submission_and_datarecord_is_created(self):
         test_data = TestData(self.manager)

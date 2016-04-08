@@ -162,7 +162,8 @@ class QuestionBuilder(object):
                            appearance=post_dict.get('appearance'),
                            default=post_dict.get('default'),
                            xform_constraint=post_dict.get('xform_constraint'),
-                           relevant=post_dict.get('relevant'))
+                           relevant=post_dict.get('relevant'),
+                           is_cascade=post_dict.get('is_cascade'))
 
     def _create_select_external_question(self, post_dict, code):
         return SelectOneExternalField(name=self._get_name(post_dict), code=code, label=post_dict["title"],

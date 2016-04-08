@@ -41,6 +41,33 @@ class Xform(object):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)
 
+    def add_translation_node(self, node):
+        add_node(self._translation_root_node(), node)
+
+    def remove_translation_nodes(self, node):
+        nodes_to_be_removed = self.get_translation_nodes(node)
+        for translation_node in nodes_to_be_removed:
+            remove_node(self._translation_root_node(), translation_node)
+
+    def get_translation_nodes(self, node):
+        return [translation_node for translation_node in self._translation_root_node()
+                if self._cascade_instance_id(node) in translation_node.attrib['id']]
+
+    def add_cascade_instance_node(self, node):
+        add_node(self._model_node(), node)
+
+    def remove_cascade_instance_node(self, node):
+        remove_node(self._model_node(), self.get_cascade_instance_node(node))
+
+    def get_cascade_instance_node(self, node):
+        return _child_node_given_attr(self._model_node(), "instance", "id", self._cascade_instance_id(node))
+
+    def _cascade_instance_id(self, node):
+        return re.search("instance\('(.*)'\)", _child_node(node, "itemset").attrib['nodeset']).group(1)
+
+    def _translation_root_node(self):
+        return _child_node(_child_node(self._model_node(), "itext"), "translation")
+
     def add_bind_node(self, bind_node):
         add_node(self._model_node(), bind_node)
 
@@ -50,10 +77,30 @@ class Xform(object):
     def add_instance_node(self, parent_node, instance_node):
         self.instance_node(parent_node).append(instance_node)
 
+    def _add_useful_cascade_instance_ids(self, node, useful_cascade_instance_ids):
+        if _child_node(node, "itemset") is not None:
+            useful_cascade_instance_ids.append(self._cascade_instance_id(node))
+
+        for child in node:
+            self._add_useful_cascade_instance_ids(child, useful_cascade_instance_ids)
+
+    def remove_undesirable_cascade_instance_nodes(self):
+        useful_cascade_instance_ids = []
+        self._add_useful_cascade_instance_ids(self.get_body_node(), useful_cascade_instance_ids)
+
+        for node in child_nodes(self._model_node(), "instance"):
+            if node.attrib.get("id") is not None and node.attrib.get("id") not in useful_cascade_instance_ids:
+                for child in _child_node(node, "root"):
+                    translation_node = \
+                        _child_node_given_attr(self._translation_root_node(), "text", "id", _child_node(child, "itextId").text)
+                    remove_node(self._translation_root_node(), translation_node)
+
+                remove_node(self._model_node(), node)
+
     def sort(self):
         self._sort(self._instance_root_node(), lambda node: node.tag)
         self._sort(self.get_body_node(), lambda node: node.attrib.get('ref'))
-        self._sort(self._model_node(), lambda node: node.attrib.get('nodeset'))
+        self._sort(self._model_node(), lambda node: (node.attrib.get('id'), node.attrib.get('nodeset')))
         self._sort_attrib(child_nodes(self._model_node(), 'bind'))
 
     def _sort(self, node, key):
@@ -151,7 +198,6 @@ def node_has_child(node, child_tag, child_value):
 def update_node(node, child_tag, child_value):
     if _child_node(node, child_tag) is not None:
         _child_node(node, child_tag).text = child_value
-
 
 
 def replace_node_name_with_xpath(value, xform):

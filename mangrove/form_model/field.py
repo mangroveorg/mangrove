@@ -825,7 +825,8 @@ class SelectField(Field):
 
     def __init__(self, name, code, label, options, instruction=None,
                  single_select_flag=True, required=True, parent_field_code=None, has_other=False, hint=None,
-                 constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None):
+                 constraint_message=None, appearance=None, default=None, xform_constraint=None, relevant=None,
+                 is_cascade=False):
         assert len(options) > 0
         type = field_attributes.SELECT_FIELD if single_select_flag else field_attributes.MULTISELECT_FIELD
         self.single_select_flag = single_select_flag
@@ -846,6 +847,7 @@ class SelectField(Field):
                 else:
                     single_language_specific_option = {'text': option, 'val': option}
                 valid_choices.append(single_language_specific_option)
+        self._dict["is_cascade"] = is_cascade
         self.constraint = ChoiceConstraint(
             list_of_valid_choices=valid_choices,
             single_select_constraint=single_select_flag, code=code, has_other=has_other)
@@ -859,6 +861,10 @@ class SelectField(Field):
     @property
     def options(self):
         return self._dict.get(self.OPTIONS)
+
+    @property
+    def is_cascade(self):
+        return self._dict.get("is_cascade")
 
     def _to_json_view(self):
         dict = self._dict.copy()

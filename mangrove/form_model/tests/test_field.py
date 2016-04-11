@@ -177,7 +177,8 @@ class TestField(unittest.TestCase):
             "default": None,
             "hint": None,
             "xform_constraint": None,
-            "relevant": None
+            "relevant": None,
+            "is_cascade": False
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green', 'c')])
@@ -203,7 +204,8 @@ class TestField(unittest.TestCase):
             "default": None,
             "hint": None,
             "xform_constraint": None,
-            "relevant": None
+            "relevant": None,
+            "is_cascade": False
         }
         field = SelectField(name="color", code="Q3", label="What is your favorite color",
                             options=[("RED", 'a'), ("YELLOW", 'b'), ('green')], single_select_flag=False,
@@ -580,7 +582,8 @@ class TestField(unittest.TestCase):
             "default": None,
             "hint": None,
             "xform_constraint": None,
-            "relevant": None
+            "relevant": None,
+            "is_cascade": False
 
         }
         field = SelectField(name="type", code="T", label="What type?",

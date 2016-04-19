@@ -25,11 +25,13 @@ class Xform(object):
 
     def instance_node(self, node):
         instance_node = self._instance_root_node()
-        if node != self.get_body_node():
-            node_name = node.attrib['ref'].split('/')[-1]
-            instance_node = itertools.ifilter(lambda child: child.tag.endswith(node_name),
-                                              self._instance_root_node().iter()).next()
-        return instance_node
+        if node == self.get_body_node():
+            return instance_node
+        node_name = node.attrib['ref'].split('/')[-1]
+        return self.instance_node_given_name(node_name)
+
+    def instance_node_given_name(self, node_name):
+        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
 
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
@@ -40,6 +42,9 @@ class Xform(object):
     def remove_bind_node(self, node):
         bind_node = self.bind_node(node)
         remove_node(self._model_node(), bind_node)
+
+    def remove_bind_node_given_name(self, name):
+        remove_node(self._model_node(), self.get_bind_node_by_name(name))
 
     def add_translation_node(self, node):
         add_node(self._translation_root_node(), node)
@@ -73,6 +78,9 @@ class Xform(object):
 
     def remove_instance_node(self, parent_node, node):
         self.instance_node(parent_node).remove(self.instance_node(node))
+
+    def remove_instance_node_given_name(self, parent_node, name):
+        self.instance_node(parent_node).remove(self.instance_node_given_name(name))
 
     def add_instance_node(self, parent_node, instance_node):
         self.instance_node(parent_node).append(instance_node)

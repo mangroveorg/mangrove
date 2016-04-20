@@ -188,7 +188,7 @@ def _get_unique_id_field(unique_id_type, code, dictionary, label, name, instruct
                          instruction=dictionary.get("instruction"), parent_field_code=parent_field_code,
                          xform_field_reference=dictionary.get("xform_field_reference"), hint=hint,
                          constraint_message=constraint_message, appearance=appearance, default=default,
-                         xform_constraint=xform_constraint, relevant=relevant)
+                         xform_constraint=xform_constraint, relevant=relevant, required=required)
 
 
 def _get_telephone_number_field(code, dictionary, label, name, instruction, required, parent_field_code, hint,

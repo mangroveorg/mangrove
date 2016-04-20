@@ -225,7 +225,8 @@ class QuestionBuilder(object):
                              appearance=post_dict.get('appearance'),
                              default=post_dict.get('default'),
                              xform_constraint=post_dict.get('xform_constraint'),
-                             relevant=post_dict.get('relevant'))
+                             relevant=post_dict.get('relevant'),
+                             required=post_dict.get('required'))
 
     def _create_short_code_field(self, post_dict, code):
         return ShortCodeField(name=self._get_name(post_dict), code=code,

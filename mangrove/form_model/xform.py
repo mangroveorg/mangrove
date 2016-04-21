@@ -106,20 +106,10 @@ class Xform(object):
                 remove_node(self._model_node(), node)
 
     def sort(self):
-        self._sort(self._instance_root_node(), lambda node: node.tag)
-        self._sort(self.get_body_node(), lambda node: node.attrib.get('ref'))
-        self._sort(self._model_node(), lambda node: (node.attrib.get('id'), node.attrib.get('nodeset')))
-        self._sort_attrib(child_nodes(self._model_node(), 'bind'))
-
-    def _sort(self, node, key):
-        node._children = sorted(node._children, key=key)
-        for child in node._children:
-            self._sort(child, key)
-
-    def _sort_attrib(self, nodes):
-        for node in nodes:
-            node.attrib = dict([(re.sub('\{http://[^ ]*\}', '', key), value) for key, value in node.attrib.items()])
-            node.attrib = collections.OrderedDict([(x, y) for x, y in sorted(node.attrib.items(), key=lambda t: t[0])])
+        _sort(self._instance_root_node(), lambda node: node.tag)
+        _sort(self.get_body_node(), lambda node: (node.attrib.get('ref'), None if _child_node(node, 'value') is None else getattr(_child_node(node, 'value'), 'text', None)))
+        _sort(self._model_node(), lambda node: (node.attrib.get('id'), node.attrib.get('nodeset')))
+        _sort_attrib(child_nodes(self._model_node(), 'bind'))
 
     def change_instance_id(self, another_xform):
         xform_str = ET.tostring(self.root_node).replace(self._instance_id(), self._instance_id(another_xform.root_node))
@@ -142,6 +132,18 @@ class Xform(object):
     def equals(self, another_xform):
         return re.sub('ns[0-9]:', '', self._to_string()) == re.sub('ns[0-9]:', '',
                                                                    self._to_string(another_xform.root_node))
+
+
+def _sort(node, key):
+    node._children = sorted(node._children, key=key)
+    for child in node._children:
+        _sort(child, key)
+
+
+def _sort_attrib(nodes):
+    for node in nodes:
+        node.attrib = dict([(re.sub('\{http://[^ ]*\}', '', key), value) for key, value in node.attrib.items()])
+        node.attrib = collections.OrderedDict([(x, y) for x, y in sorted(node.attrib.items(), key=lambda t: t[0])])
 
 
 def get_node(node, field_code):

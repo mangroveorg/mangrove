@@ -24,9 +24,8 @@ class Xform(object):
         _child_node(_child_node(_child_node(root_node or self.root_node, 'head'), 'model'), 'instance')._children[0]
 
     def instance_node(self, node):
-        instance_node = self._instance_root_node()
         if node == self.get_body_node():
-            return instance_node
+            return self._instance_root_node()
         node_name = node.attrib['ref'].split('/')[-1]
         return self.instance_node_given_name(node_name)
 
@@ -39,8 +38,12 @@ class Xform(object):
     def get_bind_node_by_name(self, name):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', name)
 
+    def get_readonly_bind_nodes(self):
+        return itertools.ifilter(lambda child: not child.attrib.get('nodeset').endswith('instanceID'),
+                                 child_nodes_given_attr(self._model_node(), 'bind', 'readonly', 'true()'))
+
     def remove_bind_node(self, node):
-        bind_node = self.bind_node(node)
+        bind_node = node if node.tag.endswith('bind') else self.bind_node(node)
         remove_node(self._model_node(), bind_node)
 
     def remove_bind_node_given_name(self, name):
@@ -85,6 +88,14 @@ class Xform(object):
     def add_instance_node(self, parent_node, instance_node):
         self.instance_node(parent_node).append(instance_node)
 
+    def add_node_given_parent_node(self, parent_node, node):
+        if parent_node != self.get_body_node():
+            parent_node_name = parent_node.attrib.get('ref').split('/')[-1]
+            parent_node =  itertools.ifilter(lambda child: child.attrib.get('ref') is not None and
+                                                           child.attrib.get('ref').endswith(parent_node_name),
+                                             self.get_body_node().iter()).next()
+        add_node(parent_node, node)
+
     def _add_useful_cascade_instance_ids(self, node, useful_cascade_instance_ids):
         if _child_node(node, "itemset") is not None:
             useful_cascade_instance_ids.append(self._cascade_instance_id(node))
@@ -104,6 +115,32 @@ class Xform(object):
                     remove_node(self._translation_root_node(), translation_node)
 
                 remove_node(self._model_node(), node)
+
+    def node_given_bind_node(self, bind_node):
+        def _has_child_with_ref(node, value):
+            return node._children and _child_node_given_attr(node, None, 'ref', value) is not None
+
+        node = itertools.ifilter(lambda child: _has_child_with_ref(child, bind_node.attrib.get('nodeset')),
+                                 self.get_body_node().iter()).next()
+
+        return (node, _child_node_given_attr(node, None, 'ref', bind_node.attrib.get('nodeset')))
+
+    def instance_node_given_bind_node(self, bind_node):
+        def _has_child_with_tag(node, value):
+            return node._children and _child_node(node, value) is not None
+
+        node = itertools.ifilter(lambda child: _has_child_with_tag(child, bind_node.attrib.get('nodeset').split('/')[-1]),
+                                 self._instance_root_node().iter()).next()
+
+        return (node, _child_node(node, bind_node.attrib.get('nodeset').split('/')[-1]))
+
+    def remove_node_given_bind_node(self, bind_node):
+        parent_node, node = self.node_given_bind_node(bind_node)
+        remove_node(parent_node, node)
+
+    def remove_instance_node_given_bind_node(self, bind_node):
+        parent_node, node = self.instance_node_given_bind_node(bind_node)
+        remove_node(parent_node, node)
 
     def sort(self):
         _sort(self._instance_root_node(), lambda node: node.tag)
@@ -142,8 +179,12 @@ def _sort(node, key):
 
 def _sort_attrib(nodes):
     for node in nodes:
-        node.attrib = dict([(re.sub('\{http://[^ ]*\}', '', key), value) for key, value in node.attrib.items()])
+        node.attrib = dict([(_remove_namespace_from_tagname(key), value) for key, value in node.attrib.items()])
         node.attrib = collections.OrderedDict([(x, y) for x, y in sorted(node.attrib.items(), key=lambda t: t[0])])
+
+
+def _remove_namespace_from_tagname(tagname):
+    return re.sub('\{http://[^ ]*\}', '', tagname)
 
 
 def get_node(node, field_code):
@@ -201,6 +242,14 @@ def child_nodes(node, tag):
     return child_nodes
 
 
+def child_nodes_given_attr(node, tag, key, value):
+    child_nodes = []
+    for child in node:
+        if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
+            child_nodes.append(child)
+    return child_nodes
+
+
 def node_has_child(node, child_tag, child_value):
     return _child_node(node, child_tag) is not None and _child_node(node, child_tag).text == child_value
 
@@ -226,7 +275,9 @@ def _child_node(node, tag):
         if child.tag.endswith(tag):
             return child
 
+
 def _child_node_given_attr(node, tag, key, value):
     for child in node:
-        if child.tag.endswith(tag) and child.attrib.get(key) and child.attrib.get(key).endswith(value):
+        tag_condition = True if tag is None else child.tag.endswith(tag)
+        if tag_condition and child.attrib.get(key) and child.attrib.get(key).endswith(value):
             return child

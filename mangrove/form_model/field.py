@@ -589,7 +589,7 @@ class TextField(Field):
 
     def __init__(self, name, code, label, constraints=None, defaultValue="", instruction=None,
                  required=True, parent_field_code=None, is_calculated=False, hint=None, constraint_message=None,
-                 appearance=None, default=None, xform_constraint=None, relevant=None):
+                 appearance=None, default=None, xform_constraint=None, relevant=None, is_other=None):
         if not constraints: constraints = []
         assert isinstance(constraints, list)
         Field.__init__(self, type=field_attributes.TEXT_FIELD, name=name, code=code,
@@ -600,6 +600,7 @@ class TextField(Field):
         self.value = self._dict[self.DEFAULT_VALUE] = defaultValue if defaultValue is not None else ""
         if is_calculated:
             self.is_calculated = True
+        self.is_other = True if is_other is not None and is_other else False
 
     @property
     def is_calculated(self):

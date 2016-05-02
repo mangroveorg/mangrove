@@ -234,7 +234,7 @@ class Project(FormModel):
     def is_open_survey(self, value):
         self._doc.is_open_survey = value
 
-    def has_attachment(self):
+    def has_questionnaire_attachment(self):
         try:  # find a better way to check attachement exisits
             attachment = self.get_attachments('questionnaire.xls')
             return True, attachment, 'xls'
@@ -253,8 +253,11 @@ class Project(FormModel):
             return False, None, None
 
     def update_attachments(self, attachments, attachment_name):
-        extension = self.has_attachment()[2]
-        self.delete_attachment(self._doc, "questionnaire%s" % extension)
+        if attachment_name == 'questionnaire_as_dict_for_builder':
+            self.delete_attachment(self._doc, 'questionnaire_as_dict_for_builder')
+        else:
+            extension = self.has_questionnaire_attachment()[2]
+            self.delete_attachment(self._doc, "questionnaire.%s" % extension)
         self.add_attachments(attachments, attachment_name)
 
     def update_external_itemset(self, itemset):

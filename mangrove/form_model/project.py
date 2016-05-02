@@ -252,6 +252,11 @@ class Project(FormModel):
         except LookupError:
             return False, None, None
 
+    def update_attachments(self, attachments, attachment_name):
+        extension = self.has_attachment()[2]
+        self.delete_attachment(self._doc, "questionnaire%s" % extension)
+        self.add_attachments(attachments, attachment_name)
+
     def update_external_itemset(self, itemset):
         if len(self.external_choice_questions) == 0 and self.has_external_itemset():
             self.delete_attachment(self._doc, "itemsets.csv")

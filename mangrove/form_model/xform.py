@@ -167,8 +167,9 @@ class Xform(object):
         return "".join(data)
 
     def equals(self, another_xform):
-        return re.sub('ns[0-9]:', '', self._to_string()) == re.sub('ns[0-9]:', '',
-                                                                   self._to_string(another_xform.root_node))
+        current_xform_as_str = re.sub('ns[0-9]:', '', self._to_string())
+        another_xform_as_str = re.sub('ns[0-9]:', '',self._to_string(another_xform.root_node))
+        return current_xform_as_str == another_xform_as_str
 
 
 def _sort(node, key):

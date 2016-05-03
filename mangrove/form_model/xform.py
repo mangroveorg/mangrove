@@ -8,7 +8,7 @@ import re
 class Xform(object):
     def __init__(self, xform):
         ET.register_namespace('', 'http://www.w3.org/2002/xforms')
-        self.root_node = ET.fromstring(xform)
+        self.root_node = ET.fromstring(xform.encode('utf-8'))
 
     def get_body_node(self):
         return self.root_node._children[1]
@@ -150,7 +150,7 @@ class Xform(object):
 
     def change_instance_id(self, another_xform):
         xform_str = ET.tostring(self.root_node).replace(self._instance_id(), self._instance_id(another_xform.root_node))
-        self.root_node = ET.fromstring(xform_str)
+        self.root_node = ET.fromstring(xform_str.encode('utf-8'))
 
     def _to_string(self, root_node=None):
         data = []

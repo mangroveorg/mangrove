@@ -27,10 +27,10 @@ class Xform(object):
         if node == self.get_body_node():
             return self._instance_root_node()
         node_name = node.attrib['ref'].split('/')[-1]
-        return self.instance_node_given_name(node_name)
+        return self.instance_node_given_name(node_name).next()
 
     def instance_node_given_name(self, node_name):
-        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter()).next()
+        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter())
 
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])
@@ -83,7 +83,7 @@ class Xform(object):
         self.instance_node(parent_node).remove(self.instance_node(node))
 
     def remove_instance_node_given_name(self, parent_node, name):
-        self.instance_node(parent_node).remove(self.instance_node_given_name(name))
+        self.instance_node(parent_node).remove(self.instance_node_given_name(name).next())
 
     def add_instance_node(self, parent_node, instance_node):
         self.instance_node(parent_node).append(instance_node)
@@ -126,13 +126,13 @@ class Xform(object):
         return (node, _child_node_given_attr(node, None, 'ref', bind_node.attrib.get('nodeset')))
 
     def instance_node_given_bind_node(self, bind_node):
-        def _has_child_with_tag(node, value):
-            return node._children and _child_node(node, value) is not None
-
-        node = itertools.ifilter(lambda child: _has_child_with_tag(child, bind_node.attrib.get('nodeset').split('/')[-1]),
-                                 self._instance_root_node().iter()).next()
-
-        return (node, _child_node(node, bind_node.attrib.get('nodeset').split('/')[-1]))
+        parent_node, node = self.node_given_bind_node(bind_node)
+        instance_node_iter = self.instance_node_given_name(node.attrib['ref'].split('/')[-1])
+        parent_instance_node = self.instance_node(parent_node)
+        instance_node = instance_node_iter.next()
+        while instance_node not in parent_instance_node:
+            instance_node = instance_node_iter.next()
+        return parent_instance_node, instance_node
 
     def remove_node_given_bind_node(self, bind_node):
         parent_node, node = self.node_given_bind_node(bind_node)

@@ -924,7 +924,6 @@ class SelectField(Field):
     def get_option_list(self, question_value):
         if question_value is None: return []
 
-        question_value = question_value.lower()
 
         if ',' in question_value:
             responses = question_value.split(',')

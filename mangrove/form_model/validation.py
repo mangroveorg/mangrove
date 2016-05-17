@@ -92,7 +92,7 @@ class ChoiceConstraint(object):
         # if self.has_other and isinstance(answer, list) and answer[0] == 'other':
         #     answer_string = answer[1]
         # else:
-        answer_string = answer.lower().strip()
+        answer_string = answer.strip()
 
         if not answer_string:
             raise AnswerHasNoValuesException(code=self.code, answer=answer)

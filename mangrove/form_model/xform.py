@@ -91,9 +91,10 @@ class Xform(object):
     def add_node_given_parent_node(self, parent_node, node):
         if parent_node != self.get_body_node():
             parent_node_name = parent_node.attrib.get('ref').split('/')[-1]
-            parent_node =  itertools.ifilter(lambda child: child.attrib.get('ref') is not None and
-                                                           child.attrib.get('ref').endswith(parent_node_name),
-                                             self.get_body_node().iter()).next()
+            parent_node = itertools.ifilter(
+                lambda child: child.attrib.get('ref') is not None and child.attrib.get('ref').endswith(parent_node_name),
+                self.get_body_node().iter()
+            ).next()
         add_node(parent_node, node)
 
     def _add_useful_cascade_instance_ids(self, node, useful_cascade_instance_ids):
@@ -118,12 +119,16 @@ class Xform(object):
 
     def node_given_bind_node(self, bind_node):
         def _has_child_with_ref(node, value):
-            return node._children and _child_node_given_attr(node, None, 'ref', value) is not None
+            if not node._children:
+                return False
+            if _child_node(node, 'repeat') is not None:
+                return _child_node_given_attr(_child_node(node, 'repeat'), None, 'ref', value) is not None
+            return _child_node_given_attr(node, None, 'ref', value) is not None
 
         node = itertools.ifilter(lambda child: _has_child_with_ref(child, bind_node.attrib.get('nodeset')),
                                  self.get_body_node().iter()).next()
-
-        return (node, _child_node_given_attr(node, None, 'ref', bind_node.attrib.get('nodeset')))
+        return (node, _child_node_given_attr(node if _child_node(node, 'repeat') is None else _child_node(node, 'repeat'),
+                                             None, 'ref', bind_node.attrib.get('nodeset')))
 
     def instance_node_given_bind_node(self, bind_node):
         parent_node, node = self.node_given_bind_node(bind_node)
@@ -140,7 +145,7 @@ class Xform(object):
 
     def remove_instance_node_given_bind_node(self, bind_node):
         parent_node, node = self.instance_node_given_bind_node(bind_node)
-        remove_node(parent_node, node)
+        parent_node._children.remove(node)
 
     def sort(self):
         _sort(self._instance_root_node(), lambda node: node.tag)

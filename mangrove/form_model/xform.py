@@ -86,16 +86,22 @@ class Xform(object):
         self.instance_node(parent_node).remove(self.instance_node_given_name(name).next())
 
     def add_instance_node(self, parent_node, instance_node):
-        self.instance_node(parent_node).append(instance_node)
+        try:
+            self.instance_node(parent_node).append(instance_node)
+        except StopIteration:
+            pass
 
     def add_node_given_parent_node(self, parent_node, node):
         if parent_node != self.get_body_node():
             parent_node_name = parent_node.attrib.get('ref').split('/')[-1]
-            parent_node = itertools.ifilter(
-                lambda child: child.attrib.get('ref') is not None and child.attrib.get('ref').endswith(parent_node_name),
-                self.get_body_node().iter()
-            ).next()
-        add_node(parent_node, node)
+            try:
+                parent_node = itertools.ifilter(
+                    lambda child: child.attrib.get('ref') is not None and child.attrib.get('ref').endswith(parent_node_name),
+                    self.get_body_node().iter()
+                ).next()
+                add_node(parent_node, node)
+            except StopIteration:
+                pass
 
     def _add_useful_cascade_instance_ids(self, node, useful_cascade_instance_ids):
         if _child_node(node, "itemset") is not None:

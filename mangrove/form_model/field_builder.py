@@ -169,8 +169,9 @@ class QuestionBuilder(object):
     def _create_select_external_question(self, post_dict, code):
         return SelectOneExternalField(name=self._get_name(post_dict), code=code, label=post_dict["title"],
                                       instruction=post_dict.get("instruction"), required=post_dict.get("required"),
-                                      parent_field_code=post_dict.get('parent_field_code'),
-                                      query=post_dict.get('query'))
+                                      parent_field_code=post_dict.get('parent_field_code'), hint=post_dict.get('hint'),
+                                      appearance=post_dict.get('appearance'), default=post_dict.get('default'),
+                                      relevant=post_dict.get('relevant'))
 
     def _create_telephone_number_question(self, post_dict, code):
         return TelephoneNumberField(name=self._get_name(post_dict), code=code,
@@ -184,7 +185,7 @@ class QuestionBuilder(object):
                                     xform_constraint=post_dict.get('xform_constraint'),
                                     relevant=post_dict.get('relevant'))
 
-    def _create_constraints_for_mobile_number(s_create_short_code_fieldelf):
+    def _create_constraints_for_mobile_number(self):
         mobile_number_length = TextLengthConstraint(max=15)
         mobile_number_pattern = RegexConstraint(reg='^[0-9]+$')
         mobile_constraints = [mobile_number_length, mobile_number_pattern]

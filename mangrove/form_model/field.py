@@ -63,8 +63,8 @@ def create_question_from(dictionary, dbm):
         return _get_select_field(code, dictionary, label, name, type, instruction, required, parent_field_code, hint,
                                  constraint_message, appearance, default, xform_constraint, relevant)
     elif type == field_attributes.SELECT_ONE_EXTERNAL_FIELD:
-        return _get_select_one_external_field(code, dictionary, label, name, type, instruction, required,
-                                              parent_field_code)
+        return _get_select_one_external_field(code, label, name, instruction, required,
+                                              parent_field_code, hint, appearance, default, relevant)
     elif type == field_attributes.LIST_FIELD:
         return _get_list_field(name, code, label, instruction, required, parent_field_code, hint, constraint_message,
                                appearance, default, xform_constraint, relevant)
@@ -244,13 +244,12 @@ def _get_select_field(code, dictionary, label, name, type, instruction, required
     return field
 
 
-def _get_select_one_external_field(code, dictionary, label, name, type, instruction, required, parent_field_code):
-    query = dictionary.get("query")
+def _get_select_one_external_field(code, label, name, instruction, required, parent_field_code, hint, appearance, default, relevant):
 
     field = SelectOneExternalField(name=name, code=code, label=label,
                                    instruction=instruction, required=required,
                                    parent_field_code=parent_field_code,
-                                   query=query)
+                                   hint=hint, appearance=appearance, default=default, relevant=relevant)
 
     return field
 
@@ -732,10 +731,12 @@ class UniqueIdUIField(UniqueIdField):
 
 
 class SelectOneExternalField(Field):
-    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, query=None):
+    def __init__(self, name, code, label, instruction=None, required=True, parent_field_code=None, hint=None,
+                 appearance=None, default=None, relevant=None):
         type = field_attributes.SELECT_ONE_EXTERNAL_FIELD
         Field.__init__(self, type=type, name=name, code=code,
-                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code)
+                       label=label, instruction=instruction, required=required, parent_field_code=parent_field_code,
+                       hint=hint, appearance=appearance, default=default, relevant=relevant)
 
     def get_option_value_list(self, question_value, itemset_data):
         lines = re.sub('"', '', itemset_data).split('\n')
@@ -923,7 +924,6 @@ class SelectField(Field):
 
     def get_option_list(self, question_value):
         if question_value is None: return []
-
 
         if ',' in question_value:
             responses = question_value.split(',')

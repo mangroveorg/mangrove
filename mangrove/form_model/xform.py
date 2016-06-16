@@ -30,7 +30,7 @@ class Xform(object):
         return self.instance_node_given_name(node_name).next()
 
     def instance_node_given_name(self, node_name):
-        return itertools.ifilter(lambda child: child.tag.endswith(node_name), self._instance_root_node().iter())
+        return itertools.ifilter(lambda child: _remove_namespace_from_tagname(child.tag) == node_name, self._instance_root_node().iter())
 
     def bind_node(self, node):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', node.attrib['ref'])

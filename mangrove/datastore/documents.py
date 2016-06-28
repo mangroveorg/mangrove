@@ -431,3 +431,12 @@ class UserQuestionnairePreferenceDocument(DocumentBase):
 
     def __init__(self):
         DocumentBase.__init__(self, document_type='UserQuestionnairePreference')
+
+
+class EntityPreferenceDocument(DocumentBase):
+    org_id = TextField()
+    entity_type = TextField()
+    share_token = TextField()
+
+    def __init__(self):
+        DocumentBase.__init__(self, document_type='EntityPreference')

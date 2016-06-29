@@ -6,10 +6,16 @@ from mangrove.datastore.documents import EntityPreferenceDocument
 
 def get_entity_preference(manager, org_id, entity_type):
     rows = manager.load_all_rows_in_view('entity_preference', key=[org_id, entity_type])
-    entity_preference = None
     if len(rows):
-        entity_preference = EntityPreference.new_from_doc(manager, EntityPreferenceDocument.wrap(rows[0]['value']))
-    return entity_preference
+        return EntityPreference.new_from_doc(manager, EntityPreferenceDocument.wrap(rows[0]['value']))
+    return None
+
+
+def get_entity_preference_by_share_token(manager, share_token):
+    rows = manager.load_all_rows_in_view('entity_preference_by_share_token', key=share_token)
+    if len(rows):
+       return EntityPreference.new_from_doc(manager, EntityPreferenceDocument.wrap(rows[0]['value']))
+    return None
 
 
 def save_entity_preference(manager, org_id, entity_type):
@@ -34,3 +40,11 @@ class EntityPreference(DataObject):
     @property
     def share_token(self):
         return self._doc.share_token
+
+    @property
+    def entity_type(self):
+        return self._doc.entity_type
+
+    @property
+    def org_id(self):
+        return self._doc.org_id

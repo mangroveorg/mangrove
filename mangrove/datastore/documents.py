@@ -1,8 +1,6 @@
 import logging
 
-from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, \
-    IntegerField, \
-    Mapping
+from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, IntegerField
 import datetime
 import calendar
 from uuid import uuid1
@@ -439,10 +437,6 @@ class EntityPreferenceDocument(DocumentBase):
     org_id = TextField()
     entity_type = TextField()
     share_token = TextField()
-    filters = ListField(DictField(Mapping.build(
-        name=TextField(),
-        label=TextField()
-    )))
 
     def __init__(self):
         DocumentBase.__init__(self, document_type='EntityPreference')

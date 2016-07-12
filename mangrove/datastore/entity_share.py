@@ -18,11 +18,15 @@ def get_entity_preference_by_share_token(manager, share_token):
     return None
 
 
-def save_entity_preference(manager, org_id, entity_type, preferences=None):
+def save_entity_preference(manager, org_id, entity_type, filters=None):
     entity_preference = get_entity_preference(manager, org_id, entity_type)
+
     if entity_preference is None:
         entity_preference = EntityPreference(manager, org_id, entity_type, uuid.uuid1())
-    entity_preference.set_preferences(preferences)
+
+    if filters is not None:
+        entity_preference.set_filters(filters)
+
     entity_preference.save()
     return entity_preference
 
@@ -30,13 +34,13 @@ def save_entity_preference(manager, org_id, entity_type, preferences=None):
 class EntityPreference(DataObject):
     __document_class__ = EntityPreferenceDocument
 
-    def __init__(self, dbm, org_id=None, entity_type=None, share_token=None, preferences=None, **kwargs):
+    def __init__(self, dbm, org_id=None, entity_type=None, share_token=None, filters=[], **kwargs):
         super(EntityPreference, self).__init__(dbm)
         doc = EntityPreferenceDocument()
         doc.org_id = org_id
         doc.entity_type = entity_type
         doc.share_token = share_token
-        self.set_preferences(preferences)
+        doc.filters = filters
 
         DataObject._set_document(self, doc)
 
@@ -56,6 +60,5 @@ class EntityPreference(DataObject):
     def filters(self):
         return self._doc.filters
 
-    def set_preferences(self, preferences=None):
-        if preferences:
-            self._doc.filters = preferences.get('filters')
+    def set_filters(self, filters):
+        self._doc.filters = filters

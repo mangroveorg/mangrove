@@ -904,7 +904,7 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
         kwargs['limit'] = limit
 
     rows = dbm.view.by_short_codes(**kwargs)
-    return [from_row_to_entity(dbm, row) for row in rows if _is_filtered(row, filters)]
+    return [from_row_to_entity(dbm, row) for row in rows if filters is None or _is_filtered(row, filters)]
 
 
 def _is_filtered(row, filters):

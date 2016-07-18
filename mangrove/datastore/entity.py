@@ -129,12 +129,12 @@ def get_by_short_code_include_voided(dbm, short_code, entity_type):
     assert is_sequence(entity_type)
     return _entity_by_short_code(dbm, short_code.lower(), entity_type)
 
-def get_all_entities(dbm, entity_type=None, limit=None):
+def get_all_entities(dbm, entity_type=None, limit=None, filters=None):
     """
     Returns all the entities in the Database
     """
     if entity_type is not None:
-        return _get_all_entities_of_type(dbm, entity_type, limit)
+        return _get_all_entities_of_type(dbm, entity_type, limit, filters)
     else:
         return _get_all_entities(dbm, limit)
 
@@ -893,7 +893,7 @@ def _get_all_entities(dbm, limit=None):
     return [from_row_to_entity(dbm, row) for row in rows]
 
 
-def _get_all_entities_of_type(dbm, entity_type, limit=None):
+def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
     kwargs = {
                 'startkey': [entity_type],
                 'endkey': [entity_type, {}],
@@ -904,7 +904,12 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None):
         kwargs['limit'] = limit
 
     rows = dbm.view.by_short_codes(**kwargs)
-    return [from_row_to_entity(dbm, row) for row in rows]
+    return [from_row_to_entity(dbm, row) for row in rows if _is_filtered(row, filters)]
+
+
+def _is_filtered(row, filters):
+    data = row.doc['data']
+    return all(data.get(f) and set(filters[f]).intersection(set(data.get(f)['value'])) for f in filters)
 
 
 def get_all_entities_include_voided(dbm, entity_type):

@@ -441,6 +441,7 @@ class EntityPreferenceDocument(DocumentBase):
     share_token = TextField()
     filters = ListField(TextField())
     details = ListField(TextField())
+    specials = ListField(TextField())
 
     def __init__(self):
         DocumentBase.__init__(self, document_type='EntityPreference')

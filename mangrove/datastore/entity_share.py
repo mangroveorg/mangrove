@@ -18,7 +18,7 @@ def get_entity_preference_by_share_token(manager, share_token):
     return None
 
 
-def save_entity_preference(manager, org_id, entity_type, filters=None, details=None):
+def save_entity_preference(manager, org_id, entity_type, filters=None, details=None, specials=None):
     entity_preference = get_entity_preference(manager, org_id, entity_type)
 
     if entity_preference is None:
@@ -30,6 +30,9 @@ def save_entity_preference(manager, org_id, entity_type, filters=None, details=N
     if details is not None:
         entity_preference.set_details(details)
 
+    if specials is not None:
+        entity_preference.set_specials(specials)
+
     entity_preference.save()
     return entity_preference
 
@@ -37,14 +40,12 @@ def save_entity_preference(manager, org_id, entity_type, filters=None, details=N
 class EntityPreference(DataObject):
     __document_class__ = EntityPreferenceDocument
 
-    def __init__(self, dbm, org_id=None, entity_type=None, share_token=None, filters=[], details=[], **kwargs):
+    def __init__(self, dbm, org_id=None, entity_type=None, share_token=None, **kwargs):
         super(EntityPreference, self).__init__(dbm)
         doc = EntityPreferenceDocument()
         doc.org_id = org_id
         doc.entity_type = entity_type
         doc.share_token = share_token
-        doc.filters = filters
-        doc.details = details
 
         DataObject._set_document(self, doc)
 
@@ -68,8 +69,15 @@ class EntityPreference(DataObject):
     def details(self):
         return self._doc.details
 
+    @property
+    def specials(self):
+        return self._doc.specials
+
     def set_filters(self, filters):
         self._doc.filters = filters
 
     def set_details(self, details):
         self._doc.details = details
+
+    def set_specials(self, specials):
+        self._doc.specials = specials

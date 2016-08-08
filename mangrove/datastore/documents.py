@@ -442,6 +442,6 @@ class EntityPreferenceDocument(DocumentBase):
     filters = ListField(TextField())
     details = ListField(TextField())
     specials = DictField()
-
+    fallback_location = DictField()
     def __init__(self):
         DocumentBase.__init__(self, document_type='EntityPreference')

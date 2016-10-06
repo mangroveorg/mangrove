@@ -67,11 +67,11 @@ def get_user_questionnaire_preference(manager, user_id, project_id):
 
 def _convert_field_to_preference(manager, field, preferences, project_id, key=None, is_group_child=False, parent_field_types=()):
     if is_group_child:
-        key = project_id + '_' + field.parent_field_code + '-' + field.code
+        key = project_id + '_' + field.parent_field_code + '-' + field.code.replace(".", " ")
     elif key:
-        key = key + '.' + field.code
+        key = key + '.' + field.code.replace(".", " ")
 
-    data = project_id + '_' + field.code if not key else key
+    data = project_id + '_' + field.code.replace(".", " ") if not key else key
     if field.type in ['unique_id']:
         data += '_details'
     

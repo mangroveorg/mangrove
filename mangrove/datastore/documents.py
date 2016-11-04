@@ -445,3 +445,9 @@ class EntityPreferenceDocument(DocumentBase):
     fallback_location = DictField()
     def __init__(self):
         DocumentBase.__init__(self, document_type='EntityPreference')
+
+
+class ReportConfigDocument(DocumentBase):
+    name = TextField()
+    def __init__(self):
+        DocumentBase.__init__(self, document_type='ReportConfig')

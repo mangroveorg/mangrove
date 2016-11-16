@@ -18,10 +18,10 @@ def convert_dict_keys_to_lowercase(dictionary):
     return dictionary
 
 
-def get_survey_responses_by_form_model_id(dbm, form_model_id, batch_size=1000):
+def get_survey_responses_by_form_model_id(dbm, form_model_id, batch_size=1000, skip=0):
         start_key = [form_model_id] if form_model_id else []
         end_key = [form_model_id, {}] if form_model_id else [{}, {}]
-        return dbm.database.iterview("surveyresponse/surveyresponse", batch_size, reduce=False, include_docs=False, startkey=start_key, endkey=end_key)
+        return dbm.database.iterview("surveyresponse/surveyresponse", batch_size, reduce=False, include_docs=False, startkey=start_key, endkey=end_key, skip=skip)
 
 
 class SurveyResponse(DataObject):

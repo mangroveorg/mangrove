@@ -36,10 +36,16 @@ class ReportConfig(DataObject):
         return self._doc.questionnaires
 
     def template(self):
-        return self.get_attachment(self._doc.id, filename="index.html")
+        return self._get_attachment("index.html")
 
     def stylesheet(self):
+        return self._get_attachment("styles.css")
+
+    def font_file(self, file_name):
+        return self._get_attachment(file_name)
+
+    def _get_attachment(self, file_name):
         try:
-            return self.get_attachment(self._doc.id, filename="styles.css")
+            return self.get_attachment(self._doc.id, filename=file_name)
         except LookupError:
             return ''

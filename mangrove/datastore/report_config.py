@@ -37,3 +37,9 @@ class ReportConfig(DataObject):
 
     def template(self):
         return self.get_attachment(self._doc.id, filename="index.html")
+
+    def stylesheet(self):
+        try:
+            return self.get_attachment(self._doc.id, filename="styles.css")
+        except LookupError:
+            return ''

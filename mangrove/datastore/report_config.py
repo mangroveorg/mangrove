@@ -35,6 +35,10 @@ class ReportConfig(DataObject):
     def questionnaires(self):
         return self._doc.questionnaires
 
+    @property
+    def filters(self):
+        return self._doc.filters
+
     def template(self):
         return self._get_attachment("index.html")
 

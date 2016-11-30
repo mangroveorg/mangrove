@@ -30,6 +30,15 @@ def get_total_number_of_survey_reponse_by_form_model_id(dbm, form_model_id):
     return dbm.database.iterview("surveyresponse/surveyresponse", 1, rereduce=True, include_docs=False, startkey=start_key, endkey=end_key)
 
 
+def get_survey_response_by_report_view_name(dbm, report_view_name, batch_size=1000, skip=0, start_key=None, end_key=None):
+    options = {'skip': skip, 'reduce': False, 'include_docs': True}
+    if start_key:
+        options['startkey'] = start_key
+    if end_key:
+        options['endkey'] = end_key
+    return dbm.database.iterview(report_view_name + "/" + report_view_name, batch_size, **options)
+
+
 class SurveyResponse(DataObject):
     __document_class__ = SurveyResponseDocument
 

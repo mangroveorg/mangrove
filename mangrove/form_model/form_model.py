@@ -12,7 +12,7 @@ from mangrove.errors.MangroveException import FormModelDoesNotExistsException, Q
     DataObjectAlreadyExists, QuestionAlreadyExistsException, NoDocumentError
 from mangrove.form_model import field
 from mangrove.form_model.field import UniqueIdField, ShortCodeField, FieldSet, MediaField, UniqueIdUIField, \
-    SelectOneExternalField
+    SelectOneExternalField, DateField, SelectField
 from mangrove.form_model.validator_factory import validator_factory
 from mangrove.form_model.xform import Xform, get_node, add_node, remove_attrib
 from mangrove.form_model.validators import MandatoryValidator
@@ -731,6 +731,27 @@ class FormModel(DataObject):
     @property
     def is_open_survey(self):
         return self._doc.get('is_open_survey', False)
+
+    def special_questions(self, questions=None, path=""):
+        temp_path = path
+        temp_questions = {"entity_questions": [], "choice_questions": [], "date_questions": []}
+        for question in questions or self.fields:
+            if isinstance(question, UniqueIdField):
+                setattr(question, "path", path[:-1])
+                temp_questions["entity_questions"].append(question)
+            elif isinstance(question, DateField):
+                setattr(question, "path", path[:-1])
+                temp_questions["date_questions"].append(question)
+            elif isinstance(question, SelectField):
+                setattr(question, "path", path[:-1])
+                temp_questions["choice_questions"].append(question)
+            elif isinstance(question, FieldSet):
+                temp_path += question.code + "."
+                intermediate_questions = self.special_questions(question.fields, temp_path)
+                temp_questions["date_questions"].extend(intermediate_questions["date_questions"])
+                temp_questions["choice_questions"].extend(intermediate_questions["choice_questions"])
+                temp_questions["entity_questions"].extend(intermediate_questions["entity_questions"])
+        return temp_questions
 
 
 class EntityFormModel(FormModel):

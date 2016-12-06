@@ -2,13 +2,14 @@
 
 import copy
 from datetime import datetime
+
+from database import DatabaseManager, DataObject
 from documents import EntityDocument, DataRecordDocument, attributes, ContactDocument
 from mangrove.datastore.entity_type import entity_type_already_defined
 from mangrove.errors.MangroveException import DataObjectAlreadyExists, EntityTypeDoesNotExistsException, DataObjectNotFound
+from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
 from mangrove.utils.types import is_empty
 from mangrove.utils.types import is_not_empty, is_sequence, is_string
-from mangrove.utils.dates import utcnow, convert_date_time_to_epoch
-from database import DatabaseManager, DataObject
 
 
 def void_entity(dbm, entity_type, short_code):
@@ -139,11 +140,11 @@ def get_all_entities(dbm, entity_type=None, limit=None, filters=None):
         return _get_all_entities(dbm, limit)
 
 
-def get_short_codes_by_entity_type(dbm, entity_type):
+def get_short_codes_by_entity_type(dbm, entity_type, filters=None):
     startkey = [entity_type]
     endkey = [entity_type, {}]
-    rows = dbm.view.by_short_codes(reduce=False, include_docs=False, startkey=startkey, endkey=endkey)
-    return [row.key[1] for row in rows]
+    rows = dbm.view.by_short_codes(reduce=False, include_docs=filters is not None, startkey=startkey, endkey=endkey)
+    return [row.key[1] for row in rows if filters is None or _is_filtered(row, filters)]
 
 
 def get_entities_by_value(dbm, label, value, as_of=None):
@@ -909,7 +910,7 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
 
 def _is_filtered(row, filters):
     data = row.doc['data']
-    return all(data.get(f) and set(filters[f]).intersection(set(data.get(f)['value'])) for f in filters)
+    return all(data.get(f) and (isinstance(filters[f], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or filters[f] == data.get(f)['value']) for f in filters)
 
 
 def get_all_entities_include_voided(dbm, entity_type):

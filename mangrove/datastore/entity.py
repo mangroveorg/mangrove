@@ -910,7 +910,11 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
 
 def _is_filtered(row, filters):
     data = row.doc['data']
-    return all(data.get(f) and (isinstance(filters[f], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or filters[f] == data.get(f)['value']) for f in filters)
+    return all(data.get(f) and (
+        isinstance(data.get(f)['value'], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or
+        isinstance(data.get(f)['value'], datetime) and (filters[f][0] <= data.get(f)['value'] <= filters[f][1]) or
+        filters[f] == data.get(f)['value']
+    ) for f in filters)
 
 
 def get_all_entities_include_voided(dbm, entity_type):

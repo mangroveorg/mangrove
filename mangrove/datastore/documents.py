@@ -1,13 +1,12 @@
+import calendar
+import datetime
 import logging
+from time import struct_time
+from uuid import uuid1
 
 from couchdb.mapping import TextField, Document, DateTimeField, DictField, BooleanField, ListField, FloatField, \
-    IntegerField, \
-    Mapping
-import datetime
-import calendar
-from uuid import uuid1
-from time import struct_time
-from mangrove.utils.types import is_string
+    IntegerField
+
 from mangrove.utils.dates import py_datetime_to_js_datestring, js_datestring_to_py_datetime, utcnow
 
 
@@ -451,6 +450,7 @@ class ReportConfigDocument(DocumentBase):
     name = TextField()
     date_filter = DictField()
     filters = ListField(DictField())
+    sort_fields = ListField(TextField())
     questionnaires = ListField(DictField())
     def __init__(self):
         DocumentBase.__init__(self, document_type='ReportConfig')

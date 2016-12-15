@@ -43,6 +43,10 @@ class ReportConfig(DataObject):
     def filters(self):
         return self._doc.filters
 
+    @property
+    def sort_fields(self):
+        return self._doc.sort_fields
+
     def template(self):
         return self._get_attachment("index.html")
 

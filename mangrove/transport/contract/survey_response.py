@@ -24,21 +24,17 @@ def get_survey_responses_by_form_model_id(dbm, form_model_id, batch_size=1000, s
         return dbm.database.iterview("surveyresponse/surveyresponse", batch_size, reduce=False, include_docs=False, startkey=start_key, endkey=end_key, skip=skip)
 
 
-def get_total_number_of_survey_response_by_report_view_name(dbm, report_view_name, start_key=None, end_key=None):
-    options = {'reduce': True, 'include_docs': False}
-    if start_key:
-        options['startkey'] = start_key
-    if end_key:
-        options['endkey'] = end_key
+def get_total_number_of_survey_response_by_report_view_name(dbm, report_view_name, keys):
+    options = {'reduce': True, 'include_docs': False, 'group': True}
+    if keys:
+        options['keys'] = keys
     return dbm.database.view(report_view_name + "/" + report_view_name, **options)
 
 
-def get_survey_response_by_report_view_name(dbm, report_view_name, batch_size=1000, skip=0, start_key=None, end_key=None):
+def get_survey_response_by_report_view_name(dbm, report_view_name, keys, batch_size=1000, skip=0):
     options = {'skip': skip, 'reduce': False, 'include_docs': True}
-    if start_key:
-        options['startkey'] = start_key
-    if end_key:
-        options['endkey'] = end_key
+    if keys:
+        options['keys'] = keys
     return dbm.database.iterview(report_view_name + "/" + report_view_name, batch_size, **options)
 
 

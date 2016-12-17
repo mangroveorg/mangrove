@@ -449,7 +449,7 @@ class EntityPreferenceDocument(DocumentBase):
 
 class ReportConfigDocument(DocumentBase):
     name = TextField()
-    filters = ListField(TextField())
+    filters = ListField(DictField())
     questionnaires = ListField(DictField())
     def __init__(self):
         DocumentBase.__init__(self, document_type='ReportConfig')

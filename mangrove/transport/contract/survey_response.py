@@ -32,10 +32,10 @@ def get_total_number_of_survey_response_by_report_view_name(dbm, report_view_nam
 
 
 def get_survey_response_by_report_view_name(dbm, report_view_name, keys, batch_size=1000, skip=0):
-    options = {'skip': skip, 'reduce': False, 'include_docs': True}
+    options = {'limit': batch_size, 'skip': skip, 'reduce': False, 'include_docs': True}
     if keys:
         options['keys'] = keys
-    return dbm.database.iterview(report_view_name + "/" + report_view_name, batch_size, **options)
+    return dbm.database.view(report_view_name + "/" + report_view_name, **options)
 
 
 class SurveyResponse(DataObject):

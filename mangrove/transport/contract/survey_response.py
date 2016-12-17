@@ -24,10 +24,13 @@ def get_survey_responses_by_form_model_id(dbm, form_model_id, batch_size=1000, s
         return dbm.database.iterview("surveyresponse/surveyresponse", batch_size, reduce=False, include_docs=False, startkey=start_key, endkey=end_key, skip=skip)
 
 
-def get_total_number_of_survey_reponse_by_form_model_id(dbm, form_model_id):
-    start_key = [form_model_id] if form_model_id else []
-    end_key = [form_model_id, {}] if form_model_id else [{}, {}]
-    return dbm.database.iterview("surveyresponse/surveyresponse", 1, rereduce=True, include_docs=False, startkey=start_key, endkey=end_key)
+def get_total_number_of_survey_response_by_report_view_name(dbm, report_view_name, start_key=None, end_key=None):
+    options = {'reduce': True, 'include_docs': False}
+    if start_key:
+        options['startkey'] = start_key
+    if end_key:
+        options['endkey'] = end_key
+    return dbm.database.view(report_view_name + "/" + report_view_name, **options)
 
 
 def get_survey_response_by_report_view_name(dbm, report_view_name, batch_size=1000, skip=0, start_key=None, end_key=None):

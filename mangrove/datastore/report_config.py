@@ -36,6 +36,10 @@ class ReportConfig(DataObject):
         return self._doc.questionnaires
 
     @property
+    def date_filter(self):
+        return self._doc.date_filter
+
+    @property
     def filters(self):
         return self._doc.filters
 

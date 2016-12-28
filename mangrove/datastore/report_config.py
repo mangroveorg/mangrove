@@ -19,9 +19,14 @@ def get_report_config(manager, id):
 class ReportConfig(DataObject):
     __document_class__ = ReportConfigDocument
 
-    def __init__(self, dbm, **kwargs):
+    def __init__(self, dbm, name=None, questionnaires=None, **kwargs):
         super(ReportConfig, self).__init__(dbm)
         DataObject._set_document(self, ReportConfigDocument())
+        self._create_new_report_config_doc(dbm, name, questionnaires)
+
+    def _create_new_report_config_doc(self, dbm, name, questionnaires):
+        self._doc.name = name
+        self._doc.questionnaires = questionnaires
 
     @property
     def id(self):

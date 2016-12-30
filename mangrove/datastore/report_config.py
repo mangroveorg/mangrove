@@ -5,7 +5,8 @@ from mangrove.datastore.documents import ReportConfigDocument, ReportConfigDocum
 def get_report_configs(manager):
     rows = manager.load_all_rows_in_view('all_report_configs')
     if len(rows):
-        return [ReportConfigBase.config(manager, ReportConfigDocumentBase.document(row['value'])) for row in rows]
+        sorted_rows = sorted(rows, key=lambda row: 'order' in row['value'] and row['value']['order'] or 0)
+        return [ReportConfigBase.config(manager, ReportConfigDocumentBase.document(row['value'])) for row in sorted_rows]
     return None
 
 

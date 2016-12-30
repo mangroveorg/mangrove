@@ -446,11 +446,32 @@ class EntityPreferenceDocument(DocumentBase):
         DocumentBase.__init__(self, document_type='EntityPreference')
 
 
-class ReportConfigDocument(DocumentBase):
+class ReportConfigDocumentBase(DocumentBase):
+    name = TextField()
+    type = TextField()
+    def __init__(self):
+        DocumentBase.__init__(self, document_type='ReportConfig')
+
+    @classmethod
+    def document(cls, data):
+        if 'type' in data and data['type'] == 'ExternalConfig':
+            return ExternalReportConfigDocument.wrap(data)
+        else:
+            return ReportConfigDocument.wrap(data)
+
+
+class ReportConfigDocument(ReportConfigDocumentBase):
     name = TextField()
     date_filter = DictField()
     filters = ListField(DictField())
     sort_fields = ListField(TextField())
     questionnaires = ListField(DictField())
     def __init__(self):
-        DocumentBase.__init__(self, document_type='ReportConfig')
+        ReportConfigDocumentBase.__init__(self)
+
+
+class ExternalReportConfigDocument(ReportConfigDocumentBase):
+    url =TextField()
+    description = TextField()
+    def __init__(self):
+        ReportConfigDocumentBase.__init__(self)

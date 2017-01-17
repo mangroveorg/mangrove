@@ -355,6 +355,26 @@ class FormModel(DataObject):
         return False
 
     @property
+    def is_repeat_field_present(self):
+        is_repeat_present = False
+        nested_fields = self.has_nested_fields
+        if nested_fields:
+            is_repeat_present = self._is_repeat_present(nested_fields)
+        return is_repeat_present
+
+    def _is_repeat_present(self, fields):
+        flag = False
+        for f in fields:
+            if not f.is_group():
+                return True
+        for f in fields:
+            nested_fields_in_group = filter(lambda x: x.is_field_set, f.fields)
+            flag = self._is_repeat_present(nested_fields_in_group)
+            if flag:
+                break
+        return flag
+
+    @property
     def xform(self):
         return self._doc.xform
 

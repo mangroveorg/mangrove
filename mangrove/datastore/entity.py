@@ -16,7 +16,7 @@ def void_entity(dbm, entity_type, short_code):
     if is_string(entity_type):
         entity_type = [entity_type]
     entity = get_by_short_code(dbm, short_code, entity_type)
-    entity.void()
+    entity.invalidate()
 
 def void_contact(dbm, short_code):
     entity = contact_by_short_code(dbm, short_code)
@@ -840,6 +840,13 @@ class DataRecord(DataObject):
         return self._doc.void
 
 
+def void_data_record(dbm, form_code, short_code):
+    data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
+    for data_record in data_records:
+        data_record_doc = data_record.value
+        data_record_doc.void()
+
+
 def delete_data_record(dbm, form_code, short_code):
     data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
     for data_record in data_records:
@@ -872,13 +879,6 @@ def _make_short_code(entity_type, num):
     # todo: remove
     SHORT_CODE_FORMAT = "%s%s"
     entity_prefix = entity_type[-1].upper()[:3]
-    return SHORT_CODE_FORMAT % (entity_prefix, num)
-
-
-def _make_short_code(entity_type, num):
-    # todo: remove
-    SHORT_CODE_FORMAT = "%s%s"
-    entity_prefix = entity_type[-1].lower()[:3]
     return SHORT_CODE_FORMAT % (entity_prefix, num)
 
 

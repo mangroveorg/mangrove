@@ -67,7 +67,7 @@ class TestEntity(unittest.TestCase):
         data_record3 = DataRecord.get(self.manager, data_record_id3)
         return data_record1, data_record2, data_record3
 
-    def test_should_invalidate_entity_without_its_data_records(self):
+    def test_should_invalidate_entity_and_its_data_records(self):
         short_code = "short_code"
         entity_type = ["clinic"]
         e = Entity(self.manager, entity_type=entity_type, location=["India", "MH", "Pune"], short_code=short_code)
@@ -82,9 +82,9 @@ class TestEntity(unittest.TestCase):
 
         data_record1, data_record2, data_record3 = self._get_data_records(data_record_id1, data_record_id2,
                                                                           data_record_id3)
-        self.assertFalse(data_record1.is_void())
-        self.assertFalse(data_record2.is_void())
-        self.assertFalse(data_record3.is_void())
+        self.assertTrue(data_record1.is_void())
+        self.assertTrue(data_record2.is_void())
+        self.assertTrue(data_record3.is_void())
 
     def test_should_invalidate_entity_when_entity_type_is_string(self):
         short_code = "short_code"

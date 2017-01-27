@@ -18,6 +18,7 @@ def void_entity(dbm, entity_type, short_code):
     entity = get_by_short_code(dbm, short_code, entity_type)
     entity.invalidate()
 
+
 def void_contact(dbm, short_code):
     entity = contact_by_short_code(dbm, short_code)
     entity.void()
@@ -838,12 +839,6 @@ class DataRecord(DataObject):
     @property
     def voided(self):
         return self._doc.void
-
-
-def void_data_record(dbm, form_code, short_code):
-    data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
-    for data_record in data_records:
-        dbm.database.invalidate(data_record.id)
 
 
 def delete_data_record(dbm, form_code, short_code):

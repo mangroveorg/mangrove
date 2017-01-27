@@ -843,14 +843,14 @@ class DataRecord(DataObject):
 def void_data_record(dbm, form_code, short_code):
     data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
     for data_record in data_records:
-        data_record_doc = data_record.value
-        data_record_doc.void()
+        dbm.database.invalidate(data_record.id)
 
 
 def delete_data_record(dbm, form_code, short_code):
     data_records = dbm.view.data_record_by_form_code(key=[form_code, short_code])
     for data_record in data_records:
-        dbm.database.invalidate(data_record.id)
+        data_record_doc = data_record.value
+        dbm.database.delete(data_record_doc)
 
 
 def _check_if_entity_exists(dbm, entity_type, short_code, return_entity=False):

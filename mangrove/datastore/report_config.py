@@ -36,10 +36,7 @@ class ReportConfigBase(DataObject):
     def template(self):
         return self._get_attachment("index.html")
 
-    def stylesheet(self):
-        return self._get_attachment("styles.css")
-
-    def font_file(self, file_name):
+    def file(self, file_name):
         return self._get_attachment(file_name)
 
     def _get_attachment(self, file_name):

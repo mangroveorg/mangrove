@@ -449,6 +449,7 @@ class EntityPreferenceDocument(DocumentBase):
 class ReportConfigDocumentBase(DocumentBase):
     name = TextField()
     type = TextField()
+    template_url = TextField()
     def __init__(self):
         DocumentBase.__init__(self, document_type='ReportConfig')
 
@@ -456,6 +457,8 @@ class ReportConfigDocumentBase(DocumentBase):
     def document(cls, data):
         if 'type' in data and data['type'] == 'ExternalConfig':
             return ExternalReportConfigDocument.wrap(data)
+        elif 'type' in data and data['type'] == 'EntityConfig':
+            return EntityReportConfigDocument.wrap(data)
         else:
             return ReportConfigDocument.wrap(data)
 
@@ -473,5 +476,14 @@ class ReportConfigDocument(ReportConfigDocumentBase):
 class ExternalReportConfigDocument(ReportConfigDocumentBase):
     url =TextField()
     description = TextField()
+    def __init__(self):
+        ReportConfigDocumentBase.__init__(self)
+
+
+class EntityReportConfigDocument(ReportConfigDocumentBase):
+    filters = ListField(TextField())
+    details = ListField(TextField())
+    specials = DictField()
+    fallback_location = DictField()
     def __init__(self):
         ReportConfigDocumentBase.__init__(self)

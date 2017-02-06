@@ -1,5 +1,6 @@
 from mangrove.datastore.database import DataObject
-from mangrove.datastore.documents import ReportConfigDocument, ReportConfigDocumentBase, ExternalReportConfigDocument
+from mangrove.datastore.documents import ReportConfigDocument, ReportConfigDocumentBase, ExternalReportConfigDocument, \
+    EntityReportConfigDocument
 
 
 def get_report_configs(manager):
@@ -22,6 +23,8 @@ class ReportConfigBase(DataObject):
     def config(cls, dbm, document):
         if isinstance(document, ExternalReportConfigDocument):
             return ExternalReportConfig.new_from_doc(dbm, document)
+        elif isinstance(document, EntityReportConfigDocument):
+            return EntityReportConfig.new_from_doc(dbm, document)
         else:
             return ReportConfig.new_from_doc(dbm, document)
 
@@ -32,6 +35,10 @@ class ReportConfigBase(DataObject):
     @property
     def name(self):
         return self._doc.name
+
+    @property
+    def template_url(self):
+        return self._doc.template_url
 
     def template(self):
         return self._get_attachment("index.html")
@@ -90,3 +97,30 @@ class ExternalReportConfig(ReportConfigBase):
     def description(self):
         return self._doc.description
 
+
+class EntityReportConfig(ReportConfigBase):
+    __document_class__ = EntityReportConfigDocument
+
+    def __init__(self, dbm, **kwargs):
+        super(EntityReportConfig, self).__init__(dbm)
+        DataObject._set_document(self, EntityReportConfigDocument())
+
+    @property
+    def filters(self):
+        return self._doc.filters
+
+    @property
+    def details(self):
+        return self._doc.details
+
+    @property
+    def specials(self):
+        return self._doc.specials
+
+    @property
+    def fallback_location(self):
+        return self._doc.fallback_location
+
+    @property
+    def entity_type(self):
+        return self._doc.entity_type

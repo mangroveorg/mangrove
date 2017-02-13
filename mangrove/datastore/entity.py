@@ -131,12 +131,12 @@ def get_by_short_code_include_voided(dbm, short_code, entity_type):
     assert is_sequence(entity_type)
     return _entity_by_short_code(dbm, short_code.lower(), entity_type)
 
-def get_all_entities(dbm, entity_type=None, limit=None, filters=None):
+def get_all_entities(dbm, entity_type=None, limit=None, filters=None, reverse_filters=None):
     """
     Returns all the entities in the Database
     """
     if entity_type is not None:
-        return _get_all_entities_of_type(dbm, entity_type, limit, filters)
+        return _get_all_entities_of_type(dbm, entity_type, limit, filters, reverse_filters)
     else:
         return _get_all_entities(dbm, limit)
 
@@ -888,7 +888,7 @@ def _get_all_entities(dbm, limit=None):
     return [from_row_to_entity(dbm, row) for row in rows]
 
 
-def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
+def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None, reverse_filters=None):
     kwargs = {
                 'startkey': [entity_type],
                 'endkey': [entity_type, {}],
@@ -899,16 +899,21 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None):
         kwargs['limit'] = limit
 
     rows = dbm.view.by_short_codes(**kwargs)
-    return [from_row_to_entity(dbm, row) for row in rows if filters is None or _is_filtered(row, filters)]
+    return [from_row_to_entity(dbm, row) for row in rows if filters is None or _is_filtered(row, filters, reverse_filters)]
 
 
-def _is_filtered(row, filters):
+def _is_filtered(row, filters, reverse_filters):
     data = row.doc['data']
-    return all(data.get(f) and (
-        isinstance(data.get(f)['value'], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or
-        isinstance(data.get(f)['value'], datetime) and (filters[f][0] <= data.get(f)['value'] <= filters[f][1]) or
-        filters[f] == data.get(f)['value']
-    ) for f in filters)
+    return all(
+        data.get(f) and
+        (
+            isinstance(data.get(f)['value'], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or
+            isinstance(data.get(f)['value'], datetime) and (filters[f][0] <= data.get(f)['value'] <= filters[f][1]) or
+            filters[f] == data.get(f)['value']
+        ) for f in filters
+    ) and all(
+        any(data.get(qn) and rf == data.get(qn)['value'] for qn in reverse_filters[rf]) for rf in reverse_filters
+    )
 
 
 def get_all_entities_include_voided(dbm, entity_type):

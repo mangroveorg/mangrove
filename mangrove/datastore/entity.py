@@ -902,7 +902,7 @@ def _get_all_entities_of_type(dbm, entity_type, limit=None, filters=None, revers
     return [from_row_to_entity(dbm, row) for row in rows if filters is None or _is_filtered(row, filters, reverse_filters)]
 
 
-def _is_filtered(row, filters, reverse_filters):
+def _is_filtered(row, filters, reverse_filters=[]):
     data = row.doc['data']
     return all(
         data.get(f) and

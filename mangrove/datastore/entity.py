@@ -909,10 +909,11 @@ def _is_filtered(row, filters, reverse_filters=[]):
         (
             isinstance(data.get(f)['value'], list) and set(filters[f]).intersection(set(data.get(f)['value'])) or
             isinstance(data.get(f)['value'], datetime) and (filters[f][0] <= data.get(f)['value'] <= filters[f][1]) or
+            isinstance(data.get(f)['value'], str) and (filters[f].lower() == data.get(f)['value'].lower()) or
             filters[f] == data.get(f)['value']
         ) for f in filters
     ) and all(
-        any(data.get(qn) and rf == data.get(qn)['value'] for qn in reverse_filters[rf]) for rf in reverse_filters
+        any(data.get(qn) and rf.lower() == data.get(qn)['value'].lower() for qn in reverse_filters[rf]) for rf in reverse_filters
     )
 
 

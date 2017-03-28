@@ -40,6 +40,10 @@ class ReportConfigBase(DataObject):
     def template_url(self):
         return self._doc.template_url
 
+    @property
+    def total_in_label(self):
+        return self._doc.total_in_label
+    
     def template(self):
         return self._get_attachment("index.html")
 

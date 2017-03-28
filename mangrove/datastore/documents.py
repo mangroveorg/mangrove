@@ -450,6 +450,7 @@ class ReportConfigDocumentBase(DocumentBase):
     name = TextField()
     type = TextField()
     template_url = TextField()
+    total_in_label = BooleanField()
     def __init__(self):
         DocumentBase.__init__(self, document_type='ReportConfig')
 

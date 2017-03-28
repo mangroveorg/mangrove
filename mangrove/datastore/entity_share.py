@@ -80,6 +80,10 @@ class EntityPreference(DataObject):
     def fallback_location(self):
         return self._doc.fallback_location
 
+    @property
+    def total_in_label(self):
+        return self._doc.total_in_label
+
     def set_filters(self, filters):
         self._doc.filters = filters
 

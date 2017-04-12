@@ -84,6 +84,10 @@ class EntityPreference(DataObject):
     def total_in_label(self):
         return self._doc.total_in_label
 
+    @property
+    def remove_options(self):
+        return self._doc.remove_options
+
     def set_filters(self, filters):
         self._doc.filters = filters
 
@@ -95,3 +99,4 @@ class EntityPreference(DataObject):
 
     def set_fallback_location(self, fallback_location):
         self._doc.fallback_location = fallback_location
+

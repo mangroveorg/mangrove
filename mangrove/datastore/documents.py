@@ -440,6 +440,7 @@ class EntityPreferenceDocument(DocumentBase):
     share_token = TextField()
     filters = ListField(TextField())
     details = ListField(TextField())
+    remove_options = ListField(TextField())
     specials = DictField()
     fallback_location = DictField()
     total_in_label = BooleanField
@@ -452,6 +453,7 @@ class ReportConfigDocumentBase(DocumentBase):
     type = TextField()
     template_url = TextField()
     total_in_label = BooleanField()
+    remove_options = ListField(TextField())
     
     def __init__(self):
         DocumentBase.__init__(self, document_type='ReportConfig')

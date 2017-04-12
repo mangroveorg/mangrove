@@ -43,6 +43,10 @@ class ReportConfigBase(DataObject):
     @property
     def total_in_label(self):
         return self._doc.total_in_label
+
+    @property
+    def remove_options(self):
+        return self._doc.remove_options
     
     def template(self):
         return self._get_attachment("index.html")

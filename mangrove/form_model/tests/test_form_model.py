@@ -290,35 +290,36 @@ class FormModelTest(MangroveTestCase):
         expected = {'q1':'cid001', 'q2': 'a', 'q3':'word'}
         self.assertEqual(bound_values, expected)
 
-    def get_form_model_doc(self):
-        fields = [
-            {
-                "constraints": [('range', {
-                    "max": 10,
-                    "min": 0
-                })],
-                "label": "",
-                "type": "integer",
-                "name": "What is your age?",
-                "code": "AGE",
-                "required": False
-            },
-            {
-                "choices": [
-                    {
-                        "text": "Pune"
-                    },
-                    {
-                        "text": "Bangalore"
-                    }
-                ],
-                "label": "",
-                "type": "select",
-                "name": "Where do you live?",
-                "code": "PLC",
-                "required": False
-            }
-        ]
+    def get_form_model_doc(self, fields=[]):
+        if len(fields) == 0:
+            fields = [
+                {
+                    "constraints": [('range', {
+                        "max": 10,
+                        "min": 0
+                    })],
+                    "label": "",
+                    "type": "integer",
+                    "name": "What is your age?",
+                    "code": "AGE",
+                    "required": False
+                },
+                {
+                    "choices": [
+                        {
+                            "text": "Pune"
+                        },
+                        {
+                            "text": "Bangalore"
+                        }
+                    ],
+                    "label": "",
+                    "type": "select",
+                    "name": "Where do you live?",
+                    "code": "PLC",
+                    "required": False
+                }
+            ]
         document = FormModelDocument()
         document.json_fields = fields
         document.document_type = "FormModel"
@@ -334,3 +335,68 @@ class FormModelTest(MangroveTestCase):
         self.assertFalse(form_model.is_open_survey)
         document['is_open_survey'] = True
         self.assertTrue(form_model.is_open_survey)
+
+
+
+    def test_should_return_questions_for_specific_entity(self):
+        fields = [
+                {
+                    "constraints": [('range', {
+                        "max": 10,
+                        "min": 0
+                    })],
+                    "label": "",
+                    "type": "integer",
+                    "name": "What is your age?",
+                    "code": "AGE",
+                    "required": False
+                },
+                {
+                    "unique_id_type": "waterpoint",
+                    "label": "",
+                    "type": "unique_id",
+                    "name": "Which waterpoint is it?",
+                    "code": "q2",
+                    "required": False
+                },
+                {
+                    "unique_id_type": "clinic",
+                    "label": "",
+                    "type": "unique_id",
+                    "name": "Give the name of the clinic",
+                    "code": "q4",
+                    "required": False
+                },
+                {
+                    "unique_id_type": "waterpoint",
+                    "label": "",
+                    "type": "unique_id",
+                    "name": "Which waterpoint will you visit next?",
+                    "code": "q3",
+                    "required": False
+                },
+                {
+                    "choices": [
+                        {
+                            "text": "Pune"
+                        },
+                        {
+                            "text": "Bangalore"
+                        }
+                    ],
+                    "label": "",
+                    "type": "select",
+                    "name": "Where do you live?",
+                    "code": "PLC",
+                    "required": False
+                }
+            ]
+
+        document = self.get_form_model_doc(fields)
+        form_model = FormModel.new_from_doc(self.manager, document)
+        clinic_fields = form_model.get_questions_for_entity(["clinic"])
+        waterpoint_fields = form_model.get_questions_for_entity("waterpoint")
+        all_idrn_fields = form_model.entity_questions
+        self.assertEqual(["q4"], [field.code for field in clinic_fields])
+        self.assertEqual(["q2", "q3"], [field.code for field in waterpoint_fields])
+        self.assertEqual(['q2', 'q4', 'q3'], [field.code for field in all_idrn_fields])

@@ -229,13 +229,13 @@ class FormModel(DataObject):
         """
         self._doc.name = value
 
-    def _get_entity_questions(self, form_fields):
+    def _get_entity_questions(self, form_fields, entity_type=[]):
         ef = []
         for field in form_fields:
-            if isinstance(field, UniqueIdField):
+            if isinstance(field, UniqueIdField) and (len(entity_type)== 0 or field.unique_id_type in entity_type):
                 ef.append(field)
             elif isinstance(field, FieldSet):
-                ef.extend(self._get_entity_questions(field.fields))
+                ef.extend(self._get_entity_questions(field.fields, entity_type))
         return ef
 
     def _get_external_choice_questions(self, form_fields):
@@ -250,6 +250,9 @@ class FormModel(DataObject):
     @property
     def entity_questions(self):
         return self._get_entity_questions(self._form_fields)
+
+    def get_questions_for_entity(self, entity_type):
+        return self._get_entity_questions(self._form_fields, entity_type)
 
     @property
     def external_choice_questions(self):

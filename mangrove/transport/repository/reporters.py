@@ -13,7 +13,7 @@ def find_reporter(dbm, from_number):
 
 
 def find_reporter_entity(dbm, from_number):
-    reporter_list = find_reporters_by_from_number(dbm, from_number)
+    reporter_list = find_reporters_by_from_number(dbm, from_number.strip("+"))
     if len(reporter_list) > 1:
         raise MultipleReportersForANumberException(from_number)
     return reporter_list[0]

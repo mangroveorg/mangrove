@@ -55,6 +55,10 @@ class ReportConfigBase(DataObject):
         return self._doc.name
 
     @property
+    def description(self):
+        return self._doc.description
+
+    @property
     def template_url(self):
         return self._doc.template_url
 
@@ -118,11 +122,6 @@ class ExternalReportConfig(ReportConfigBase):
     @property
     def url(self):
         return self._doc.url
-
-    @property
-    def description(self):
-        return self._doc.description
-
 
 class EntityReportConfig(ReportConfigBase):
     __document_class__ = EntityReportConfigDocument

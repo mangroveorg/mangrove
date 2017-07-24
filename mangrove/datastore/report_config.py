@@ -4,12 +4,30 @@ from mangrove.datastore.documents import ReportConfigDocument, ReportConfigDocum
 
 
 def get_report_configs(manager):
+    line_menu_length = 8
     rows = manager.load_all_rows_in_view('all_report_configs')
     if len(rows):
         sorted_rows = sorted(rows, key=lambda row: 'order' in row['value'] and row['value']['order'] or 0)
-        return [ReportConfigBase.config(manager, ReportConfigDocumentBase.document(row['value'])) for row in sorted_rows]
+        row_count = len(rows)
+        menu_remain = row_count % line_menu_length
+        line_count = row_count / line_menu_length
+        if menu_remain > 0 :
+            line_count = line_count + 1
+        configs = [None] * line_count
+        row_number = 0
+        for row in sorted_rows :
+            menu_index = row_number % line_menu_length
+            line_index = row_number / line_menu_length
+            if not configs[line_index]:
+                line_menu_remain = row_count - row_number
+                if line_menu_remain <= line_menu_length:
+                    configs[line_index] = [None]*line_menu_remain
+                else:
+                    configs[line_index] = [None]*line_menu_length
+            configs[line_index][menu_index] = ReportConfigBase.config(manager, ReportConfigDocumentBase.document(row['value']))
+            row_number = row_number + 1
+        return configs
     return None
-
 
 def get_report_config(manager, id):
     rows = manager.load_all_rows_in_view('all_report_configs', key=id)

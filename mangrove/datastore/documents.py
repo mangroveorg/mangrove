@@ -450,7 +450,6 @@ class EntityPreferenceDocument(DocumentBase):
 
 class ReportConfigDocumentBase(DocumentBase):
     name = TextField()
-    description = TextField()
     type = TextField()
     template_url = TextField()
     total_in_label = BooleanField()

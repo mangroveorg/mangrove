@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import re
+from HTMLParser import HTMLParser
 import abc
 from datetime import datetime
 
@@ -716,8 +717,12 @@ class UniqueIdUIField(UniqueIdField):
 
     @property
     def options(self):
-        return [(entity.short_code, escape(entity.data['name']['value'])) for entity in
-                get_all_entities(self.dbm, [self.unique_id_type])]
+        h = HTMLParser()
+        list = []
+        for entity in get_all_entities(self.dbm, [self.unique_id_type]):
+            unescapedLabel = h.unescape(entity.data['name']['value'])
+            list.append((entity.short_code, unescapedLabel))
+        return list
 
     @property
     def enketo_options(self):

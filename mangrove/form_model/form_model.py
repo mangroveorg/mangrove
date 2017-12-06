@@ -622,7 +622,7 @@ class FormModel(DataObject):
         code_list = [f.code.lower() for f in fields]
         code_list_without_duplicates = list(set(code_list))
         if len(code_list) != len(code_list_without_duplicates):
-            raise QuestionCodeAlreadyExistsException("All field codes must be unique, please check %s field",code_list[len(code_list)-1])
+            raise QuestionCodeAlreadyExistsException("All code fields must be unique, please check %s field",code_list[len(code_list)-1])
 
     def _validate_answer_for_field(self, answer, field):
         try:

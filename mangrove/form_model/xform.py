@@ -39,7 +39,8 @@ class Xform(object):
         return _child_node_given_attr(self._model_node(), 'bind', 'nodeset', name)
 
     def get_readonly_bind_nodes(self):
-        return itertools.ifilter(lambda child: not child.attrib.get('nodeset').endswith('instanceID'),
+        return itertools.ifilter(lambda child: not child.attrib.get('nodeset').endswith('instanceID')
+                                               and not child.attrib.get("calculate"),
                                  child_nodes_given_attr(self._model_node(), 'bind', 'readonly', 'true()'))
 
     def remove_bind_node(self, node):
@@ -90,6 +91,12 @@ class Xform(object):
             self.instance_node(parent_node).append(instance_node)
         except StopIteration:
             pass
+
+
+    def add_instance_node_before_another_one(self, parent_node, instance_node, new_node):
+        instances = self.instance_node(parent_node)
+        index = instances._children.index(instance_node)
+        instances._children.insert(index, new_node)
 
     def add_node_given_parent_node(self, parent_node, node):
         if parent_node != self.get_body_node():
@@ -182,6 +189,8 @@ class Xform(object):
         another_xform_as_str = re.sub('ns[0-9]:', '',self._to_string(another_xform.root_node))
         return current_xform_as_str == another_xform_as_str
 
+    def add_bind_node_before_another_bind_node(self, node, new_node):
+        add_node_before_another_node(self._model_node(), node, new_node)
 
 def _sort(node, key):
     node._children = sorted(node._children, key=key)
@@ -217,6 +226,12 @@ def add_node(parent_node, node):
     else:
         parent_node._children.append(node)
 
+
+def add_node_before_another_node(parent_node, node, new_node):
+    repeat_node = _child_node(parent_node, 'repeat')
+    parent = repeat_node if repeat_node else parent_node
+    index = parent._children.index(node)
+    parent._children.insert(index, new_node)
 
 def remove_node(parent_node, node):
     repeat_node = _child_node(parent_node, 'repeat')

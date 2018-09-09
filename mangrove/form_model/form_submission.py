@@ -5,7 +5,7 @@ from mangrove.form_model.form_model import GEO_CODE_FIELD_NAME, LOCATION_TYPE_FI
 from mangrove.form_model.location import Location
 from mangrove.datastore import entity
 from mangrove.utils.types import is_empty, is_not_empty
-
+from mangrove.errors.MangroveException import MangroveException
 
 class FormSubmission(object):
     def __init__(self, form_model, form_answers, errors=None, location_tree=None):
@@ -54,9 +54,12 @@ class FormSubmission(object):
     def update(self, dbm):
         location_hierarchy, processed_geometry = Location(self.location_tree, self.form_model).process_entity_creation(
             self.cleaned_data)
-        entity = self.get_entity(dbm)
-        entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
-        return self._save_data(entity)
+        try:
+            entity = self.get_entity(dbm)
+            entity.set_location_and_geo_code(location_hierarchy, processed_geometry)
+            return self._save_data(entity)
+        except MangroveException as e:
+            self.save(dbm)
 
     def _contains_geo_code(self, item):
         item_ = item[0]

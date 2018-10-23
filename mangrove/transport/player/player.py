@@ -24,6 +24,7 @@ class Player(object):
         try:
             form_model.bind(values)
             cleaned_data, errors = form_model.validate_submission(values=values)
+            is_update = hasattr(self, 'is_update') if hasattr(self, 'is_update') else is_update
             handler = handler_factory(self.dbm, form_model, is_update)
             response = handler.handle(form_model, cleaned_data, errors,  reporter_names,
                 self.location_tree)

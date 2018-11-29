@@ -67,7 +67,7 @@ class Month(object):
         2. If current month is february and day selected is > 28, returns the last day of that month accounting for leap year.
         """
         last_day_of_month = calendar.monthrange(as_of.year,as_of.month)[1]
-        return min(self.day,last_day_of_month)
+        return last_day_of_month if self.day == 0 else min(self.day,last_day_of_month)
 
     def next_deadline_date(self, as_of):
         """

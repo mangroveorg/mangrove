@@ -13,12 +13,17 @@ def _decorate_questionnaire_for_user(result):
     questionnaire.update({'is_project_manager':True})
     return questionnaire
 
-def get_questionnaires_for_user(user_id, dbm, **values):
+
+def default_get_project_info(dbm, x):
+    return x
+
+
+def get_questionnaires_for_user(user_id, dbm, project_info_function=default_get_project_info, **values):
     rows = dbm.load_all_rows_in_view('all_questionnaire_by_user_permission',
                                      key=user_id, include_docs=True, **values)
     questionnaires = []
     if rows:
-        questionnaires = [_decorate_questionnaire_for_user(row) for row in rows if not row.get('doc').get('void',False)]
+        questionnaires = [project_info_function(dbm, _decorate_questionnaire_for_user(row)) for row in rows if not row.get('doc').get('void',False)]
     return questionnaires
 
 def grant_user_permission_for(user_id, questionnaire_id, manager):

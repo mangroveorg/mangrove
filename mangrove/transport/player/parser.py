@@ -371,15 +371,38 @@ class XlsOrderedParser(XlsParser):
             header, header_found = self._is_header_row(row)
             form_code = header[0]
             header = header[1:]
+            empty_indexes = self.get_empty_indexes(header)
+            header = self.remove_empty_indexes(header, empty_indexes)
             parsed_data = []
+
             for row_num in range(1, worksheet.nrows):
                 row = worksheet.row_values(row_num)
                 row = self._clean(row)
+                row = self.remove_empty_indexes(row, empty_indexes)
                 values = OrderedDict(zip(header, row))
                 parsed_data.append((form_code, values))
             if not header_found:
                 raise XlsParserInvalidHeaderFormatException()
             return parsed_data
+
+    def get_empty_indexes(self, header):
+        indexes = []
+        index = -1
+        while True:
+            try:
+                index = header.index('', index+1)
+                indexes.append(index)
+            except ValueError:
+                break
+            
+        return indexes
+        
+    def remove_empty_indexes(self, row, empty_indexes):
+        indexes = empty_indexes[:]
+        while len(indexes):
+            index = indexes.pop()
+            row.pop(index)
+        return row
 
             
 
